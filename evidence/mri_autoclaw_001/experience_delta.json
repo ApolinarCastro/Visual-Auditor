@@ -1,0 +1,5 @@
+{
+  "decision_changed": 2,
+  "persist_policy": "MEMORY != CURRENT TRUTH; revalidate on next run",
+  "note": "Diagnostic experience delta only; not a certified production Experience Store mutation."
+}
