@@ -1,0 +1,7 @@
+{
+  "global": "PARTIAL",
+  "reason": "unprocessed_frontier>0; hub/category branches were only partially traversed",
+  "unprocessed_frontier": 40,
+  "unexplained_failures": 0,
+  "accounted": "100%"
+}
