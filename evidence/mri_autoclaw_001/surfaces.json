@@ -1,0 +1,10 @@
+{
+  "surfaces": [
+    "Ripley brand/search surface",
+    "commercial category surface",
+    "brand-filtered category surface",
+    "navigation state source",
+    "pending pagination frontier"
+  ],
+  "note": "Normalized summary of user-provided evidence bundle."
+}
