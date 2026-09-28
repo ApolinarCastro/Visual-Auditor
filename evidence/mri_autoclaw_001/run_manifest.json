@@ -1,0 +1,8 @@
+{
+  "runs": [
+    {"run_id":"A","status":"STOPPED_CONTROLLED"},
+    {"run_id":"B","status":"ABORTED_OFFSET_REPLAY_BUG"},
+    {"run_id":"B2","status":"FINISHED_RESUMED"}
+  ],
+  "note": "A prior orphan RUNNING entry existed in the raw bundle and is intentionally not normalized into project truth."
+}
