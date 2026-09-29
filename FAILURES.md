@@ -29,17 +29,21 @@ A local browser-session conflict caused TargetClosed/environment failures during
 Resolution status: environmental; later run reported isolated profile working. Do not add architectural workaround unless it recurs reproducibly.
 
 ## F-008 — Mercado Libre brand routing
-4-marketplace baseline reports core extraction/pagination working, but BRAND_DISCOVERY failed/unresolved from the tested surfaces.
-Status: ACTIVE.
+4-marketplace baseline reported core extraction/pagination working, but BRAND_DISCOVERY failed/unresolved.
+Resolution in MRI-CROSSMARKET-BLOCKERS-001: Root cause demonstrated causally. (1) baseline_4mp.py checked for non-existent event key `brand_evidence_count_text`; (2) category_discoverer.py captured shipping address URL (`addresses/v3/navigation/hub?go=...`) as category 'Hub' and failed to extract store-scoped sidebar facet filters (.ui-search-filter-dl dt).
+Status: FORENSICALLY_RESOLVED (Awaiting implementation).
 
 ## F-009 — Paris brand routing
-4-marketplace baseline reports core extraction/pagination working, but BRAND_DISCOVERY failed/unresolved from the tested surfaces.
-Status: ACTIVE.
+4-marketplace baseline reported core extraction/pagination working, but BRAND_DISCOVERY failed/unresolved.
+Resolution in MRI-CROSSMARKET-BLOCKERS-001: Root cause demonstrated causally. Paris uses Next.js App Router streaming RSC (`self.__next_f.push`) rather than `__NEXT_DATA__`. Category discoverer fell back to uncollapsed site-wide Mega-Menu DOM links (`Outlet Televisores`), yielding 0 brand products.
+Status: FORENSICALLY_RESOLVED (Awaiting implementation).
 
 ## F-010 — Falabella headless entry
-4-marketplace baseline reports initial headless surface blocked/failing before product observation.
-Status: ACTIVE.
+4-marketplace baseline reported initial headless surface blocked/failing before product observation.
+Resolution in MRI-CROSSMARKET-BLOCKERS-001: FA1-FA10 forensic protocol conclusively classified the blocker as `CHALLENGE_PAGE`. Cloudflare WAF detects standard headless Playwright fingerprint and serves HTTP 403 Challenge Page ('Lo siento, su acceso ha sido bloqueado').
+Status: CLASSIFIED (`CHALLENGE_PAGE`).
 
 ## F-011 — Baseline runner wrapper noise
-The diagnostic wrapper reported a cosmetic NameError and subprocess rc=1/venv close noise after event logs were persisted.
-Status: tooling debt. Do not conflate wrapper termination with marketplace capability without event evidence.
+The diagnostic wrapper reported a NameError and subprocess rc=1/venv close noise after event logs were persisted.
+Resolution in MRI-CROSSMARKET-BLOCKERS-001: Verified physically in `baseline_4mp.py:97`. `capabilities_from(r, events)` accessed undefined variable `mp` when `checkpoints_written` was falsy. Classified as `WRAPPER_FAILURE`. MRI pipeline unaffected.
+Status: FORENSICALLY_RESOLVED (`WRAPPER_FAILURE`).

@@ -1,0 +1,27 @@
+{
+  "task_id": "MRI-CROSSMARKET-BLOCKERS-001",
+  "component": "Runner Subprocess Exit Code 1 Forensics",
+  "rc1_reproduced": "YES",
+  "classification": "WRAPPER_FAILURE",
+  "pipeline_affected": "NO",
+  "root_cause": "EVIDENCED",
+  "details": {
+    "exit_code": 1,
+    "stdout": "===== Mercado Libre =====\nGenericCommercialMaterializer engine loaded with Nicopoly Membership Validation.",
+    "stderr": "NameError: name 'mp' is not defined. Did you mean: 'map'?\nValueError: I/O operation on closed pipe",
+    "last_event": "category_done (emitted to events_*.jsonl before crash)",
+    "last_successful_checkpoint": "Events stream fully written to disk (events_mercado_libre.jsonl, events_paris.jsonl, events_ripley.jsonl)",
+    "exception_type": "NameError",
+    "exception_location": "outputs/mri_4marketplaces_baseline_001/baseline_4mp.py:97",
+    "exact_code_line": "ck = r.get(\"checkpoints_written\") or (OUT / f\"checkpoints_{mp.lower().replace(' ', '_')}.json\").exists()"
+  },
+  "root_cause_analysis": {
+    "observed": "During MRI-4MARKETPLACES-BASELINE-001, subprocesos for Mercado Libre, Paris, Falabella, and Ripley all terminated with returncode rc=1 despite producing complete event streams.",
+    "hypothesis": "The rc=1 was caused by a wrapper post-processing bug in baseline_4mp.py:97 where the function capabilities_from(r, events) referenced variable 'mp' which was not in function scope, throwing an unhandled NameError after the pipeline finished.",
+    "test": "Invoked capabilities_from({'checkpoints_written': None}, []) in isolation from python shell.",
+    "result": "Reproduced exactly: 'NameError: name 'mp' is not defined. Did you mean: 'map'?'. File: baseline_4mp.py, line 97.",
+    "evidence": "outputs/mri_4marketplaces_baseline_001/_runner_results.json, outputs/mri_4marketplaces_baseline_001/baseline_4mp.py:97",
+    "confidence": "HIGH (1.0)",
+    "next_smallest_fix": "In baseline_4mp.py, pass 'mp' as an argument to capabilities_from(r, events, mp) or remove the unreferenced checkpoint file check."
+  }
+}

@@ -32,6 +32,23 @@ A 4-marketplace baseline PASS means:
 
 It does NOT mean every marketplace capability is PASS.
 
+## Cross-marketplace blockers gate (MRI-CROSSMARKET-BLOCKERS-001)
+
+A cross-market blockers PASS requires:
+- ml_blocker_reproduced = YES
+- paris_blocker_reproduced = YES
+- falabella_entry_blocker_reproduced = YES
+- ml_root_cause = EVIDENCED
+- paris_root_cause = EVIDENCED
+- falabella_root_cause = EVIDENCED
+- runner_rc1_classified = YES (WRAPPER_FAILURE)
+- ml_paris_comparison = NO (strictly verified across 4 dimensions)
+- code_changes = 0
+- autoclaw_actions = 0
+- manual_actions = 0
+- ripley_actions = 0
+- independent_verification = PASS
+
 ## Global completion
 
 Global CONFIRMED additionally requires:

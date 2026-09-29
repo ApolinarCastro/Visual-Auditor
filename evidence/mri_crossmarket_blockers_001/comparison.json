@@ -1,0 +1,32 @@
+{
+  "task_id": "MRI-CROSSMARKET-BLOCKERS-001",
+  "comparison_title": "Comparative Forensics: Mercado Libre vs Paris Brand Discovery",
+  "ML_PARIS_SAME_MECHANISM": "NO",
+  "shared_symptom_only": "YES",
+  "symptom": "BRAND_DISCOVERY FAIL in baseline capability matrix",
+  "dimensions": {
+    "source_type": {
+      "Mercado_Libre": "Official Brand Store (tienda/nicopoly / _Tienda_nicopoly). All products displayed belong to the brand. SSR rendered by internal Meli stack (Andes UI) with Akamai session protection.",
+      "Paris": "Brand Search PLP (search?q=nicopoly). Next.js App Router (RSC streaming self.__next_f / React 18+). Products are returned based on full-text search match.",
+      "same": false
+    },
+    "discovery_mechanism": {
+      "Mercado_Libre": "Subcategories are exposed as sidebar facet filter links (.ui-search-filter-dl dt) within the store scope. No navigation tree endpoint exists.",
+      "Paris": "Category facets (tipoProductoAll: Abrigos, Blusas, Calzas) and the official brand landing route (/mujer/marcas/nicopoly/) are embedded inside Next.js RSC streaming state (self.__next_f). In the DOM, an uncollapsed site-wide Mega-Menu in <details> tags pollutes generic anchor extraction.",
+      "same": false
+    },
+    "application_mechanism": {
+      "Mercado_Libre": "Store subcategory URL path navigation (e.g. /ropa-accesorios/nicopoly_Tienda_nicopoly).",
+      "Paris": "PLP query parameter facets (?q=nicopoly&tipoProductoAll=...) or category brand routes (/mujer/marcas/nicopoly/).",
+      "same": false
+    },
+    "verification_mechanism": {
+      "Mercado_Libre": "Quantity counter text (.ui-search-search-result__quantity-results) and seller verification badge ('Tienda oficial').",
+      "Paris": "Facet counts embedded in RSC query state and product card brand text.",
+      "same": false
+    }
+  },
+  "shared_component": null,
+  "evidence": "Mercado Libre and Paris share 0 architectural components for brand discovery. ML relies on official store URL rewriting and sidebar DL facets; Paris relies on Next.js App Router RSC streaming state and PLP query parameters. Merging them into a single abstraction would violate Rule 4 (PROHIBIDO crear una abstracción común solamente porque ambos fallan en BRAND_DISCOVERY).",
+  "conclusion": "ML_PARIS_SAME_MECHANISM = NO. Each marketplace requires its own distinct discovery adapter matching its native rendering and taxonomy architecture."
+}

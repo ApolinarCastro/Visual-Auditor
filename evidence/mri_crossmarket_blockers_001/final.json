@@ -1,0 +1,59 @@
+{
+  "task_id": "MRI-CROSSMARKET-BLOCKERS-001",
+  "status": "MRI_CROSSMARKET_BLOCKERS_PASS",
+  "generated_at": "2026-09-29T20:09:00+00:00",
+  "mercado_libre": {
+    "blocker_reproduced": "YES",
+    "root_cause": "EVIDENCED",
+    "mechanism": "Mercado Libre Brand Store (tienda/nicopoly / _Tienda_nicopoly) already returns 100% brand products (544 observed in Hub). However, category discovery fails because: (1) baseline_4mp.py checked for a non-existent event field 'brand_evidence_count_text'; (2) category_discoverer.py heuristic wrongly captured the header address URL ('addresses/v3/navigation/hub?go=...') as category 'Hub' and failed to extract store-scoped sidebar facet filters (.ui-search-filter-dl dt); (3) MercadoLibreScraper lacks discover_navigation and discover_navigation_source adapters.",
+    "evidence": "outputs/mri_crossmarket_blockers_001/ml.json, outputs/mri_crossmarket_blockers_001/ml_raw_probe.json, outputs/mri_4marketplaces_baseline_001/events_mercado_libre.jsonl",
+    "fix_required": "YES"
+  },
+  "paris": {
+    "blocker_reproduced": "YES",
+    "root_cause": "EVIDENCED",
+    "mechanism": "Paris uses Next.js App Router streaming RSC (self.__next_f.push) rather than __NEXT_DATA__. Genuine product category facets ('tipoProductoAll') and official brand route ('/mujer/marcas/nicopoly/') are streamed inside RSC chunks (chunks 280 & 285). Because category_discoverer.py sought __NEXT_DATA__ (which was null), it fell back to DOM anchors where the uncollapsed site-wide Mega-Menu (<details class='group/details'>) polluted extraction, causing the pipeline to attempt a completely unrelated department ('Outlet Televisores', 0 brand products). In addition, baseline_4mp.py checked for 'brand_evidence_count_text', which was never emitted.",
+    "evidence": "outputs/mri_crossmarket_blockers_001/paris.json, outputs/mri_crossmarket_blockers_001/paris_raw_probe.json, outputs/mri_crossmarket_blockers_001/inspect_paris_ssr.py, outputs/mri_4marketplaces_baseline_001/events_paris.jsonl",
+    "fix_required": "YES"
+  },
+  "comparison": {
+    "ML_PARIS_SAME_MECHANISM": "NO",
+    "shared_component": null,
+    "shared_symptom_only": "YES",
+    "evidence": "Mercado Libre and Paris share zero underlying architectural or discovery mechanisms. ML relies on official store URL rewriting and server-rendered HTML sidebar DL facets. Paris relies on Next.js App Router streaming RSC state and search PLP query parameters, polluted by an uncollapsed DOM mega-menu. They share only the symptom (BRAND_DISCOVERY FAIL in the baseline runner)."
+  },
+  "falabella": {
+    "blocker_reproduced": "YES",
+    "root_cause": "EVIDENCED",
+    "classification": "CHALLENGE_PAGE",
+    "mechanism": "Falabella is guarded by Cloudflare WAF. When accessed via standard headless Playwright (headless=True), Cloudflare identifies the automated browser fingerprint and returns an HTTP 403 Challenge Page with title 'Cloudflare' and body 'Lo siento, su acceso ha sido bloqueado. No se puede acceder www.falabella.com...'. This halts navigation and prevents rendering of catalyst-pod / product elements (0 products observed), blocking the entire downstream pipeline.",
+    "evidence": "outputs/mri_crossmarket_blockers_001/falabella.json, outputs/mri_crossmarket_blockers_001/falabella_raw_probe.json, FA4 Server: cloudflare, CF-Ray: a42d99ca0d3a38b0-SCL",
+    "fix_required": "YES"
+  },
+  "runner": {
+    "rc1_reproduced": "YES",
+    "root_cause": "EVIDENCED",
+    "classification": "WRAPPER_FAILURE",
+    "pipeline_affected": "NO",
+    "mechanism": "In baseline_4mp.py line 97, capabilities_from(r, events) referenced variable 'mp' which was not passed as a parameter or present in module scope: ck = r.get('checkpoints_written') or (OUT / f'checkpoints_{mp.lower().replace(\" \", \"_\")}.json').exists(). When checkpoints_written was falsy, Python raised 'NameError: name \"mp\" is not defined', terminating the subprocess with exit code 1 after the MRI pipeline had already completed and written all events.",
+    "evidence": "outputs/mri_crossmarket_blockers_001/runner_rc1.json, outputs/mri_4marketplaces_baseline_001/_runner_results.json, outputs/mri_4marketplaces_baseline_001/baseline_4mp.py:97"
+  },
+  "execution": {
+    "marketplaces_executed": 3,
+    "total_runtime": "< 10 minutes per marketplace",
+    "code_changes": 0,
+    "autoclaw_actions": 0,
+    "manual_actions": 0,
+    "ripley_actions": 0,
+    "retries_without_new_evidence": 0
+  },
+  "independent_verification": {
+    "reconciled": "YES",
+    "unsupported_root_causes": 0,
+    "false_pass": 0,
+    "hardcoded_result_contribution": 0,
+    "synthetic_contribution": 0
+  },
+  "evidence_root": "outputs/mri_crossmarket_blockers_001/",
+  "final_verdict": "MRI_CROSSMARKET_BLOCKERS_PASS"
+}

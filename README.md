@@ -14,15 +14,18 @@ Current focus: MRI autonomous marketplace intelligence across four marketplaces:
 
 - MRI-AUTONOMY-006: Ripley facet application reported PASS in a fresh MRI-only run after the `page_signature` fix.
 - MRI-AUTONOMY-007: controlled propagation reported PASS across 3 direct Ripley children, with no code changes and no AutoClaw/manual actions.
-- MRI-4MARKETPLACES-BASELINE-001: bounded cross-marketplace baseline completed. Reported first blockers:
-  - Mercado Libre: BRAND_DISCOVERY / brand routing.
-  - Paris: BRAND_DISCOVERY / brand routing.
-  - Falabella: ENTRY / headless acquisition.
-  - Ripley: no new core capability blocker; coverage remains incomplete.
+- MRI-4MARKETPLACES-BASELINE-001: bounded cross-marketplace baseline completed. First blockers identified across all marketplaces.
+- MRI-CROSSMARKET-BLOCKERS-001: forensic root cause resolution completed across all blockers:
+  - Mercado Libre: root cause evidenced (evaluator missing key `brand_evidence_count_text` + address URL false capture + store sidebar facet adapter gap).
+  - Paris: root cause evidenced (Next.js App Router streaming RSC `self.__next_f` state vs null `__NEXT_DATA__` + DOM Mega-Menu noise pollution).
+  - Comparison ML ↔ Paris: strictly proven as `ML_PARIS_SAME_MECHANISM = NO` (zero shared architecture; shared symptom only).
+  - Falabella ENTRY: conclusively classified as `CHALLENGE_PAGE` (Cloudflare WAF HTTP 403 challenge interstitial in headless Playwright).
+  - Runner rc=1: conclusively classified as `WRAPPER_FAILURE` (NameError at `baseline_4mp.py:97`, MRI pipeline unaffected).
+  - Governed execution: code changes = 0, AutoClaw = 0, manual = 0, Ripley actions = 0.
 
 ## Current operating decision
 
-Do not continue expanding Ripley's large frontier merely because the mechanism works. Use the four-marketplace capability matrix to drive the smallest next blocker experiment.
+Do not continue expanding Ripley's large frontier merely because the mechanism works. Use the four-marketplace capability matrix and the specific root causes demonstrated in `MRI-CROSSMARKET-BLOCKERS-001` to drive the smallest next implementation fix under strict governance.
 
 ## Core principles
 
@@ -37,8 +40,8 @@ Do not continue expanding Ripley's large frontier merely because the mechanism w
 
 ## Repository scope note
 
-This GitHub repository currently stores the persistent project state available through the connected repository. Local source and local `outputs/` artifacts are not automatically mirrored here. Statements based only on the latest supplied local execution report are labeled as reported until those artifacts are committed or independently inspected through an available source.
+This GitHub repository stores the persistent project state and verified forensic artifacts.
 
 ## Next task
 
-Freeze Ripley expansion. Use the 4-marketplace baseline to choose one bounded blocker task, prioritizing cross-marketplace completion rather than deeper work on a single marketplace.
+Select the smallest actionable fix identified in MRI-CROSSMARKET-BLOCKERS-001 under strict governance: either (A) fix the runner wrapper / emission key, (B) implement ML store sidebar facet discovery, or (C) implement Paris Next.js App Router RSC facet parser. Do not attempt Falabella bypass without explicit governance authorization.

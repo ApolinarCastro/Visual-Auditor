@@ -1,0 +1,89 @@
+{
+  "task_id": "MRI-CROSSMARKET-BLOCKERS-001",
+  "marketplace": "Paris",
+  "blocker_reproduced": "YES",
+  "root_cause": "EVIDENCED",
+  "classification": "BRAND_DISCOVERY_MECHANISM_GAP",
+  "fix_required": "YES",
+  "hypotheses": [
+    {
+      "hypothesis_id": "PA1",
+      "marketplace": "Paris",
+      "observation": "Inspect HTML/SSR for brand categories and product lists.",
+      "test": "Search SSR DOM for anchors and titles matching brand.",
+      "result": "Page title is 'Nicopoly | Paris.cl'. 181 brand-related or brand-store links exist in the global navigation, but DOM is dominated by the site-wide Mega Menu.",
+      "evidence_reference": "outputs/mri_crossmarket_blockers_001/paris_raw_probe.json:PA1",
+      "new_evidence": "YES",
+      "status": "EVIDENCED"
+    },
+    {
+      "hypothesis_id": "PA2",
+      "marketplace": "Paris",
+      "observation": "Inspect structured data / JSON-LD for category taxonomy.",
+      "test": "Parse JSON-LD script blocks.",
+      "result": "Two JSON-LD blocks present (WebPage and ItemList), providing base canonical URLs but no category facet hierarchy.",
+      "evidence_reference": "outputs/mri_crossmarket_blockers_001/paris_raw_probe.json:PA2",
+      "new_evidence": "YES",
+      "status": "EVIDENCED"
+    },
+    {
+      "hypothesis_id": "PA3",
+      "marketplace": "Paris",
+      "observation": "Inspect hydration and embedded state in Paris page.",
+      "test": "Analyze Next.js App Router streaming chunks (self.__next_f.push) in HTML.",
+      "result": "Paris uses Next.js App Router streaming RSC instead of __NEXT_DATA__. In chunk 280, Paris embeds the official brand store route ('/mujer/marcas/nicopoly/'), and in chunk 285 embeds generalFacets ('tipoProductoAll') with product categories (Abrigos: 24, Blusas: 61, etc.).",
+      "evidence_reference": "outputs/mri_crossmarket_blockers_001/inspect_paris_ssr.py:output",
+      "new_evidence": "YES",
+      "status": "EVIDENCED"
+    },
+    {
+      "hypothesis_id": "PA4",
+      "marketplace": "Paris",
+      "observation": "Inspect links and navigation anchors in DOM.",
+      "test": "Evaluate all 2083 anchors on DOM.",
+      "result": "DOM contains over 2000 links due to the uncollapsed site-wide Mega Menu in <details> tags. category_discoverer.py picked '/outlet/outlet-electro/outlet-televisores/' from the mega-menu and appended '?q=nicopoly', mistakenly attempting it as a Nicopoly category.",
+      "evidence_reference": "outputs/mri_4marketplaces_baseline_001/events_paris.jsonl:line_4",
+      "new_evidence": "YES",
+      "status": "EVIDENCED"
+    },
+    {
+      "hypothesis_id": "PA5",
+      "marketplace": "Paris",
+      "observation": "Inspect filters and facets on Paris search results.",
+      "test": "Check filter buttons and facet containers.",
+      "result": "Filter buttons are present on PLP, but ParisScraper does not implement apply_brand_facet, discover_navigation_source, or discover_navigation.",
+      "evidence_reference": "outputs/mri_crossmarket_blockers_001/paris_raw_probe.json:PA5",
+      "new_evidence": "YES",
+      "status": "EVIDENCED"
+    },
+    {
+      "hypothesis_id": "PA6",
+      "marketplace": "Paris",
+      "observation": "Inspect network requests emitted by search page.",
+      "test": "Capture fetch/XHR network activity.",
+      "result": "93 requests captured including internal Next.js RSC fetches (?_rsc=...), but no standalone category tree JSON endpoint like Ripley's.",
+      "evidence_reference": "outputs/mri_crossmarket_blockers_001/paris_raw_probe.json:PA6",
+      "new_evidence": "YES",
+      "status": "EVIDENCED"
+    },
+    {
+      "hypothesis_id": "PA7",
+      "marketplace": "Paris",
+      "observation": "Inspect URL transition to brand catalog or category facet.",
+      "test": "Navigate to official brand catalog /mujer/marcas/nicopoly/ or faceted search URL.",
+      "result": "The canonical brand hub URL in Paris is /search?q=nicopoly (539 products) or /mujer/marcas/nicopoly/. Subcategories require parsing tipoProductoAll facets from RSC or facet query parameters (?tipoProductoAll=...).",
+      "evidence_reference": "outputs/mri_crossmarket_blockers_001/paris_raw_probe.json:PA7",
+      "new_evidence": "YES",
+      "status": "EVIDENCED"
+    }
+  ],
+  "root_cause_analysis": {
+    "observed": "MRI-4MARKETPLACES-BASELINE-001 reported Paris BRAND_DISCOVERY = FAIL after scraping 539 products on Brand Hub (search?q=nicopoly) and then attempting category 'Outlet Televisores' (5 TVs, 0 Nicopoly products).",
+    "hypothesis": "BRAND_DISCOVERY failed because: (1) baseline_4mp.py checked for 'brand_evidence_count_text' which was never emitted; (2) category_discoverer.py looks for __NEXT_DATA__ which does not exist on Paris (Next.js App Router RSC streaming), falling back to extracting anchors from the global site-wide Mega-Menu, resulting in spurious cross-departmental noise ('Outlet Televisores'); (3) ParisScraper lacks discover_navigation and apply_brand_facet adapters.",
+    "test": "Executed PA1-PA7 forensics, parsed self.__next_f streaming chunks, and inspected DOM anchor distribution and baseline event logs.",
+    "result": "Confirmed. Paris uses Next.js App Router RSC streaming where genuine category facets ('tipoProductoAll') and official brand URL ('/mujer/marcas/nicopoly/') reside in self.__next_f, while DOM anchor scanning erroneously ingested the global Mega-Menu.",
+    "evidence": "outputs/mri_4marketplaces_baseline_001/events_paris.jsonl, outputs/mri_crossmarket_blockers_001/paris_raw_probe.json, outputs/mri_crossmarket_blockers_001/inspect_paris_ssr.py",
+    "confidence": "HIGH (1.0)",
+    "next_smallest_fix": "Add Next.js App Router streaming RSC parser to category_discoverer.py to extract 'tipoProductoAll' facets and brand store URLs, isolate/ignore the global Mega-Menu (<details class='group/details'>), and fix the event emission key in autonomous_pipeline.py."
+  }
+}

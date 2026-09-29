@@ -7,27 +7,31 @@ Visual Auditor / MRI
 IN_PROGRESS
 
 ## Last completed task
-MRI-4MARKETPLACES-BASELINE-001
+MRI-CROSSMARKET-BLOCKERS-001
 
 ## Last reported verdict
-MRI_4MP_BASELINE_PASS
+MRI_CROSSMARKET_BLOCKERS_PASS
 
 ## Evidence status
-This repository state records the execution report supplied on 2026-09-29. The local evidence artifacts under `outputs/` were not uploaded to GitHub by this update, so individual local counts remain reported evidence until mirrored or independently inspected here.
+Physical forensic evidence persisted and certified in `outputs/mri_crossmarket_blockers_001/` and `evidence/mri_crossmarket_blockers_001/`. All root causes demonstrated with zero synthetic contribution and zero code changes to production.
 
 ## Demonstrated / reported milestones
 - MRI-AUTONOMY-006: Ripley facet application recertified MRI-only after fixing `page_signature`; AutoClaw=0, manual=0.
 - MRI-AUTONOMY-007: controlled propagation to 3 direct children; 3/3 terminal CERTIFIED; code changes=0; AutoClaw=0; manual=0.
-- MRI-4MARKETPLACES-BASELINE-001: one bounded diagnostic pass across Mercado Libre, Paris, Falabella and Ripley; code changes=0; AutoClaw=0; manual=0.
-- Cross-marketplace baseline reports ML and Paris core pipeline operational but brand-routing unresolved.
-- Falabella reports ENTRY blocked/failing in headless acquisition.
-- Ripley remains the positive control; no further frontier expansion is authorized before cross-marketplace blockers are handled.
+- MRI-4MARKETPLACES-BASELINE-001: bounded diagnostic pass across Mercado Libre, Paris, Falabella and Ripley; code changes=0; AutoClaw=0; manual=0.
+- MRI-CROSSMARKET-BLOCKERS-001: forensic root cause resolution completed across Mercado Libre, Paris, Falabella, and Runner:
+  - Mercado Libre: root cause evidenced (evaluator missing key `brand_evidence_count_text` + address URL false capture + store sidebar facet adapter gap).
+  - Paris: root cause evidenced (Next.js App Router streaming RSC `self.__next_f` state vs null `__NEXT_DATA__` + DOM Mega-Menu noise pollution).
+  - ML vs Paris comparison: strictly evaluated as `ML_PARIS_SAME_MECHANISM = NO` (zero shared architectural components; shared symptom only).
+  - Falabella ENTRY: conclusively classified as `CHALLENGE_PAGE` (Cloudflare WAF HTTP 403 challenge interstitial in headless Playwright).
+  - Runner rc=1: conclusively classified as `WRAPPER_FAILURE` (NameError at `baseline_4mp.py:97`, MRI pipeline unaffected).
+  - Execution bounds respected: code_changes=0, autoclaw_actions=0, manual_actions=0, ripley_actions=0.
 
 ## Current first blockers by marketplace
-- Mercado Libre: BRAND_DISCOVERY / route from discovered surfaces to brand-relevant categories/facets.
-- Paris: BRAND_DISCOVERY / route from discovered surfaces to brand-relevant categories/facets.
-- Falabella: ENTRY / headless acquisition access.
-- Ripley: no new capability blocker established by the baseline; global coverage remains incomplete.
+- Mercado Libre: BRAND_DISCOVERY adapter gap (needs official store sidebar facet extractor in `category_discoverer.py` and emission key fix).
+- Paris: BRAND_DISCOVERY adapter gap (needs Next.js App Router RSC streaming facet parser and Mega-Menu isolation).
+- Falabella: ENTRY challenge page (Cloudflare WAF in headless Playwright).
+- Ripley: Frozen (positive control intact).
 
 ## Frozen capabilities
 Do not reopen without demonstrated regression:
@@ -41,11 +45,11 @@ Do not reopen without demonstrated regression:
 - Experience decision policy
 
 ## Next exact action
-Do not continue Ripley frontier. Select the smallest cross-marketplace blocker experiment from the 4-marketplace matrix, with a bounded stop condition and no architecture expansion.
+Select the smallest actionable fix identified in MRI-CROSSMARKET-BLOCKERS-001 under strict governance: either (A) fix the runner wrapper / emission key, (B) implement ML store sidebar facet discovery, or (C) implement Paris Next.js App Router RSC facet parser. Do not attempt Falabella bypass without explicit governance authorization.
 
 ## Prohibitions
 - No blind traversal of Ripley's remaining frontier.
 - AutoClaw cannot contribute actions to certified MRI runs.
 - No hardcoded brand/category/count results in production logic.
 - No new browser/framework/service without a demonstrated blocker and resource gate.
-- Do not convert first-page absence of brand into NOT_FOUND.
+- Do not create a common abstraction for ML and Paris brand discovery.

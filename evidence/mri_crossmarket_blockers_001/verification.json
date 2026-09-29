@@ -1,0 +1,89 @@
+{
+  "task_id": "MRI-CROSSMARKET-BLOCKERS-001",
+  "generated_at": "2026-09-29T20:08:30+00:00",
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "ml_blocker_reproduced",
+      "expected": "YES",
+      "actual": "YES",
+      "pass": true
+    },
+    {
+      "name": "paris_blocker_reproduced",
+      "expected": "YES",
+      "actual": "YES",
+      "pass": true
+    },
+    {
+      "name": "falabella_entry_blocker_reproduced",
+      "expected": "YES",
+      "actual": "YES",
+      "pass": true
+    },
+    {
+      "name": "ml_root_cause",
+      "expected": "EVIDENCED",
+      "actual": "EVIDENCED",
+      "pass": true
+    },
+    {
+      "name": "paris_root_cause",
+      "expected": "EVIDENCED",
+      "actual": "EVIDENCED",
+      "pass": true
+    },
+    {
+      "name": "falabella_root_cause",
+      "expected": "EVIDENCED",
+      "actual": "EVIDENCED",
+      "pass": true
+    },
+    {
+      "name": "runner_rc1_classified",
+      "expected": "YES",
+      "actual": "YES",
+      "pass": true
+    },
+    {
+      "name": "ml_paris_comparison",
+      "expected": "NO",
+      "actual": "NO",
+      "pass": true
+    },
+    {
+      "name": "code_changes",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "name": "autoclaw_actions",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "name": "manual_actions",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    },
+    {
+      "name": "ripley_actions",
+      "expected": 0,
+      "actual": 0,
+      "pass": true
+    }
+  ],
+  "audit_metrics": {
+    "unsupported_root_causes": 0,
+    "false_pass": 0,
+    "invented_mechanisms": 0,
+    "hardcoded_result_contribution": 0,
+    "missing_evidence": 0,
+    "unbounded_retries": 0,
+    "reconciled": "YES"
+  },
+  "verdict": "MRI_CROSSMARKET_BLOCKERS_PASS"
+}

@@ -29,3 +29,12 @@ After MRI-AUTONOMY-007, further Ripley expansion is frozen. Work must be driven 
 
 ## D-010 — Baseline is diagnostic
 MRI-4MARKETPLACES-BASELINE-001 is a radiography, not proof that all marketplaces work. A baseline PASS means the matrix was completed/reconciled under the stated run, not that every capability is PASS.
+
+## D-011 — Mercado Libre and Paris brand discovery separation
+MRI-CROSSMARKET-BLOCKERS-001 demonstrated that Mercado Libre and Paris do not share source type, discovery mechanism, application mechanism, or verification mechanism. ML operates via official store SSR and DL facet filters; Paris operates via Next.js App Router streaming RSC (`self.__next_f`) and search PLP query parameters. They share only the symptom (BRAND_DISCOVERY FAIL in the baseline runner). It is prohibited to create a unified common abstraction across both marketplaces.
+
+## D-012 — Falabella ENTRY classified as Cloudflare CHALLENGE_PAGE
+Forensic testing FA1-FA10 proved that Falabella ENTRY in headless Playwright is halted by Cloudflare WAF returning HTTP 403 with title 'Cloudflare' and body 'Lo siento, su acceso ha sido bloqueado'. No bypass or anti-bot tooling may be added without governance review.
+
+## D-013 — Baseline subprocess rc=1 is WRAPPER_FAILURE
+Forensic reproduction proved that the baseline subprocess rc=1 was caused by a wrapper post-processing bug in baseline_4mp.py:97 (`NameError: name 'mp' is not defined`), occurring after the MRI pipeline had successfully concluded and persisted events. The core pipeline is unaffected.

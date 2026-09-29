@@ -1,0 +1,89 @@
+{
+  "task_id": "MRI-CROSSMARKET-BLOCKERS-001",
+  "marketplace": "Mercado Libre",
+  "blocker_reproduced": "YES",
+  "root_cause": "EVIDENCED",
+  "classification": "BRAND_DISCOVERY_MECHANISM_GAP",
+  "fix_required": "YES",
+  "hypotheses": [
+    {
+      "hypothesis_id": "ML1",
+      "marketplace": "Mercado Libre",
+      "observation": "Inspect available HTML/SSR for brand and category routes.",
+      "test": "Parse SSR soup for links containing brand/category keywords under store scope.",
+      "result": "SSR contains header links and buttons, but unauthenticated/unwarmed fetches redirect to account-verification. When session cookies are active, page renders official store with 544 brand products, but subcategory links use store-scoped facet filters (.ui-search-filter-dl dt).",
+      "evidence_reference": "outputs/mri_crossmarket_blockers_001/ml_raw_probe.json:ML1",
+      "new_evidence": "YES",
+      "status": "EVIDENCED"
+    },
+    {
+      "hypothesis_id": "ML2",
+      "marketplace": "Mercado Libre",
+      "observation": "Inspect structured data / JSON-LD for category or brand hierarchies.",
+      "test": "Extract script[type='application/ld+json'] blocks from page DOM.",
+      "result": "JSON-LD contains ItemList and WebSite metadata, but does not provide brand-to-category transition routes.",
+      "evidence_reference": "outputs/mri_crossmarket_blockers_001/ml_raw_probe.json:ML2",
+      "new_evidence": "YES",
+      "status": "EVIDENCED"
+    },
+    {
+      "hypothesis_id": "ML3",
+      "marketplace": "Mercado Libre",
+      "observation": "Inspect client hydration and embedded window state.",
+      "test": "Evaluate window objects (__PRELOADED_STATE__, ML, etc.).",
+      "result": "Mercado Libre exposes window.__wminit and __LOADABLE_LOADED_CHUNKS__, but internal catalog state is server-rendered into DOM rather than client JSON store.",
+      "evidence_reference": "outputs/mri_crossmarket_blockers_001/ml_raw_probe.json:ML3",
+      "new_evidence": "YES",
+      "status": "EVIDENCED"
+    },
+    {
+      "hypothesis_id": "ML4",
+      "marketplace": "Mercado Libre",
+      "observation": "Inspect DOM links and navigation anchors.",
+      "test": "Query all a[href] on the store surface.",
+      "result": "category_discoverer.py heuristic matched 'https://www.mercadolibre.cl/addresses/v3/navigation/hub?go=...' because the brand slug appeared in the go= query param, falsely categorizing it as category 'Hub'. Official store subcategory links were skipped due to ML_FACET_BLOCKLIST or lack of matching patterns.",
+      "evidence_reference": "outputs/mri_4marketplaces_baseline_001/events_mercado_libre.jsonl:line_3",
+      "new_evidence": "YES",
+      "status": "EVIDENCED"
+    },
+    {
+      "hypothesis_id": "ML5",
+      "marketplace": "Mercado Libre",
+      "observation": "Inspect sidebar filters and facets on store surface.",
+      "test": "Evaluate .ui-search-filter-dl and .ui-search-filter-name elements.",
+      "result": "In Mercado Libre's official store, 100% of products are already from the brand ('Nicopoly'). Subcategories (e.g. Ropa y Accesorios, Vestidos) are presented as facet filter links. ML scraper does not implement discover_navigation_source or discover_navigation, yielding 0 navigation candidates.",
+      "evidence_reference": "app/scrapers/mercadolibre_scraper.py:methods",
+      "new_evidence": "YES",
+      "status": "EVIDENCED"
+    },
+    {
+      "hypothesis_id": "ML6",
+      "marketplace": "Mercado Libre",
+      "observation": "Inspect network requests emitted during page load.",
+      "test": "Capture all fetch/XHR requests on MercadoLibreScraper.",
+      "result": "81 requests captured (melidata/tracks, cdn ping, and mercadoclics ads). ML does not fetch category trees via client API calls.",
+      "evidence_reference": "outputs/mri_crossmarket_blockers_001/ml_raw_probe.json:ML6",
+      "new_evidence": "YES",
+      "status": "EVIDENCED"
+    },
+    {
+      "hypothesis_id": "ML7",
+      "marketplace": "Mercado Libre",
+      "observation": "Inspect URL transitions produced by interaction or query navigation.",
+      "test": "Verify whether navigation to store category URLs produces filtered results.",
+      "result": "Navigating to store subcategory URLs (e.g. /ropa-accesorios/nicopoly_Tienda_nicopoly) succeeds under authenticated session, but the pipeline lacks a facet applicator / navigation adapter for ML.",
+      "evidence_reference": "outputs/mri_crossmarket_blockers_001/ml_raw_probe.json:ML7",
+      "new_evidence": "YES",
+      "status": "EVIDENCED"
+    }
+  ],
+  "root_cause_analysis": {
+    "observed": "MRI-4MARKETPLACES-BASELINE-001 reported Mercado Libre BRAND_DISCOVERY = FAIL despite extracting 544 Nicopoly products in the Brand Hub. The only non-hub category attempted was 'Hub' (addresses/v3/navigation/hub) which failed with EXTRACTOR_FAILURE.",
+    "hypothesis": "BRAND_DISCOVERY failed due to two causal factors: (1) baseline_4mp.py checked for 'brand_evidence_count_text' in category_done events, which autonomous_pipeline.py never emits; (2) category_discoverer.py falsely captured a shipping address URL as category 'Hub' and failed to discover real subcategory facets because MercadoLibreScraper lacks discover_navigation and discover_navigation_source implementations.",
+    "test": "Executed ML1-ML7 forensics on Mercado Libre official store and inspected baseline events and scraper capabilities.",
+    "result": "Confirmed. Mercado Libre's official store already has 100% brand products, but the pipeline has no navigation source or facet discoverer adapter for ML, and the baseline evaluator checked a non-existent event key.",
+    "evidence": "outputs/mri_4marketplaces_baseline_001/events_mercado_libre.jsonl, outputs/mri_crossmarket_blockers_001/ml_raw_probe.json, app/scrapers/mercadolibre_scraper.py",
+    "confidence": "HIGH (1.0)",
+    "next_smallest_fix": "Add 'brand_evidence_count_text' (or count products with brand match) to category_done events in autonomous_pipeline.py, block 'addresses/v3/navigation' in category_discoverer.py, and implement an ML store category facet extractor in discover_categories_from_page."
+  }
+}
