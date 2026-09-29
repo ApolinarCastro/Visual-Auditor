@@ -2,33 +2,43 @@
 
 Evidence-first marketplace observation and intelligence project.
 
-## Current verified state
+## Current state — 2026-09-29
 
-Repository bootstrap created from the latest persisted project evidence available in ChatGPT on 2026-09-28.
+Current focus: MRI autonomous marketplace intelligence across four marketplaces:
+- Mercado Libre
+- Paris
+- Falabella
+- Ripley
 
-Current development focus: MRI autonomous marketplace intelligence.
+### Latest milestones
 
-### Latest verified capability milestones
+- MRI-AUTONOMY-006: Ripley facet application reported PASS in a fresh MRI-only run after the `page_signature` fix.
+- MRI-AUTONOMY-007: controlled propagation reported PASS across 3 direct Ripley children, with no code changes and no AutoClaw/manual actions.
+- MRI-4MARKETPLACES-BASELINE-001: bounded cross-marketplace baseline completed. Reported first blockers:
+  - Mercado Libre: BRAND_DISCOVERY / brand routing.
+  - Paris: BRAND_DISCOVERY / brand routing.
+  - Falabella: ENTRY / headless acquisition.
+  - Ripley: no new core capability blocker; coverage remains incomplete.
 
-- MRI-AUTONOMY-001: autonomous Ripley Brand Hub pagination, checkpoint/resume, runtime brand normalization.
-- MRI-AUTONOMY-002: navigation/category/facet discovery loop with Experience-driven strategy selection; status PARTIAL because commercial navigation tree was not yet exposed to the headless scraper.
-- MRI-AUTONOMY-003: navigation data source found and reproduced from Ripley network JSON `menucomponent/api/menu?displayable_only=true`; integrated into the canonical MRI discovery path with no AutoClaw contribution to the certified run. Status: `MRI_NAVIGATION_SOURCE_PASS`.
-- Remaining blocker: facet/brand-filter source discovery and controlled frontier traversal.
+## Current operating decision
+
+Do not continue expanding Ripley's large frontier merely because the mechanism works. Use the four-marketplace capability matrix to drive the smallest next blocker experiment.
 
 ## Core principles
 
-- Input should be `marketplace + brand`, not hardcoded brand/category answers.
+- Input is `marketplace + brand`, not hardcoded answers.
 - `SOURCE_BLOCKED != NOT_FOUND`.
-- Deterministic calculation and evidence verification; AI only for bounded investigation/strategy selection.
-- AutoClaw is diagnostic/teaching support only. Certified MRI runs must execute without AutoClaw navigation/actions.
+- `PUBLICADO != VISIBLE`.
+- Deterministic evidence/verification governs truth; AI is bounded investigation/strategy support.
+- AutoClaw is diagnostic/teaching support only.
 - No synthetic truth, hardcoded result counts, Cartesian category assignment, or self-certified metrics.
-- Independent recount must be able to reproduce reported metrics from persisted artifacts.
+- Independent verification must reconcile reported results from persisted evidence.
 - VA/Legacy remains protected unless explicitly authorized.
 
-## Repository note
+## Repository scope note
 
-The GitHub repository was empty when this bootstrap was created. The full local project source is not available through this chat connector. This repository therefore contains only the persisted evidence/state that can be verified here. Do not treat this bootstrap as a full mirror of the local working tree.
+This GitHub repository currently stores the persistent project state available through the connected repository. Local source and local `outputs/` artifacts are not automatically mirrored here. Statements based only on the latest supplied local execution report are labeled as reported until those artifacts are committed or independently inspected through an available source.
 
 ## Next task
 
-`MRI-AUTONOMY-004` — facet source + brand routing + intelligent frontier pruning, after recovering current local project state and preserving the frozen capabilities above.
+Freeze Ripley expansion. Use the 4-marketplace baseline to choose one bounded blocker task, prioritizing cross-marketplace completion rather than deeper work on a single marketplace.
