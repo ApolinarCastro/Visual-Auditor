@@ -1,0 +1,379 @@
+{
+  "total_tasks_loaded": 44,
+  "loaded_by_marketplace": {
+    "Falabella": {
+      "count": 9,
+      "categories": [
+        "Pantalones",
+        "Abrigos y Chaquetas",
+        "Sweaters y chalecos",
+        "Blusas Mujer",
+        "Parkas Mujer",
+        "Poleras mujer",
+        "Vestidos y enteritos",
+        "Faldas",
+        "Shorts"
+      ]
+    },
+    "Mercado Libre": {
+      "count": 12,
+      "categories": [
+        "Vestidos",
+        "Calzas",
+        "Blusas",
+        "Poleras",
+        "Faldas",
+        "Abrigos",
+        "Bermudas y Shorts",
+        "Accesorios de moda",
+        "Body",
+        "Pantalones",
+        "Camisas",
+        "Kimonos"
+      ]
+    },
+    "Paris": {
+      "count": 8,
+      "categories": [
+        "Sweaters, Chalecos y Tejidos",
+        "Jeans y Pantalones",
+        "Blazers, Chaquetas y Abrigos",
+        "Poleras y Blusas",
+        "Vestidos y Faldas",
+        "Shorts",
+        "Pañuelos y Bufandas",
+        "Fiesta"
+      ]
+    },
+    "Ripley": {
+      "count": 15,
+      "categories": [
+        "Jeans",
+        "Pantalones",
+        "Shorts",
+        "Chaquetas y blazers",
+        "Abrigos",
+        "Blusas y poleras",
+        "Kimonos",
+        "Parkas",
+        "Sweaters y chalecos",
+        "Enteritos",
+        "Faldas",
+        "Vestidos",
+        "Calzas",
+        "Accesorios y complemento",
+        "Accesorios y complementos"
+      ]
+    }
+  },
+  "tasks": [
+    {
+      "marketplace": "Falabella",
+      "category_marketplace": "Pantalones",
+      "category_nicopoly": "Pantalones",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Falabella",
+      "category_marketplace": "Abrigos y Chaquetas",
+      "category_nicopoly": "Abrigos y Chaquetas",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Falabella",
+      "category_marketplace": "Sweaters y chalecos",
+      "category_nicopoly": "Sweaters y chalecos",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Falabella",
+      "category_marketplace": "Blusas Mujer",
+      "category_nicopoly": "Blusas Mujer",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Falabella",
+      "category_marketplace": "Parkas Mujer",
+      "category_nicopoly": "Parkas Mujer",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Falabella",
+      "category_marketplace": "Poleras mujer",
+      "category_nicopoly": "Poleras mujer",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Falabella",
+      "category_marketplace": "Vestidos y enteritos",
+      "category_nicopoly": "Vestidos y enteritos",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Falabella",
+      "category_marketplace": "Faldas",
+      "category_nicopoly": "Faldas",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Falabella",
+      "category_marketplace": "Shorts",
+      "category_nicopoly": "Shorts",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Mercado Libre",
+      "category_marketplace": "Vestidos",
+      "category_nicopoly": "Vestidos",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Mercado Libre",
+      "category_marketplace": "Calzas",
+      "category_nicopoly": "Calzas",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Mercado Libre",
+      "category_marketplace": "Blusas",
+      "category_nicopoly": "Blusas",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Mercado Libre",
+      "category_marketplace": "Poleras",
+      "category_nicopoly": "Poleras",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Mercado Libre",
+      "category_marketplace": "Faldas",
+      "category_nicopoly": "Faldas",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Mercado Libre",
+      "category_marketplace": "Abrigos",
+      "category_nicopoly": "Abrigos",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Mercado Libre",
+      "category_marketplace": "Bermudas y Shorts",
+      "category_nicopoly": "Bermudas y Shorts",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Mercado Libre",
+      "category_marketplace": "Accesorios de moda",
+      "category_nicopoly": "Accesorios de moda",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Mercado Libre",
+      "category_marketplace": "Body",
+      "category_nicopoly": "Body",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Mercado Libre",
+      "category_marketplace": "Pantalones",
+      "category_nicopoly": "Pantalones",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Mercado Libre",
+      "category_marketplace": "Camisas",
+      "category_nicopoly": "Camisas",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Mercado Libre",
+      "category_marketplace": "Kimonos",
+      "category_nicopoly": "Kimonos",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Paris",
+      "category_marketplace": "Sweaters, Chalecos y Tejidos",
+      "category_nicopoly": "Sweaters, Chalecos y Tejidos",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Paris",
+      "category_marketplace": "Jeans y Pantalones",
+      "category_nicopoly": "Jeans y Pantalones",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Paris",
+      "category_marketplace": "Blazers, Chaquetas y Abrigos",
+      "category_nicopoly": "Blazers, Chaquetas y Abrigos",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Paris",
+      "category_marketplace": "Poleras y Blusas",
+      "category_nicopoly": "Poleras y Blusas",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Paris",
+      "category_marketplace": "Vestidos y Faldas",
+      "category_nicopoly": "Vestidos y Faldas",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Paris",
+      "category_marketplace": "Shorts",
+      "category_nicopoly": "Shorts",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Paris",
+      "category_marketplace": "Pañuelos y Bufandas",
+      "category_nicopoly": "Pañuelos y Bufandas",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Paris",
+      "category_marketplace": "Fiesta",
+      "category_nicopoly": "Fiesta",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Ripley",
+      "category_marketplace": "Jeans",
+      "category_nicopoly": "Jeans",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Ripley",
+      "category_marketplace": "Pantalones",
+      "category_nicopoly": "Pantalones",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Ripley",
+      "category_marketplace": "Shorts",
+      "category_nicopoly": "Shorts",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Ripley",
+      "category_marketplace": "Chaquetas y blazers",
+      "category_nicopoly": "Chaquetas y blazers",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Ripley",
+      "category_marketplace": "Abrigos",
+      "category_nicopoly": "Abrigos",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Ripley",
+      "category_marketplace": "Blusas y poleras",
+      "category_nicopoly": "Blusas y poleras",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Ripley",
+      "category_marketplace": "Kimonos",
+      "category_nicopoly": "Kimonos",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Ripley",
+      "category_marketplace": "Parkas",
+      "category_nicopoly": "Parkas",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Ripley",
+      "category_marketplace": "Sweaters y chalecos",
+      "category_nicopoly": "Sweaters y chalecos",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Ripley",
+      "category_marketplace": "Enteritos",
+      "category_nicopoly": "Enteritos",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Ripley",
+      "category_marketplace": "Faldas",
+      "category_nicopoly": "Faldas",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Ripley",
+      "category_marketplace": "Vestidos",
+      "category_nicopoly": "Vestidos",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Ripley",
+      "category_marketplace": "Calzas",
+      "category_nicopoly": "Calzas",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Ripley",
+      "category_marketplace": "Accesorios y complemento",
+      "category_nicopoly": "Accesorios y complemento",
+      "url_base": null,
+      "url_nicopoly": null
+    },
+    {
+      "marketplace": "Ripley",
+      "category_marketplace": "Accesorios y complementos",
+      "category_nicopoly": "Accesorios y complementos",
+      "url_base": null,
+      "url_nicopoly": null
+    }
+  ]
+}

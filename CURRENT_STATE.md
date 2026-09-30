@@ -4,25 +4,23 @@
 Visual Auditor / MRI
 
 ## Status
-BLOCKED_ON_RIPLEY_RATE_LIMIT
+READY_FOR_RIPLEY_MRI
 
 ## Last completed task
-MRI-4MP-E2E-CERT-001
+VA-SVMP-CATEGORY-SYNC-001
 
 ## Last reported verdict
-MRI_4MP_E2E_CERT_FAIL
+VA_SVMP_CATEGORY_SYNC_PASS
 
 ## Evidence status
-Physical certified evidence persisted in `outputs/mri_4mp_e2e_cert_001/` and `evidence/mri_4mp_e2e_cert_001/`. The first cross-marketplace end-to-end certification demonstrated:
-- Mercado Libre: E2E_MARKETPLACE_PASS (524 products observed, 524 brand confirmed, 524 unique products, 3 routes verified: Brand Hub, New In, Conjuntos; duplicate work=0).
-- Paris: E2E_MARKETPLACE_PASS (539 products observed, 539 brand confirmed, 539 unique products, 3 routes verified: Brand Hub, Abrigos, Blusas; duplicate work=0).
-- Falabella: E2E_MARKETPLACE_PASS (249 products observed, 249 brand confirmed, 249 unique products, 4 routes verified: Brand Hub, Mujer, Pantalones, Blazers; duplicate work=0).
-- Ripley: E2E_MARKETPLACE_FAIL (encountered HTTP 429 on search attempt; unconstrained category navigation to `zapatos-y-zapatillas` yielded 0 brand products and 0 membership).
-- Global: MRI_4MP_E2E_CERT_FAIL (3/4 PASS, 1/4 FAIL).
-- Production code: 0 files changed, 0 new files, 0 new dependencies.
-- Independent recount: reconciled = 4/4, false_pass = 0, unsupported_fail = 0, synthetic = 0, hardcoded = 0, autoclaw = 0, manual = 0.
-- First global blocker: `FIRST_GLOBAL_BLOCKER = RIPLEY_RATE_LIMIT_AND_UNFILTERED_CATEGORY_ZERO_BRAND`.
-- Next smallest task: `TASK_ID: MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001`.
+Physical certified evidence persisted in `outputs/va_svmp_category_sync_001/` and `evidence/va_svmp_category_sync_001/`:
+- Visual Auditor Legacy category synchronization certified PASS across all 4 marketplaces.
+- All 44 valid categories in `SVMP.xlsx` (Falabella: 9, Mercado Libre: 12, Paris: 8, Ripley: 15) successfully loaded with visibility and census URLs extracted dynamically from cell hyperlinks.
+- All newly introduced categories (Falabella: Poleras mujer, Vestidos y enteritos, Faldas, Shorts; Paris: Fiesta; Ripley: Calzas, Accesorios y complementos) reach the AuditRunner scraper dispatch point.
+- Exact 2 production files modified (`app/loaders/excel_loader.py`, `app/auditor/audit_runner.py`), 0 new production files, 0 new dependencies, AutoClaw=0, manual=0, regression=PASS.
+- Independent reconciliation: `reconciled = True`, `difference = 0` across all 4 marketplaces.
+
+MRI cross-marketplace E2E certification evidence remains intact in `outputs/mri_4mp_e2e_cert_001/` and `evidence/mri_4mp_e2e_cert_001/` (ML: PASS, Paris: PASS, Falabella: PASS, Ripley: BLOCKED on rate limiting).
 
 ## Demonstrated / reported milestones
 - MRI-AUTONOMY-006: Ripley facet application recertified MRI-only after fixing `page_signature`; AutoClaw=0, manual=0.
@@ -34,6 +32,7 @@ Physical certified evidence persisted in `outputs/mri_4mp_e2e_cert_001/` and `ev
 - MRI-FALABELLA-ENTRY-001: Falabella ENTRY certified PASS (HTTP SSR acquisition fallback F1/F2/F3, 100 pods, 48 products in structured state, independent reconciliation PASS).
 - MRI-FALABELLA-BRAND-ROUTING-001: Falabella autonomous brand routing certified PASS (22 routes discovered, 2 routes verified, 157 products observed, 100% brand evidence).
 - MRI-4MP-E2E-CERT-001: First transversal E2E certification across 4 marketplaces. 3/4 marketplaces achieved E2E_MARKETPLACE_PASS (ML: 524 products; Paris: 539 products; Falabella: 249 products). Ripley failed on HTTP 429 rate-limiting and zero-brand category navigation. Global verdict: MRI_4MP_E2E_CERT_FAIL.
+- VA-SVMP-CATEGORY-SYNC-001: VA Legacy category synchronization certified PASS. All 44 categories in `SVMP.xlsx` loaded and dispatched with cell hyperlinks via `openpyxl`. Difference=0. 2 files modified.
 
 ## Current first blockers by marketplace
 - Mercado Libre: E2E Certified PASS (Brand routing, acquisition, products, brand evidence, membership, resume).

@@ -74,3 +74,13 @@ During MRI-4MP-E2E-CERT-001 transversal certification, Ripley execution failed t
 2. Root cause 2 (Unconstrained Category Navigation): Pipeline fallback / category verification navigated to `https://simple.ripley.cl/zapatos-y-zapatillas`, which is an unconstrained top-level category containing 48 generic store products and 0 Nicopoly products (`products_observed=0`, `direct_brand_evidence=0`, `membership_evidence=0`).
 3. Resolution required: Implement backoff / jitter handling for Ripley HTTP 429 responses, and constrain category navigation to verified brand-filtered URLs or preserve brand filter facets during category traversal.
 Status: OPEN (`FIRST_GLOBAL_BLOCKER = RIPLEY_RATE_LIMIT_AND_UNFILTERED_CATEGORY_ZERO_BRAND`). Next task: `MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001`.
+
+## F-014 — VA Legacy category loss due to unextracted cell hyperlinks and hardcoded rules
+In VA Legacy, new categories added to `SVMP.xlsx` (such as Falabella: Poleras mujer, Vestidos y enteritos, Faldas, Shorts; Paris: Fiesta; Ripley: Calzas, Accesorios y complementos) were lost before scraper dispatch:
+1. Root cause: `ExcelLoader` used `pandas.read_excel` which ignored cell hyperlinks, producing `AuditTask` objects with `url_base = None` and `url_nicopoly = None`. `AuditRunner` then attempted lookup strictly in `rules["category_urls"]` (from `Logica_Operacional/`), skipping any category without an explicit operational text file entry.
+2. Resolution in VA-SVMP-CATEGORY-SYNC-001:
+   - `ExcelLoader`: Read workbook via `openpyxl`, extracting `category_marketplace`, `category_nicopoly`, and dynamic target URLs directly from cell hyperlinks (`cell.hyperlink.target`).
+   - `AuditRunner`: Prioritize `task.url_base` and `task.url_nicopoly` with fallback to `rules["category_urls"]`, ensuring all 44 categories are dispatched to their respective scrapers.
+3. Verification: Red tests reproduced failure; green tests confirmed 15/15 passing; reconciliation demonstrated `difference = 0` across all 4 marketplaces.
+Status: RESOLVED_AND_CERTIFIED (PASS).
+

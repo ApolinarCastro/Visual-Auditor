@@ -1,0 +1,23 @@
+{
+  "task_id": "VA-SVMP-CATEGORY-SYNC-001",
+  "subsystem": "VA_LEGACY",
+  "limits": {
+    "max_production_files_changed": 2,
+    "max_new_production_files": 0,
+    "max_new_dependencies": 0,
+    "max_fix_cycles": 1
+  },
+  "production_files_changed": [
+    "app/loaders/excel_loader.py",
+    "app/auditor/audit_runner.py"
+  ],
+  "production_files_changed_count": 2,
+  "new_production_files": [],
+  "new_dependencies": [],
+  "fix_cycles_used": 1,
+  "changes_summary": {
+    "app/loaders/excel_loader.py": "Replaced pandas.read_excel with openpyxl to extract cell hyperlinks directly from SVMP.xlsx cells, populating AuditTask.url_base (marketplace visibility URL) and AuditTask.url_nicopoly (Nicopoly census URL). Deduplicates preserving valid URLs and canonical casing.",
+    "app/auditor/audit_runner.py": "Updated category URL resolution to prioritize task.url_base and task.url_nicopoly extracted from Excel before falling back to static rules in Logica_Operacional/, ensuring all newly added SVMP categories reach scraper dispatch."
+  },
+  "status": "PASS"
+}

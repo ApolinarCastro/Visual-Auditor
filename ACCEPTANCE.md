@@ -177,9 +177,32 @@ A 4-marketplace E2E certification requires:
 - first_global_blocker = RIPLEY_RATE_LIMIT_AND_UNFILTERED_CATEGORY_ZERO_BRAND
 - next_smallest_task = TASK_ID: MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001
 
+## VA SVMP Category Synchronization gate (VA-SVMP-CATEGORY-SYNC-001)
+
+A VA SVMP category synchronization PASS requires:
+- excel_real_used = YES (SVMP.xlsx)
+- excel_sha256 = PRESENT (cbecc32e3e2d56c1455f05850305186141c02fad070919940d57630893db397c)
+- excel_valid_categories > 0 (exact: 44)
+- loader_categories == excel_valid_categories (44 == 44)
+- runner_categories == excel_valid_categories (44 == 44)
+- missing_valid_categories = 0
+- unexplained_duplicates = 0
+- new_or_previously_unprocessed_categories_identified = YES (Falabella: 4, Paris: 1, Ripley: 2, Total: 7 new)
+- new_categories_loaded = YES
+- new_categories_dispatched = YES
+- scraper_receipt_demonstrated = YES
+- hardcoded_category_contribution = 0
+- regression = PASS (15/15 tests passing)
+- production_files_changed <= 2 (exact: 2)
+- new_production_files = 0
+- new_dependencies = 0
+- independent_reconciliation = PASS (difference = 0 across all 4 marketplaces)
+- final_verdict = VA_SVMP_CATEGORY_SYNC_PASS
+
 ## Global completion
 
 - required marketplaces meet their own acceptance gates (3/4 PASS; Ripley blocked on rate-limiting & category brand filtering)
 - no unresolved required discovery/acquisition blocker (Ripley blocker isolated)
 - no unprocessed viable frontier required by the declared coverage contract
 - final evidence is reproducible from persisted artifacts
+

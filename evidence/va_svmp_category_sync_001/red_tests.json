@@ -1,0 +1,17 @@
+{
+  "test_file": "tests/test_va_svmp_category_sync.py",
+  "result": "FAIL",
+  "failures": [
+    {
+      "test": "test_excel_loader_loads_urls_and_new_categories",
+      "error": "AssertionError: Task 'Poleras mujer' in Falabella has url_base=None (hyperlink not loaded)",
+      "cause": "ExcelLoader currently uses pandas.read_excel which discards cell hyperlinks, leaving AuditTask.url_base and AuditTask.url_nicopoly as None."
+    },
+    {
+      "test": "test_audit_runner_resolves_all_category_visibility_urls",
+      "error": "AssertionError: AuditRunner cannot resolve visibility URL for category 'Poleras mujer' in Falabella — would be skipped!",
+      "cause": "AuditRunner relies solely on hardcoded rules in Logica_Operacional/ and does not use task.url_base, causing all new categories in SVMP.xlsx to be skipped."
+    }
+  ],
+  "first_failure": "ExcelLoader.load_tasks does not extract cell hyperlinks into AuditTask.url_base and AuditTask.url_nicopoly; AuditRunner does not use task.url_base / task.url_nicopoly to dispatch categories not present in static rules."
+}

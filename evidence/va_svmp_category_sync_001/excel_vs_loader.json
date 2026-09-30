@@ -1,0 +1,462 @@
+{
+  "comparison_by_marketplace": {
+    "Falabella": [
+      {
+        "category_excel": "Pantalones",
+        "category_nicopoly": "Pantalones",
+        "url_marketplace": "https://www.falabella.com/falabella-cl/category/cat850040/Pantalones?f.product.L2_category_paths=cat7330051%7C%7CMujer%2Fcat20002%7C%7CModa+Mujer%2Fcat850040%7C%7CPantalones",
+        "url_nicopoly": "https://www.falabella.com/falabella-cl/category/cat850040/Pantalones?facetSelected=true&f.product.L2_category_paths=cat7330051%7C%7CMujer%2Fcat20002%7C%7CModa+Mujer%2Fcat850040%7C%7CPantalones&totalProducts=4243&f.product.brandName=nicopoly",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Abrigos y Chaquetas",
+        "category_nicopoly": "Abrigos y Chaquetas",
+        "url_marketplace": "https://www.falabella.com/falabella-cl/category/cat850036/Abrigos-y-Chaquetas?f.product.L2_category_paths=cat7330051%7C%7CMujer%2Fcat20002%7C%7CModa+Mujer%2Fcat850036%7C%7CAbrigos+y+Chaquetas",
+        "url_nicopoly": "https://www.falabella.com/falabella-cl/category/cat850036/Abrigos-y-Chaquetas?facetSelected=true&f.product.L2_category_paths=cat7330051%7C%7CMujer%2Fcat20002%7C%7CModa+Mujer%2Fcat850036%7C%7CAbrigos+y+Chaquetas&f.product.brandName=nicopoly&totalProducts=5079",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Sweaters y chalecos",
+        "category_nicopoly": "Sweaters y chalecos",
+        "url_marketplace": "https://www.falabella.com/falabella-cl/category/cat850034/Sweaters-y-chalecos?f.product.L2_category_paths=cat7330051%7C%7CMujer%2Fcat20002%7C%7CModa+Mujer%2Fcat850034%7C%7CSweaters+y+chalecos",
+        "url_nicopoly": "https://www.falabella.com/falabella-cl/category/cat850034/Sweaters-y-chalecos?facetSelected=true&f.product.L2_category_paths=cat7330051%7C%7CMujer%2Fcat20002%7C%7CModa+Mujer%2Fcat850034%7C%7CSweaters+y+chalecos&f.product.brandName=nicopoly&totalProducts=2708",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Blusas Mujer",
+        "category_nicopoly": "Blusas Mujer",
+        "url_marketplace": "https://www.falabella.com/falabella-cl/category/cat850030/Blusas-Mujer?f.product.L2_category_paths=cat7330051%7C%7CMujer%2Fcat20002%7C%7CModa+Mujer%2Fcat850030%7C%7CBlusas+Mujer",
+        "url_nicopoly": "https://www.falabella.com/falabella-cl/category/cat850030/Blusas-Mujer?facetSelected=true&f.product.L2_category_paths=cat7330051%7C%7CMujer%2Fcat20002%7C%7CModa+Mujer%2Fcat850030%7C%7CBlusas+Mujer&f.product.brandName=nicopoly&totalProducts=4216",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Parkas Mujer",
+        "category_nicopoly": "Parkas Mujer",
+        "url_marketplace": "https://www.falabella.com/falabella-cl/category/CATG34995/Parkas-Mujer?f.product.L2_category_paths=cat7330051%7C%7CMujer%2Fcat20002%7C%7CModa+Mujer%2FCATG34995%7C%7CParkas+Mujer",
+        "url_nicopoly": "https://www.falabella.com/falabella-cl/category/CATG34995/Parkas-Mujer?facetSelected=true&f.product.L2_category_paths=cat7330051%7C%7CMujer%2Fcat20002%7C%7CModa+Mujer%2FCATG34995%7C%7CParkas+Mujer&f.product.brandName=nicopoly&totalProducts=702",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Poleras mujer",
+        "category_nicopoly": "Poleras mujer",
+        "url_marketplace": "https://www.falabella.com/falabella-cl/category/CATG35031/Poleras-Mujer",
+        "url_nicopoly": "https://www.falabella.com/falabella-cl/category/CATG35031/Poleras-Mujer?facetSelected=true&f.product.brandName=nicopoly&totalProducts=5581",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-09-23",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Vestidos y enteritos",
+        "category_nicopoly": "Vestidos y enteritos",
+        "url_marketplace": "https://www.falabella.com/falabella-cl/category/cat14330023/Vestidos-y-enteritos?f.product.L2_category_paths=cat7330051%7C%7CMujer%2Fcat20002%7C%7CModa+Mujer%2Fcat14330023%7C%7CVestidos+y+enteritos",
+        "url_nicopoly": "https://www.falabella.com/falabella-cl/category/cat14330023/Vestidos-y-enteritos?facetSelected=true&f.product.L2_category_paths=cat7330051%7C%7CMujer%2Fcat20002%7C%7CModa+Mujer%2Fcat14330023%7C%7CVestidos+y+enteritos&f.product.brandName=nicopoly&totalProducts=2902",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-09-23",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Faldas",
+        "category_nicopoly": "Faldas",
+        "url_marketplace": "https://www.falabella.com/falabella-cl/category/cat850042/Faldas?f.product.L2_category_paths=cat7330051%7C%7CMujer%2Fcat20002%7C%7CModa+Mujer%2Fcat850042%7C%7CFaldas",
+        "url_nicopoly": "https://www.falabella.com/falabella-cl/category/cat850042/Faldas?facetSelected=true&f.product.L2_category_paths=cat7330051%7C%7CMujer%2Fcat20002%7C%7CModa+Mujer%2Fcat850042%7C%7CFaldas&f.product.brandName=nicopoly&totalProducts=815",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-09-23",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Shorts",
+        "category_nicopoly": "Shorts",
+        "url_marketplace": "https://www.falabella.com/falabella-cl/category/cat850044/Shorts?f.product.L2_category_paths=cat7330051%7C%7CMujer%2Fcat20002%7C%7CModa+Mujer%2Fcat850044%7C%7CShorts",
+        "url_nicopoly": "https://www.falabella.com/falabella-cl/category/cat850044/Shorts?facetSelected=true&f.product.L2_category_paths=cat7330051%7C%7CMujer%2Fcat20002%7C%7CModa+Mujer%2Fcat850044%7C%7CShorts&f.product.brandName=nicopoly&totalProducts=613",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-09-23",
+        "last_date": "2026-09-29"
+      }
+    ],
+    "Mercado Libre": [
+      {
+        "category_excel": "Vestidos",
+        "category_nicopoly": "Vestidos",
+        "url_marketplace": "https://listado.mercadolibre.cl/vestuario-calzado/vestidos/vestidos_Tienda_all_NoIndex_True",
+        "url_nicopoly": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/vestidos/vestidos_NoIndex_True",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Calzas",
+        "category_nicopoly": "Calzas",
+        "url_marketplace": "https://listado.mercadolibre.cl/vestuario-calzado/calzas/calzas_Tienda_all_NoIndex_True",
+        "url_nicopoly": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/calzas/calzas_NoIndex_True",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Blusas",
+        "category_nicopoly": "Blusas",
+        "url_marketplace": "https://listado.mercadolibre.cl/vestuario-calzado/blusas/blusas_Tienda_all_NoIndex_True",
+        "url_nicopoly": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/blusas/blusas_NoIndex_True",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Poleras",
+        "category_nicopoly": "Poleras",
+        "url_marketplace": "https://listado.mercadolibre.cl/vestuario-calzado/poleras/poleras_Tienda_all_NoIndex_True",
+        "url_nicopoly": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/poleras/poleras_NoIndex_True",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Faldas",
+        "category_nicopoly": "Faldas",
+        "url_marketplace": "https://listado.mercadolibre.cl/vestuario-calzado/faldas/faldas_Tienda_all_NoIndex_True",
+        "url_nicopoly": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/faldas/faldas_NoIndex_True",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Abrigos",
+        "category_nicopoly": "Abrigos",
+        "url_marketplace": "https://listado.mercadolibre.cl/vestuario-calzado/abrigos/abrigos_Tienda_all_NoIndex_True",
+        "url_nicopoly": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/abrigos/abrigos_NoIndex_True",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Bermudas y Shorts",
+        "category_nicopoly": "Bermudas y Shorts",
+        "url_marketplace": "https://listado.mercadolibre.cl/vestuario-calzado/bermudas-shorts/_NoIndex_True?original_category_landing=true",
+        "url_nicopoly": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/bermudas-shorts/",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Accesorios de moda",
+        "category_nicopoly": "Accesorios de moda",
+        "url_marketplace": "https://listado.mercadolibre.cl/accesorios-de-moda_Tienda_all_NoIndex_True?sb=all_mercadolibre",
+        "url_nicopoly": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/accesorios-de-moda/",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-05-20"
+      },
+      {
+        "category_excel": "Body",
+        "category_nicopoly": "Body",
+        "url_marketplace": "https://listado.mercadolibre.cl/vestuario-calzado/body_NoIndex_True",
+        "url_nicopoly": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/ropa-interior-dormir/",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Pantalones",
+        "category_nicopoly": "Pantalones",
+        "url_marketplace": "https://listado.mercadolibre.cl/vestuario-calzado/pantalones/pantalones_NoIndex_True",
+        "url_nicopoly": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/pantalones/pantalones_NoIndex_True",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Camisas",
+        "category_nicopoly": "Camisas",
+        "url_marketplace": "https://listado.mercadolibre.cl/vestuario-calzado/camisas/camisas_Tienda_all_NoIndex_True",
+        "url_nicopoly": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/camisas/camisas_NoIndex_True",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Kimonos",
+        "category_nicopoly": "Kimonos",
+        "url_marketplace": "https://listado.mercadolibre.cl/kimonos_Tienda_all_NoIndex_True",
+        "url_nicopoly": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/kimonos/kimono_NoIndex_True",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Accesorios de Moda",
+        "category_nicopoly": "Accesorios de moda",
+        "url_marketplace": "https://listado.mercadolibre.cl/bufandas-y-pa%C3%B1uelos",
+        "url_nicopoly": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/accesorios-moda/",
+        "classification": "DUPLICATED",
+        "reason": "Deduplicated by case-insensitive key against 'Accesorios de moda'",
+        "first_date": "2026-05-22",
+        "last_date": "2026-09-29"
+      }
+    ],
+    "Paris": [
+      {
+        "category_excel": "Sweaters, Chalecos y Tejidos",
+        "category_nicopoly": "Sweaters, Chalecos y Tejidos",
+        "url_marketplace": "https://www.paris.cl/mujer/moda/chalecos-y-sweaters/",
+        "url_nicopoly": "https://www.paris.cl/mujer/moda/chalecos-y-sweaters/?brand=Nicopoly",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-05",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Jeans y Pantalones",
+        "category_nicopoly": "Jeans y Pantalones",
+        "url_marketplace": "https://www.paris.cl/mujer/moda/jeans-pantalones/",
+        "url_nicopoly": "https://www.paris.cl/mujer/moda/jeans-pantalones/?brand=Nicopoly",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-05",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Blazers, Chaquetas y Abrigos",
+        "category_nicopoly": "Blazers, Chaquetas y Abrigos",
+        "url_marketplace": "https://www.paris.cl/mujer/moda/chaquetas-abrigos-parkas/",
+        "url_nicopoly": "https://www.paris.cl/mujer/moda/chaquetas-abrigos-parkas/?brand=Nicopoly",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-05",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Poleras y Blusas",
+        "category_nicopoly": "Poleras y Blusas",
+        "url_marketplace": "https://www.paris.cl/mujer/moda/poleras-blusas/",
+        "url_nicopoly": "https://www.paris.cl/mujer/moda/poleras-blusas/?brand=Nicopoly",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-05",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Vestidos y Faldas",
+        "category_nicopoly": "Vestidos y Faldas",
+        "url_marketplace": "https://www.paris.cl/mujer/moda/vestidos-faldas/",
+        "url_nicopoly": "https://www.paris.cl/mujer/moda/vestidos-faldas/?brand=Nicopoly",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-05",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Shorts",
+        "category_nicopoly": "Shorts",
+        "url_marketplace": "https://www.paris.cl/mujer/moda/short/",
+        "url_nicopoly": "https://www.paris.cl/mujer/moda/short/?brand=Nicopoly",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-05",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Pañuelos y Bufandas",
+        "category_nicopoly": "Pañuelos y Bufandas",
+        "url_marketplace": "https://www.paris.cl/mujer/accesorios-moda/panuelos-bufandas/",
+        "url_nicopoly": "https://www.paris.cl/mujer/accesorios-moda/panuelos-bufandas/?brand=Nicopoly",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-05",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Fiesta",
+        "category_nicopoly": "Fiesta",
+        "url_marketplace": "https://www.paris.cl/mujer/moda/fiesta/",
+        "url_nicopoly": "https://www.paris.cl/mujer/moda/fiesta/?brand=Nicopoly",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-09-23",
+        "last_date": "2026-09-29"
+      }
+    ],
+    "Ripley": [
+      {
+        "category_excel": "Jeans",
+        "category_nicopoly": "Jeans",
+        "url_marketplace": "https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/jeans",
+        "url_nicopoly": "https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/jeans?slug=moda-mujer&slug=jeans-y-pantalones&slug=jeans&brand=NICOPOLY&page=1",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Pantalones",
+        "category_nicopoly": "Pantalones",
+        "url_marketplace": "https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/pantalones",
+        "url_nicopoly": "https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/pantalones?slug=moda-mujer&slug=jeans-y-pantalones&slug=pantalones&brand=NICOPOLY&page=1",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Shorts",
+        "category_nicopoly": "Shorts",
+        "url_marketplace": "https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/shorts",
+        "url_nicopoly": "https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/shorts?slug=moda-mujer&slug=jeans-y-pantalones&slug=shorts&brand=NICOPOLY&page=1",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Chaquetas y blazers",
+        "category_nicopoly": "Chaquetas y blazers",
+        "url_marketplace": "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/chaquetas-y-blazers",
+        "url_nicopoly": "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/chaquetas-y-blazers?slug=moda-mujer&slug=tops-y-chaquetas&slug=chaquetas-y-blazers&brand=NICOPOLY&page=1",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Abrigos",
+        "category_nicopoly": "Abrigos",
+        "url_marketplace": "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/abrigos",
+        "url_nicopoly": "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/abrigos?slug=moda-mujer&slug=tops-y-chaquetas&slug=abrigos&brand=NICOPOLY&page=1",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Blusas y poleras",
+        "category_nicopoly": "Blusas y poleras",
+        "url_marketplace": "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/blusas-y-poleras",
+        "url_nicopoly": "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/blusas-y-poleras?slug=moda-mujer&slug=tops-y-chaquetas&slug=blusas-y-poleras&brand=NICOPOLY&page=1",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Kimonos",
+        "category_nicopoly": "Kimonos",
+        "url_marketplace": "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/kimonos",
+        "url_nicopoly": "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/kimonos?slug=moda-mujer&slug=tops-y-chaquetas&slug=kimonos&brand=NICOPOLY&page=1",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Parkas",
+        "category_nicopoly": "Parkas",
+        "url_marketplace": "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/parkas",
+        "url_nicopoly": "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/parkas?slug=moda-mujer&slug=tops-y-chaquetas&slug=parkas&brand=NICOPOLY&page=1",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Sweaters y chalecos",
+        "category_nicopoly": "Sweaters y chalecos",
+        "url_marketplace": "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/sweaters-y-chalecos",
+        "url_nicopoly": "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/sweaters-y-chalecos?slug=moda-mujer&slug=tops-y-chaquetas&slug=sweaters-y-chalecos&brand=NICOPOLY&page=1",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Enteritos",
+        "category_nicopoly": "Enteritos",
+        "url_marketplace": "https://simple.ripley.cl/moda-mujer/vestidos-y-enteritos/enteritos",
+        "url_nicopoly": "https://simple.ripley.cl/moda-mujer/vestidos-y-enteritos/enteritos?slug=moda-mujer&slug=vestidos-y-enteritos&slug=enteritos&brand=NICOPOLY&page=1",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Faldas",
+        "category_nicopoly": "Faldas",
+        "url_marketplace": "https://simple.ripley.cl/moda-mujer/vestidos-y-enteritos/faldas",
+        "url_nicopoly": "https://simple.ripley.cl/moda-mujer/vestidos-y-enteritos/faldas?slug=moda-mujer&slug=vestidos-y-enteritos&slug=faldas&brand=NICOPOLY&page=1",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Vestidos",
+        "category_nicopoly": "Vestidos",
+        "url_marketplace": "https://simple.ripley.cl/moda-mujer/vestidos-y-enteritos/vestidos",
+        "url_nicopoly": "https://simple.ripley.cl/moda-mujer/vestidos-y-enteritos/vestidos?slug=moda-mujer&slug=vestidos-y-enteritos&slug=vestidos&brand=NICOPOLY&page=1",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-05-07",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Calzas",
+        "category_nicopoly": "Calzas",
+        "url_marketplace": "https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/calzas",
+        "url_nicopoly": "https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/calzas?brand=NICOPOLY&page=1",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-09-23",
+        "last_date": "2026-09-29"
+      },
+      {
+        "category_excel": "Accesorios y complemento",
+        "category_nicopoly": "Accesorios y complemento",
+        "url_marketplace": "https://simple.ripley.cl/accesorios-y-complementos/vestuario",
+        "url_nicopoly": "https://simple.ripley.cl/accesorios-y-complementos?brand=NICOPOLY&page=1",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-09-23",
+        "last_date": "2026-09-25"
+      },
+      {
+        "category_excel": "Accesorios y complementos",
+        "category_nicopoly": "Accesorios y complementos",
+        "url_marketplace": "https://simple.ripley.cl/accesorios-y-complementos/vestuario",
+        "url_nicopoly": "https://simple.ripley.cl/accesorios-y-complementos?brand=NICOPOLY&page=1",
+        "classification": "LOADED",
+        "reason": "Exact match loaded by ExcelLoader",
+        "first_date": "2026-09-28",
+        "last_date": "2026-09-29"
+      }
+    ]
+  }
+}

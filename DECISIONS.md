@@ -81,3 +81,13 @@ MRI-4MP-E2E-CERT-001 executed the first transversal end-to-end certification acr
 4. Global verdict: MRI_4MP_E2E_CERT_FAIL (3/4 PASS, 1/4 FAIL).
 5. Blocker isolated: `FIRST_GLOBAL_BLOCKER = RIPLEY_RATE_LIMIT_AND_UNFILTERED_CATEGORY_ZERO_BRAND`.
 6. Next smallest task defined: `TASK_ID: MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001`.
+
+## D-019 — VA Legacy SVMP.xlsx Category Synchronization via Cell Hyperlinks
+VA-SVMP-CATEGORY-SYNC-001 synchronized and certified all 44 categories from `SVMP.xlsx` into Visual Auditor Legacy:
+1. Forensic finding: `ExcelLoader` used `pandas.read_excel` which discarded Excel cell hyperlinks, leaving `AuditTask.url_base` and `AuditTask.url_nicopoly` as `None`. In turn, `AuditRunner` checked only static text files in `Logica_Operacional/`, silently skipping newly introduced categories that lacked operational text rules.
+2. Surgical implementation:
+   - `ExcelLoader` (`app/loaders/excel_loader.py`): Replaced pandas reader with existing `openpyxl` dependency to extract `category_marketplace`, `category_nicopoly`, and dynamic target URLs from cell hyperlinks (`cell.hyperlink.target`), storing them directly in `AuditTask.url_base` and `AuditTask.url_nicopoly`.
+   - `AuditRunner` (`app/auditor/audit_runner.py`): Updated category URL resolution to use `task.url_base` and `task.url_nicopoly` with fallback to `rules["category_urls"]`, ensuring all 44 categories in `SVMP.xlsx` reach the scraper dispatch point.
+3. Boundary & Scope: Exactly 2 production files modified, 0 new production files, 0 new dependencies. AutoClaw=0, manual=0. Zero modifications to MRI.
+4. Independent verification: Reconciled 44/44 categories across all 4 marketplaces (`difference = 0`).
+

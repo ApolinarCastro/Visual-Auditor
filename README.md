@@ -60,9 +60,16 @@ Current focus: MRI autonomous marketplace intelligence across four marketplaces:
   - Resource discipline: 0 production files modified, 0 new production files, 0 new dependencies. AutoClaw=0, manual=0.
   - Independent recount: `reconciled_marketplaces=4`, `false_pass_total=0`, `unsupported_fail_total=0`.
 
+- VA-SVMP-CATEGORY-SYNC-001: Visual Auditor Legacy SVMP.xlsx category synchronization certified PASS:
+  - Synchronized and certified all 44 valid categories across Falabella (9), Mercado Libre (12), Paris (8), and Ripley (15).
+  - Extracted dynamic visibility and census URLs directly from SVMP.xlsx cell hyperlinks via `openpyxl`.
+  - Resolved loss of newly introduced categories (Falabella: Poleras mujer, Vestidos y enteritos, Faldas, Shorts; Paris: Fiesta; Ripley: Calzas, Accesorios y complementos).
+  - Exact 2 production files modified (`app/loaders/excel_loader.py`, `app/auditor/audit_runner.py`), 0 new production files, 0 new dependencies.
+  - Independent reconciliation PASS (`difference = 0` across all 4 marketplaces; `reconciled = True`).
+
 ## Current operating decision
 
-Mercado Libre, Paris, and Falabella are certified PASS on autonomous E2E operation. Ripley requires resolution of HTTP 429 rate limiting and brand-filtered category discovery. Do not modify production code or create broad architecture.
+VA Legacy category synchronization with `SVMP.xlsx` is certified PASS across all 4 marketplaces. Next authorized task is resolving the isolated Ripley MRI rate limiting and brand filtering blocker (`TASK_ID: MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001`).
 
 ## Core principles
 
@@ -82,6 +89,7 @@ This GitHub repository stores the persistent project state and verified forensic
 ## Next task
 
 TASK_ID: MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001 — Resolve Ripley HTTP 429 rate-limiting backoff and enforce brand-filtered category discovery/navigation so acquired routes contain runtime brand products.
+
 
 
 
