@@ -60,3 +60,12 @@ Status: RESOLVED_AND_CERTIFIED (PASS).
 The diagnostic wrapper reported a NameError and subprocess rc=1/venv close noise after event logs were persisted.
 Resolution in MRI-CROSSMARKET-BLOCKERS-001: Verified physically in `baseline_4mp.py:97`. `capabilities_from(r, events)` accessed undefined variable `mp` when `checkpoints_written` was falsy. Classified as `WRAPPER_FAILURE`. MRI pipeline unaffected.
 Status: FORENSICALLY_RESOLVED (`WRAPPER_FAILURE`).
+
+## F-012 — Falabella brand routing
+Initial baseline and test suite had zero commercial category routes extracted from Falabella SSR document because facets are rendered inside `<script id="__NEXT_DATA__">` rather than standard anchor tags, and category facet query parameters were misclassified as BRAND_SURFACE.
+Resolution in MRI-FALABELLA-BRAND-ROUTING-001:
+1. `surface_classifier.py`: recognize `attribute.tipo`, `l0_category_paths`, `f.product.` as `COMMERCIAL_CATEGORY`.
+2. `category_discoverer.py`: extract commercial category facet options from `__NEXT_DATA__.props.pageProps.facets`.
+3. `falabella_scraper.py`: parse structured product records from `__NEXT_DATA__.props.pageProps.results` with direct brand and membership evidence.
+4. Certified in real run: 22 routes discovered, 2 routes verified, 157 products observed, 100% direct brand evidence (157/157), 100% membership evidence (157/157), independent reconciliation PASS.
+Status: RESOLVED_AND_CERTIFIED (PASS).

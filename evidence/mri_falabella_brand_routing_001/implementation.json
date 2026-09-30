@@ -1,0 +1,25 @@
+{
+  "task_id": "MRI-FALABELLA-BRAND-ROUTING-001",
+  "marketplace": "Falabella",
+  "limits": {
+    "max_production_files_changed": 3,
+    "max_new_production_files": 0,
+    "max_new_dependencies": 0,
+    "max_fix_cycles": 1
+  },
+  "production_files_changed": [
+    "app/mri_autonomous/surface_classifier.py",
+    "app/mri_autonomous/category_discoverer.py",
+    "app/scrapers/falabella_scraper.py"
+  ],
+  "production_files_changed_count": 3,
+  "new_production_files": [],
+  "new_dependencies": [],
+  "fix_cycles_used": 0,
+  "changes_summary": {
+    "app/mri_autonomous/surface_classifier.py": "Updated category query parameter recognition to classify Falabella category facet query parameters (f.product.attribute.Tipo, L0_category_paths) as COMMERCIAL_CATEGORY instead of BRAND_SURFACE.",
+    "app/mri_autonomous/category_discoverer.py": "Removed stale static selector, added __NEXT_DATA__ facet parsing for Falabella SSR responses in discover_categories_from_page, and updated category_name_from_url to parse clean human names from Falabella query parameters.",
+    "app/scrapers/falabella_scraper.py": "Optimized navigate() to use certified HTTP SSR acquisition strategy (F1_HTTP_RESPONSE_NORMAL) directly before Playwright fallback, and updated scrape_autonomous_category() to extract structured products with direct brand and membership evidence from __NEXT_DATA__."
+  },
+  "status": "PASS"
+}

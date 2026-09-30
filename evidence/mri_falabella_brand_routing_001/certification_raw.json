@@ -1,0 +1,287 @@
+{
+  "marketplace": "Falabella",
+  "runtime_brand": "Nicopoly",
+  "entry_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly",
+  "entry_navigation": {
+    "success": true,
+    "title": "falabella.com",
+    "url": "about:blank"
+  },
+  "discovered_routes": [
+    {
+      "name": "Mujer",
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.L0_category_paths=cat7330051%7C%7CMujer",
+      "source": "SSR_FACETS",
+      "provenance": "__NEXT_DATA__.facets",
+      "confidence": 0.95
+    },
+    {
+      "name": "Pantalones",
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Pantalones",
+      "source": "SSR_FACETS",
+      "provenance": "__NEXT_DATA__.facets",
+      "confidence": 0.95
+    },
+    {
+      "name": "Blazers",
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Blazers",
+      "source": "SSR_FACETS",
+      "provenance": "__NEXT_DATA__.facets",
+      "confidence": 0.95
+    },
+    {
+      "name": "Chaquetas",
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Chaquetas",
+      "source": "SSR_FACETS",
+      "provenance": "__NEXT_DATA__.facets",
+      "confidence": 0.95
+    },
+    {
+      "name": "Poleras",
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Poleras",
+      "source": "SSR_FACETS",
+      "provenance": "__NEXT_DATA__.facets",
+      "confidence": 0.95
+    },
+    {
+      "name": "Gillette",
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Gillette",
+      "source": "SSR_FACETS",
+      "provenance": "__NEXT_DATA__.facets",
+      "confidence": 0.95
+    },
+    {
+      "name": "Sweaters",
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Sweaters",
+      "source": "SSR_FACETS",
+      "provenance": "__NEXT_DATA__.facets",
+      "confidence": 0.95
+    },
+    {
+      "name": "Blusas",
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Blusas",
+      "source": "SSR_FACETS",
+      "provenance": "__NEXT_DATA__.facets",
+      "confidence": 0.95
+    },
+    {
+      "name": "Bomber",
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Bomber",
+      "source": "SSR_FACETS",
+      "provenance": "__NEXT_DATA__.facets",
+      "confidence": 0.95
+    },
+    {
+      "name": "Camisas",
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Camisas",
+      "source": "SSR_FACETS",
+      "provenance": "__NEXT_DATA__.facets",
+      "confidence": 0.95
+    },
+    {
+      "name": "Abrigos",
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Abrigos",
+      "source": "SSR_FACETS",
+      "provenance": "__NEXT_DATA__.facets",
+      "confidence": 0.95
+    },
+    {
+      "name": "Jeans",
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Jeans",
+      "source": "SSR_FACETS",
+      "provenance": "__NEXT_DATA__.facets",
+      "confidence": 0.95
+    },
+    {
+      "name": "Shorts",
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Shorts",
+      "source": "SSR_FACETS",
+      "provenance": "__NEXT_DATA__.facets",
+      "confidence": 0.95
+    },
+    {
+      "name": "Cardigans",
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Cardigans",
+      "source": "SSR_FACETS",
+      "provenance": "__NEXT_DATA__.facets",
+      "confidence": 0.95
+    },
+    {
+      "name": "Vestido Casual",
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Vestido+casual",
+      "source": "SSR_FACETS",
+      "provenance": "__NEXT_DATA__.facets",
+      "confidence": 0.95
+    },
+    {
+      "name": "Trench",
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Trench",
+      "source": "SSR_FACETS",
+      "provenance": "__NEXT_DATA__.facets",
+      "confidence": 0.95
+    },
+    {
+      "name": "Parkas",
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Parkas",
+      "source": "SSR_FACETS",
+      "provenance": "__NEXT_DATA__.facets",
+      "confidence": 0.95
+    },
+    {
+      "name": "Vest",
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Vest",
+      "source": "SSR_FACETS",
+      "provenance": "__NEXT_DATA__.facets",
+      "confidence": 0.95
+    },
+    {
+      "name": "Product",
+      "url": "https://www.falabella.com/falabella-cl/product/156911486/blazer-cruzado-rayas-diplomaticas-cafe-nicopoly",
+      "source": "SSR_FACETS",
+      "provenance": "__NEXT_DATA__.facets",
+      "confidence": 0.95
+    },
+    {
+      "name": "Product",
+      "url": "https://www.falabella.com/falabella-cl/product/156911486/blazer-cruzado-rayas-diplomaticas-cafe-nicopoly/156911491",
+      "source": "SSR_FACETS",
+      "provenance": "__NEXT_DATA__.facets",
+      "confidence": 0.95
+    },
+    {
+      "name": "Product",
+      "url": "https://www.falabella.com/falabella-cl/product/157380528/blusa-rayas-lazo-desmontable-blanco-nicopoly",
+      "source": "SSR_FACETS",
+      "provenance": "__NEXT_DATA__.facets",
+      "confidence": 0.95
+    },
+    {
+      "name": "Product",
+      "url": "https://www.falabella.com/falabella-cl/product/157380528/blusa-rayas-lazo-desmontable-blanco-nicopoly/157380529",
+      "source": "SSR_FACETS",
+      "provenance": "__NEXT_DATA__.facets",
+      "confidence": 0.95
+    }
+  ],
+  "verified_routes": [
+    {
+      "route_name": "Mujer",
+      "route_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.L0_category_paths=cat7330051%7C%7CMujer",
+      "route_source": "SSR_FACETS",
+      "route_provenance": "__NEXT_DATA__.facets",
+      "surface_type": "COMMERCIAL_CATEGORY",
+      "products_observed": 102,
+      "direct_brand_evidence": 102,
+      "membership_evidence": 102,
+      "sample_products": [
+        {
+          "title": "Blazer Dos Botones Burdeo Mujer",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "152147938",
+          "price": 41990.0,
+          "url": "https://www.falabella.com/falabella-cl/product/152147934/blazer-sastrero-dos-botones-burdeo-nicopoly",
+          "is_direct_brand": true,
+          "route_membership": "Mujer"
+        },
+        {
+          "title": "Blazer Manga 3/4 Ajustado con Solapas Amarillo Mantequilla Mujer",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "156820391",
+          "price": 53990.0,
+          "url": "https://www.falabella.com/falabella-cl/product/156820388/blazer-manga-34-ajustado-con-solapas-amarillo-mantequilla-nicopoly",
+          "is_direct_brand": true,
+          "route_membership": "Mujer"
+        },
+        {
+          "title": "Chaqueta Tipo Barbour Mocca Mujer",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "152209126",
+          "price": 36990.0,
+          "url": "https://www.falabella.com/falabella-cl/product/152209125/chaqueta-tipo-barbour-mocca-nicopoly",
+          "is_direct_brand": true,
+          "route_membership": "Mujer"
+        },
+        {
+          "title": "Pantalón Básico Café Mujer",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "152153570",
+          "price": 39990.0,
+          "url": "https://www.falabella.com/falabella-cl/product/152153567/pantalon-basico-cafe-nicopoly",
+          "is_direct_brand": true,
+          "route_membership": "Mujer"
+        },
+        {
+          "title": "Blazer Oversize Tipo Gamuza Café Mujer",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "152209095",
+          "price": 39990.0,
+          "url": "https://www.falabella.com/falabella-cl/product/152209093/blazer-oversize-tipo-gamuza-cafe-nicopoly",
+          "is_direct_brand": true,
+          "route_membership": "Mujer"
+        }
+      ],
+      "stop_reason": "EXHAUSTION",
+      "pages_traversed": 3
+    },
+    {
+      "route_name": "Pantalones",
+      "route_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Pantalones",
+      "route_source": "SSR_FACETS",
+      "route_provenance": "__NEXT_DATA__.facets",
+      "surface_type": "COMMERCIAL_CATEGORY",
+      "products_observed": 55,
+      "direct_brand_evidence": 55,
+      "membership_evidence": 55,
+      "sample_products": [
+        {
+          "title": "Pantalón Básico Café Mujer",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "152153571",
+          "price": 39990.0,
+          "url": "https://www.falabella.com/falabella-cl/product/152153567/pantalon-basico-cafe-nicopoly",
+          "is_direct_brand": true,
+          "route_membership": "Pantalones"
+        },
+        {
+          "title": "Pantalón Recto Raya Diplomática Café Mujer",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "157297407",
+          "price": 37990.0,
+          "url": "https://www.falabella.com/falabella-cl/product/157297405/pantalon-recto-raya-diplomatica-cafe-nicopoly",
+          "is_direct_brand": true,
+          "route_membership": "Pantalones"
+        },
+        {
+          "title": "Pantalón Corte Barrel Beige Mujer",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "157356203",
+          "price": 41990.0,
+          "url": "https://www.falabella.com/falabella-cl/product/157356200/pantalon-corte-barrel-blanco-nicopoly",
+          "is_direct_brand": true,
+          "route_membership": "Pantalones"
+        },
+        {
+          "title": "Pantalón Vestir Recto Burdeo Mujer",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "152143040",
+          "price": 38990.0,
+          "url": "https://www.falabella.com/falabella-cl/product/152143037/pantalon-vestir-recto-burdeo-nicopoly",
+          "is_direct_brand": true,
+          "route_membership": "Pantalones"
+        },
+        {
+          "title": "Pantalón Básico Verde Mujer",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "152153601",
+          "price": 39990.0,
+          "url": "https://www.falabella.com/falabella-cl/product/152153600/pantalon-basico-verde-nicopoly",
+          "is_direct_brand": true,
+          "route_membership": "Pantalones"
+        }
+      ],
+      "stop_reason": "EXHAUSTION",
+      "pages_traversed": 3
+    }
+  ],
+  "reconciliation": {}
+}

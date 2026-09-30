@@ -1,0 +1,48 @@
+{
+  "task_id": "MRI-FALABELLA-BRAND-ROUTING-001",
+  "marketplace": "Falabella",
+  "phase": "TEST_ROJO",
+  "test_file": "tests/test_mri_falabella_brand_routing.py",
+  "tests_run": 4,
+  "tests_failed": 2,
+  "tests_passed": 2,
+  "first_failure": {
+    "test": "test_fal_br_01_and_02_extract_commercial_category_from_ssr",
+    "exception": "AssertionError: No commercial categories extracted from Falabella SSR __NEXT_DATA__",
+    "assertion": "assert len(categories) > 0 (where len([]) == 0)",
+    "root_cause": "discover_categories_from_page lacked Next.js __NEXT_DATA__ pageProps.facets parser for Falabella, returning empty list from SSR document."
+  },
+  "second_failure": {
+    "test": "test_fal_br_05_surface_classifier_commercial_category",
+    "exception": "AssertionError: Expected COMMERCIAL_CATEGORY, got BRAND_SURFACE",
+    "assertion": "assert 'BRAND_SURFACE' == 'COMMERCIAL_CATEGORY'",
+    "root_cause": "surface_classifier has_cat_query did not check for Falabella category facet query parameters (f.product.attribute.Tipo, L0_category_paths), causing category routes to be misclassified as bare BRAND_SURFACE."
+  },
+  "tests_detail": [
+    {
+      "test_id": "FAL-BR-01_and_02",
+      "test_name": "test_fal_br_01_and_02_extract_commercial_category_from_ssr",
+      "status": "FAIL",
+      "error": "len([]) == 0; no commercial category routes extracted from __NEXT_DATA__"
+    },
+    {
+      "test_id": "FAL-BR-03",
+      "test_name": "test_fal_br_03_runtime_brand_control",
+      "status": "PASS",
+      "note": "Brand hub generation works dynamically without hardcoding."
+    },
+    {
+      "test_id": "FAL-BR-04",
+      "test_name": "test_fal_br_04_no_premature_brand_not_present",
+      "status": "PASS",
+      "note": "Preserves honest unverified candidate state without false BRAND_NOT_PRESENT."
+    },
+    {
+      "test_id": "FAL-BR-05",
+      "test_name": "test_fal_br_05_surface_classifier_commercial_category",
+      "status": "FAIL",
+      "error": "Misclassified as BRAND_SURFACE instead of COMMERCIAL_CATEGORY"
+    }
+  ],
+  "red_result": "REPRODUCED (2 FAIL, 2 PASS)"
+}

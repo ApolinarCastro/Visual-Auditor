@@ -62,5 +62,13 @@ MRI-FALABELLA-ENTRY-001 resolved and certified Falabella ENTRY through:
 4. Fully compliant with Rule 1 (`headless=True` exclusively; zero GUI windows) and Section 6 prohibitions (zero CAPTCHAs, zero proxy rotations, zero cookie theft, zero anti-bot services).
 5. Exactly 1 production file modified (`app/scrapers/falabella_scraper.py`), 0 new production files, 0 new dependencies. AutoClaw=0, manual=0.
 
+## D-017 — Falabella autonomous brand routing via __NEXT_DATA__ facet routing
+MRI-FALABELLA-BRAND-ROUTING-001 implemented and certified autonomous brand routing on Falabella through:
+1. Category facet discovery: Extracted 22 commercial category routes from the certified SSR `<script id="__NEXT_DATA__">` payload (`pageProps.facets`), specifically `attribute.Tipo` and `L0_category_paths`, without using static fragile selectors or hardcoded brand/category literals.
+2. Surface classification: Updated `surface_classifier.py` to identify Falabella category query parameters (`attribute.tipo`, `l0_category_paths`, `f.product.`) as `COMMERCIAL_CATEGORY`.
+3. Category URL normalization: `category_name_from_url()` parses unquoted facet values into clean human category names ("Pantalones", "Blazers", "Mujer").
+4. Route acquisition and structured extraction: Updated `FalabellaScraper.scrape_autonomous_category()` to acquire category routes via HTTP SSR and parse structured product records directly from `__NEXT_DATA__.props.pageProps.results` (`displayName`, `brandName`/`sellerName`, `skuId`, `prices`, `url`), with fallback to DOM pods.
+5. Exact 3 production files modified (`surface_classifier.py`, `category_discoverer.py`, `falabella_scraper.py`), 0 new production files, 0 new dependencies. AutoClaw=0, manual=0. exit code=0.
+
 
 

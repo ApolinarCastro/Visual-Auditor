@@ -42,9 +42,18 @@ Current focus: MRI autonomous marketplace intelligence across four marketplaces:
   - Certified in real run: `navigation_success=YES`, `commercial_page=YES`, `challenge_detected=NO`, `dom_usable=YES`, `commercial_content_observed=YES` (100 pods, 48 products in structured data), zero evasions, zero proxies, zero CAPTCHAs, zero cookies, exact 1 production file modified (`falabella_scraper.py`), 0 new production files, 0 new dependencies.
   - Independent reconciliation PASS (`reconciled = YES`, `false_pass = 0`, `synthetic_contribution = 0`, `hardcoded_result_contribution = 0`).
 
+- MRI-FALABELLA-BRAND-ROUTING-001: Falabella autonomous brand routing certified PASS:
+  - SSR document inspection revealed real commercial taxonomy facets serialized in `<script id="__NEXT_DATA__">` under `pageProps.facets` (`attribute.Tipo` and `L0_category_paths`).
+  - Classification: `surface_classifier.py` updated to classify Falabella category facet query parameters (`attribute.Tipo`, `l0_category_paths`) as `COMMERCIAL_CATEGORY`.
+  - Autonomous discovery: `category_discoverer.py` extracts 22 commercial category routes from SSR `__NEXT_DATA__` facets without static hardcoded selectors.
+  - Route navigation & structured extraction: `FalabellaScraper.scrape_autonomous_category()` navigates category route and extracts products with 100% direct brand evidence from `__NEXT_DATA__` results (`displayName`, `brandName`/`sellerName`, `skuId`, `prices`, `url`).
+  - Certified in real run: 22 commercial routes discovered, 2 commercial routes verified (`Mujer` and `Pantalones`), 157 products observed, 157 direct brand evidence items (100%), 157 category membership items (100%).
+  - Zero evasions, zero proxies, zero CAPTCHAs, exact 3 production files modified (`surface_classifier.py`, `category_discoverer.py`, `falabella_scraper.py`), 0 new production files, 0 new dependencies. AutoClaw=0, manual=0.
+  - Independent reconciliation PASS (`reconciled = YES`, `false_pass = 0`, `synthetic_contribution = 0`, `hardcoded_result_contribution = 0`).
+
 ## Current operating decision
 
-Mercado Libre, Paris, and Falabella ENTRY are certified and frozen. Do not reopen without regression. Do not reopen Ripley.
+Mercado Libre, Paris, and Falabella brand routing are certified and frozen. Do not reopen without regression. Do not reopen Ripley.
 
 ## Core principles
 
@@ -63,6 +72,6 @@ This GitHub repository stores the persistent project state and verified forensic
 
 ## Next task
 
-Awaiting next authorized task from product governance. Falabella ENTRY is certified PASS; downstream capabilities (DISCOVERY, CATEGORIES, PRODUCTS) remain NOT_TESTED.
+Awaiting next authorized task from product governance. Falabella brand routing is certified PASS across discovery, acquisition, products, brand evidence, and membership. Do not expand to coverage or reopen ML, Paris, or Ripley.
 
 

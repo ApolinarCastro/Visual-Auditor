@@ -1,0 +1,38 @@
+{
+  "task_id": "MRI-FALABELLA-BRAND-ROUTING-001",
+  "marketplace": "Falabella",
+  "brand_runtime": "Nicopoly",
+  "mechanism_type": "NEXT_DATA",
+  "source": "Next.js __NEXT_DATA__ embedded pageProps.facets in certified SSR document",
+  "source_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly",
+  "commercial_routes_observed": 18,
+  "brand_specific_routes": 18,
+  "category_data_observed": [
+    "f.product.L0_category_paths=cat7330051||Mujer (1106)",
+    "f.product.attribute.Tipo=Pantalones (208)",
+    "f.product.attribute.Tipo=Blazers (155)",
+    "f.product.attribute.Tipo=Poleras (150)",
+    "f.product.attribute.Tipo=Gillette (115)",
+    "f.product.attribute.Tipo=Sweaters",
+    "f.product.attribute.Tipo=Blusas",
+    "f.product.attribute.Tipo=Bomber",
+    "f.product.attribute.Tipo=Camisas",
+    "f.product.attribute.Tipo=Chaquetas (50)",
+    "f.product.attribute.Tipo=Abrigos",
+    "f.product.attribute.Tipo=Jeans",
+    "f.product.attribute.Tipo=Shorts",
+    "f.product.attribute.Tipo=Cardigans",
+    "f.product.attribute.Tipo=Vestido+casual",
+    "f.product.attribute.Tipo=Trench",
+    "f.product.attribute.Tipo=Parkas",
+    "f.product.attribute.Tipo=Vest"
+  ],
+  "sample_route_tested": {
+    "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Pantalones",
+    "status": 200,
+    "products_returned": 48,
+    "direct_brand_evidence": "100% (brand=NICOPOLY, seller=Nicopoly)"
+  },
+  "reproducible": true,
+  "evidence_hash": "a43348260edbaa92-SCL-falabella-next-data-facets"
+}

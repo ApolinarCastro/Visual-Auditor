@@ -123,6 +123,36 @@ A Falabella entry PASS requires:
 - new_dependencies = 0
 - pipeline_exit_code = 0
 
+## Falabella brand routing gate (MRI-FALABELLA-BRAND-ROUTING-001)
+
+A Falabella brand routing PASS requires:
+- entry_regression = PASS
+- mechanism_physically_observed = YES (__NEXT_DATA__.props.pageProps.facets)
+- mechanism_reproducible = YES
+- red_tests_reproduced = YES (2/4 initial tests failed)
+- green_tests = PASS (4/4 passed)
+- regression = PASS (78/78 passed across full test suite)
+- guardrails = PASS (13/13 guardrails)
+- commercial_route_discovery = PASS (22 routes discovered)
+- route_acquisition = PASS (2 routes acquired)
+- product_extraction = PASS (157 products observed)
+- direct_brand_evidence = PASS (157/157 direct brand evidence items)
+- membership_evidence = PASS (157/157 membership evidence items)
+- commercial_routes_verified >= 1 (exact: 2)
+- products_observed > 0 (exact: 157)
+- direct_brand_evidence > 0 (exact: 157)
+- membership_evidence > 0 (exact: 157)
+- autoclaw_actions = 0
+- manual_actions = 0
+- synthetic_contribution = 0
+- hardcoded_result_contribution = 0
+- independent_verification = PASS
+- reconciled = YES
+- production_files_changed <= 3 (exact: 3)
+- new_production_files = 0
+- new_dependencies = 0
+- pipeline_exit_code = 0
+
 ## Global completion
 
 
