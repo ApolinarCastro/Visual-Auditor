@@ -75,9 +75,19 @@ Current focus: MRI autonomous marketplace intelligence across four marketplaces:
   - Exact 2 production files modified (`app/mri_autonomous/category_discoverer.py`, `app/mri_autonomous/autonomous_pipeline.py`), 0 new production files, 0 new dependencies.
   - Independent reconciliation PASS (`reconciled = YES`, `false_pass = 0`).
 
+- MRI-4MP-E2E-CERT-002: Second integrated four-marketplace transversal E2E certification run executed:
+  - Paris: `PASS` (539 products observed, 539 direct brand evidence, 539 unique products, 2 routes verified, exit code 0).
+  - Ripley: `PASS` (48 products observed, 48 direct brand evidence, 48 unique products, 2 routes verified, 0 rate limit, brand filter URL_QUERY preserved, exit code 0).
+  - Falabella: `PASS` (171 products observed, 171 direct brand evidence, 171 unique products, 2 routes verified, exit code 0).
+  - Mercado Libre: `FAIL` (0 products observed; pagination blocked on Page 1 on fallback URL `https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly`, yielding 0 products for New In and Conjuntos).
+  - First Global Blocker isolated: `ML_PAGINATION_BLOCKED_ON_FALLBACK_URL` (Stage: `ACQUISITION / PRODUCT_EXTRACTION`).
+  - Global Verdict: `MRI_4MP_E2E_CERT_FAIL` (3/4 PASS, 1/4 FAIL).
+  - Strict resource & governance discipline: 0 production files modified, 0 new production files, 0 new dependencies, 0 fix cycles, AutoClaw=0, manual=0.
+  - Independent recount: `reconciled_marketplaces=4`, `false_pass_total=0`, `unsupported_fail_total=0`.
+
 ## Current operating decision
 
-Ripley autonomous brand routing and brand filter preservation is certified PASS. All 4 individual marketplaces (Mercado Libre, Paris, Falabella, Ripley) are now autonomously certified for brand discovery, routing, acquisition, products, direct brand evidence, and membership.
+Transversal certification identified a regression/blocker on Mercado Libre pagination while Paris, Ripley, and Falabella achieved certified PASS. Ripley's brand constraint preservation remains certified PASS with 0 rate limiting. Next work must address the Mercado Libre pagination block as an isolated, smallest next task.
 
 ## Core principles
 
@@ -96,7 +106,8 @@ This GitHub repository stores the persistent project state and verified forensic
 
 ## Next task
 
-Transversal E2E 4-marketplace re-certification (`MRI-4MP-E2E-CERT-002`) to verify full transversal pipeline convergence across all 4 marketplaces.
+Resolve Mercado Libre pagination block on brand store category routes (`TASK_ID: MRI-ML-PAGINATION-BLOCK-001`).
+
 
 
 

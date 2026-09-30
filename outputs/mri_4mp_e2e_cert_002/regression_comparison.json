@@ -1,0 +1,19 @@
+{
+  "task_id": "MRI-4MP-E2E-CERT-002",
+  "baseline_cert_001": {
+    "Mercado Libre": "PASS (524 products)",
+    "Paris": "PASS (539 products)",
+    "Falabella": "PASS (249 products)",
+    "Ripley": "FAIL (0 products, HTTP 429 & unconstrained category)"
+  },
+  "intermediate_ripley_fix_001": {
+    "Ripley": "PASS (48 products, 100% brand evidence, URL_QUERY preserved)"
+  },
+  "current_cert_002": {
+    "Mercado Libre": "FAIL",
+    "Paris": "PASS",
+    "Ripley": "PASS",
+    "Falabella": "PASS"
+  },
+  "regression_detected": "YES"
+}

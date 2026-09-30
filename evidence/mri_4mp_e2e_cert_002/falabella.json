@@ -1,0 +1,138 @@
+{
+  "marketplace": "Falabella",
+  "brand_runtime": "Nicopoly",
+  "run_id": "cert_falabella_1790791294",
+  "pid": 14376,
+  "start_time": "2026-09-30T15:01:34.235797",
+  "end_time": "2026-09-30T15:01:54.648542",
+  "duration": 20.41,
+  "duration_seconds": 20.41,
+  "pipeline_exit_code": 0,
+  "entry": "PASS",
+  "discovery": "PASS",
+  "navigation_routing": "PASS",
+  "category": "PASS",
+  "brand_discovery": "PASS",
+  "acquisition": "PASS",
+  "product_extraction": "PASS",
+  "identity": "PASS",
+  "membership": "PASS",
+  "position": "PASS",
+  "evidence": "PASS",
+  "checkpoint_resume": "PASS",
+  "experience": "PASS",
+  "verification": "PASS",
+  "routes_discovered": 3,
+  "routes_verified": 2,
+  "products_observed": 171,
+  "unique_products": 171,
+  "direct_brand_evidence": 171,
+  "membership_evidence": 171,
+  "position_evidence": 171,
+  "autoclaw_actions": 0,
+  "manual_actions": 0,
+  "synthetic_contribution": 0,
+  "hardcoded_result_contribution": 0,
+  "hardcoded_execution_input": 0,
+  "first_failure": null,
+  "entry_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly",
+  "final_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly",
+  "verified_routes_detail": [
+    {
+      "name": "Brand Hub",
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly",
+      "products_found": 96,
+      "stop_reason": "EXHAUSTION"
+    },
+    {
+      "name": "Mujer",
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.L0_category_paths=cat7330051%7C%7CMujer",
+      "products_found": 96,
+      "stop_reason": "EXHAUSTION"
+    }
+  ],
+  "sample_products": [
+    {
+      "title": "Blazer Dos Botones Burdeo Mujer",
+      "vendor": "NICOPOLY",
+      "marketplace_sku": "152147938",
+      "price": 41990.0,
+      "position_absolute": 1,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Blazer Manga 3/4 Ajustado con Solapas Amarillo Mantequilla Mujer",
+      "vendor": "NICOPOLY",
+      "marketplace_sku": "156820392",
+      "price": 53990.0,
+      "position_absolute": 2,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Chaqueta Tipo Barbour Mocca Mujer",
+      "vendor": "NICOPOLY",
+      "marketplace_sku": "152209126",
+      "price": 36990.0,
+      "position_absolute": 3,
+      "categories": [
+        "Brand Hub",
+        "Mujer"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Pantalón Básico Café Mujer",
+      "vendor": "NICOPOLY",
+      "marketplace_sku": "152153570",
+      "price": 39990.0,
+      "position_absolute": 4,
+      "categories": [
+        "Brand Hub",
+        "Mujer"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Blazer Oversize Tipo Gamuza Café Mujer",
+      "vendor": "NICOPOLY",
+      "marketplace_sku": "152209095",
+      "price": 39990.0,
+      "position_absolute": 5,
+      "categories": [
+        "Brand Hub",
+        "Mujer"
+      ],
+      "is_direct_brand": true
+    }
+  ],
+  "checkpoint_written": "YES",
+  "resume_tested": "YES",
+  "duplicate_work_detected": 0,
+  "experience_loaded": "YES",
+  "experience_used": "YES",
+  "experience_decisions_count": 2,
+  "decision_changed": "NO",
+  "capability_matrix": {
+    "ENTRY": "PASS",
+    "DISCOVERY": "PASS",
+    "NAVIGATION_ROUTING": "PASS",
+    "CATEGORY": "PASS",
+    "BRAND_DISCOVERY": "PASS",
+    "ACQUISITION": "PASS",
+    "PRODUCT_EXTRACTION": "PASS",
+    "IDENTITY": "PASS",
+    "MEMBERSHIP": "PASS",
+    "POSITION": "PASS",
+    "EVIDENCE": "PASS",
+    "CHECKPOINT_RESUME": "PASS",
+    "EXPERIENCE": "PASS",
+    "VERIFICATION": "PASS"
+  },
+  "verdict": "PASS"
+}

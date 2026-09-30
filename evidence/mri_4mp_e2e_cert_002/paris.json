@@ -1,0 +1,135 @@
+{
+  "marketplace": "Paris",
+  "brand_runtime": "Nicopoly",
+  "run_id": "cert_paris_1790790949",
+  "pid": 28852,
+  "start_time": "2026-09-30T14:55:49.633333",
+  "end_time": "2026-09-30T14:58:10.181963",
+  "duration": 140.55,
+  "duration_seconds": 140.55,
+  "pipeline_exit_code": 0,
+  "entry": "PASS",
+  "discovery": "PASS",
+  "navigation_routing": "PASS",
+  "category": "PASS",
+  "brand_discovery": "PASS",
+  "acquisition": "PASS",
+  "product_extraction": "PASS",
+  "identity": "PASS",
+  "membership": "PASS",
+  "position": "PASS",
+  "evidence": "PASS",
+  "checkpoint_resume": "PASS",
+  "experience": "PASS",
+  "verification": "PASS",
+  "routes_discovered": 2,
+  "routes_verified": 2,
+  "products_observed": 539,
+  "unique_products": 539,
+  "direct_brand_evidence": 539,
+  "membership_evidence": 539,
+  "position_evidence": 539,
+  "autoclaw_actions": 0,
+  "manual_actions": 0,
+  "synthetic_contribution": 0,
+  "hardcoded_result_contribution": 0,
+  "hardcoded_execution_input": 0,
+  "first_failure": null,
+  "entry_url": "https://www.paris.cl/search?q=nicopoly",
+  "final_url": "https://www.paris.cl/search?q=nicopoly",
+  "verified_routes_detail": [
+    {
+      "name": "Brand Hub",
+      "url": "https://www.paris.cl/search?q=nicopoly",
+      "products_found": 539,
+      "stop_reason": "EXHAUSTION"
+    },
+    {
+      "name": "Abrigos",
+      "url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Abrigos",
+      "products_found": 24,
+      "stop_reason": "EXHAUSTION"
+    }
+  ],
+  "sample_products": [
+    {
+      "title": "Chaqueta Corta Tipo Gamuza Negro Nicopoly",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "chaqueta-corta-tipo-gamuza-negro-nicopoly-MKZZ6TNAKM",
+      "price": 29990.0,
+      "position_absolute": 2,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Polera Manga 3/4 Cuello Bote Burdeo Nicopoly",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "polera-manga-34-cuello-bote-burdeo-nicopoly-MKR0DY2RRE",
+      "price": 11990.0,
+      "position_absolute": 3,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Polera Manga Corta Cuello Tipo U Blanco Nicopoly",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "polera-manga-corta-cuello-tipo-u-blanco-nicopoly-MK6BZCE0PH",
+      "price": 11990.0,
+      "position_absolute": 4,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Blusa Vuelos Manga Larga Blanco Nicopoly",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "blusa-vuelos-manga-larga-blanco-nicopoly-MKIGM6GF66",
+      "price": 22990.0,
+      "position_absolute": 5,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Chaqueta Tipo Barbour Mocca Nicopoly",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "chaqueta-tipo-barbour-mocca-nicopoly-MKTIALXZ3E",
+      "price": 32990.0,
+      "position_absolute": 6,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    }
+  ],
+  "checkpoint_written": "YES",
+  "resume_tested": "YES",
+  "duplicate_work_detected": 0,
+  "experience_loaded": "YES",
+  "experience_used": "YES",
+  "experience_decisions_count": 2,
+  "decision_changed": "NO",
+  "capability_matrix": {
+    "ENTRY": "PASS",
+    "DISCOVERY": "PASS",
+    "NAVIGATION_ROUTING": "PASS",
+    "CATEGORY": "PASS",
+    "BRAND_DISCOVERY": "PASS",
+    "ACQUISITION": "PASS",
+    "PRODUCT_EXTRACTION": "PASS",
+    "IDENTITY": "PASS",
+    "MEMBERSHIP": "PASS",
+    "POSITION": "PASS",
+    "EVIDENCE": "PASS",
+    "CHECKPOINT_RESUME": "PASS",
+    "EXPERIENCE": "PASS",
+    "VERIFICATION": "PASS"
+  },
+  "verdict": "PASS"
+}

@@ -1,0 +1,48 @@
+{
+  "run_id": "cert_ripley_1790791105",
+  "marketplace": "Ripley",
+  "brand": "Nicopoly",
+  "checkpoints": [
+    {
+      "timestamp": "2026-09-30T14:59:14.282996",
+      "kind": "category_done",
+      "category_name": "Brand Hub",
+      "category_url": "https://simple.ripley.cl/search/nicopoly",
+      "raw_count": 48,
+      "cumulative_unique_count": 48
+    },
+    {
+      "timestamp": "2026-09-30T14:59:33.421095",
+      "kind": "navigation_source_found",
+      "category_name": null,
+      "category_url": null,
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T14:59:47.843351",
+      "kind": "facet_application",
+      "category_name": "Zapatos Infantiles",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-infantiles",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T14:59:55.318521",
+      "kind": "facet_application",
+      "category_name": "Zapatos Infantiles",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-infantiles",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T15:00:14.486922",
+      "kind": "category_done",
+      "category_name": "Zapatos Infantiles",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-infantiles",
+      "raw_count": 0,
+      "cumulative_unique_count": 48
+    }
+  ],
+  "checkpoint_written": true
+}

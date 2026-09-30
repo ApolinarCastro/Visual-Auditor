@@ -231,11 +231,36 @@ A Ripley brand filter & schema compatibility PASS requires:
 - pipeline_exit_code = 0
 - final_verdict = MRI_RIPLEY_RATE_LIMIT_AND_BRAND_FILTER_PASS
 
+## Four-marketplace E2E re-certification gate (MRI-4MP-E2E-CERT-002)
+
+A 4-marketplace E2E re-certification requires:
+- execution_across_4_marketplaces = YES (ML, Paris, Ripley, Falabella)
+- no_shared_session_state = YES
+- production_files_changed = 0 (exact: 0)
+- new_production_files = 0 (exact: 0)
+- new_dependencies = 0 (exact: 0)
+- autoclaw_actions = 0 (exact: 0)
+- manual_actions = 0 (exact: 0)
+- code_fix_cycles = 0 (exact: 0)
+- hardcoded_result_contribution = 0 (exact: 0)
+- synthetic_contribution = 0 (exact: 0)
+- independent_recount_reconciled = 4/4 (reconciled = YES)
+- false_pass_total = 0 (exact: 0)
+- unsupported_fail_total = 0 (exact: 0)
+- paris_verdict = PASS (539 products observed, 539 brand confirmed)
+- ripley_verdict = PASS (48 products observed, 48 brand confirmed, 0 rate limit, brand filter preserved)
+- falabella_verdict = PASS (171 products observed, 171 brand confirmed)
+- ml_verdict = FAIL (0 products observed; pagination blocked on Page 1 on fallback URL)
+- global_verdict = MRI_4MP_E2E_CERT_FAIL (3/4 PASS, 1/4 FAIL)
+- first_global_blocker = ML_PAGINATION_BLOCKED_ON_FALLBACK_URL
+- next_smallest_task = TASK_ID: MRI-ML-PAGINATION-BLOCK-001
+
 ## Global completion
 
 - required marketplaces meet their own acceptance gates (4/4 PASS: Mercado Libre, Paris, Falabella, Ripley)
 - no unresolved required discovery/acquisition blocker
 - no unprocessed viable frontier required by the declared coverage contract
 - final evidence is reproducible from persisted artifacts
+
 
 

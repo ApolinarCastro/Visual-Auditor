@@ -89,3 +89,10 @@ In VA Legacy, new categories added to `SVMP.xlsx` (such as Falabella: Poleras mu
 3. Verification: Red tests reproduced failure; green tests confirmed 15/15 passing; reconciliation demonstrated `difference = 0` across all 4 marketplaces.
 Status: RESOLVED_AND_CERTIFIED (PASS).
 
+## F-015 — Mercado Libre pagination blocked on brand store category routes
+During MRI-4MP-E2E-CERT-002 transversal certification, Mercado Libre execution failed to observe products in brand store categories:
+1. Symptoms: Playwright navigation to fallback route `https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly` resulted in `Blocked during pagination on Page 1` for both `New In` and `Conjuntos`, yielding 0 products observed and failing blocking capabilities (BRAND_DISCOVERY, ACQUISITION, PRODUCT_EXTRACTION, IDENTITY, MEMBERSHIP).
+2. Status: IDENTIFIED_AND_ISOLATED (OPEN).
+3. Candidate task: `TASK_ID: MRI-ML-PAGINATION-BLOCK-001`.
+
+

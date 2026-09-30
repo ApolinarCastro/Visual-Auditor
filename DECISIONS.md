@@ -100,3 +100,17 @@ MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001 resolved the Ripley integrated blocke
 3. Strict governance: Exactly 2 production files modified, 0 new production files, 0 new dependencies, AutoClaw=0, manual=0, regression=PASS (94/94 passing).
 4. Certified in real run: 1439 routes discovered, 1 route verified, 48 products observed, 48 direct brand evidence (100%), 48 membership evidence (100%), independent verification PASS.
 
+## D-021 — Transversal 4-Marketplace Re-certification (MRI-4MP-E2E-CERT-002)
+MRI-4MP-E2E-CERT-002 executed the second transversal end-to-end certification across all 4 marketplaces:
+1. Operational discipline: Strictly 0 production files modified, 0 new production files, 0 new dependencies, 0 fix cycles, AutoClaw=0, manual=0. No in-flight bug fixes allowed.
+2. Independent runs: Each marketplace executed in isolation with separate subprocesses, clean memory states, and separate PIDs.
+3. Demonstrated outcomes:
+   - Paris: PASS (539 products observed, 539 brand confirmed, 539 unique products, 2 routes verified).
+   - Ripley: PASS (48 products observed, 48 brand confirmed, 48 unique products, 2 routes verified, 0 rate limit, brand filter URL_QUERY preserved).
+   - Falabella: PASS (171 products observed, 171 brand confirmed, 171 unique products, 2 routes verified).
+   - Mercado Libre: FAIL (0 products observed; pagination blocked on Page 1 on fallback URL `https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly`).
+4. Global verdict: MRI_4MP_E2E_CERT_FAIL (3/4 PASS, 1/4 FAIL).
+5. Blocker isolated: `FIRST_GLOBAL_BLOCKER = ML_PAGINATION_BLOCKED_ON_FALLBACK_URL` (Stage: `ACQUISITION / PRODUCT_EXTRACTION`).
+6. Next smallest task defined: `TASK_ID: MRI-ML-PAGINATION-BLOCK-001`.
+
+

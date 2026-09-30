@@ -1,0 +1,102 @@
+{
+  "task_id": "MRI-4MP-E2E-CERT-002",
+  "marketplaces_verified": 4,
+  "reconciled_total": 4,
+  "reconciled": "YES",
+  "false_pass_total": 0,
+  "unsupported_fail_total": 0,
+  "synthetic_contribution_total": 0,
+  "hardcoded_result_contribution_total": 0,
+  "hardcoded_execution_input": 0,
+  "status": "PASS",
+  "detail": {
+    "Mercado Libre": {
+      "reported": {
+        "routes_discovered": 2,
+        "routes_verified": 0,
+        "products_observed": 0,
+        "unique_products": 0,
+        "direct_brand_evidence": 0,
+        "membership_evidence": 0,
+        "verdict": "FAIL"
+      },
+      "recalculated": {
+        "routes_discovered": 2,
+        "routes_verified": 0,
+        "products_observed": 0,
+        "unique_products": 0,
+        "direct_brand_evidence": 0,
+        "membership_evidence": 0
+      },
+      "reconciled": "YES",
+      "false_pass": 0,
+      "unsupported_fail": 0
+    },
+    "Paris": {
+      "reported": {
+        "routes_discovered": 2,
+        "routes_verified": 2,
+        "products_observed": 539,
+        "unique_products": 539,
+        "direct_brand_evidence": 539,
+        "membership_evidence": 539,
+        "verdict": "PASS"
+      },
+      "recalculated": {
+        "routes_discovered": 2,
+        "routes_verified": 2,
+        "products_observed": 539,
+        "unique_products": 539,
+        "direct_brand_evidence": 539,
+        "membership_evidence": 539
+      },
+      "reconciled": "YES",
+      "false_pass": 0,
+      "unsupported_fail": 0
+    },
+    "Ripley": {
+      "reported": {
+        "routes_discovered": 1434,
+        "routes_verified": 2,
+        "products_observed": 48,
+        "unique_products": 48,
+        "direct_brand_evidence": 48,
+        "membership_evidence": 48,
+        "verdict": "PASS"
+      },
+      "recalculated": {
+        "routes_discovered": 1434,
+        "routes_verified": 2,
+        "products_observed": 48,
+        "unique_products": 48,
+        "direct_brand_evidence": 48,
+        "membership_evidence": 48
+      },
+      "reconciled": "YES",
+      "false_pass": 0,
+      "unsupported_fail": 0
+    },
+    "Falabella": {
+      "reported": {
+        "routes_discovered": 3,
+        "routes_verified": 2,
+        "products_observed": 171,
+        "unique_products": 171,
+        "direct_brand_evidence": 171,
+        "membership_evidence": 171,
+        "verdict": "PASS"
+      },
+      "recalculated": {
+        "routes_discovered": 3,
+        "routes_verified": 2,
+        "products_observed": 171,
+        "unique_products": 171,
+        "direct_brand_evidence": 171,
+        "membership_evidence": 171
+      },
+      "reconciled": "YES",
+      "false_pass": 0,
+      "unsupported_fail": 0
+    }
+  }
+}

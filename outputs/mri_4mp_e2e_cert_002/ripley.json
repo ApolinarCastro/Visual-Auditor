@@ -1,0 +1,135 @@
+{
+  "marketplace": "Ripley",
+  "brand_runtime": "Nicopoly",
+  "run_id": "cert_ripley_1790791105",
+  "pid": 25572,
+  "start_time": "2026-09-30T14:58:25.147696",
+  "end_time": "2026-09-30T15:00:16.062647",
+  "duration": 110.91,
+  "duration_seconds": 110.91,
+  "pipeline_exit_code": 0,
+  "entry": "PASS",
+  "discovery": "PASS",
+  "navigation_routing": "PASS",
+  "category": "PASS",
+  "brand_discovery": "PASS",
+  "acquisition": "PASS",
+  "product_extraction": "PASS",
+  "identity": "PASS",
+  "membership": "PASS",
+  "position": "PASS",
+  "evidence": "PASS",
+  "checkpoint_resume": "PASS",
+  "experience": "PASS",
+  "verification": "PASS",
+  "routes_discovered": 1434,
+  "routes_verified": 2,
+  "products_observed": 48,
+  "unique_products": 48,
+  "direct_brand_evidence": 48,
+  "membership_evidence": 48,
+  "position_evidence": 48,
+  "autoclaw_actions": 0,
+  "manual_actions": 0,
+  "synthetic_contribution": 0,
+  "hardcoded_result_contribution": 0,
+  "hardcoded_execution_input": 0,
+  "first_failure": null,
+  "entry_url": "https://simple.ripley.cl/search/nicopoly",
+  "final_url": "https://simple.ripley.cl/search/nicopoly",
+  "verified_routes_detail": [
+    {
+      "name": "Brand Hub",
+      "url": "https://simple.ripley.cl/search/nicopoly",
+      "products_found": 48,
+      "stop_reason": "PAGINATION_PARAM_NOT_FOUND"
+    },
+    {
+      "name": "Zapatos Infantiles",
+      "url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-infantiles",
+      "products_found": 0,
+      "stop_reason": "EXHAUSTION"
+    }
+  ],
+  "sample_products": [
+    {
+      "title": "CHAQUETA BIKER NEGRO MUJER NICOPOLY",
+      "vendor": "NICOPOLY",
+      "marketplace_sku": "10002617343",
+      "price": 54990.0,
+      "position_absolute": 1,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "POLERA ENCAJE MANGA LARGA NEGRO MUJER NICOPOLY",
+      "vendor": "NICOPOLY",
+      "marketplace_sku": "10002951146",
+      "price": 25990.0,
+      "position_absolute": 2,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "VESTIDO TIPO CAMISERO MUJER NICOPOLY",
+      "vendor": "NICOPOLY",
+      "marketplace_sku": "10002967232",
+      "price": 32990.0,
+      "position_absolute": 3,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "CARDIGAN BASICO ROSADO MUJER NICOPOLY",
+      "vendor": "NICOPOLY",
+      "marketplace_sku": "10002924256",
+      "price": 21990.0,
+      "position_absolute": 4,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "BLAZER 4 BOTONES DECORATIVOS NEGRO MUJER NICOPOLY",
+      "vendor": "NICOPOLY",
+      "marketplace_sku": "10001713165",
+      "price": 39990.0,
+      "position_absolute": 5,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    }
+  ],
+  "checkpoint_written": "YES",
+  "resume_tested": "YES",
+  "duplicate_work_detected": 0,
+  "experience_loaded": "YES",
+  "experience_used": "YES",
+  "experience_decisions_count": 2,
+  "decision_changed": "NO",
+  "capability_matrix": {
+    "ENTRY": "PASS",
+    "DISCOVERY": "PASS",
+    "NAVIGATION_ROUTING": "PASS",
+    "CATEGORY": "PASS",
+    "BRAND_DISCOVERY": "PASS",
+    "ACQUISITION": "PASS",
+    "PRODUCT_EXTRACTION": "PASS",
+    "IDENTITY": "PASS",
+    "MEMBERSHIP": "PASS",
+    "POSITION": "PASS",
+    "EVIDENCE": "PASS",
+    "CHECKPOINT_RESUME": "PASS",
+    "EXPERIENCE": "PASS",
+    "VERIFICATION": "PASS"
+  },
+  "verdict": "PASS"
+}

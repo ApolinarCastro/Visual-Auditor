@@ -1,0 +1,54 @@
+{
+  "task_id": "MRI-4MP-E2E-CERT-002",
+  "baseline_sha": "64dcf20dd1789bdf7a3053f3f8fc3ec959f08fb2",
+  "brand_runtime": "Nicopoly",
+  "marketplaces_execution_order": [
+    "Mercado Libre",
+    "Paris",
+    "Ripley",
+    "Falabella"
+  ],
+  "total_duration_seconds": 498.34,
+  "runs": {
+    "Mercado Libre": {
+      "pid": 14000,
+      "run_id": "cert_ml_1790790822",
+      "start_time": "2026-09-30T14:53:42.861106",
+      "end_time": "2026-09-30T14:54:58.563172",
+      "duration": 75.7,
+      "exit_code": 1,
+      "verdict": "FAIL",
+      "evidence_path": "C:\\Users\\ASUS Zenbook\\Documents\\Visibility Auditor\\outputs\\mri_4mp_e2e_cert_002\\ml.json"
+    },
+    "Paris": {
+      "pid": 28852,
+      "run_id": "cert_paris_1790790949",
+      "start_time": "2026-09-30T14:55:49.633333",
+      "end_time": "2026-09-30T14:58:10.181963",
+      "duration": 140.55,
+      "exit_code": 0,
+      "verdict": "PASS",
+      "evidence_path": "C:\\Users\\ASUS Zenbook\\Documents\\Visibility Auditor\\outputs\\mri_4mp_e2e_cert_002\\paris.json"
+    },
+    "Ripley": {
+      "pid": 25572,
+      "run_id": "cert_ripley_1790791105",
+      "start_time": "2026-09-30T14:58:25.147696",
+      "end_time": "2026-09-30T15:00:16.062647",
+      "duration": 110.91,
+      "exit_code": 0,
+      "verdict": "PASS",
+      "evidence_path": "C:\\Users\\ASUS Zenbook\\Documents\\Visibility Auditor\\outputs\\mri_4mp_e2e_cert_002\\ripley.json"
+    },
+    "Falabella": {
+      "pid": 14376,
+      "run_id": "cert_falabella_1790791294",
+      "start_time": "2026-09-30T15:01:34.235797",
+      "end_time": "2026-09-30T15:01:54.648542",
+      "duration": 20.41,
+      "exit_code": 0,
+      "verdict": "PASS",
+      "evidence_path": "C:\\Users\\ASUS Zenbook\\Documents\\Visibility Auditor\\outputs\\mri_4mp_e2e_cert_002\\falabella.json"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "run_id": "cert_falabella_1790791294",
+  "marketplace": "Falabella",
+  "brand": "Nicopoly",
+  "checkpoints": [
+    {
+      "timestamp": "2026-09-30T15:01:46.676043",
+      "kind": "category_done",
+      "category_name": "Brand Hub",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly",
+      "raw_count": 96,
+      "cumulative_unique_count": 96
+    },
+    {
+      "timestamp": "2026-09-30T15:01:46.701489",
+      "kind": "navigation_discovered",
+      "category_name": null,
+      "category_url": null,
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T15:01:53.308611",
+      "kind": "category_done",
+      "category_name": "Mujer",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.L0_category_paths=cat7330051%7C%7CMujer",
+      "raw_count": 96,
+      "cumulative_unique_count": 171
+    }
+  ],
+  "checkpoint_written": true
+}
