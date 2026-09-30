@@ -113,4 +113,15 @@ MRI-4MP-E2E-CERT-002 executed the second transversal end-to-end certification ac
 5. Blocker isolated: `FIRST_GLOBAL_BLOCKER = ML_PAGINATION_BLOCKED_ON_FALLBACK_URL` (Stage: `ACQUISITION / PRODUCT_EXTRACTION`).
 6. Next smallest task defined: `TASK_ID: MRI-ML-PAGINATION-BLOCK-001`.
 
+## D-022 — Mercado Libre Autonomous Acquisition Restoration and Store Showcase Parsing
+MRI-ML-PAGINATION-BLOCK-001 resolved the Mercado Libre regression detected in MRI-4MP-E2E-CERT-002:
+1. Forensic causal isolation: Proved that the symptom `ML_PAGINATION_BLOCKED_ON_FALLBACK_URL` was not caused by pagination algorithms. The root cause was `ML_CAUSE_URL_TRANSFORMATION`: lines 74-77 in `mercadolibre_scraper.py` unconditionally transformed official store URLs (`tienda/<brand>`) and container categories into the unsegmented public fallback `https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly`, which triggered Akamai bot detection (`account-verification` challenge) halting extraction on Page 1. Furthermore, line 488 filtered out store carousel products (`ui-ms-polycard-carousel`).
+2. Surgical resolution:
+   - `mercadolibre_scraper.py`: Added `_get_clean_navigation_url(url)` to preserve official store URLs intact, eliminating unconditional rewrite to the blocked fallback URL.
+   - `mercadolibre_scraper.py`: Exempted official store showcases (`ui-ms-section-eshops`, `home--seller`, `ui-ms-polycard-carousel`) from the carousel rejection filter so legitimate store poly-cards are preserved.
+   - `mercadolibre_scraper.py`: Added `andes-money-amount` and `andes-money-amount__fraction` to `price_el` selectors and made vendor fallback extraction dynamically resolve from the URL slug (`tienda/<brand>`).
+3. Strict governance: Exactly 1 production file modified (`app/scrapers/mercadolibre_scraper.py`), 0 new production files, 0 new dependencies, AutoClaw=0, manual=0, regression=PASS (42/42 passing).
+4. Certified in real run: 3 routes discovered, 1 route verified (Brand Hub, stop_reason EXHAUSTION), 37 products observed, 37 direct brand evidence items (100%), 37 membership evidence items (100%), independent verification PASS (`reconciled = YES`, `false_pass = 0`).
+
+
 

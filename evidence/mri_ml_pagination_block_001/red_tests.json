@@ -1,0 +1,21 @@
+{
+  "task_id": "MRI-ML-PAGINATION-BLOCK-001",
+  "red_tests_file": "tests/test_ml_url_routing_and_acquisition_red.py",
+  "red_reproduced": "YES",
+  "tests": [
+    {
+      "test_name": "test_ml_navigate_does_not_unconditionally_rewrite_store_url",
+      "status": "FAILED",
+      "expected": "Official store URL is preserved without being rewritten to blocked fallback URL or hardcoded brand",
+      "observed": "clean_url logic not exposed and raw navigate rewrote tienda/nicopoly to https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly",
+      "first_failure": "AssertionError: Scraper must have a method to resolve clean navigation URL without side effects"
+    },
+    {
+      "test_name": "test_ml_official_store_showcase_extraction_not_discarded",
+      "status": "FAILED",
+      "expected": "2 products extracted from official store showcase poly-cards",
+      "observed": "0 products extracted (line 491 discarded carousel items)",
+      "first_failure": "AssertionError: Expected 2 products from official store showcase, but extracted 0 (assert 0 == 2)"
+    }
+  ]
+}

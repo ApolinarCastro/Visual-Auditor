@@ -1,0 +1,18 @@
+{
+  "task_id": "MRI-ML-PAGINATION-BLOCK-001",
+  "regression_result": "PASS",
+  "test_suites": [
+    "tests/test_mri_ml_brand_routing.py",
+    "tests/test_regression_guardrails.py",
+    "tests/test_mri_ripley_brand_constraint.py",
+    "tests/test_mri_paris_brand_routing.py",
+    "tests/test_mri_falabella_brand_routing.py",
+    "tests/test_mri_falabella_entry.py",
+    "tests/test_mri_hub_retry_policy.py",
+    "tests/test_va_svmp_category_sync.py",
+    "tests/test_ml_url_routing_and_acquisition_red.py"
+  ],
+  "total_regression_tests_passed": 42,
+  "total_regression_tests_failed": 0,
+  "guardrails_pass": true
+}

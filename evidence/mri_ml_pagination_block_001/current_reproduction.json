@@ -1,0 +1,26 @@
+{
+  "task_id": "MRI-ML-PAGINATION-BLOCK-001",
+  "current_run_id": "cert_ml_1790790822",
+  "source_evidence_path": "outputs/mri_4mp_e2e_cert_002/ml.json",
+  "marketplace": "Mercado Libre",
+  "brand_runtime": "Nicopoly",
+  "entry_url": "https://www.mercadolibre.cl/tienda/nicopoly",
+  "brand_surface": "https://www.mercadolibre.cl/tienda/nicopoly",
+  "discovery_source": "BRAND_STORE_ML",
+  "candidates": [
+    "New In",
+    "Conjuntos"
+  ],
+  "selected_route": "New In",
+  "route_type": "COMMERCIAL_CATEGORY",
+  "acquisition_url": "https://listado.mercadolibre.cl/tienda/nicopoly/_Container_ESP-1E4957B3099140B3A05F3AEEA297D34F386329223-New-In?tracking_id=530d43c1d9d60c8552931bed1182cd21",
+  "page_1_url": "https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly",
+  "page_2_url": null,
+  "pagination_mechanism": "DOM_BUTTON_TRAVERSAL",
+  "navigation_result": "BLOCKED (Redirected to https://www.mercadolibre.cl/gz/account-verification)",
+  "products_extracted": 0,
+  "brand_evidence": 0,
+  "membership": 0,
+  "exception_or_error": "Blocked during pagination on Page 1 (stop_reason: BLOCKED)",
+  "pipeline_exit_code": 1
+}

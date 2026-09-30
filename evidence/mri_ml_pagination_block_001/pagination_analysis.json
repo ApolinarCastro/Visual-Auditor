@@ -1,0 +1,12 @@
+{
+  "task_id": "MRI-ML-PAGINATION-BLOCK-001",
+  "pagination_required": false,
+  "pagination_strategy": "DOM_BUTTON_AND_SCROLL",
+  "page_1": "https://www.mercadolibre.cl/tienda/nicopoly",
+  "page_2_generated": null,
+  "page_2_expected_shape": "N/A",
+  "page_2_navigation_result": "N/A",
+  "pagination_block_reason": "The failure reported as ML_PAGINATION_BLOCKED_ON_FALLBACK_URL was NOT caused by pagination logic. It was caused by URL transformation in navigate() sending requests to https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly, which triggered an account-verification block on Page 1 before pagination could even begin. On the legitimate official store front (https://www.mercadolibre.cl/tienda/<brand>), 40 verified products are rendered directly on the primary surface, requiring no forced Page 2 pagination.",
+  "pagination_not_required_current_surface": true,
+  "fault_component": "route transformation / URL normalization"
+}

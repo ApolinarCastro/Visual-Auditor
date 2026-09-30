@@ -1,0 +1,173 @@
+{
+  "task_id": "MRI-ML-PAGINATION-BLOCK-001",
+  "marketplace": "Mercado Libre",
+  "brand_runtime": "Nicopoly",
+  "run_id": "cert_ml_1790795735",
+  "pid": 18868,
+  "start_time": "2026-09-30T16:14:45.207406",
+  "end_time": "2026-09-30T16:15:35.006724",
+  "duration_seconds": 49.8,
+  "pipeline_exit_code": 0,
+  "entry": "PASS",
+  "discovery": "PASS",
+  "navigation_routing": "PASS",
+  "category": "PASS",
+  "brand_discovery": "PASS",
+  "acquisition": "PASS",
+  "product_extraction": "PASS",
+  "identity": "PASS",
+  "membership": "PASS",
+  "evidence": "PASS",
+  "verification": "PASS",
+  "routes_discovered": 3,
+  "routes_verified": 1,
+  "products_observed": 37,
+  "unique_products": 37,
+  "direct_brand_evidence": 37,
+  "membership_evidence": 37,
+  "autoclaw_actions": 0,
+  "manual_actions": 0,
+  "synthetic_contribution": 0,
+  "hardcoded_result_contribution": 0,
+  "pagination_not_required_current_surface": true,
+  "verified_routes_detail": [
+    {
+      "name": "Brand Hub",
+      "url": "https://www.mercadolibre.cl/tienda/nicopoly",
+      "products_found": 80,
+      "stop_reason": "EXHAUSTION"
+    }
+  ],
+  "sample_products": [
+    {
+      "title": "Blusa Drapeada Tipo Satín Cuello Alto Blanco Nicopoly Blanco Liso M",
+      "vendor": "Nicopoly",
+      "price": 26990.0,
+      "marketplace_sku": "MLC2250582941",
+      "page": 1,
+      "position_local": 1,
+      "position_absolute": 1,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Top / Blusa Lunares Con Botones Café Nicopoly Café Liso L",
+      "vendor": "Nicopoly",
+      "price": 21990.0,
+      "marketplace_sku": "MLC4485751658",
+      "page": 1,
+      "position_local": 4,
+      "position_absolute": 4,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Falda Tipo Satín Oliva Nicopoly Oliva Liso M",
+      "vendor": "Nicopoly",
+      "price": 28990.0,
+      "marketplace_sku": "MLC4452210104",
+      "page": 1,
+      "position_local": 7,
+      "position_absolute": 7,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Blazer Manga 3/4 Ajustado Con Solapas Amarillo Mantequilla Nicopoly Amarillo S Liso",
+      "vendor": "Nicopoly",
+      "price": 53990.0,
+      "marketplace_sku": "MLC2181838969",
+      "page": 1,
+      "position_local": 10,
+      "position_absolute": 10,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Pantalón Rayas Verticales Azul Marino Nicopoly Azul Marino Liso M",
+      "vendor": "Nicopoly",
+      "price": 35990.0,
+      "marketplace_sku": "MLC2250985925",
+      "page": 1,
+      "position_local": 13,
+      "position_absolute": 13,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    }
+  ],
+  "checkpoints": [
+    {
+      "timestamp": "2026-09-30T16:15:24.615032",
+      "kind": "category_done",
+      "category_name": "Brand Hub",
+      "category_url": "https://www.mercadolibre.cl/tienda/nicopoly",
+      "raw_count": 80,
+      "cumulative_unique_count": 37
+    },
+    {
+      "timestamp": "2026-09-30T16:15:24.615819",
+      "kind": "EXPERIENCE_DECISION",
+      "category_name": null,
+      "category_url": null,
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T16:15:24.631391",
+      "kind": "navigation_discovered",
+      "category_name": null,
+      "category_url": null,
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T16:15:24.631450",
+      "kind": "frontier_state",
+      "category_name": null,
+      "category_url": null,
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T16:15:24.631489",
+      "kind": "category_attempt",
+      "category_name": "New In",
+      "category_url": "https://listado.mercadolibre.cl/tienda/nicopoly/_Container_ESP-1E4957B3099140B3A05F3AEEA297D34F386329223-New-In?tracking_id=530d43c1d9d60c8552931bed1182cd21",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T16:15:33.479930",
+      "kind": "category_done",
+      "category_name": "New In",
+      "category_url": "https://listado.mercadolibre.cl/tienda/nicopoly/_Container_ESP-1E4957B3099140B3A05F3AEEA297D34F386329223-New-In?tracking_id=530d43c1d9d60c8552931bed1182cd21",
+      "raw_count": 0,
+      "cumulative_unique_count": 37
+    }
+  ]
+}

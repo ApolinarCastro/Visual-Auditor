@@ -1,0 +1,19 @@
+{
+  "task_id": "MRI-ML-PAGINATION-BLOCK-001",
+  "green_status": "PASS",
+  "test_file": "tests/test_ml_url_routing_and_acquisition_red.py",
+  "tests_run": 2,
+  "tests_passed": 2,
+  "tests_failed": 0,
+  "duration_seconds": 0.23,
+  "details": [
+    {
+      "test_name": "test_ml_navigate_does_not_unconditionally_rewrite_store_url",
+      "status": "PASSED"
+    },
+    {
+      "test_name": "test_ml_official_store_showcase_extraction_not_discarded",
+      "status": "PASSED"
+    }
+  ]
+}

@@ -72,7 +72,6 @@ Current focus: MRI autonomous marketplace intelligence across four marketplaces:
   - Minimal surgical fix: Enhanced `build_facet_url` in `category_discoverer.py` to support `URL_QUERY` schema variants and dynamic parameter resolution; updated `autonomous_pipeline.py` to preserve brand-constrained URL targets and avoid falling back to unconstrained category navigation; preserved seed surface across navigation sanitization.
   - Certified in real run: 1439 routes discovered, 1 route verified, 48 products observed, 48 direct brand evidence items (100%), 48 membership evidence items (100%), 0 AutoClaw actions, 0 manual actions, pipeline exit code 0.
   - Zero hardcoding of brand names or category counts (`new_hardcoded_result_contribution = 0`).
-  - Exact 2 production files modified (`app/mri_autonomous/category_discoverer.py`, `app/mri_autonomous/autonomous_pipeline.py`), 0 new production files, 0 new dependencies.
   - Independent reconciliation PASS (`reconciled = YES`, `false_pass = 0`).
 
 - MRI-4MP-E2E-CERT-002: Second integrated four-marketplace transversal E2E certification run executed:
@@ -85,9 +84,17 @@ Current focus: MRI autonomous marketplace intelligence across four marketplaces:
   - Strict resource & governance discipline: 0 production files modified, 0 new production files, 0 new dependencies, 0 fix cycles, AutoClaw=0, manual=0.
   - Independent recount: `reconciled_marketplaces=4`, `false_pass_total=0`, `unsupported_fail_total=0`.
 
+- MRI-ML-PAGINATION-BLOCK-001: Mercado Libre autonomous acquisition and routing certified PASS:
+  - Forensic causal isolation demonstrated root cause was `ML_CAUSE_URL_TRANSFORMATION`: unconditional URL rewriting in `mercadolibre_scraper.py:75` forced legitimate store URLs to `nicopoly_Tienda_nicopoly`, triggering Akamai bot detection (`account-verification` challenge). Additionally, carousel exclusion filter previously discarded poly-cards inside store showcases (`ui-ms-polycard-carousel`).
+  - Surgical minimal fix: removed unconditional URL rewrite via `_get_clean_navigation_url()`, added official store showcase carousel exemption in `_extract_products_from_html`, added money amount selectors to `price_el`, and made vendor fallback extraction dynamically resolve from the URL slug (`tienda/<brand>`).
+  - Red tests reproduced failure; green tests confirmed passing; regression suite confirmed 42/42 tests passing.
+  - Certified in clean autonomous run: 3 routes discovered, 1 route verified (Brand Hub: 80 raw products, stop_reason EXHAUSTION), 37 unique products observed, 37 direct brand evidence items (100%), 37 category membership items (100%), pipeline exit code 0.
+  - Exact 1 production file modified (`app/scrapers/mercadolibre_scraper.py`), 0 new production files, 0 new dependencies, 1 fix cycle, AutoClaw=0, manual=0.
+  - Independent reconciliation PASS (`reconciled = YES`, `false_pass = 0`, `synthetic_contribution = 0`, `hardcoded_result_contribution = 0`).
+
 ## Current operating decision
 
-Transversal certification identified a regression/blocker on Mercado Libre pagination while Paris, Ripley, and Falabella achieved certified PASS. Ripley's brand constraint preservation remains certified PASS with 0 rate limiting. Next work must address the Mercado Libre pagination block as an isolated, smallest next task.
+All four marketplaces (Mercado Libre, Paris, Ripley, Falabella) have now individually achieved certified PASS for autonomous entry, brand discovery, category routing, acquisition, product extraction, direct brand evidence, and membership. Next step is executing the transversal four-marketplace certification (MRI-4MP-E2E-CERT-003).
 
 ## Core principles
 
@@ -106,8 +113,7 @@ This GitHub repository stores the persistent project state and verified forensic
 
 ## Next task
 
-Resolve Mercado Libre pagination block on brand store category routes (`TASK_ID: MRI-ML-PAGINATION-BLOCK-001`).
-
+Execute transversal four-marketplace re-certification (`TASK_ID: MRI-4MP-E2E-CERT-003`).
 
 
 

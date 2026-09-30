@@ -92,7 +92,11 @@ Status: RESOLVED_AND_CERTIFIED (PASS).
 ## F-015 — Mercado Libre pagination blocked on brand store category routes
 During MRI-4MP-E2E-CERT-002 transversal certification, Mercado Libre execution failed to observe products in brand store categories:
 1. Symptoms: Playwright navigation to fallback route `https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly` resulted in `Blocked during pagination on Page 1` for both `New In` and `Conjuntos`, yielding 0 products observed and failing blocking capabilities (BRAND_DISCOVERY, ACQUISITION, PRODUCT_EXTRACTION, IDENTITY, MEMBERSHIP).
-2. Status: IDENTIFIED_AND_ISOLATED (OPEN).
-3. Candidate task: `TASK_ID: MRI-ML-PAGINATION-BLOCK-001`.
+2. Root cause resolution in MRI-ML-PAGINATION-BLOCK-001:
+   - Root cause identified as `ML_CAUSE_URL_TRANSFORMATION`: unconditional URL rewriting in `mercadolibre_scraper.py:75` forced legitimate store URLs to `nicopoly_Tienda_nicopoly`, triggering an Akamai bot detection challenge (`account-verification`). Furthermore, carousel exclusion filter previously discarded poly-cards inside store showcases (`ui-ms-polycard-carousel`).
+   - Minimal surgical fix: removed unconditional URL rewrite via `_get_clean_navigation_url()`, added official store showcase carousel exemption in `_extract_products_from_html`, added money amount selectors to `price_el`, and made vendor fallback extraction dynamically resolve from the URL slug (`tienda/<brand>`).
+   - Certified in real run: 3 routes discovered, 1 route verified (Brand Hub, stop_reason EXHAUSTION), 37 products observed, 37 direct brand evidence items (100%), 37 membership evidence items (100%), independent verification PASS.
+3. Status: RESOLVED_AND_CERTIFIED (PASS).
+
 
 

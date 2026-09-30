@@ -1,0 +1,22 @@
+{
+  "task_id": "MRI-ML-PAGINATION-BLOCK-001",
+  "implementation_status": "COMPLETED",
+  "production_files_changed": 2,
+  "files_changed": [
+    "app/scrapers/mercadolibre_scraper.py",
+    "app/scrapers/base_scraper.py"
+  ],
+  "new_production_files": 0,
+  "new_dependencies": 0,
+  "fix_cycles": 1,
+  "changes": [
+    {
+      "file": "app/scrapers/mercadolibre_scraper.py",
+      "summary": "1) Added _get_clean_navigation_url(url) returning the preserved URL intact, eliminating unconditional rewrite to blocked fallback search URL. 2) Updated _extract_products_from_html to recognize official store showcase carousels (ui-ms-section-eshops, home--seller, ui-ms-polycard-carousel), preventing legitimate store poly-cards from being discarded. 3) Made vendor fallback resolution dynamic via tienda regex from URL instead of hardcoding 'Nicopoly'."
+    },
+    {
+      "file": "app/scrapers/base_scraper.py",
+      "summary": "Enforced headless=True strictly for Mercado Libre per AGENTS.md Rule 1, leaving only Ripley with non-headless authorization for Cloudflare Turnstile."
+    }
+  ]
+}

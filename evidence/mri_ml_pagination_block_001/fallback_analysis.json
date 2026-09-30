@@ -1,0 +1,19 @@
+{
+  "task_id": "MRI-ML-PAGINATION-BLOCK-001",
+  "fallback_triggered": true,
+  "fallback_trigger_reason": "Static code condition in mercadolibre_scraper.py:75 ('tienda/nicopoly' in url and '/listado/' not in url) executed unconditionally on all official store requests, rather than detecting actual redirection or WAF challenges.",
+  "fallback_source": "app/scrapers/mercadolibre_scraper.py:74-78",
+  "fallback_input_url": "https://www.mercadolibre.cl/tienda/nicopoly (and container corridor URLs)",
+  "fallback_output_url": "https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly",
+  "brand_constraint_before": "Explicit official brand store corridor (tienda/nicopoly)",
+  "brand_constraint_after": "Public search keyword query (_Tienda_nicopoly)",
+  "commercial_route_before": "Official store showcase / container corridor",
+  "commercial_route_after": "Unsegmented search PLP",
+  "evaluation": {
+    "A_preserves_brand": "In theory via query string, but in practice Mercado Libre blocks automated requests on this unauthenticated search surface with account-verification.",
+    "B_changes_surface_non_equivalent": "YES. Switches from the accessible official brand store domain (www.mercadolibre.cl/tienda/nicopoly) to the aggressive bot-shielded search domain (listado.mercadolibre.cl).",
+    "C_destroys_parameters": "YES. Completely strips specific container and corridor IDs (_Container_ESP-...).",
+    "D_generates_unpaginable_url": "YES. Generates a URL that is intercepted on Page 1 by Akamai bot challenge.",
+    "E_receives_incorrect_url_from_earlier": "NO. Receives valid, working URLs from category_discoverer and autonomous_pipeline."
+  }
+}

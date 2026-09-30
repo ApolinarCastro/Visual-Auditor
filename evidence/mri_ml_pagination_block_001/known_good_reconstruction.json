@@ -1,0 +1,22 @@
+{
+  "task_id": "MRI-ML-PAGINATION-BLOCK-001",
+  "known_good_run_id": "cert_mercado_libre_1790777832",
+  "source_evidence_path": "evidence/mri_4mp_e2e_cert_001/ml.json",
+  "known_good_entry_url": "https://www.mercadolibre.cl/tienda/nicopoly",
+  "known_good_brand_surface": "https://www.mercadolibre.cl/tienda/nicopoly",
+  "known_good_discovery_source": "BRAND_STORE_ML",
+  "known_good_candidates": [
+    "Brand Hub",
+    "New In",
+    "Conjuntos"
+  ],
+  "known_good_selected_route": "Brand Hub",
+  "known_good_route_type": "BRAND_SURFACE",
+  "known_good_acquisition_url": "https://www.mercadolibre.cl/tienda/nicopoly",
+  "known_good_page_1_url": "https://www.mercadolibre.cl/tienda/nicopoly",
+  "known_good_page_2_url": "UNKNOWN",
+  "known_good_pagination_mechanism": "DOM_BUTTON_AND_SCROLL",
+  "known_good_products": 524,
+  "known_good_brand_evidence": 524,
+  "known_good_membership": 524
+}

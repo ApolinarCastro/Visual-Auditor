@@ -1,0 +1,99 @@
+{
+  "task_id": "MRI-ML-PAGINATION-BLOCK-001",
+  "first_divergence_stage": "URL_TRANSFORMATION",
+  "causal_classification": "ML_CAUSE_URL_TRANSFORMATION",
+  "first_causal_break": "mercadolibre_scraper.py lines 74-77 unconditionally transformed official store URLs (tienda/<brand>) and container category URLs (_Container_) into the unsegmented public fallback https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly, which triggered Akamai bot detection (account-verification challenge), halting acquisition on Page 1 with 0 products.",
+  "diff_matrix": [
+    {
+      "stage": "ENTRY",
+      "known_good": "https://www.mercadolibre.cl/tienda/nicopoly",
+      "current_fail": "https://www.mercadolibre.cl/tienda/nicopoly",
+      "comparison": "SAME",
+      "evidence": "Both runs initialized navigation from the verified official store entry point."
+    },
+    {
+      "stage": "BRAND_SURFACE",
+      "known_good": "https://www.mercadolibre.cl/tienda/nicopoly",
+      "current_fail": "https://www.mercadolibre.cl/tienda/nicopoly",
+      "comparison": "SAME",
+      "evidence": "Both successfully rendered the official store Brand Hub document (HTTP 200)."
+    },
+    {
+      "stage": "DISCOVERY_SOURCE",
+      "known_good": "BRAND_STORE_ML",
+      "current_fail": "BRAND_STORE_ML",
+      "comparison": "SAME",
+      "evidence": "Both discovered commercial corridor links from the official store document."
+    },
+    {
+      "stage": "CANDIDATE",
+      "known_good": "Brand Hub, New In, Conjuntos",
+      "current_fail": "New In, Conjuntos",
+      "comparison": "DIFFERENT",
+      "evidence": "In cert 001 Brand Hub was processed as batch 0; in cert 002 Brand Hub was not emitted or failed early."
+    },
+    {
+      "stage": "COMMERCIAL_CLASSIFICATION",
+      "known_good": "BRAND_SURFACE, COMMERCIAL_CATEGORY",
+      "current_fail": "COMMERCIAL_CATEGORY",
+      "comparison": "DIFFERENT",
+      "evidence": "Cert 002 attempted category corridors without successfully acquiring the brand hub surface."
+    },
+    {
+      "stage": "ROUTE_SELECTION",
+      "known_good": "Brand Hub then New In",
+      "current_fail": "New In",
+      "comparison": "DIFFERENT",
+      "evidence": "Cert 002 selected corridor container URLs directly."
+    },
+    {
+      "stage": "ACQUISITION_URL",
+      "known_good": "https://www.mercadolibre.cl/tienda/nicopoly",
+      "current_fail": "https://listado.mercadolibre.cl/tienda/nicopoly/_Container_ESP-1E4957B3099140B3A05F3AEEA297D34F386329223-New-In?tracking_id=530d43c1d9d60c8552931bed1182cd21",
+      "comparison": "DIFFERENT",
+      "evidence": "Cert 002 dispatched to corridor container URL."
+    },
+    {
+      "stage": "URL_TRANSFORMATION",
+      "known_good": "Preserved store URL (or fallback was not challenged at cert 001 time)",
+      "current_fail": "Unconditionally rewritten to https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly",
+      "comparison": "DIFFERENT",
+      "evidence": "mercadolibre_scraper.py:75 rewrote url because 'tienda/nicopoly' in url and '/listado/' not in url."
+    },
+    {
+      "stage": "PAGE_1_URL",
+      "known_good": "https://www.mercadolibre.cl/tienda/nicopoly",
+      "current_fail": "https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly",
+      "comparison": "DIFFERENT",
+      "evidence": "Scraper navigated to fallback public listing instead of official store page."
+    },
+    {
+      "stage": "PAGINATION_MECHANISM",
+      "known_good": "Playwright pagination traversal",
+      "current_fail": "Playwright pagination traversal",
+      "comparison": "SAME",
+      "evidence": "Both runs used scrape_autonomous_category pagination while loop."
+    },
+    {
+      "stage": "PAGE_2_URL",
+      "known_good": "Traversed across pagination",
+      "current_fail": "Not reached (blocked on page 1)",
+      "comparison": "DIFFERENT",
+      "evidence": "Cert 002 halted before page 2 could be requested."
+    },
+    {
+      "stage": "NAVIGATION_RESULT",
+      "known_good": "SUCCESS (HTTP 200, products loaded)",
+      "current_fail": "BLOCKED (Redirected to https://www.mercadolibre.cl/gz/account-verification)",
+      "comparison": "DIFFERENT",
+      "evidence": "Akamai bot challenge intercepted https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly."
+    },
+    {
+      "stage": "PRODUCT_EXTRACTION",
+      "known_good": "524 products observed",
+      "current_fail": "0 products observed (stop_reason: BLOCKED)",
+      "comparison": "DIFFERENT",
+      "evidence": "Acquisition failed completely due to navigation block."
+    }
+  ]
+}

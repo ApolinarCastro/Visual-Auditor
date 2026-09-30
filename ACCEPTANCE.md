@@ -255,12 +255,52 @@ A 4-marketplace E2E re-certification requires:
 - first_global_blocker = ML_PAGINATION_BLOCKED_ON_FALLBACK_URL
 - next_smallest_task = TASK_ID: MRI-ML-PAGINATION-BLOCK-001
 
+## Mercado Libre pagination and route acquisition gate (MRI-ML-PAGINATION-BLOCK-001)
+
+A Mercado Libre pagination and route acquisition PASS requires:
+- first_divergence_stage identified (exact: URL_TRANSFORMATION)
+- causal_classification != ML_CAUSE_UNKNOWN (exact: ML_CAUSE_URL_TRANSFORMATION)
+- first_causal_break demonstrated (unconditional URL rewriting to blocked search URL + carousel exclusion filter)
+- red_reproduced = YES (2/2 failed)
+- green_pass = PASS (2/2 passed)
+- regression_pass = PASS (42/42 passed across regression suite)
+- runtime_brand_propagation = PASS (verified with TEST_RUNTIME_BRAND, 0 hardcoding)
+- ENTRY = PASS
+- DISCOVERY = PASS
+- NAVIGATION_ROUTING = PASS
+- CATEGORY = PASS
+- BRAND_DISCOVERY = PASS
+- ACQUISITION = PASS
+- PRODUCT_EXTRACTION = PASS
+- IDENTITY = PASS
+- MEMBERSHIP = PASS
+- EVIDENCE = PASS
+- VERIFICATION = PASS
+- routes_verified >= 1 (exact: 1)
+- products_observed > 0 (exact: 37)
+- direct_brand_evidence > 0 (exact: 37)
+- membership_evidence > 0 (exact: 37)
+- autoclaw_actions = 0 (exact: 0)
+- manual_actions = 0 (exact: 0)
+- synthetic_contribution = 0 (exact: 0)
+- hardcoded_result_contribution = 0 (exact: 0)
+- production_files_changed <= 2 (exact: 1)
+- new_production_files = 0 (exact: 0)
+- new_dependencies = 0 (exact: 0)
+- fix_cycles = 1 (exact: 1)
+- independent_verification = PASS
+- reconciled = YES
+- false_pass = 0
+- pipeline_exit_code = 0
+- final_verdict = MRI_ML_PAGINATION_BLOCK_PASS
+
 ## Global completion
 
 - required marketplaces meet their own acceptance gates (4/4 PASS: Mercado Libre, Paris, Falabella, Ripley)
 - no unresolved required discovery/acquisition blocker
 - no unprocessed viable frontier required by the declared coverage contract
 - final evidence is reproducible from persisted artifacts
+
 
 
 
