@@ -1,0 +1,123 @@
+{
+  "timestamp": "2026-09-30T16:51:10.702709",
+  "dashboard_status": "PHASE_C_PRODUCTION_ACTIVATION",
+  "active_truth_model": "LEGACY_VA",
+  "total_materialized_real_publications": 1028,
+  "marketplaces": {
+    "Paris": 376,
+    "Ripley": 2,
+    "Falabella": 214,
+    "Mercado Libre": 436
+  },
+  "full_summary": {
+    "mri_label": "MRI V2 \u2014 READ ONLY / SHADOW",
+    "active_truth_model": "LEGACY_VA",
+    "marketplaces": [
+      {
+        "marketplace": "Paris",
+        "brand": "Nicopoly",
+        "research_census_total": 486,
+        "materialized_real_publications": 376,
+        "completeness_state": "RESEARCH_CENSUS_ONLY (NOT_MATERIALIZED)",
+        "unknown_remainder": "UNKNOWN",
+        "unknown_remainder_display": "UNKNOWN (Censo de investigaci\u00f3n congelado; materializaci\u00f3n parcial en curso)",
+        "surfaces_observed": 8,
+        "surfaces_observed_list": [
+          "Category Browse",
+          "Brand Catalog",
+          "Subcategory Listing",
+          "Product Detail"
+        ],
+        "last_verified": "2026-09-21T16:27:40",
+        "blocked_surfaces": 0,
+        "unresolved_identities": 0,
+        "contradictions": 0,
+        "evidence_health": "RESEARCH_BASELINE_FROZEN",
+        "reference_universe": "486 registros en censo de investigaci\u00f3n (No materializados en publicaciones MRI)",
+        "provenance": "commercial_reconciliation/v001/09_CENSUS_RECONCILIATION.csv",
+        "commercial_authority": "MRI_PRIMARY",
+        "note": "Paris: Censo de investigaci\u00f3n: 486. Publicaciones reales materializadas: 376."
+      },
+      {
+        "marketplace": "Ripley",
+        "brand": "Nicopoly",
+        "research_census_total": 382,
+        "materialized_real_publications": 2,
+        "completeness_state": "IDENTITY_UNRESOLVED",
+        "unknown_remainder": "UNKNOWN",
+        "unknown_remainder_display": "IDENTITY_UNRESOLVED",
+        "surfaces_observed": 6,
+        "surfaces_observed_list": [
+          "Brand Catalog",
+          "Category Listing",
+          "Product Detail"
+        ],
+        "last_verified": "2026-09-21T16:27:40",
+        "blocked_surfaces": 0,
+        "unresolved_identities": 5343,
+        "contradictions": 0,
+        "evidence_health": "RESEARCH_BASELINE_FROZEN",
+        "reference_universe": "5343 observaciones en run certificado (identidad nativa no capturada)",
+        "provenance": "product_snapshots",
+        "commercial_authority": "UNRESOLVED_IDENTITY",
+        "note": "Ripley: 5343 observations IDENTITY_UNRESOLVED."
+      },
+      {
+        "marketplace": "Falabella",
+        "brand": "Nicopoly",
+        "research_census_total": 192,
+        "materialized_real_publications": 214,
+        "completeness_state": "RESEARCH_CENSUS_ONLY (NOT_MATERIALIZED)",
+        "unknown_remainder": "UNKNOWN",
+        "unknown_remainder_display": "UNKNOWN (Censo de investigaci\u00f3n de 6 facetas; materializaci\u00f3n en curso)",
+        "surfaces_observed": 6,
+        "surfaces_observed_list": [
+          "Search Grid",
+          "Department Facet: Vestidos",
+          "Department Facet: Blusas",
+          "Department Facet: Pantalones",
+          "Department Facet: Chaquetas",
+          "Department Facet: Sweaters"
+        ],
+        "last_verified": "2026-09-21T16:50:00",
+        "blocked_surfaces": 0,
+        "unresolved_identities": 0,
+        "contradictions": 0,
+        "evidence_health": "RESEARCH_BASELINE_FROZEN",
+        "reference_universe": "192 registros en censo de investigaci\u00f3n (No materializados en publicaciones MRI)",
+        "provenance": "census_capability_revalidation/v001/06_FALABELLA_CENSUS.json",
+        "commercial_authority": "MRI_PRIMARY",
+        "note": "Falabella: Censo de investigaci\u00f3n: 192. Publicaciones reales materializadas: 214."
+      },
+      {
+        "marketplace": "Mercado Libre",
+        "brand": "Nicopoly",
+        "research_census_total": 430,
+        "materialized_real_publications": 436,
+        "completeness_state": "RESEARCH_CENSUS_ONLY (NOT_MATERIALIZED)",
+        "unknown_remainder": "UNKNOWN",
+        "unknown_remainder_display": "UNKNOWN (Censo de investigaci\u00f3n; materializaci\u00f3n en curso)",
+        "surfaces_observed": 4,
+        "surfaces_observed_list": [
+          "Brand Store (422 items)",
+          "Search Grid (8 reseller items)",
+          "Offers",
+          "Category Browse"
+        ],
+        "last_verified": "2026-09-21T16:50:00",
+        "blocked_surfaces": 0,
+        "unresolved_identities": 0,
+        "contradictions": 0,
+        "evidence_health": "RESEARCH_BASELINE_FROZEN",
+        "reference_universe": "430 registros en censo de investigaci\u00f3n (No materializados en publicaciones MRI)",
+        "provenance": "census_capability_revalidation/v001/11_ML_CENSUS.json",
+        "commercial_authority": "MRI_PRIMARY",
+        "note": "Mercado Libre: Censo de investigaci\u00f3n: 430. Publicaciones reales materializadas: 436."
+      }
+    ],
+    "total_materialized_real_publications": 1028,
+    "total_research_census_publications": 1490,
+    "as_of": "2026-09-30T16:51:10.688297",
+    "phase": "PHASE_C_PRODUCTION_ACTIVATION"
+  }
+}

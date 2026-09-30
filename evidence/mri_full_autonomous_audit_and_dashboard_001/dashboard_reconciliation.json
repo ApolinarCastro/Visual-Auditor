@@ -1,0 +1,41 @@
+{
+  "task_id": "MRI-FULL-AUTONOMOUS-AUDIT-AND-DASHBOARD-001",
+  "timestamp": "2026-09-30T17:14:11.910379",
+  "publications_reconciliation": [
+    {
+      "marketplace": "Mercado Libre",
+      "evidence_unique_products": 37,
+      "db_publications": 453,
+      "dashboard_publications": 453,
+      "db_dashboard_match": true,
+      "explanation": "Exact match between materialized SQLite tables and MRIReadModel projection."
+    },
+    {
+      "marketplace": "Paris",
+      "evidence_unique_products": 540,
+      "db_publications": 561,
+      "dashboard_publications": 561,
+      "db_dashboard_match": true,
+      "explanation": "Exact match between materialized SQLite tables and MRIReadModel projection."
+    },
+    {
+      "marketplace": "Ripley",
+      "evidence_unique_products": 96,
+      "db_publications": 50,
+      "dashboard_publications": 50,
+      "db_dashboard_match": true,
+      "explanation": "Exact match between materialized SQLite tables and MRIReadModel projection."
+    },
+    {
+      "marketplace": "Falabella",
+      "evidence_unique_products": 425,
+      "db_publications": 214,
+      "dashboard_publications": 214,
+      "db_dashboard_match": true,
+      "explanation": "Exact match between materialized SQLite tables and MRIReadModel projection."
+    }
+  ],
+  "dashboard_updated": true,
+  "dashboard_mismatch_count": 0,
+  "dashboard_reconciled": true
+}

@@ -1,0 +1,42 @@
+{
+  "task_id": "MRI-FULL-AUTONOMOUS-AUDIT-AND-DASHBOARD-001",
+  "total_positions_recorded": 1098,
+  "marketplaces": {
+    "Mercado Libre": {
+      "positions_materialized": 37,
+      "distribution": {
+        "top30": 10,
+        "top60": 20,
+        "top90": 28,
+        "top120": 37
+      }
+    },
+    "Paris": {
+      "positions_materialized": 540,
+      "distribution": {
+        "top30": 31,
+        "top60": 61,
+        "top90": 91,
+        "top120": 121
+      }
+    },
+    "Ripley": {
+      "positions_materialized": 96,
+      "distribution": {
+        "top30": 60,
+        "top60": 96,
+        "top90": 96,
+        "top120": 96
+      }
+    },
+    "Falabella": {
+      "positions_materialized": 425,
+      "distribution": {
+        "top30": 252,
+        "top60": 357,
+        "top90": 407,
+        "top120": 425
+      }
+    }
+  }
+}

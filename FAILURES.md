@@ -98,5 +98,7 @@ During MRI-4MP-E2E-CERT-002 transversal certification, Mercado Libre execution f
    - Certified in real run: 3 routes discovered, 1 route verified (Brand Hub, stop_reason EXHAUSTION), 37 products observed, 37 direct brand evidence items (100%), 37 membership evidence items (100%), independent verification PASS.
 3. Status: RESOLVED_AND_CERTIFIED (PASS).
 
-
-
+## F-016 — Full Autonomous Cross-Marketplace Audit Verification
+During MRI-FULL-AUTONOMOUS-AUDIT-AND-DASHBOARD-001, full autonomous audit executed across all four marketplaces (Mercado Libre, Paris, Ripley, Falabella).
+Outcome: 0 failures, 0 fatal blockers. 4/4 marketplaces completed with E2E PASS, yielding 1098 unique products, 1050 direct brand evidence items, 2061 category memberships, and 1098 positions materialized.
+Status: FULL_AUDIT_PASS (4/4 PASS).

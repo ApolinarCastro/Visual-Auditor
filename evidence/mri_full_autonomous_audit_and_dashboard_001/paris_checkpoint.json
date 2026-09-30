@@ -1,0 +1,328 @@
+{
+  "run_id": "audit_paris_1790798073",
+  "marketplace": "Paris",
+  "brand": "Nicopoly",
+  "checkpoints": [
+    {
+      "timestamp": "2026-09-30T16:56:40.201042",
+      "kind": "category_done",
+      "category_name": "Brand Hub",
+      "category_url": "https://www.paris.cl/search?q=nicopoly",
+      "raw_count": 538,
+      "cumulative_unique_count": 538
+    },
+    {
+      "timestamp": "2026-09-30T16:56:40.211318",
+      "kind": "EXPERIENCE_DECISION",
+      "category_name": null,
+      "category_url": null,
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T16:56:40.245089",
+      "kind": "navigation_discovered",
+      "category_name": null,
+      "category_url": null,
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T16:56:40.245137",
+      "kind": "frontier_state",
+      "category_name": null,
+      "category_url": null,
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T16:56:40.245154",
+      "kind": "category_attempt",
+      "category_name": "Abrigos",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Abrigos",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T16:56:51.440981",
+      "kind": "category_done",
+      "category_name": "Abrigos",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Abrigos",
+      "raw_count": 24,
+      "cumulative_unique_count": 538
+    },
+    {
+      "timestamp": "2026-09-30T16:56:52.644723",
+      "kind": "category_attempt",
+      "category_name": "Blusas",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Blusas",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T16:57:12.450238",
+      "kind": "category_done",
+      "category_name": "Blusas",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Blusas",
+      "raw_count": 61,
+      "cumulative_unique_count": 539
+    },
+    {
+      "timestamp": "2026-09-30T16:57:13.659041",
+      "kind": "category_attempt",
+      "category_name": "Calzas",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Calzas",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T16:57:25.543679",
+      "kind": "category_done",
+      "category_name": "Calzas",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Calzas",
+      "raw_count": 6,
+      "cumulative_unique_count": 539
+    },
+    {
+      "timestamp": "2026-09-30T16:57:26.759214",
+      "kind": "category_attempt",
+      "category_name": "Chalecos",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Chalecos",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T16:57:36.496863",
+      "kind": "category_done",
+      "category_name": "Chalecos",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Chalecos",
+      "raw_count": 1,
+      "cumulative_unique_count": 539
+    },
+    {
+      "timestamp": "2026-09-30T16:57:37.697862",
+      "kind": "category_attempt",
+      "category_name": "Chaquetas",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Chaquetas",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T16:58:20.337356",
+      "kind": "category_done",
+      "category_name": "Chaquetas",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Chaquetas",
+      "raw_count": 133,
+      "cumulative_unique_count": 539
+    },
+    {
+      "timestamp": "2026-09-30T16:58:21.544498",
+      "kind": "category_attempt",
+      "category_name": "Enteritos",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Enteritos",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T16:58:32.002632",
+      "kind": "category_done",
+      "category_name": "Enteritos",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Enteritos",
+      "raw_count": 1,
+      "cumulative_unique_count": 539
+    },
+    {
+      "timestamp": "2026-09-30T16:58:33.209851",
+      "kind": "category_attempt",
+      "category_name": "Faldas",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Faldas",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T16:58:42.440074",
+      "kind": "category_done",
+      "category_name": "Faldas",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Faldas",
+      "raw_count": 9,
+      "cumulative_unique_count": 539
+    },
+    {
+      "timestamp": "2026-09-30T16:58:43.643703",
+      "kind": "category_attempt",
+      "category_name": "Jeans",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Jeans",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T16:58:53.740598",
+      "kind": "category_done",
+      "category_name": "Jeans",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Jeans",
+      "raw_count": 18,
+      "cumulative_unique_count": 539
+    },
+    {
+      "timestamp": "2026-09-30T16:58:54.944680",
+      "kind": "category_attempt",
+      "category_name": "Pantalones",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Pantalones",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T16:59:14.405240",
+      "kind": "category_done",
+      "category_name": "Pantalones",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Pantalones",
+      "raw_count": 64,
+      "cumulative_unique_count": 540
+    },
+    {
+      "timestamp": "2026-09-30T16:59:15.608967",
+      "kind": "category_attempt",
+      "category_name": "Parkas",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Parkas",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T16:59:25.609400",
+      "kind": "category_done",
+      "category_name": "Parkas",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Parkas",
+      "raw_count": 3,
+      "cumulative_unique_count": 540
+    },
+    {
+      "timestamp": "2026-09-30T16:59:26.813693",
+      "kind": "category_attempt",
+      "category_name": "Paã±Uelos Y Bufandas",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Pa%C3%83%C2%B1uelos%20y%20Bufandas",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T16:59:36.281301",
+      "kind": "category_done",
+      "category_name": "Paã±Uelos Y Bufandas",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Pa%C3%83%C2%B1uelos%20y%20Bufandas",
+      "raw_count": 0,
+      "cumulative_unique_count": 540
+    },
+    {
+      "timestamp": "2026-09-30T16:59:37.485970",
+      "kind": "category_attempt",
+      "category_name": "Poleras",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Poleras",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:00:02.679517",
+      "kind": "category_done",
+      "category_name": "Poleras",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Poleras",
+      "raw_count": 118,
+      "cumulative_unique_count": 540
+    },
+    {
+      "timestamp": "2026-09-30T17:00:03.894279",
+      "kind": "category_attempt",
+      "category_name": "Polerones",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Polerones",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:00:15.809730",
+      "kind": "category_done",
+      "category_name": "Polerones",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Polerones",
+      "raw_count": 1,
+      "cumulative_unique_count": 540
+    },
+    {
+      "timestamp": "2026-09-30T17:00:17.011984",
+      "kind": "category_attempt",
+      "category_name": "Shorts",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Shorts",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:00:26.586881",
+      "kind": "category_done",
+      "category_name": "Shorts",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Shorts",
+      "raw_count": 19,
+      "cumulative_unique_count": 540
+    },
+    {
+      "timestamp": "2026-09-30T17:00:27.790592",
+      "kind": "category_attempt",
+      "category_name": "Sweaters",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Sweaters",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:00:42.884363",
+      "kind": "category_done",
+      "category_name": "Sweaters",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Sweaters",
+      "raw_count": 37,
+      "cumulative_unique_count": 540
+    },
+    {
+      "timestamp": "2026-09-30T17:00:44.085964",
+      "kind": "category_attempt",
+      "category_name": "Vestidos",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Vestidos",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:00:54.421854",
+      "kind": "category_done",
+      "category_name": "Vestidos",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Vestidos",
+      "raw_count": 15,
+      "cumulative_unique_count": 540
+    },
+    {
+      "timestamp": "2026-09-30T17:00:55.632020",
+      "kind": "category_attempt",
+      "category_name": "Vestidos De Fiesta",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Vestidos%20de%20Fiesta",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:01:05.276598",
+      "kind": "category_done",
+      "category_name": "Vestidos De Fiesta",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Vestidos%20de%20Fiesta",
+      "raw_count": 2,
+      "cumulative_unique_count": 540
+    },
+    {
+      "timestamp": "2026-09-30T17:01:06.491466",
+      "kind": "category_attempt",
+      "category_name": "Brand Store",
+      "category_url": "https://www.paris.cl/mujer/marcas/nicopoly/",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:02:26.305853",
+      "kind": "category_done",
+      "category_name": "Brand Store",
+      "category_url": "https://www.paris.cl/mujer/marcas/nicopoly/",
+      "raw_count": 362,
+      "cumulative_unique_count": 540
+    }
+  ],
+  "checkpoint_written": true
+}

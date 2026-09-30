@@ -1,0 +1,328 @@
+{
+  "run_id": "audit_falabella_1790799108",
+  "marketplace": "Falabella",
+  "brand": "Nicopoly",
+  "checkpoints": [
+    {
+      "timestamp": "2026-09-30T17:12:00.256906",
+      "kind": "category_done",
+      "category_name": "Brand Hub",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly",
+      "raw_count": 96,
+      "cumulative_unique_count": 96
+    },
+    {
+      "timestamp": "2026-09-30T17:12:00.258385",
+      "kind": "EXPERIENCE_DECISION",
+      "category_name": null,
+      "category_url": null,
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:12:00.283429",
+      "kind": "navigation_discovered",
+      "category_name": null,
+      "category_url": null,
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:12:00.283518",
+      "kind": "frontier_state",
+      "category_name": null,
+      "category_url": null,
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:12:00.283534",
+      "kind": "category_attempt",
+      "category_name": "Mujer",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.L0_category_paths=cat7330051%7C%7CMujer",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:12:04.898479",
+      "kind": "category_done",
+      "category_name": "Mujer",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.L0_category_paths=cat7330051%7C%7CMujer",
+      "raw_count": 102,
+      "cumulative_unique_count": 169
+    },
+    {
+      "timestamp": "2026-09-30T17:12:06.113615",
+      "kind": "category_attempt",
+      "category_name": "Pantalones",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Pantalones",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:12:09.943469",
+      "kind": "category_done",
+      "category_name": "Pantalones",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Pantalones",
+      "raw_count": 55,
+      "cumulative_unique_count": 216
+    },
+    {
+      "timestamp": "2026-09-30T17:12:11.146398",
+      "kind": "category_attempt",
+      "category_name": "Blazers",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Blazers",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:12:16.126293",
+      "kind": "category_done",
+      "category_name": "Blazers",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Blazers",
+      "raw_count": 47,
+      "cumulative_unique_count": 239
+    },
+    {
+      "timestamp": "2026-09-30T17:12:17.329922",
+      "kind": "category_attempt",
+      "category_name": "Chaquetas",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Chaquetas",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:12:21.803611",
+      "kind": "category_done",
+      "category_name": "Chaquetas",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Chaquetas",
+      "raw_count": 16,
+      "cumulative_unique_count": 248
+    },
+    {
+      "timestamp": "2026-09-30T17:12:23.006145",
+      "kind": "category_attempt",
+      "category_name": "Poleras",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Poleras",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:12:27.987032",
+      "kind": "category_done",
+      "category_name": "Poleras",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Poleras",
+      "raw_count": 41,
+      "cumulative_unique_count": 285
+    },
+    {
+      "timestamp": "2026-09-30T17:12:29.193004",
+      "kind": "category_attempt",
+      "category_name": "Gillette",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Gillette",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:12:34.264178",
+      "kind": "category_done",
+      "category_name": "Gillette",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Gillette",
+      "raw_count": 31,
+      "cumulative_unique_count": 309
+    },
+    {
+      "timestamp": "2026-09-30T17:12:35.465194",
+      "kind": "category_attempt",
+      "category_name": "Sweaters",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Sweaters",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:12:41.221489",
+      "kind": "category_done",
+      "category_name": "Sweaters",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Sweaters",
+      "raw_count": 20,
+      "cumulative_unique_count": 326
+    },
+    {
+      "timestamp": "2026-09-30T17:12:42.424021",
+      "kind": "category_attempt",
+      "category_name": "Blusas",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Blusas",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:12:47.141358",
+      "kind": "category_done",
+      "category_name": "Blusas",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Blusas",
+      "raw_count": 32,
+      "cumulative_unique_count": 356
+    },
+    {
+      "timestamp": "2026-09-30T17:12:48.343491",
+      "kind": "category_attempt",
+      "category_name": "Bomber",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Bomber",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:13:18.312290",
+      "kind": "category_done",
+      "category_name": "Bomber",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Bomber",
+      "raw_count": 0,
+      "cumulative_unique_count": 356
+    },
+    {
+      "timestamp": "2026-09-30T17:13:19.517109",
+      "kind": "category_attempt",
+      "category_name": "Camisas",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Camisas",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:13:23.479201",
+      "kind": "category_done",
+      "category_name": "Camisas",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Camisas",
+      "raw_count": 2,
+      "cumulative_unique_count": 358
+    },
+    {
+      "timestamp": "2026-09-30T17:13:24.682315",
+      "kind": "category_attempt",
+      "category_name": "Abrigos",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Abrigos",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:13:28.850174",
+      "kind": "category_done",
+      "category_name": "Abrigos",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Abrigos",
+      "raw_count": 22,
+      "cumulative_unique_count": 379
+    },
+    {
+      "timestamp": "2026-09-30T17:13:30.051663",
+      "kind": "category_attempt",
+      "category_name": "Jeans",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Jeans",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:13:33.941317",
+      "kind": "category_done",
+      "category_name": "Jeans",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Jeans",
+      "raw_count": 11,
+      "cumulative_unique_count": 389
+    },
+    {
+      "timestamp": "2026-09-30T17:13:35.142677",
+      "kind": "category_attempt",
+      "category_name": "Shorts",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Shorts",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:13:38.760649",
+      "kind": "category_done",
+      "category_name": "Shorts",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Shorts",
+      "raw_count": 13,
+      "cumulative_unique_count": 402
+    },
+    {
+      "timestamp": "2026-09-30T17:13:39.967892",
+      "kind": "category_attempt",
+      "category_name": "Cardigans",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Cardigans",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:13:44.779085",
+      "kind": "category_done",
+      "category_name": "Cardigans",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Cardigans",
+      "raw_count": 11,
+      "cumulative_unique_count": 411
+    },
+    {
+      "timestamp": "2026-09-30T17:13:45.984648",
+      "kind": "category_attempt",
+      "category_name": "Vestido Casual",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Vestido+casual",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:13:49.569057",
+      "kind": "category_done",
+      "category_name": "Vestido Casual",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Vestido+casual",
+      "raw_count": 6,
+      "cumulative_unique_count": 417
+    },
+    {
+      "timestamp": "2026-09-30T17:13:50.776193",
+      "kind": "category_attempt",
+      "category_name": "Trench",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Trench",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:13:54.389849",
+      "kind": "category_done",
+      "category_name": "Trench",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Trench",
+      "raw_count": 5,
+      "cumulative_unique_count": 420
+    },
+    {
+      "timestamp": "2026-09-30T17:13:55.594034",
+      "kind": "category_attempt",
+      "category_name": "Parkas",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Parkas",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:13:59.210931",
+      "kind": "category_done",
+      "category_name": "Parkas",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Parkas",
+      "raw_count": 3,
+      "cumulative_unique_count": 422
+    },
+    {
+      "timestamp": "2026-09-30T17:14:00.417963",
+      "kind": "category_attempt",
+      "category_name": "Vest",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Vest",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T17:14:03.936445",
+      "kind": "category_done",
+      "category_name": "Vest",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Vest",
+      "raw_count": 3,
+      "cumulative_unique_count": 425
+    }
+  ],
+  "checkpoint_written": true
+}

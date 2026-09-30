@@ -1,0 +1,50 @@
+{
+  "task_id": "MRI-FULL-AUTONOMOUS-AUDIT-AND-DASHBOARD-001",
+  "timestamp": "2026-09-30T17:14:11.912153",
+  "marketplaces": {
+    "Mercado Libre": {
+      "reported_verdict": "PASS",
+      "recalculated_verdict": "PASS",
+      "products_observed": 37,
+      "unique_products": 37,
+      "direct_brand_evidence": 37,
+      "membership_evidence": 37,
+      "pipeline_exit_code": 0,
+      "reconciled": true
+    },
+    "Paris": {
+      "reported_verdict": "PASS",
+      "recalculated_verdict": "PASS",
+      "products_observed": 540,
+      "unique_products": 540,
+      "direct_brand_evidence": 540,
+      "membership_evidence": 1412,
+      "pipeline_exit_code": 0,
+      "reconciled": true
+    },
+    "Ripley": {
+      "reported_verdict": "PASS",
+      "recalculated_verdict": "PASS",
+      "products_observed": 96,
+      "unique_products": 96,
+      "direct_brand_evidence": 48,
+      "membership_evidence": 96,
+      "pipeline_exit_code": 0,
+      "reconciled": true
+    },
+    "Falabella": {
+      "reported_verdict": "PASS",
+      "recalculated_verdict": "PASS",
+      "products_observed": 425,
+      "unique_products": 425,
+      "direct_brand_evidence": 425,
+      "membership_evidence": 516,
+      "pipeline_exit_code": 0,
+      "reconciled": true
+    }
+  },
+  "false_pass_count": 0,
+  "unsupported_fail_count": 0,
+  "reconciled": true,
+  "verdict": "PASS"
+}

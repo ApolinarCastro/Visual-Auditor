@@ -1,0 +1,1413 @@
+{
+  "marketplace": "Mercado Libre",
+  "brand_runtime": "Nicopoly",
+  "run_id": "audit_ml_1790797947",
+  "pid": 18776,
+  "start_time": "2026-09-30T16:52:27.308249",
+  "end_time": "2026-09-30T16:54:03.618967",
+  "duration": 96.31,
+  "pipeline_exit_code": 0,
+  "verdict": "PASS",
+  "first_failure": null,
+  "exhaustion_reason": "FRONTIER_EXHAUSTED",
+  "coverage_status": "PARTIAL",
+  "capabilities": {
+    "ENTRY": "PASS",
+    "DISCOVERY": "PASS",
+    "NAVIGATION_ROUTING": "PASS",
+    "CATEGORY": "PASS",
+    "BRAND_DISCOVERY": "PASS",
+    "ACQUISITION": "PASS",
+    "PAGINATION_TRAVERSAL": "PASS",
+    "PRODUCT_EXTRACTION": "PASS",
+    "IDENTITY": "PASS",
+    "MEMBERSHIP": "PASS",
+    "POSITION": "PASS",
+    "EVIDENCE": "PASS",
+    "CHECKPOINT_RESUME": "PASS",
+    "EXPERIENCE": "PASS",
+    "VERIFICATION": "PASS"
+  },
+  "surfaces_discovered": 6,
+  "surfaces_verified": 1,
+  "pages_processed": 6,
+  "products_observed": 37,
+  "unique_products": 37,
+  "duplicates_removed": 0,
+  "direct_brand_evidence": 37,
+  "indirect_brand_evidence": 0,
+  "without_brand_evidence": 0,
+  "membership_evidence": 37,
+  "positions_materialized": 37,
+  "positions_distribution": {
+    "top30": 10,
+    "top60": 20,
+    "top90": 28,
+    "top120": 37
+  },
+  "frontier": {
+    "created": 6,
+    "processed": 1,
+    "verified": 1,
+    "rejected": 0,
+    "unresolved": 0,
+    "blocked": 5,
+    "remaining": 0,
+    "details": {
+      "created_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly",
+        "https://listado.mercadolibre.cl/tienda/nicopoly/_Container_ESP-1E4957B3099140B3A05F3AEEA297D34F386329223-New-In?tracking_id=530d43c1d9d60c8552931bed1182cd21",
+        "https://listado.mercadolibre.cl/tienda/nicopoly/_Container_ESP-1E4957B3099140B3A05F3AEEA297D34F386329223-Conjuntos?tracking_id=ccde4281ec17afbf1ca02850887844ca",
+        "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/abrigos/chaquetas-parkas-blazers/",
+        "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/blusas/",
+        "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/pantalones/"
+      ],
+      "verified_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "remaining_urls": []
+    }
+  },
+  "discovered_categories_detail": [
+    {
+      "marketplace": "Mercado Libre",
+      "is_seed_surface": true,
+      "category_name": "Brand Hub",
+      "category_url": "https://www.mercadolibre.cl/tienda/nicopoly",
+      "category_id": "cat_913ac545",
+      "discovery_method": "BRAND_STORE_ML",
+      "source": "https://www.mercadolibre.cl/tienda/nicopoly",
+      "timestamp": "2026-09-30T16:53:10.076026",
+      "products_found": 80,
+      "evidence": "Seed surface scraped as batch 0 with direct evidence",
+      "coverage_status": "CONFIRMED",
+      "stop_reason": "EXHAUSTION",
+      "pages_traversed": 1,
+      "pagination": null,
+      "sort_mode": null,
+      "surface_type": "BRAND_SEARCH",
+      "semantic_type": "SURFACE",
+      "surface_classification": "BRAND_SURFACE",
+      "node_certified": true,
+      "node_type": "BRAND_SURFACE",
+      "nicopoly_present": 80
+    },
+    {
+      "marketplace": "Mercado Libre",
+      "category_name": "New In",
+      "category_url": "https://listado.mercadolibre.cl/tienda/nicopoly/_Container_ESP-1E4957B3099140B3A05F3AEEA297D34F386329223-New-In?tracking_id=530d43c1d9d60c8552931bed1182cd21",
+      "category_id": "cat_4d4e158d",
+      "discovery_method": "BRAND_STORE_ML",
+      "source": "https://www.mercadolibre.cl/tienda/nicopoly",
+      "timestamp": "2026-09-30T16:53:00.118940",
+      "products_found": 0,
+      "evidence": "Discovered via facet extraction from https://www.mercadolibre.cl/tienda/nicopoly",
+      "coverage_status": "BLOCKED",
+      "surface_type": "CATEGORY_BROWSE",
+      "semantic_type": "CATEGORY",
+      "surface_classification": "COMMERCIAL_CATEGORY",
+      "classification_confidence": 0.6,
+      "classification_evidence": [
+        "category-path-signal:/tienda/",
+        "CANDIDATE-ONLY: needs direct commercial evidence"
+      ],
+      "node_certified": false,
+      "node_type": null,
+      "sanitized_url": "https://listado.mercadolibre.cl/tienda/nicopoly/_Container_ESP-1E4957B3099140B3A05F3AEEA297D34F386329223-New-In?tracking_id=530d43c1d9d60c8552931bed1182cd21",
+      "pages_traversed": 1,
+      "stop_reason": "BLOCKED",
+      "failure_type": null,
+      "cert_reason": "UNCONFIRMED: zero products observed",
+      "nicopoly_present": 0,
+      "brand_present": 0,
+      "surface_id": "https://listado.mercadolibre.cl/tienda/nicopoly/_Container_ESP-1E4957B3099140B3A05F3AEEA297D34F386329223-New-In?tracking_id=530d43c1d9d60c8552931bed1182cd21",
+      "provenance": "BRAND_STORE_ML",
+      "node_status": "BLOCKED"
+    },
+    {
+      "marketplace": "Mercado Libre",
+      "category_name": "Conjuntos",
+      "category_url": "https://listado.mercadolibre.cl/tienda/nicopoly/_Container_ESP-1E4957B3099140B3A05F3AEEA297D34F386329223-Conjuntos?tracking_id=ccde4281ec17afbf1ca02850887844ca",
+      "category_id": "cat_7e38e265",
+      "discovery_method": "BRAND_STORE_ML",
+      "source": "https://www.mercadolibre.cl/tienda/nicopoly",
+      "timestamp": "2026-09-30T16:53:00.119062",
+      "products_found": 0,
+      "evidence": "Discovered via facet extraction from https://www.mercadolibre.cl/tienda/nicopoly",
+      "coverage_status": "BLOCKED",
+      "surface_type": "CATEGORY_BROWSE",
+      "semantic_type": "CATEGORY",
+      "surface_classification": "COMMERCIAL_CATEGORY",
+      "classification_confidence": 0.6,
+      "classification_evidence": [
+        "category-path-signal:/tienda/",
+        "CANDIDATE-ONLY: needs direct commercial evidence"
+      ],
+      "node_certified": false,
+      "node_type": null,
+      "sanitized_url": "https://listado.mercadolibre.cl/tienda/nicopoly/_Container_ESP-1E4957B3099140B3A05F3AEEA297D34F386329223-Conjuntos?tracking_id=ccde4281ec17afbf1ca02850887844ca",
+      "pages_traversed": 1,
+      "stop_reason": "BLOCKED",
+      "failure_type": null,
+      "cert_reason": "UNCONFIRMED: zero products observed",
+      "nicopoly_present": 0,
+      "brand_present": 0,
+      "surface_id": "https://listado.mercadolibre.cl/tienda/nicopoly/_Container_ESP-1E4957B3099140B3A05F3AEEA297D34F386329223-Conjuntos?tracking_id=ccde4281ec17afbf1ca02850887844ca",
+      "provenance": "BRAND_STORE_ML",
+      "node_status": "BLOCKED"
+    },
+    {
+      "marketplace": "Mercado Libre",
+      "category_name": "Chaquetas Parkas Blazers",
+      "category_url": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/abrigos/chaquetas-parkas-blazers/",
+      "category_id": "cat_1e56a73a",
+      "discovery_method": "BRAND_STORE_ML",
+      "source": "https://www.mercadolibre.cl/tienda/nicopoly",
+      "timestamp": "2026-09-30T16:53:00.119152",
+      "products_found": 0,
+      "evidence": "Discovered via facet extraction from https://www.mercadolibre.cl/tienda/nicopoly",
+      "coverage_status": "BLOCKED",
+      "surface_type": "CATEGORY_BROWSE",
+      "semantic_type": "CATEGORY",
+      "surface_classification": "COMMERCIAL_CATEGORY",
+      "classification_confidence": 0.6,
+      "classification_evidence": [
+        "category-path-signal:/tienda/",
+        "CANDIDATE-ONLY: needs direct commercial evidence"
+      ],
+      "node_certified": false,
+      "node_type": null,
+      "sanitized_url": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/abrigos/chaquetas-parkas-blazers/",
+      "pages_traversed": 1,
+      "stop_reason": "BLOCKED",
+      "failure_type": null,
+      "cert_reason": "UNCONFIRMED: zero products observed",
+      "nicopoly_present": 0,
+      "brand_present": 0,
+      "surface_id": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/abrigos/chaquetas-parkas-blazers/",
+      "provenance": "BRAND_STORE_ML",
+      "node_status": "BLOCKED"
+    },
+    {
+      "marketplace": "Mercado Libre",
+      "category_name": "Blusas",
+      "category_url": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/blusas/",
+      "category_id": "cat_3bdd28a1",
+      "discovery_method": "BRAND_STORE_ML",
+      "source": "https://www.mercadolibre.cl/tienda/nicopoly",
+      "timestamp": "2026-09-30T16:53:00.119201",
+      "products_found": 0,
+      "evidence": "Discovered via facet extraction from https://www.mercadolibre.cl/tienda/nicopoly",
+      "coverage_status": "BLOCKED",
+      "surface_type": "CATEGORY_BROWSE",
+      "semantic_type": "CATEGORY",
+      "surface_classification": "COMMERCIAL_CATEGORY",
+      "classification_confidence": 0.6,
+      "classification_evidence": [
+        "category-path-signal:/tienda/",
+        "CANDIDATE-ONLY: needs direct commercial evidence"
+      ],
+      "node_certified": false,
+      "node_type": null,
+      "sanitized_url": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/blusas/",
+      "pages_traversed": 1,
+      "stop_reason": "BLOCKED",
+      "failure_type": null,
+      "cert_reason": "UNCONFIRMED: zero products observed",
+      "nicopoly_present": 0,
+      "brand_present": 0,
+      "surface_id": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/blusas/",
+      "provenance": "BRAND_STORE_ML",
+      "node_status": "BLOCKED"
+    },
+    {
+      "marketplace": "Mercado Libre",
+      "category_name": "Pantalones",
+      "category_url": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/pantalones/",
+      "category_id": "cat_8a4dabbc",
+      "discovery_method": "BRAND_STORE_ML",
+      "source": "https://www.mercadolibre.cl/tienda/nicopoly",
+      "timestamp": "2026-09-30T16:53:00.119249",
+      "products_found": 0,
+      "evidence": "Discovered via facet extraction from https://www.mercadolibre.cl/tienda/nicopoly",
+      "coverage_status": "BLOCKED",
+      "surface_type": "CATEGORY_BROWSE",
+      "semantic_type": "CATEGORY",
+      "surface_classification": "COMMERCIAL_CATEGORY",
+      "classification_confidence": 0.6,
+      "classification_evidence": [
+        "category-path-signal:/tienda/",
+        "CANDIDATE-ONLY: needs direct commercial evidence"
+      ],
+      "node_certified": false,
+      "node_type": null,
+      "sanitized_url": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/pantalones/",
+      "pages_traversed": 1,
+      "stop_reason": "BLOCKED",
+      "failure_type": null,
+      "cert_reason": "UNCONFIRMED: zero products observed",
+      "nicopoly_present": 0,
+      "brand_present": 0,
+      "surface_id": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/pantalones/",
+      "provenance": "BRAND_STORE_ML",
+      "node_status": "BLOCKED"
+    }
+  ],
+  "sample_products": [
+    {
+      "title": "Blusa Drapeada Tipo Satín Cuello Alto Blanco Nicopoly Blanco Liso M",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC2250582941",
+      "price": 26990.0,
+      "position_absolute": 1,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Top / Blusa Lunares Con Botones Café Nicopoly Café Liso L",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC4485751658",
+      "price": 21990.0,
+      "position_absolute": 4,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Falda Tipo Satín Oliva Nicopoly Oliva Liso M",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC4452210104",
+      "price": 28990.0,
+      "position_absolute": 7,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Blazer Manga 3/4 Ajustado Con Solapas Amarillo Mantequilla Nicopoly Amarillo S Liso",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC2181838969",
+      "price": 53990.0,
+      "position_absolute": 10,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Pantalón Rayas Verticales Azul Marino Nicopoly Azul Marino Liso M",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC2250985925",
+      "price": 35990.0,
+      "position_absolute": 13,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Falda Midi Tipo Satín Y Encaje Café Nicopoly Café Liso M",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC4487811548",
+      "price": 27990.0,
+      "position_absolute": 16,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Blusa Halter Lunares Rojo Nicopoly Rojo Liso M",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC2237926845",
+      "price": 24990.0,
+      "position_absolute": 19,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Blusa Drapeada Tipo Satín Con Corbatín Rosado Nicopoly Rosado Liso S",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC4471871566",
+      "price": 35990.0,
+      "position_absolute": 22,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Falda Short Rayas Diplomáticas Café Nicopoly Cafe Liso M",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC2193316021",
+      "price": 29990.0,
+      "position_absolute": 25,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Blusa Puntos Corbatín Negro Nicopoly Negro Liso M",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC4471879330",
+      "price": 25990.0,
+      "position_absolute": 28,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    }
+  ],
+  "all_products": [
+    {
+      "title": "Blusa Drapeada Tipo Satín Cuello Alto Blanco Nicopoly Blanco Liso M",
+      "vendor": "Nicopoly",
+      "price": 26990.0,
+      "marketplace_sku": "MLC2250582941",
+      "page": 1,
+      "position_local": 1,
+      "position_absolute": 1,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Top / Blusa Lunares Con Botones Café Nicopoly Café Liso L",
+      "vendor": "Nicopoly",
+      "price": 21990.0,
+      "marketplace_sku": "MLC4485751658",
+      "page": 1,
+      "position_local": 4,
+      "position_absolute": 4,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Falda Tipo Satín Oliva Nicopoly Oliva Liso M",
+      "vendor": "Nicopoly",
+      "price": 28990.0,
+      "marketplace_sku": "MLC4452210104",
+      "page": 1,
+      "position_local": 7,
+      "position_absolute": 7,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Blazer Manga 3/4 Ajustado Con Solapas Amarillo Mantequilla Nicopoly Amarillo S Liso",
+      "vendor": "Nicopoly",
+      "price": 53990.0,
+      "marketplace_sku": "MLC2181838969",
+      "page": 1,
+      "position_local": 10,
+      "position_absolute": 10,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Pantalón Rayas Verticales Azul Marino Nicopoly Azul Marino Liso M",
+      "vendor": "Nicopoly",
+      "price": 35990.0,
+      "marketplace_sku": "MLC2250985925",
+      "page": 1,
+      "position_local": 13,
+      "position_absolute": 13,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Falda Midi Tipo Satín Y Encaje Café Nicopoly Café Liso M",
+      "vendor": "Nicopoly",
+      "price": 27990.0,
+      "marketplace_sku": "MLC4487811548",
+      "page": 1,
+      "position_local": 16,
+      "position_absolute": 16,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Blusa Halter Lunares Rojo Nicopoly Rojo Liso M",
+      "vendor": "Nicopoly",
+      "price": 24990.0,
+      "marketplace_sku": "MLC2237926845",
+      "page": 1,
+      "position_local": 19,
+      "position_absolute": 19,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Blusa Drapeada Tipo Satín Con Corbatín Rosado Nicopoly Rosado Liso S",
+      "vendor": "Nicopoly",
+      "price": 35990.0,
+      "marketplace_sku": "MLC4471871566",
+      "page": 1,
+      "position_local": 22,
+      "position_absolute": 22,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Falda Short Rayas Diplomáticas Café Nicopoly Cafe Liso M",
+      "vendor": "Nicopoly",
+      "price": 29990.0,
+      "marketplace_sku": "MLC2193316021",
+      "page": 1,
+      "position_local": 25,
+      "position_absolute": 25,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Blusa Puntos Corbatín Negro Nicopoly Negro Liso M",
+      "vendor": "Nicopoly",
+      "price": 25990.0,
+      "marketplace_sku": "MLC4471879330",
+      "page": 1,
+      "position_local": 28,
+      "position_absolute": 28,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Blazer Básico Sastrero Rosado Nicopoly Rosado Xl Liso",
+      "vendor": "Nicopoly",
+      "price": 49990.0,
+      "marketplace_sku": "MLC2193314863",
+      "page": 1,
+      "position_local": 31,
+      "position_absolute": 31,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Jeans Wide Leg Ancho Celeste Nicopoly Celeste Liso 38",
+      "vendor": "Nicopoly",
+      "price": 47990.0,
+      "marketplace_sku": "MLC4403478186",
+      "page": 1,
+      "position_local": 34,
+      "position_absolute": 34,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Gilet Vichy Negro Nicopoly Negro Xs Liso",
+      "vendor": "Nicopoly",
+      "price": 27990.0,
+      "marketplace_sku": "MLC2215986283",
+      "page": 1,
+      "position_local": 37,
+      "position_absolute": 37,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Pantalón Recto Vichy Khaki Nicopoly Khaki Liso M",
+      "vendor": "Nicopoly",
+      "price": 41990.0,
+      "marketplace_sku": "MLC2215973551",
+      "page": 1,
+      "position_local": 40,
+      "position_absolute": 40,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Short Vichy Negro Nicopoly Negro Liso M",
+      "vendor": "Nicopoly",
+      "price": 27990.0,
+      "marketplace_sku": "MLC2215986383",
+      "page": 1,
+      "position_local": 43,
+      "position_absolute": 43,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Jeans Wide Leg Ancho Azul Marino Nicopoly Azul Marino Liso 38",
+      "vendor": "Nicopoly",
+      "price": 47990.0,
+      "marketplace_sku": "MLC2193653503",
+      "page": 1,
+      "position_local": 46,
+      "position_absolute": 46,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Top Corto Tipo Satín Verde Nicopoly Verde Liso S",
+      "vendor": "Nicopoly",
+      "price": 27990.0,
+      "marketplace_sku": "MLC2221158049",
+      "page": 1,
+      "position_local": 49,
+      "position_absolute": 49,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Blusa Rayas Lazo Desmontable Blanco Nicopoly Blanco Liso S",
+      "vendor": "Nicopoly",
+      "price": 29990.0,
+      "marketplace_sku": "MLC4456898234",
+      "page": 1,
+      "position_local": 52,
+      "position_absolute": 52,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Pantalón Rectos Puntos Café Nicopoly Café Liso L",
+      "vendor": "Nicopoly",
+      "price": 31990.0,
+      "marketplace_sku": "MLC2250563401",
+      "page": 1,
+      "position_local": 55,
+      "position_absolute": 55,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Pantalón Rayas Verticales Rosado Nicopoly Rosado Liso S",
+      "vendor": "Nicopoly",
+      "price": 35990.0,
+      "marketplace_sku": "MLC4488147974",
+      "page": 1,
+      "position_local": 58,
+      "position_absolute": 58,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Gilet Básico Ajustable Amarillo Mantequilla Nicopoly Amarillo Xl Liso",
+      "vendor": "Nicopoly",
+      "price": 29990.0,
+      "marketplace_sku": "MLC4385491188",
+      "page": 1,
+      "position_local": 61,
+      "position_absolute": 61,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Gilet Eco Cuero Café Nicopoly Cafe M Liso",
+      "vendor": "Nicopoly",
+      "price": 29990.0,
+      "marketplace_sku": "MLC2193316811",
+      "page": 1,
+      "position_local": 64,
+      "position_absolute": 64,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Gilet Básico Ajustable Negro Nicopoly Negro M Liso",
+      "vendor": "Nicopoly",
+      "price": 29990.0,
+      "marketplace_sku": "MLC1626249193",
+      "page": 1,
+      "position_local": 67,
+      "position_absolute": 67,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Blazer Peplum Botones Burdeo Nicopoly Burdeo Xl Liso",
+      "vendor": "Nicopoly",
+      "price": 59990.0,
+      "marketplace_sku": "MLC4449883560",
+      "page": 1,
+      "position_local": 76,
+      "position_absolute": 76,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Blazer Peplum Botones Café Nicopoly Café S Liso",
+      "vendor": "Nicopoly",
+      "price": 59990.0,
+      "marketplace_sku": "MLC4449896600",
+      "page": 1,
+      "position_local": 79,
+      "position_absolute": 79,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Blazer Peplum Botones Negro Nicopoly Negro Xl Liso",
+      "vendor": "Nicopoly",
+      "price": 59990.0,
+      "marketplace_sku": "MLC4449896598",
+      "page": 1,
+      "position_local": 82,
+      "position_absolute": 82,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Blazer Peplum Botones Blanco Nicopoly Blanco M Liso",
+      "vendor": "Nicopoly",
+      "price": 59990.0,
+      "marketplace_sku": "MLC4449883548",
+      "page": 1,
+      "position_local": 85,
+      "position_absolute": 85,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Gilet Espalda Ajustable Khaki Nicopoly Khaki M Liso",
+      "vendor": "Nicopoly",
+      "price": 31990.0,
+      "marketplace_sku": "MLC2193645859",
+      "page": 1,
+      "position_local": 88,
+      "position_absolute": 88,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Gilet Básico Ajustable Oliva Nicopoly Oliva S Liso",
+      "vendor": "Nicopoly",
+      "price": 29990.0,
+      "marketplace_sku": "MLC3534944178",
+      "page": 1,
+      "position_local": 91,
+      "position_absolute": 91,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Gilet Básico Celeste Nicopoly Celeste M Liso",
+      "vendor": "Nicopoly",
+      "price": 29990.0,
+      "marketplace_sku": "MLC3042320464",
+      "page": 1,
+      "position_local": 94,
+      "position_absolute": 94,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Gilet Lazo Ajustable Café Nicopoly Mocca Xl Liso",
+      "vendor": "Nicopoly",
+      "price": 29990.0,
+      "marketplace_sku": "MLC1663467323",
+      "page": 1,
+      "position_local": 97,
+      "position_absolute": 97,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Jeans Corte Barrel Blanco Nicopoly Blanco Liso M",
+      "vendor": "Nicopoly",
+      "price": 44990.0,
+      "marketplace_sku": "MLC1860143543",
+      "page": 1,
+      "position_local": 100,
+      "position_absolute": 100,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Jeans Corte Barrel Azul Nicopoly Azul Liso M",
+      "vendor": "Nicopoly",
+      "price": 44990.0,
+      "marketplace_sku": "MLC3613959778",
+      "page": 1,
+      "position_local": 103,
+      "position_absolute": 103,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Blazer Básico Sastrero Rosado Nicopoly Rosado L Liso",
+      "vendor": "Nicopoly",
+      "price": 49990.0,
+      "marketplace_sku": "MLC2193314871",
+      "page": 1,
+      "position_local": 106,
+      "position_absolute": 106,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Blazer Básico Sastrero Blanco Nicopoly Blanco L Liso",
+      "vendor": "Nicopoly",
+      "price": 49990.0,
+      "marketplace_sku": "MLC2193646013",
+      "page": 1,
+      "position_local": 109,
+      "position_absolute": 109,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Blazer Básico Sastrero Café Nicopoly Cafe Xl Liso",
+      "vendor": "Nicopoly",
+      "price": 49990.0,
+      "marketplace_sku": "MLC4402173088",
+      "page": 1,
+      "position_local": 112,
+      "position_absolute": 112,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    },
+    {
+      "title": "Blazer Básico Sastrero Negro Nicopoly Negro S Liso",
+      "vendor": "Nicopoly",
+      "price": 49990.0,
+      "marketplace_sku": "MLC2193646015",
+      "page": 1,
+      "position_local": 115,
+      "position_absolute": 115,
+      "_discovered_categories": [
+        "Brand Hub"
+      ],
+      "_discovered_category_urls": [
+        "https://www.mercadolibre.cl/tienda/nicopoly"
+      ],
+      "_discovery_method": "BRAND_STORE_ML"
+    }
+  ],
+  "unique_products_catalog": [
+    {
+      "title": "Blusa Drapeada Tipo Satín Cuello Alto Blanco Nicopoly Blanco Liso M",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC2250582941",
+      "price": 26990.0,
+      "position_absolute": 1,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Top / Blusa Lunares Con Botones Café Nicopoly Café Liso L",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC4485751658",
+      "price": 21990.0,
+      "position_absolute": 4,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Falda Tipo Satín Oliva Nicopoly Oliva Liso M",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC4452210104",
+      "price": 28990.0,
+      "position_absolute": 7,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Blazer Manga 3/4 Ajustado Con Solapas Amarillo Mantequilla Nicopoly Amarillo S Liso",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC2181838969",
+      "price": 53990.0,
+      "position_absolute": 10,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Pantalón Rayas Verticales Azul Marino Nicopoly Azul Marino Liso M",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC2250985925",
+      "price": 35990.0,
+      "position_absolute": 13,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Falda Midi Tipo Satín Y Encaje Café Nicopoly Café Liso M",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC4487811548",
+      "price": 27990.0,
+      "position_absolute": 16,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Blusa Halter Lunares Rojo Nicopoly Rojo Liso M",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC2237926845",
+      "price": 24990.0,
+      "position_absolute": 19,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Blusa Drapeada Tipo Satín Con Corbatín Rosado Nicopoly Rosado Liso S",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC4471871566",
+      "price": 35990.0,
+      "position_absolute": 22,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Falda Short Rayas Diplomáticas Café Nicopoly Cafe Liso M",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC2193316021",
+      "price": 29990.0,
+      "position_absolute": 25,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Blusa Puntos Corbatín Negro Nicopoly Negro Liso M",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC4471879330",
+      "price": 25990.0,
+      "position_absolute": 28,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Blazer Básico Sastrero Rosado Nicopoly Rosado Xl Liso",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC2193314863",
+      "price": 49990.0,
+      "position_absolute": 31,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Jeans Wide Leg Ancho Celeste Nicopoly Celeste Liso 38",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC4403478186",
+      "price": 47990.0,
+      "position_absolute": 34,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Gilet Vichy Negro Nicopoly Negro Xs Liso",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC2215986283",
+      "price": 27990.0,
+      "position_absolute": 37,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Pantalón Recto Vichy Khaki Nicopoly Khaki Liso M",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC2215973551",
+      "price": 41990.0,
+      "position_absolute": 40,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Short Vichy Negro Nicopoly Negro Liso M",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC2215986383",
+      "price": 27990.0,
+      "position_absolute": 43,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Jeans Wide Leg Ancho Azul Marino Nicopoly Azul Marino Liso 38",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC2193653503",
+      "price": 47990.0,
+      "position_absolute": 46,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Top Corto Tipo Satín Verde Nicopoly Verde Liso S",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC2221158049",
+      "price": 27990.0,
+      "position_absolute": 49,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Blusa Rayas Lazo Desmontable Blanco Nicopoly Blanco Liso S",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC4456898234",
+      "price": 29990.0,
+      "position_absolute": 52,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Pantalón Rectos Puntos Café Nicopoly Café Liso L",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC2250563401",
+      "price": 31990.0,
+      "position_absolute": 55,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Pantalón Rayas Verticales Rosado Nicopoly Rosado Liso S",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC4488147974",
+      "price": 35990.0,
+      "position_absolute": 58,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Gilet Básico Ajustable Amarillo Mantequilla Nicopoly Amarillo Xl Liso",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC4385491188",
+      "price": 29990.0,
+      "position_absolute": 61,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Gilet Eco Cuero Café Nicopoly Cafe M Liso",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC2193316811",
+      "price": 29990.0,
+      "position_absolute": 64,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Gilet Básico Ajustable Negro Nicopoly Negro M Liso",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC1626249193",
+      "price": 29990.0,
+      "position_absolute": 67,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Blazer Peplum Botones Burdeo Nicopoly Burdeo Xl Liso",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC4449883560",
+      "price": 59990.0,
+      "position_absolute": 76,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Blazer Peplum Botones Café Nicopoly Café S Liso",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC4449896600",
+      "price": 59990.0,
+      "position_absolute": 79,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Blazer Peplum Botones Negro Nicopoly Negro Xl Liso",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC4449896598",
+      "price": 59990.0,
+      "position_absolute": 82,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Blazer Peplum Botones Blanco Nicopoly Blanco M Liso",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC4449883548",
+      "price": 59990.0,
+      "position_absolute": 85,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Gilet Espalda Ajustable Khaki Nicopoly Khaki M Liso",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC2193645859",
+      "price": 31990.0,
+      "position_absolute": 88,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Gilet Básico Ajustable Oliva Nicopoly Oliva S Liso",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC3534944178",
+      "price": 29990.0,
+      "position_absolute": 91,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Gilet Básico Celeste Nicopoly Celeste M Liso",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC3042320464",
+      "price": 29990.0,
+      "position_absolute": 94,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Gilet Lazo Ajustable Café Nicopoly Mocca Xl Liso",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC1663467323",
+      "price": 29990.0,
+      "position_absolute": 97,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Jeans Corte Barrel Blanco Nicopoly Blanco Liso M",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC1860143543",
+      "price": 44990.0,
+      "position_absolute": 100,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Jeans Corte Barrel Azul Nicopoly Azul Liso M",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC3613959778",
+      "price": 44990.0,
+      "position_absolute": 103,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Blazer Básico Sastrero Rosado Nicopoly Rosado L Liso",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC2193314871",
+      "price": 49990.0,
+      "position_absolute": 106,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Blazer Básico Sastrero Blanco Nicopoly Blanco L Liso",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC2193646013",
+      "price": 49990.0,
+      "position_absolute": 109,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Blazer Básico Sastrero Café Nicopoly Cafe Xl Liso",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC4402173088",
+      "price": 49990.0,
+      "position_absolute": 112,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    },
+    {
+      "title": "Blazer Básico Sastrero Negro Nicopoly Negro S Liso",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC2193646015",
+      "price": 49990.0,
+      "position_absolute": 115,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true,
+      "raw_observation_count": 1
+    }
+  ],
+  "evidence_notes": [
+    "COVERAGE_PARTIAL: discovered non-seed branches terminal but none CERTIFIED"
+  ],
+  "resume_tested": true,
+  "resume_duplicate_work": 0
+}

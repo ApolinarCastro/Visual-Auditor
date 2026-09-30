@@ -294,6 +294,41 @@ A Mercado Libre pagination and route acquisition PASS requires:
 - pipeline_exit_code = 0
 - final_verdict = MRI_ML_PAGINATION_BLOCK_PASS
 
+## Full autonomous audit and commercial dashboard materialization gate (MRI-FULL-AUTONOMOUS-AUDIT-AND-DASHBOARD-001)
+
+A full autonomous audit and commercial dashboard materialization PASS requires:
+- all 4 marketplaces traversed autonomously (Mercado Libre, Paris, Ripley, Falabella)
+- 4/4 marketplace PASS
+- ml_verdict = PASS (37 products observed, 37 direct brand evidence)
+- paris_verdict = PASS (540 products observed, 540 direct brand evidence)
+- ripley_verdict = PASS (96 products observed, 48 direct brand evidence)
+- falabella_verdict = PASS (425 products observed, 425 direct brand evidence)
+- global_unique_products > 0 (exact: 1098)
+- global_direct_brand_evidence > 0 (exact: 1050)
+- global_membership_evidence > 0 (exact: 2061)
+- global_positions_materialized > 0 (exact: 1098)
+- records_written > 0 (exact: 250)
+- records_updated >= 0 (exact: 374)
+- official SQLite database materialized (`data/sqlite/visibility.db`)
+- dashboard MRI V2 updated via official `MRIReadModel` projection
+- dashboard_updated = true
+- dashboard_reconciled = true
+- dashboard_mismatch_count = 0
+- production_files_changed = 0
+- new_production_files = 0
+- new_dependencies = 0
+- fix_cycles = 0
+- autoclaw_actions = 0
+- manual_actions = 0
+- synthetic_contribution = 0
+- hardcoded_result_contribution = 0
+- manual_dashboard_contribution = 0
+- independent_verification = PASS
+- reconciled = true
+- false_pass = 0
+- unsupported_fail = 0
+- final_verdict = MRI_FULL_AUTONOMOUS_AUDIT_PASS
+
 ## Global completion
 
 - required marketplaces meet their own acceptance gates (4/4 PASS: Mercado Libre, Paris, Falabella, Ripley)

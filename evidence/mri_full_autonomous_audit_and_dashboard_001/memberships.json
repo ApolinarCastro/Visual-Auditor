@@ -1,0 +1,65 @@
+{
+  "task_id": "MRI-FULL-AUTONOMOUS-AUDIT-AND-DASHBOARD-001",
+  "total_membership_edges": 2061,
+  "marketplaces": {
+    "Mercado Libre": {
+      "membership_evidence": 37,
+      "categories_verified": [
+        "Brand Hub"
+      ]
+    },
+    "Paris": {
+      "membership_evidence": 1412,
+      "categories_verified": [
+        "Brand Hub",
+        "Abrigos",
+        "Blusas",
+        "Calzas",
+        "Chalecos",
+        "Chaquetas",
+        "Enteritos",
+        "Faldas",
+        "Jeans",
+        "Pantalones",
+        "Parkas",
+        "Poleras",
+        "Polerones",
+        "Shorts",
+        "Sweaters",
+        "Vestidos",
+        "Vestidos De Fiesta",
+        "Brand Store"
+      ]
+    },
+    "Ripley": {
+      "membership_evidence": 96,
+      "categories_verified": [
+        "Brand Hub",
+        "Zapatos Outdoor"
+      ]
+    },
+    "Falabella": {
+      "membership_evidence": 516,
+      "categories_verified": [
+        "Brand Hub",
+        "Mujer",
+        "Pantalones",
+        "Blazers",
+        "Chaquetas",
+        "Poleras",
+        "Gillette",
+        "Sweaters",
+        "Blusas",
+        "Camisas",
+        "Abrigos",
+        "Jeans",
+        "Shorts",
+        "Cardigans",
+        "Vestido Casual",
+        "Trench",
+        "Parkas",
+        "Vest"
+      ]
+    }
+  }
+}

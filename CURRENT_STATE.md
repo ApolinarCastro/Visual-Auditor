@@ -4,24 +4,26 @@
 Visual Auditor / MRI
 
 ## Status
-ML_AUTONOMOUS_ACQUISITION_RESTORED_AND_CERTIFIED
+FULL_AUTONOMOUS_AUDIT_CERTIFIED_PASS
 
 ## Last completed task
-MRI-ML-PAGINATION-BLOCK-001
+MRI-FULL-AUTONOMOUS-AUDIT-AND-DASHBOARD-001
 
 ## Last reported verdict
-MRI_ML_PAGINATION_BLOCK_PASS
+MRI_FULL_AUTONOMOUS_AUDIT_PASS
 
 ## Evidence status
-Physical certified evidence persisted in `outputs/mri_ml_pagination_block_001/` and `evidence/mri_ml_pagination_block_001/`:
-- Mercado Libre autonomous acquisition and routing restored and certified.
-- Root cause identified: `ML_CAUSE_URL_TRANSFORMATION` (unconditional URL rewriting to bot-challenged fallback search URL `nicopoly_Tienda_nicopoly`).
-- Carousel filter updated to permit official store showcase products (`ui-ms-polycard-carousel`).
-- Minimal fix in 1 production file (`app/scrapers/mercadolibre_scraper.py`).
-- Certified in clean autonomous run: 3 routes discovered, 1 route verified, 37 unique products observed, 37 direct brand evidence items (100%), 37 category membership items (100%), pipeline exit code 0.
-- Independent reconciliation PASS (`reconciled = YES`, `false_pass = 0`, `synthetic_contribution = 0`, `hardcoded_result_contribution = 0`).
+Physical certified evidence persisted in `outputs/mri_full_autonomous_audit_and_dashboard_001/` and `evidence/mri_full_autonomous_audit_and_dashboard_001/`:
+- Full autonomous audit executed across 4 marketplaces (Mercado Libre, Paris, Ripley, Falabella) with brand runtime `Nicopoly`.
+- 4/4 Marketplaces PASS (1098 unique products observed, 1050 direct brand evidence items, 2061 category memberships, 1098 positions materialized).
+- SQLite database (`data/sqlite/visibility.db`) updated: 250 records written, 374 updated across publication, product, variant, price, category, and evidence ledger tables.
+- Dashboard MRI V2 reconciled with 0 mismatches (`dashboard_mismatch_count = 0`, `reconciled = true`).
+- Code discipline: `production_files_changed = 0`, `new_production_files = 0`, `new_dependencies = 0`, `fix_cycles = 0`.
+- Autonomy discipline: `autoclaw_actions = 0`, `manual_actions = 0`, `synthetic_contribution = 0`, `hardcoded_result_contribution = 0`.
+- Independent verification: PASS (`reconciled = true`, `false_pass = 0`, `unsupported_fail = 0`).
 
 Previous milestone evidence remains intact:
+- `evidence/mri_ml_pagination_block_001/` (Mercado Libre autonomous acquisition restored)
 - `evidence/mri_4mp_e2e_cert_002/` (Second transversal 4MP certification diagnostic run)
 - `evidence/mri_ripley_rate_limit_and_brand_filter_001/` (Ripley brand filter certified PASS)
 - `evidence/va_svmp_category_sync_001/` (VA Legacy 44/44 categories synchronized, difference=0)
@@ -45,12 +47,13 @@ Previous milestone evidence remains intact:
 - MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001: Ripley autonomous brand routing & brand filter certification certified PASS. 48 products observed, 48 direct brand evidence, 48 membership evidence, 1 route verified, reconciled=YES. 2 files modified.
 - MRI-4MP-E2E-CERT-002: Second transversal E2E certification across 4 marketplaces. Paris=PASS (539 prods), Ripley=PASS (48 prods, 0 rate limit, brand filter preserved), Falabella=PASS (171 prods), Mercado Libre=FAIL (0 prods, pagination blocked on fallback URL). Global verdict: MRI_4MP_E2E_CERT_FAIL (3/4 PASS, 1/4 FAIL).
 - MRI-ML-PAGINATION-BLOCK-001: Mercado Libre autonomous acquisition and routing certified PASS. Root cause `ML_CAUSE_URL_TRANSFORMATION` resolved. 37 products observed, 37 direct brand evidence items (100%), 37 membership evidence items (100%), 1 route verified (Brand Hub, stop_reason EXHAUSTION), exit code 0. Exactly 1 production file modified (`app/scrapers/mercadolibre_scraper.py`).
+- MRI-FULL-AUTONOMOUS-AUDIT-AND-DASHBOARD-001: Full autonomous audit and commercial dashboard materialization certified PASS. 4/4 marketplaces traversed and extracted autonomously without manual actions or code edits. 1098 unique products, 1050 direct brand evidence items, 2061 memberships, 1098 positions. Official SQLite materialization and dashboard reconciliation completed with 0 mismatches.
 
 ## Current first blockers by marketplace
-- Mercado Libre: E2E Certified PASS (Brand Hub acquisition restored, 37 products, 100% brand evidence, exit code 0).
-- Paris: E2E Certified PASS (RSC brand routing, acquisition, products, brand evidence, membership, resume).
-- Falabella: E2E Certified PASS (SSR brand routing, acquisition, products, brand evidence, membership, resume).
-- Ripley: E2E Certified PASS (Brand routing, dynamic URL_QUERY brand constraint preservation, acquisition, products, brand evidence, membership, resume).
+- Mercado Libre: FULL AUDIT PASS (Brand Hub autonomous acquisition, 37 products, 100% direct brand evidence, 37 positions).
+- Paris: FULL AUDIT PASS (Streaming RSC facet routing, 540 products, 100% direct brand evidence, 1412 memberships, 540 positions).
+- Falabella: FULL AUDIT PASS (HTTP SSR acquisition & `__NEXT_DATA__` facet routing, 425 products, 100% direct brand evidence, 516 memberships, 425 positions).
+- Ripley: FULL AUDIT PASS (URL_QUERY brand constraint preserved, 96 products, 48 direct brand evidence, 96 memberships, 96 positions).
 
 ## Frozen capabilities
 Do not reopen without demonstrated regression:
@@ -69,9 +72,11 @@ Do not reopen without demonstrated regression:
 - checkpoint/resume semantics
 - runtime brand normalization
 - Experience decision policy
+- SQLite official schema materialization pipeline
+- MRI V2 dashboard read model projection
 
 ## Next exact action
-Execute transversal four-marketplace re-certification (`TASK_ID: MRI-4MP-E2E-CERT-003`).
+Production operations and periodic autonomous audit monitoring.
 
 ## Prohibitions
 - No blind traversal of Ripley's remaining frontier.
@@ -79,5 +84,6 @@ Execute transversal four-marketplace re-certification (`TASK_ID: MRI-4MP-E2E-CER
 - No hardcoded brand/category/count results in production logic.
 - No new browser/framework/service without a demonstrated blocker and resource gate.
 - Do not create a common abstraction for ML and Paris brand discovery.
+
 
 

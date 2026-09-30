@@ -1,0 +1,38 @@
+{
+  "task_id": "MRI-FULL-AUTONOMOUS-AUDIT-AND-DASHBOARD-001",
+  "audit_run_id": "run_mri_full_audit_20260930_171411",
+  "timestamp": "2026-09-30T17:14:11.786808",
+  "records_before": 1028,
+  "records_written": 250,
+  "records_updated": 374,
+  "records_rejected": 474,
+  "records_after": 1278,
+  "materialized_by_marketplace": {
+    "Mercado Libre": {
+      "written": 17,
+      "updated": 20,
+      "rejected": 0
+    },
+    "Paris": {
+      "written": 185,
+      "updated": 354,
+      "rejected": 1
+    },
+    "Ripley": {
+      "written": 48,
+      "updated": 0,
+      "rejected": 48
+    },
+    "Falabella": {
+      "written": 0,
+      "updated": 0,
+      "rejected": 425
+    }
+  },
+  "db_totals_by_marketplace": {
+    "falabella": 214,
+    "mercadolibre": 453,
+    "paris": 561,
+    "ripley": 50
+  }
+}
