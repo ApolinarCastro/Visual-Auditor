@@ -1,0 +1,27 @@
+{
+  "task_id": "MRI-FALABELLA-ENTRY-001",
+  "marketplace": "Falabella",
+  "reconciled": "YES",
+  "false_pass": 0,
+  "synthetic_contribution": 0,
+  "hardcoded_result_contribution": 0,
+  "reported": {
+    "navigation_success": "YES",
+    "commercial_page": "YES",
+    "challenge_detected": "NO",
+    "dom_usable": "YES",
+    "commercial_content_observed": "YES",
+    "pods_observed": 100,
+    "products_observed": 48
+  },
+  "recalculated": {
+    "navigation_success": "YES",
+    "commercial_page": "YES",
+    "challenge_detected": "NO",
+    "dom_usable": "YES",
+    "commercial_content_observed": "YES",
+    "pods_observed": 100,
+    "products_observed": 48
+  },
+  "verdict": "PASS"
+}

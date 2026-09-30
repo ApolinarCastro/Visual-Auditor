@@ -1,0 +1,47 @@
+{
+  "task_id": "MRI-FALABELLA-ENTRY-001",
+  "marketplace": "Falabella",
+  "brand_runtime": "Nicopoly",
+  "before_classification": "CHALLENGE_PAGE",
+  "root_cause": "Cloudflare WAF intercepts headless Playwright network requests with HTTP 403 Challenge Page; standard HTTP/SSR request (F1) receives full 1.97MB commercial document with 48 products.",
+  "strategies_attempted": [
+    "F1_HTTP_RESPONSE_NORMAL"
+  ],
+  "working_strategy": "F1_HTTP_RESPONSE_NORMAL",
+  "pipeline_gap": "FalabellaScraper inherited BaseScraper._navigate_internal which only used page.goto and failed on Cloudflare 403 without activating the existing HTTP SSR acquisition fallback.",
+  "production_files_changed": [
+    "app/scrapers/falabella_scraper.py"
+  ],
+  "new_production_files": 0,
+  "new_dependencies": 0,
+  "red_tests": {
+    "tests_run": 4,
+    "failed_initially": 1,
+    "file": "tests/test_mri_falabella_entry.py"
+  },
+  "green_tests": {
+    "tests_run": 4,
+    "passed": 4,
+    "file": "tests/test_mri_falabella_entry.py"
+  },
+  "regression": {
+    "tests_run": 74,
+    "passed": 74
+  },
+  "guardrails": "PASS (13/13)",
+  "navigation_success": "YES",
+  "commercial_page": "YES",
+  "challenge_detected": "NO",
+  "dom_usable": "YES",
+  "commercial_content_observed": "YES",
+  "pods_observed": 100,
+  "products_observed": 48,
+  "autoclaw_actions": 0,
+  "manual_actions": 0,
+  "synthetic_contribution": 0,
+  "hardcoded_result_contribution": 0,
+  "pipeline_exit_code": 0,
+  "independent_verification": "PASS",
+  "first_failure": null,
+  "verdict": "MRI_FALABELLA_ENTRY_PASS"
+}

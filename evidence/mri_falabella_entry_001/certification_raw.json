@@ -1,0 +1,19 @@
+{
+  "requested_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly",
+  "final_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly",
+  "document_title": "falabella.com",
+  "document_size": 2552298,
+  "dom_ready_state": "complete",
+  "html_hash": "b496f302629aa9f6499d8f60e6efcd8a8b3d5e153d393834e11fc84a95c539e6",
+  "pods_observed": 100,
+  "next_data_present": true,
+  "products_in_structured_data": 48,
+  "pagination": {
+    "count": 315,
+    "perPage": 48,
+    "totalPerPage": 48,
+    "currentPage": 1
+  },
+  "brand_occurrences": 474,
+  "navigation_timing_seconds": 35.43
+}

@@ -1,0 +1,20 @@
+{
+  "task_id": "MRI-FALABELLA-ENTRY-001",
+  "marketplace": "Falabella",
+  "brand_runtime": "Nicopoly",
+  "target_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly",
+  "navigation_success": "YES",
+  "commercial_page": "YES",
+  "challenge_detected": "NO",
+  "dom_usable": "YES",
+  "commercial_content_observed": "YES",
+  "http_browser_evidence": "PRESENT",
+  "pods_observed": 100,
+  "products_observed": 48,
+  "total_catalog_count": 315,
+  "autoclaw_actions": 0,
+  "manual_actions": 0,
+  "pipeline_exit_code": 0,
+  "elapsed_seconds": 35.57,
+  "entry_verdict": "FALABELLA_ENTRY_PASS"
+}

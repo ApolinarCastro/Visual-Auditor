@@ -35,9 +35,16 @@ Current focus: MRI autonomous marketplace intelligence across four marketplaces:
   - Independent reconciliation PASS (`reconciled = YES`, `false_pass = 0`, `synthetic_contribution = 0`, `hardcoded_result_contribution = 0`).
   - Exact 2 production files modified (`surface_classifier.py`, `category_discoverer.py`), 0 new production files, 0 new dependencies.
 
+- MRI-FALABELLA-ENTRY-001: Falabella ENTRY certified PASS:
+  - Forensic reproduction confirmed CHALLENGE_PAGE on standard headless Playwright browser navigation (Cloudflare HTTP 403).
+  - Acquisition frontier evaluation proved F1 (HTTP/response normal existente via standard `urllib`) is completely unblocked (HTTP 200, 1.97MB), delivering 48 products in `__NEXT_DATA__` and 100 pods.
+  - Minimal surgical fix: implemented `navigate()` override in `FalabellaScraper` activating legitimate HTTP SSR acquisition fallback and loading DOM via `set_content()`.
+  - Certified in real run: `navigation_success=YES`, `commercial_page=YES`, `challenge_detected=NO`, `dom_usable=YES`, `commercial_content_observed=YES` (100 pods, 48 products in structured data), zero evasions, zero proxies, zero CAPTCHAs, zero cookies, exact 1 production file modified (`falabella_scraper.py`), 0 new production files, 0 new dependencies.
+  - Independent reconciliation PASS (`reconciled = YES`, `false_pass = 0`, `synthetic_contribution = 0`, `hardcoded_result_contribution = 0`).
+
 ## Current operating decision
 
-Mercado Libre and Paris autonomous brand routing are both certified and frozen. Do not reopen without regression. Do not attempt Falabella bypass without explicit governance authorization. Do not reopen Ripley.
+Mercado Libre, Paris, and Falabella ENTRY are certified and frozen. Do not reopen without regression. Do not reopen Ripley.
 
 ## Core principles
 
@@ -56,5 +63,6 @@ This GitHub repository stores the persistent project state and verified forensic
 
 ## Next task
 
-Awaiting next authorized task from product governance. Falabella remains classified as `CHALLENGE_PAGE` (Cloudflare WAF). Do not attempt bypass without explicit authorization.
+Awaiting next authorized task from product governance. Falabella ENTRY is certified PASS; downstream capabilities (DISCOVERY, CATEGORIES, PRODUCTS) remain NOT_TESTED.
+
 

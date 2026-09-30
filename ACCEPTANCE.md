@@ -97,7 +97,34 @@ A Paris brand routing PASS requires:
 - new_dependencies = 0
 - pipeline_exit_code = 0
 
+## Falabella entry gate (MRI-FALABELLA-ENTRY-001)
+
+A Falabella entry PASS requires:
+- blocker_reproduced = YES (CHALLENGE_PAGE reproduced on Playwright browser navigation)
+- root_cause = EVIDENCED (Cloudflare WAF intercepts Playwright browser requests with HTTP 403)
+- working_existing_strategy = EVIDENCED (F1 HTTP/response normal receives unblocked HTTP 200 with 1.97MB SSR document)
+- red_tests_reproduced = YES (1/4 failed initially on entry)
+- green_tests = PASS (4/4 passed)
+- regression = PASS (74/74 passed across full test suite)
+- guardrails = PASS (13/13 guardrails)
+- navigation_success = YES
+- commercial_page = YES
+- challenge_detected = NO
+- dom_usable = YES
+- commercial_content_observed = YES (100 pods, 48 products in structured data)
+- autoclaw_actions = 0
+- manual_actions = 0
+- synthetic_contribution = 0
+- hardcoded_result_contribution = 0
+- independent_verification = PASS
+- reconciled = YES
+- production_files_changed <= 2 (exact: 1)
+- new_production_files = 0
+- new_dependencies = 0
+- pipeline_exit_code = 0
+
 ## Global completion
+
 
 - required marketplaces meet their own acceptance gates
 - no unresolved required discovery/acquisition blocker

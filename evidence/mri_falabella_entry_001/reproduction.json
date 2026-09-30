@@ -1,0 +1,54 @@
+{
+  "task_id": "MRI-FALABELLA-ENTRY-001",
+  "marketplace": "Falabella",
+  "brand": "Nicopoly",
+  "requested_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly",
+  "final_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly",
+  "http_status": 403,
+  "redirect_chain": [
+    {
+      "url": "https://www.falabella.com/",
+      "status": 301
+    },
+    {
+      "url": "https://www.falabella.com/falabella-cl",
+      "status": 200
+    },
+    {
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly",
+      "status": 403
+    }
+  ],
+  "response_headers_relevant": {
+    "server": "cloudflare",
+    "cf-ray": "a43346987ddcb7e0-SCL",
+    "content-type": "text/html; charset=UTF-8"
+  },
+  "document_title": "Cloudflare",
+  "document_size": 244884,
+  "dom_ready_state": "complete",
+  "challenge_markers": [
+    "title_cloudflare",
+    "body_bloqueado",
+    "body_ray_id",
+    "status_403"
+  ],
+  "browser_errors": [],
+  "console_errors": [
+    "error: Error rendering component",
+    "error: Error: Minified React error #418; visit https://reactjs.org/docs/error-decoder.html?invariant=418 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.\n    at ag (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:46389)\n    at i (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:120990)\n    at uI (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:98996)\n    at uM (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:98866)\n    at uS (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:93939)\n    at x (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:199462)\n    at MessagePort.R (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:199983)",
+    "error: Error rendering component",
+    "error: Error: Minified React error #418; visit https://reactjs.org/docs/error-decoder.html?invariant=418 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.\n    at ag (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:46389)\n    at i (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:120990)\n    at uI (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:98996)\n    at uM (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:98866)\n    at uS (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:93939)\n    at x (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:199462)\n    at MessagePort.R (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:199983)",
+    "error: Error rendering component",
+    "error: Error: Minified React error #418; visit https://reactjs.org/docs/error-decoder.html?invariant=418 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.\n    at ag (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:46389)\n    at i (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:120990)\n    at uI (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:98996)\n    at uM (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:98866)\n    at uS (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:93939)\n    at x (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:199462)\n    at MessagePort.R (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:199983)",
+    "error: Error rendering component",
+    "error: Error: Minified React error #418; visit https://reactjs.org/docs/error-decoder.html?invariant=418 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.\n    at ag (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:46389)\n    at i (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:120990)\n    at uI (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:98996)\n    at uM (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:98866)\n    at uS (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:93939)\n    at x (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:199462)\n    at MessagePort.R (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:199983)",
+    "error: Error rendering component",
+    "error: Error: Minified React error #418; visit https://reactjs.org/docs/error-decoder.html?invariant=418 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.\n    at ag (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:46389)\n    at i (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:120990)\n    at uI (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:98996)\n    at uM (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:98866)\n    at uS (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:93939)\n    at x (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:199462)\n    at MessagePort.R (https://static.falabella.io/content-renderer/ca4288e5/_next/static/chunks/framework-f3e0c37b3b745dfe.js:1:199983)"
+  ],
+  "navigation_timing_seconds": 28.86,
+  "html_hash": "782433de8a14379e773fb7e6a3872afea80fba80bd7f165eb393e735e3c35d91",
+  "exit_code": 0,
+  "classification": "CHALLENGE_PAGE",
+  "reproduced": true
+}

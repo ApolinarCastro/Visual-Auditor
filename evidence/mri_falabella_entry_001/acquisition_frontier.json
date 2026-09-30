@@ -1,0 +1,22 @@
+[
+  {
+    "strategy": "F1_HTTP_RESPONSE_NORMAL",
+    "request": "urllib GET https://www.falabella.com/falabella-cl/search?Ntt=nicopoly",
+    "status": 200,
+    "final_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly",
+    "document_size": 1974445,
+    "commercial_content": true,
+    "commercial_markers": [
+      "brand_nicopoly",
+      "product_container_selectors",
+      "price_currency",
+      "product_json_keys"
+    ],
+    "challenge_detected": false,
+    "challenge_markers": [
+      "cloudflare_keyword"
+    ],
+    "new_evidence": "HTTP status=200, size=1974445 bytes, server=cloudflare, cf-ray=a43348260edbaa92-SCL",
+    "result": "PASS"
+  }
+]

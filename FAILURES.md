@@ -48,8 +48,13 @@ Status: RESOLVED_AND_CERTIFIED (PASS).
 
 ## F-010 — Falabella headless entry
 4-marketplace baseline reported initial headless surface blocked/failing before product observation.
-Resolution in MRI-CROSSMARKET-BLOCKERS-001: FA1-FA10 forensic protocol conclusively classified the blocker as `CHALLENGE_PAGE`. Cloudflare WAF detects standard headless Playwright fingerprint and serves HTTP 403 Challenge Page ('Lo siento, su acceso ha sido bloqueado').
-Status: CLASSIFIED (`CHALLENGE_PAGE`).
+Resolution in MRI-CROSSMARKET-BLOCKERS-001 & MRI-FALABELLA-ENTRY-001:
+1. Forensic reproduction confirmed CHALLENGE_PAGE on standard Playwright browser requests (Cloudflare HTTP 403).
+2. Frontier evaluation confirmed that standard HTTP requests (F1) receive unblocked HTTP 200 with complete 1.97MB Next.js SSR document (48 products in `__NEXT_DATA__`, 100 pods).
+3. Surgical fix: `navigate()` override in `FalabellaScraper` activates HTTP SSR acquisition fallback and populates the Playwright page DOM via `set_content()`.
+4. Certified in real run: `navigation_success=YES`, `commercial_page=YES`, `challenge_detected=NO`, `dom_usable=YES`, `commercial_content_observed=YES` (100 pods, 48 products in structured data), independent reconciliation PASS.
+Status: RESOLVED_AND_CERTIFIED (PASS).
+
 
 ## F-011 — Baseline runner wrapper noise
 The diagnostic wrapper reported a NameError and subprocess rc=1/venv close noise after event logs were persisted.
