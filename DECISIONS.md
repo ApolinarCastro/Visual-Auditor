@@ -38,3 +38,11 @@ Forensic testing FA1-FA10 proved that Falabella ENTRY in headless Playwright is 
 
 ## D-013 — Baseline subprocess rc=1 is WRAPPER_FAILURE
 Forensic reproduction proved that the baseline subprocess rc=1 was caused by a wrapper post-processing bug in baseline_4mp.py:97 (`NameError: name 'mp' is not defined`), occurring after the MRI pipeline had successfully concluded and persisted events. The core pipeline is unaffected.
+
+## D-014 — Mercado Libre autonomous brand routing architecture
+MRI-ML-BRAND-ROUTING-001 implemented and certified autonomous brand routing on Mercado Libre through:
+1. Rejection of non-commercial navigation URLs (addresses, auth, verification) via `_GENERAL_NAV_RES` in `surface_classifier.py`.
+2. Clean official store commercial category discovery on `tienda/<brand>` DOM, parsing corridor and container paths (`_Container_`, `listado/<category>/`), stripping URL fragments and tracking queries without hardcoding brand or category literals.
+3. Canonical emission of `brand_evidence_count_text` and `brand_present` on all category batches in `autonomous_pipeline.py`.
+4. Max 3 production files modified (`surface_classifier.py`, `category_discoverer.py`, `autonomous_pipeline.py`), 0 new production files, 0 new dependencies. AutoClaw=0, manual=0.
+

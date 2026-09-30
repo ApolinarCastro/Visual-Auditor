@@ -49,6 +49,31 @@ A cross-market blockers PASS requires:
 - ripley_actions = 0
 - independent_verification = PASS
 
+## Mercado Libre brand routing gate (MRI-ML-BRAND-ROUTING-001)
+
+A Mercado Libre brand routing PASS requires:
+- red_tests_reproduced = YES (4/4 initial tests failed)
+- green_tests = PASS (6/6 passed)
+- regression = PASS (59/59 passed)
+- commercial_category_discovery = PASS (official store categories discovered)
+- noncommercial_navigation_rejection = PASS (shipping address hub rejected)
+- autonomous_category_navigation = PASS (navigated commercial category without manual URL)
+- product_extraction = PASS (products observed > 0)
+- direct_brand_evidence = PASS (brand evidence > 0)
+- membership_evidence = PASS (surface provenance recorded)
+- address_hub_false_positive = 0
+- autoclaw_actions = 0
+- manual_actions = 0
+- synthetic_contribution = 0
+- hardcoded_result_contribution = 0
+- independent_verification = PASS
+- reconciled = YES
+- production_files_changed <= 3 (exact: 3)
+- new_production_files = 0
+- new_dependencies = 0
+- pipeline_exit_code = 0
+
+
 ## Global completion
 
 Global CONFIRMED additionally requires:

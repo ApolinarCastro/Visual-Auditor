@@ -1,0 +1,37 @@
+{
+  "task_id": "MRI-ML-BRAND-ROUTING-001",
+  "verifier": "Independent Evidence Reconciler",
+  "reported_metrics": {
+    "discovered_categories_count": 3,
+    "commercial_categories_count": 2,
+    "address_hub_false_positives": 0,
+    "products_observed": 525,
+    "direct_brand_evidence": 525,
+    "membership_evidence": 525,
+    "pipeline_exit_code": 0
+  },
+  "recalculated_metrics": {
+    "discovered_categories_count": 3,
+    "commercial_categories_count": 2,
+    "address_hub_false_positives": 0,
+    "products_observed": 525,
+    "direct_brand_evidence": 525,
+    "membership_evidence": 525,
+    "categories_done_events": 2
+  },
+  "reconciliation_matches": {
+    "discovered_categories": true,
+    "commercial_categories": true,
+    "address_hub_fp": true,
+    "products_observed": true,
+    "direct_brand_evidence": true,
+    "membership_evidence": true,
+    "pipeline_exit_code": true
+  },
+  "reconciled": "YES",
+  "false_pass": 0,
+  "synthetic_contribution": 0,
+  "hardcoded_result_contribution": 0,
+  "address_hub_false_positive": 0,
+  "verdict": "MRI_ML_BRAND_ROUTING_PASS"
+}

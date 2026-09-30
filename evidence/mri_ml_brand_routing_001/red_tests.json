@@ -1,0 +1,39 @@
+{
+  "task_id": "MRI-ML-BRAND-ROUTING-001",
+  "phase": "FASE_1_TEST_ROJO",
+  "red_tests_reproduced": "YES",
+  "runner": "C:\\Users\\ASUS Zenbook\\AppData\\Local\\Python\\bin\\python.exe -m pytest tests/test_mri_ml_brand_routing.py",
+  "total_tests": 4,
+  "failed": 4,
+  "passed": 0,
+  "tests": [
+    {
+      "test_id": "TEST_ML_01",
+      "name": "test_ml_01_reject_non_commercial_address_navigation",
+      "description": "Una URL del tipo addresses/v3/navigation/hub?go=... NO puede clasificarse como categoria comercial.",
+      "result": "FAIL",
+      "failure_detail": "AssertionError: 'COMMERCIAL_CATEGORY' == 'COMMERCIAL_CATEGORY' : Address hub must not be classified as COMMERCIAL_CATEGORY"
+    },
+    {
+      "test_id": "TEST_ML_02",
+      "name": "test_ml_02_discover_commercial_category_from_official_store",
+      "description": "Dada una representacion de Tienda Oficial con categorias/facetas comerciales, debe producir categorias comerciales con nombre real y no 'Nicopoly Tienda Nicopoly'.",
+      "result": "FAIL",
+      "failure_detail": "AssertionError: 'Nicopoly Tienda Nicopoly' unexpectedly found in 'Nicopoly Tienda Nicopoly'"
+    },
+    {
+      "test_id": "TEST_ML_03",
+      "name": "test_ml_03_preserve_provenance_and_dynamic_brand",
+      "description": "La categoria descubierta debe conservar provenance y NO depender del literal 'Nicopoly'.",
+      "result": "FAIL",
+      "failure_detail": "AssertionError: 'nicopoly' unexpectedly found in \"a[href*='nicopoly']\""
+    },
+    {
+      "test_id": "TEST_ML_04",
+      "name": "test_ml_04_brand_discovery_event_emits_brand_evidence_count",
+      "description": "BRAND_DISCOVERY no puede depender exclusivamente de una clave de evento que el pipeline no emite ('brand_evidence_count_text').",
+      "result": "FAIL",
+      "failure_detail": "AssertionError: 'brand_evidence_count_text' not found in category_done event payload"
+    }
+  ]
+}

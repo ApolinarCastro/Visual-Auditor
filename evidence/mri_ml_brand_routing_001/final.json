@@ -1,0 +1,48 @@
+{
+  "task_id": "MRI-ML-BRAND-ROUTING-001",
+  "marketplace": "Mercado Libre",
+  "brand_runtime": "Nicopoly",
+  "production_files_changed": [
+    "app/mri_autonomous/surface_classifier.py",
+    "app/mri_autonomous/category_discoverer.py",
+    "app/mri_autonomous/autonomous_pipeline.py"
+  ],
+  "red_tests": {
+    "tests_run": 4,
+    "failed_initially": 4,
+    "file": "tests/test_mri_ml_brand_routing.py"
+  },
+  "green_tests": {
+    "tests_run": 6,
+    "passed": 6,
+    "file": "tests/test_mri_ml_brand_routing.py"
+  },
+  "regression": {
+    "tests_run": 59,
+    "passed": 59,
+    "suites": [
+      "test_mri_surface_classifier.py",
+      "test_mri_sanitize_surfaces.py",
+      "test_mri_experience_store.py",
+      "test_mri_experience_strategy.py",
+      "test_mri_hub_retry_policy.py",
+      "test_mri_contradiction.py",
+      "test_regression_guardrails.py"
+    ]
+  },
+  "categories_discovered": 3,
+  "commercial_categories_verified": 2,
+  "noncommercial_urls_rejected": 1,
+  "products_observed": 525,
+  "brand_evidence": 525,
+  "membership_evidence": 525,
+  "autoclaw_actions": 0,
+  "manual_actions": 0,
+  "synthetic_contribution": 0,
+  "hardcoded_result_contribution": 0,
+  "independent_verification": "PASS",
+  "reconciled": "YES",
+  "pipeline_exit_code": 0,
+  "first_failure": null,
+  "verdict": "MRI_ML_BRAND_ROUTING_PASS"
+}

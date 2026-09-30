@@ -1,0 +1,72 @@
+{
+  "task_id": "MRI-ML-BRAND-ROUTING-001",
+  "marketplace": "Mercado Libre",
+  "brand_runtime": "Nicopoly",
+  "run_id": "cert_ml_20260930_084716",
+  "pid": 13880,
+  "duration_seconds": 122.9,
+  "pipeline_exit_code": 0,
+  "error": null,
+  "autoclaw_actions": 0,
+  "manual_actions": 0,
+  "discovered_categories_count": 3,
+  "discovered_categories": [
+    {
+      "name": "Brand Hub",
+      "url": "https://www.mercadolibre.cl/tienda/nicopoly",
+      "classification": "BRAND_SURFACE",
+      "provenance": "BRAND_STORE_ML",
+      "source": "https://www.mercadolibre.cl/tienda/nicopoly"
+    },
+    {
+      "name": "New In",
+      "url": "https://listado.mercadolibre.cl/tienda/nicopoly/_Container_ESP-1E4957B3099140B3A05F3AEEA297D34F386329223-New-In?tracking_id=530d43c1d9d60c8552931bed1182cd21",
+      "classification": "COMMERCIAL_CATEGORY",
+      "provenance": "BRAND_STORE_ML",
+      "source": "https://www.mercadolibre.cl/tienda/nicopoly"
+    },
+    {
+      "name": "Conjuntos",
+      "url": "https://listado.mercadolibre.cl/tienda/nicopoly/_Container_ESP-1E4957B3099140B3A05F3AEEA297D34F386329223-Conjuntos?tracking_id=530d43c1d9d60c8552931bed1182cd21",
+      "classification": "COMMERCIAL_CATEGORY",
+      "provenance": "BRAND_STORE_ML",
+      "source": "https://www.mercadolibre.cl/tienda/nicopoly"
+    }
+  ],
+  "commercial_categories_count": 2,
+  "noncommercial_urls_rejected": 1,
+  "address_hub_false_positives": 0,
+  "categories_processed": 2,
+  "non_hub_categories_navigated": 1,
+  "products_observed": 525,
+  "direct_brand_evidence": 525,
+  "membership_evidence": 525,
+  "category_done_summaries": [
+    {
+      "category_name": "Brand Hub",
+      "category_url": "https://www.mercadolibre.cl/tienda/nicopoly",
+      "pages_traversed": 12,
+      "stop_reason": "EXHAUSTION",
+      "raw_count": 544,
+      "brand_evidence_count_text": 544
+    },
+    {
+      "category_name": "New In",
+      "category_url": "https://listado.mercadolibre.cl/tienda/nicopoly/_Container_ESP-1E4957B3099140B3A05F3AEEA297D34F386329223-New-In?tracking_id=530d43c1d9d60c8552931bed1182cd21",
+      "pages_traversed": 12,
+      "stop_reason": "EXHAUSTION",
+      "raw_count": 544,
+      "brand_evidence_count_text": 544
+    }
+  ],
+  "verdict_phase_5": {
+    "category_discovered": "YES",
+    "commercial_navigation": "YES",
+    "source_provenance": "PRESENT",
+    "navigation_success": "YES",
+    "products_observed": 525,
+    "direct_brand_evidence": 525,
+    "membership_evidence": "PRESENT",
+    "address_hub_false_positive": 0
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "task_id": "MRI-ML-BRAND-ROUTING-001",
+  "phase": "FASE_2_CAMBIO_MINIMO",
+  "production_files_changed": [
+    "app/mri_autonomous/surface_classifier.py",
+    "app/mri_autonomous/category_discoverer.py",
+    "app/mri_autonomous/autonomous_pipeline.py"
+  ],
+  "production_files_count": 3,
+  "max_production_files_changed": 3,
+  "new_production_files": 0,
+  "new_dependencies": 0,
+  "changes_applied": {
+    "A_reject_non_commercial_navigation": {
+      "surface_classifier": "Added _GENERAL_NAV_RES capturing /addresses/, /navigation/hub, /registration, /login, /gz/, /account-verification and classifying them as GENERAL_NAVIGATION (confidence 0.95).",
+      "category_discoverer": "Explicitly rejected non-commercial navigation routes in discover_categories_from_page under Mercado Libre scope.",
+      "autonomous_pipeline": "Added GENERAL_NAVIGATION to sc_excluded surfaces, preventing them from ever becoming candidate or certified taxonomy nodes."
+    },
+    "B_extract_commercial_categories": {
+      "category_discoverer": "Extracted store subcategory URLs matching /<subcat>/<brand>_Tienda_<brand> while filtering out root store links and non-commercial routes.",
+      "category_name_derivation": "Updated category_name_from_url to extract the subcategory slug segment preceding '_Tienda_' or following '/tienda/', replacing 'Nicopoly Tienda Nicopoly' with the true commercial category name."
+    },
+    "C_deliver_to_pipeline": {
+      "category_discoverer": "Made FACET_SELECTORS dynamic by replacing hardcoded 'nicopoly' with structural selectors ('a[href*=\"_Tienda_\"]', '.ui-search-filter-name a'). Updated discover_categories_from_page signature to accept brand parameter.",
+      "autonomous_pipeline": "Passed brand dynamically to discover_categories_from_page."
+    },
+    "D_correct_brand_discovery_evidence": {
+      "autonomous_pipeline": "Added make_category_done_payload helper to emit canonical category_done events containing 'brand_evidence_count_text' and 'brand_present' with observed brand product count, eliminating false BRAND_DISCOVERY FAIL in evaluators."
+    }
+  },
+  "verification": {
+    "ml_tests": "PASS (6/6)",
+    "regression_tests": "PASS (52/52)",
+    "scope_limit_respected": "YES (3 <= 3 files)"
+  }
+}

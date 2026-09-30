@@ -30,8 +30,12 @@ Resolution status: environmental; later run reported isolated profile working. D
 
 ## F-008 — Mercado Libre brand routing
 4-marketplace baseline reported core extraction/pagination working, but BRAND_DISCOVERY failed/unresolved.
-Resolution in MRI-CROSSMARKET-BLOCKERS-001: Root cause demonstrated causally. (1) baseline_4mp.py checked for non-existent event key `brand_evidence_count_text`; (2) category_discoverer.py captured shipping address URL (`addresses/v3/navigation/hub?go=...`) as category 'Hub' and failed to extract store-scoped sidebar facet filters (.ui-search-filter-dl dt).
-Status: FORENSICALLY_RESOLVED (Awaiting implementation).
+Resolution in MRI-CROSSMARKET-BLOCKERS-001 & MRI-ML-BRAND-ROUTING-001:
+1. Rejection of shipping address URLs (`addresses/v3/navigation/hub?go=...`) via `surface_classifier.py` (`GENERAL_NAVIGATION`).
+2. Extraction of real official store commercial categories (`New In`, `Conjuntos`, etc.) via `category_discoverer.py`.
+3. Canonical emission of `brand_evidence_count_text` and `brand_present` on all category batches in `autonomous_pipeline.py`.
+4. Certified in real run: 525 products observed, 525 direct brand evidence items (100%), independent reconciliation PASS.
+Status: RESOLVED_AND_CERTIFIED (PASS).
 
 ## F-009 — Paris brand routing
 4-marketplace baseline reported core extraction/pagination working, but BRAND_DISCOVERY failed/unresolved.

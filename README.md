@@ -22,10 +22,16 @@ Current focus: MRI autonomous marketplace intelligence across four marketplaces:
   - Falabella ENTRY: conclusively classified as `CHALLENGE_PAGE` (Cloudflare WAF HTTP 403 challenge interstitial in headless Playwright).
   - Runner rc=1: conclusively classified as `WRAPPER_FAILURE` (NameError at `baseline_4mp.py:97`, MRI pipeline unaffected).
   - Governed execution: code changes = 0, AutoClaw = 0, manual = 0, Ripley actions = 0.
+- MRI-ML-BRAND-ROUTING-001: Mercado Libre autonomous brand routing certified PASS:
+  - Official store commercial categories discovered autonomously (`New In`, `Conjuntos`).
+  - Shipping address URLs (`/addresses/v3/navigation/hub?go=...`) rejected (`address_hub_false_positives = 0`).
+  - Discovered category navigated autonomously; 525 products observed with 100% direct brand evidence (525/525).
+  - Independent reconciliation PASS (`reconciled = YES`, `false_pass = 0`).
+  - Exact 3 production files modified (`surface_classifier.py`, `category_discoverer.py`, `autonomous_pipeline.py`), 0 new production files, 0 new dependencies.
 
 ## Current operating decision
 
-Do not continue expanding Ripley's large frontier merely because the mechanism works. Use the four-marketplace capability matrix and the specific root causes demonstrated in `MRI-CROSSMARKET-BLOCKERS-001` to drive the smallest next implementation fix under strict governance.
+Mercado Libre official store brand routing is certified and frozen. Do not reopen without regression. Do not continue expanding Ripley's large frontier. Drive the next implementation fix under strict governance toward Paris Next.js App Router RSC facet parser.
 
 ## Core principles
 
@@ -44,4 +50,4 @@ This GitHub repository stores the persistent project state and verified forensic
 
 ## Next task
 
-Select the smallest actionable fix identified in MRI-CROSSMARKET-BLOCKERS-001 under strict governance: either (A) fix the runner wrapper / emission key, (B) implement ML store sidebar facet discovery, or (C) implement Paris Next.js App Router RSC facet parser. Do not attempt Falabella bypass without explicit governance authorization.
+Implement Paris BRAND_DISCOVERY (Next.js App Router streaming RSC facet parser and Mega-Menu isolation) under strict single-mission governance. Do not attempt Falabella bypass without explicit authorization. Do not reopen Ripley.
