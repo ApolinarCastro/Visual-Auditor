@@ -199,10 +199,43 @@ A VA SVMP category synchronization PASS requires:
 - independent_reconciliation = PASS (difference = 0 across all 4 marketplaces)
 - final_verdict = VA_SVMP_CATEGORY_SYNC_PASS
 
+## Ripley Brand Filter & Schema Compatibility gate (MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001)
+
+A Ripley brand filter & schema compatibility PASS requires:
+- rate_limit_status = NOT_TRIGGERED
+- brand_constraint_status = PASS
+- causal_classification != UNKNOWN (exact: RIPLEY_CAUSE_BRAND_CONSTRAINT_LOSS_ONLY)
+- first_causal_break = FACET_URL_BUILD_MECHANISM_SCHEMA_MISMATCH
+- red_reproduced = YES (2/2 failed)
+- green_pass = PASS (2/2 passed)
+- regression_pass = PASS (94/94 passed across all suites)
+- runtime_brand_propagation = PASS (verified with TEST_RUNTIME_BRAND, 0 hardcoding)
+- commercial_route_discovered = YES
+- brand_constraint_preserved = YES
+- acquisition_success = YES
+- routes_verified >= 1 (exact: 1)
+- products_observed > 0 (exact: 48)
+- direct_brand_evidence > 0 (exact: 48)
+- membership_evidence > 0 (exact: 48)
+- autoclaw_actions = 0 (exact: 0)
+- manual_actions = 0 (exact: 0)
+- synthetic_contribution = 0 (exact: 0)
+- hardcoded_result_contribution = 0 (exact: 0)
+- production_files_changed <= 2 (exact: 2)
+- new_production_files = 0 (exact: 0)
+- new_dependencies = 0 (exact: 0)
+- fix_cycles = 1 (exact: 1)
+- independent_verification = PASS
+- reconciled = YES
+- false_pass = 0
+- pipeline_exit_code = 0
+- final_verdict = MRI_RIPLEY_RATE_LIMIT_AND_BRAND_FILTER_PASS
+
 ## Global completion
 
-- required marketplaces meet their own acceptance gates (3/4 PASS; Ripley blocked on rate-limiting & category brand filtering)
-- no unresolved required discovery/acquisition blocker (Ripley blocker isolated)
+- required marketplaces meet their own acceptance gates (4/4 PASS: Mercado Libre, Paris, Falabella, Ripley)
+- no unresolved required discovery/acquisition blocker
 - no unprocessed viable frontier required by the declared coverage contract
 - final evidence is reproducible from persisted artifacts
+
 

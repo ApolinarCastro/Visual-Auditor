@@ -70,10 +70,15 @@ Resolution in MRI-FALABELLA-BRAND-ROUTING-001:
 4. Certified in real run: 22 routes discovered, 2 routes verified, 157 products observed, 100% direct brand evidence (157/157), 100% membership evidence (157/157), independent reconciliation PASS.
 ## F-013 — Ripley HTTP 429 rate limiting and unconstrained category navigation
 During MRI-4MP-E2E-CERT-001 transversal certification, Ripley execution failed to observe brand products:
-1. Root cause 1 (Rate Limiting): Initial search navigation attempts to `https://simple.ripley.cl/search/nicopoly` returned HTTP 429 (Too Many Requests), preventing dynamic category discovery on the brand surface.
-2. Root cause 2 (Unconstrained Category Navigation): Pipeline fallback / category verification navigated to `https://simple.ripley.cl/zapatos-y-zapatillas`, which is an unconstrained top-level category containing 48 generic store products and 0 Nicopoly products (`products_observed=0`, `direct_brand_evidence=0`, `membership_evidence=0`).
-3. Resolution required: Implement backoff / jitter handling for Ripley HTTP 429 responses, and constrain category navigation to verified brand-filtered URLs or preserve brand filter facets during category traversal.
-Status: OPEN (`FIRST_GLOBAL_BLOCKER = RIPLEY_RATE_LIMIT_AND_UNFILTERED_CATEGORY_ZERO_BRAND`). Next task: `MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001`.
+1. Forensic separation in MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001:
+   - Rate limiting: Tested across 2 clean navigation attempts; received HTTP 200 OK on both hub and filtered routes (`RATE_LIMIT_STATUS = NOT_TRIGGERED`).
+   - Brand constraint loss: Deterministically reproduced (`BRAND_CONSTRAINT_STATUS = FAIL`). The root cause was a schema mismatch between `mechanism.json` (`mechanism_type: 'URL_QUERY (server-side document navigation)'`, lacking `param`) and `build_facet_url` / `autonomous_pipeline.py` (which checked `== 'URL_QUERY'` and `param`). This caused `build_facet_url` to return `None`, `_facet_state['applied'] = False`, and line 817 fell back to the unconstrained category `zapatos-y-zapatillas` with 0 brand products.
+2. Resolution:
+   - Enhanced `build_facet_url` in `category_discoverer.py` to support `URL_QUERY` schema variants and dynamic parameter resolution.
+   - Updated `autonomous_pipeline.py` to ensure `_target` prioritizes `_furl` when built so unconstrained raw URLs are never scraped for brand audits.
+   - Preserved seed surface across navigation sanitization.
+3. Certified in real run: 1439 routes discovered, 1 route verified, 48 products observed, 48 direct brand evidence (100%), 48 membership evidence (100%), independent verification PASS.
+Status: RESOLVED_AND_CERTIFIED (PASS).
 
 ## F-014 — VA Legacy category loss due to unextracted cell hyperlinks and hardcoded rules
 In VA Legacy, new categories added to `SVMP.xlsx` (such as Falabella: Poleras mujer, Vestidos y enteritos, Faldas, Shorts; Paris: Fiesta; Ripley: Calzas, Accesorios y complementos) were lost before scraper dispatch:

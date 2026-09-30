@@ -1,0 +1,96 @@
+{
+  "task_id": "MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001",
+  "phase": "FASE_A_FORENSIC_429",
+  "max_attempts": 2,
+  "attempts": [
+    {
+      "attempt": 1,
+      "timestamp": "2026-09-30T12:19:33.820623",
+      "requested_url": "https://simple.ripley.cl/search/nicopoly",
+      "response_url": "https://simple.ripley.cl/search/nicopoly",
+      "http_status": 200,
+      "retry_after": null,
+      "relevant_headers": {
+        "cf-cache-status": "BYPASS",
+        "cf-ray": "a43434ea4966cf87-SCL",
+        "content-type": "text/html; charset=utf-8",
+        "server": "cloudflare"
+      },
+      "title": "nicopoly | Ripley.com",
+      "body_snippet": "Enviar a\nSantiago\nIniciar sesión\nMostrando resultados para \"nicopoly\"\nEnvío en 24 horas\nDespacho a domicilio\nPunto de retiro\nRelevancia\nMenor Precio\nM",
+      "strategy": "Playwright_Headless_Commit",
+      "browser_provider": "Chromium",
+      "elapsed_seconds": 11.5,
+      "failure_classification": "NONE"
+    },
+    {
+      "attempt": 2,
+      "timestamp": "2026-09-30T12:19:47.331695",
+      "requested_url": "https://simple.ripley.cl/moda-mujer?brand=NICOPOLY&page=1",
+      "response_url": "https://simple.ripley.cl/moda-mujer?brand=NICOPOLY&page=1",
+      "http_status": 200,
+      "retry_after": null,
+      "relevant_headers": {
+        "cf-cache-status": "BYPASS",
+        "cf-ray": "a434353e6989d83d-SCL",
+        "content-type": "text/html; charset=utf-8",
+        "server": "cloudflare"
+      },
+      "title": "Ropa Mujer NICOPOLY | Ripley.com",
+      "body_snippet": "Enviar a\nSantiago\nIniciar sesión\n690 Resultados en ropa mujer NICOPOLY\nEnvío en 24 horas\nDespacho a domicilio\nPunto de retiro\nFiltrar\n«\n1\n2\n3\n»\nRecome",
+      "strategy": "Playwright_Headless_Commit",
+      "browser_provider": "Chromium",
+      "elapsed_seconds": 10.99,
+      "failure_classification": "NONE"
+    }
+  ],
+  "rate_limit_triggered": "NO",
+  "rate_limit_reproducible": "NO",
+  "rate_limit_stage": "NONE",
+  "existing_retry_used": "YES",
+  "existing_retry_result": "RESOLVED_OR_NOT_TRIGGERED",
+  "retry_after_observed": null,
+  "rate_limit_status": "NOT_TRIGGERED",
+  "evidence": [
+    {
+      "attempt": 1,
+      "timestamp": "2026-09-30T12:19:33.820623",
+      "requested_url": "https://simple.ripley.cl/search/nicopoly",
+      "response_url": "https://simple.ripley.cl/search/nicopoly",
+      "http_status": 200,
+      "retry_after": null,
+      "relevant_headers": {
+        "cf-cache-status": "BYPASS",
+        "cf-ray": "a43434ea4966cf87-SCL",
+        "content-type": "text/html; charset=utf-8",
+        "server": "cloudflare"
+      },
+      "title": "nicopoly | Ripley.com",
+      "body_snippet": "Enviar a\nSantiago\nIniciar sesión\nMostrando resultados para \"nicopoly\"\nEnvío en 24 horas\nDespacho a domicilio\nPunto de retiro\nRelevancia\nMenor Precio\nM",
+      "strategy": "Playwright_Headless_Commit",
+      "browser_provider": "Chromium",
+      "elapsed_seconds": 11.5,
+      "failure_classification": "NONE"
+    },
+    {
+      "attempt": 2,
+      "timestamp": "2026-09-30T12:19:47.331695",
+      "requested_url": "https://simple.ripley.cl/moda-mujer?brand=NICOPOLY&page=1",
+      "response_url": "https://simple.ripley.cl/moda-mujer?brand=NICOPOLY&page=1",
+      "http_status": 200,
+      "retry_after": null,
+      "relevant_headers": {
+        "cf-cache-status": "BYPASS",
+        "cf-ray": "a434353e6989d83d-SCL",
+        "content-type": "text/html; charset=utf-8",
+        "server": "cloudflare"
+      },
+      "title": "Ropa Mujer NICOPOLY | Ripley.com",
+      "body_snippet": "Enviar a\nSantiago\nIniciar sesión\n690 Resultados en ropa mujer NICOPOLY\nEnvío en 24 horas\nDespacho a domicilio\nPunto de retiro\nFiltrar\n«\n1\n2\n3\n»\nRecome",
+      "strategy": "Playwright_Headless_Commit",
+      "browser_provider": "Chromium",
+      "elapsed_seconds": 10.99,
+      "failure_classification": "NONE"
+    }
+  ]
+}

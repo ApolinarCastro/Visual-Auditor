@@ -1,0 +1,18 @@
+{
+  "task_id": "MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001",
+  "regression_result": "PASS",
+  "test_suites": [
+    "tests/test_mri_autonomy_transfer.py",
+    "tests/test_regression_guardrails.py",
+    "tests/test_va_svmp_category_sync.py",
+    "tests/test_mri_ripley_brand_constraint.py",
+    "tests/test_mri_ml_brand_routing.py",
+    "tests/test_mri_paris_brand_routing.py",
+    "tests/test_mri_falabella_brand_routing.py",
+    "tests/test_mri_falabella_entry.py",
+    "tests/test_mri_hub_retry_policy.py"
+  ],
+  "total_regression_tests_passed": 94,
+  "total_regression_tests_failed": 0,
+  "guardrails_pass": true
+}

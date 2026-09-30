@@ -1,0 +1,25 @@
+{
+  "task_id": "MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001",
+  "marketplace": "Ripley",
+  "brand_runtime": "Nicopoly",
+  "reported": {
+    "routes_discovered": 1439,
+    "routes_verified": 1,
+    "products_observed": 48,
+    "unique_products": 48,
+    "direct_brand_evidence": 48,
+    "membership_evidence": 48
+  },
+  "recalculated": {
+    "routes_verified": 1,
+    "products_observed": 48,
+    "unique_products": 48,
+    "direct_brand_evidence": 48,
+    "membership_evidence": 48
+  },
+  "reconciled": "YES",
+  "false_pass": 0,
+  "synthetic_contribution": 0,
+  "hardcoded_result_contribution": 0,
+  "independent_verification": "PASS"
+}

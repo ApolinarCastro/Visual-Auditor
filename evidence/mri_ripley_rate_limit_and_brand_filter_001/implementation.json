@@ -1,0 +1,23 @@
+{
+  "task_id": "MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001",
+  "production_files_changed": [
+    "app/mri_autonomous/category_discoverer.py",
+    "app/mri_autonomous/autonomous_pipeline.py"
+  ],
+  "production_files_count": 2,
+  "new_production_files": 0,
+  "new_dependencies": 0,
+  "fix_cycles": 1,
+  "changes_summary": [
+    {
+      "file": "app/mri_autonomous/category_discoverer.py",
+      "function": "build_facet_url",
+      "description": "Allowed URL_QUERY schema variants (both 'type' and 'mechanism_type' starting with 'URL_QUERY'), resolved param from 'param', 'query_param' or parsed parameter name from mechanism transition metadata, dynamically applying runtime brand without hardcoding."
+    },
+    {
+      "file": "app/mri_autonomous/autonomous_pipeline.py",
+      "function": "autonomous_discover_marketplace",
+      "description": "Checked mechanism_type compatibility starting with 'URL_QUERY', ensured _furl is tracked in category scope, and enforced _target fallback to _furl if built so unconstrained raw category URLs are never requested for brand audits."
+    }
+  ]
+}

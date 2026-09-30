@@ -1,0 +1,9 @@
+{
+  "task_id": "MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001",
+  "red_test": "tests/test_mri_ripley_brand_constraint.py",
+  "first_failure": "FACET_URL_BUILD_MECHANISM_SCHEMA_MISMATCH",
+  "red_reproduced": "YES",
+  "expected": "build_facet_url should construct category_url?brand={BRAND}&page=1 using runtime brand dynamically from persisted mechanism.json",
+  "observed": "build_facet_url returned None because mechanism.json uses 'mechanism_type': 'URL_QUERY (server-side document navigation)' instead of 'type': 'URL_QUERY', and lacks an explicit 'param' key.",
+  "exit_code": 1
+}

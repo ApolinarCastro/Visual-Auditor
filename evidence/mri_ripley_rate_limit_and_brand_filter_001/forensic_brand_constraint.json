@@ -1,0 +1,62 @@
+{
+  "marketplace": "Ripley",
+  "brand_runtime": "Nicopoly",
+  "brand_constraint_status": "FAIL",
+  "loss_detected": true,
+  "loss_stage": "facet_mechanism_application / build_facet_url",
+  "loss_reason": "mechanism.json schema mismatch: 'mechanism_type' is 'URL_QUERY (server-side document navigation)' which fails autonomous_pipeline.py equality check (== 'URL_QUERY') and category_discoverer.py check (mechanism.get('type') != 'URL_QUERY' and mechanism.get('param') is None). This leads to build_facet_url returning None, leaving _facet_state['applied'] = False, and line 817 falling back to unconstrained category URL 'https://simple.ripley.cl/zapatos-y-zapatillas'.",
+  "transitions": [
+    {
+      "stage": "brand_hub_generation",
+      "brand_runtime": "Nicopoly",
+      "input": "Ripley + Nicopoly",
+      "output_url": "https://simple.ripley.cl/search/nicopoly",
+      "brand_constraint_present": true,
+      "brand_constraint_representation": "path_slug (/search/nicopoly)",
+      "source": "brand_hubs.brand_hub_for",
+      "provenance": "RUNTIME_INPUT"
+    },
+    {
+      "stage": "commercial_category_candidate",
+      "brand_runtime": "Nicopoly",
+      "input_url": "https://simple.ripley.cl/search/nicopoly",
+      "output_url": "https://simple.ripley.cl/zapatos-y-zapatillas",
+      "brand_constraint_present": false,
+      "brand_constraint_representation": "NONE (generic category browse)",
+      "source": "navigation_source / DOM menu anchors",
+      "provenance": "DISCOVERED_CATALOG"
+    },
+    {
+      "stage": "facet_mechanism_load",
+      "brand_runtime": "Nicopoly",
+      "input_url": "https://simple.ripley.cl/zapatos-y-zapatillas",
+      "mechanism_file": "c:\\Users\\ASUS Zenbook\\Documents\\Visibility Auditor\\outputs\\mri_autonomy_004\\diagnostic\\mechanism.json",
+      "mechanism_type_raw": "URL_QUERY (server-side document navigation)",
+      "pipeline_type_check_pass": false,
+      "category_discoverer_type_check_pass": false,
+      "category_discoverer_param_present": false,
+      "built_facet_url": null,
+      "brand_constraint_present": false,
+      "brand_constraint_representation": "FAILED_TO_BUILD",
+      "source": "app.mri_autonomous.category_discoverer.build_facet_url",
+      "provenance": "MECHANISM_APPLICATION"
+    },
+    {
+      "stage": "acquisition_target_selection",
+      "brand_runtime": "Nicopoly",
+      "input_url": "https://simple.ripley.cl/zapatos-y-zapatillas",
+      "target_selected": "https://simple.ripley.cl/zapatos-y-zapatillas",
+      "brand_constraint_present": false,
+      "brand_constraint_representation": "NONE (unfiltered category URL)",
+      "source": "autonomous_pipeline line 817: _target = (scraper.page.url if _facet_state.get('applied') else url)",
+      "provenance": "FALLBACK_TO_UNFILTERED_URL"
+    }
+  ],
+  "critical_control": {
+    "test_brand": "TEST_RUNTIME_BRAND",
+    "test_hub_url": "https://simple.ripley.cl/search/test_runtime_brand",
+    "runtime_brand_used_in_hub": true,
+    "hardcoded_brand_contribution": 0,
+    "runtime_brand_propagation": "PASS"
+  }
+}

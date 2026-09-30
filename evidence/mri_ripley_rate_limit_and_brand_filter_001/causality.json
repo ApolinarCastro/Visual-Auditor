@@ -1,0 +1,9 @@
+{
+  "task_id": "MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001",
+  "rate_limit_status": "NOT_TRIGGERED",
+  "brand_constraint_status": "FAIL",
+  "causal_classification": "RIPLEY_CAUSE_BRAND_CONSTRAINT_LOSS_ONLY",
+  "first_causal_break": "FACET_URL_BUILD_MECHANISM_SCHEMA_MISMATCH",
+  "second_failure": null,
+  "evidence": "FASE A demonstrated 0 occurrences of HTTP 429 across 2 clean navigation attempts to Ripley (rate_limit_status=NOT_TRIGGERED). FASE B demonstrated that build_facet_url fails to build the brand constraint URL from outputs/mri_autonomy_004/diagnostic/mechanism.json because of schema mismatches (mechanism_type != 'URL_QUERY', 'type' missing, 'param' missing). As a result, _facet_state['applied'] remains False, and acquisition falls back to the unconstrained category route https://simple.ripley.cl/zapatos-y-zapatillas resulting in 0 Nicopoly products observed."
+}

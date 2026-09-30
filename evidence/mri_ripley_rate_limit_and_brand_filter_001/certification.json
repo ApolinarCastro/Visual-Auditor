@@ -1,0 +1,83 @@
+{
+  "task_id": "MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001",
+  "marketplace": "Ripley",
+  "brand_runtime": "Nicopoly",
+  "pid": 32088,
+  "start_time": "2026-09-30T13:28:28.637711",
+  "end_time": "2026-09-30T13:30:19.844055",
+  "duration_seconds": 111.21,
+  "routes_discovered": 1439,
+  "routes_verified": 1,
+  "verified_routes_detail": [
+    {
+      "name": "Brand Hub",
+      "url": "https://simple.ripley.cl/search/nicopoly",
+      "facet_applied_url": null,
+      "products_found": 48,
+      "stop_reason": "PAGINATION_PARAM_NOT_FOUND"
+    }
+  ],
+  "products_observed": 48,
+  "unique_products": 48,
+  "direct_brand_evidence": 48,
+  "membership_evidence": 48,
+  "sample_products": [
+    {
+      "title": "CHAQUETA BIKER NEGRO MUJER NICOPOLY",
+      "vendor": "NICOPOLY",
+      "marketplace_sku": "10002617343",
+      "price": 54990.0,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "POLERA ENCAJE MANGA LARGA NEGRO MUJER NICOPOLY",
+      "vendor": "NICOPOLY",
+      "marketplace_sku": "10002951146",
+      "price": 25990.0,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "VESTIDO TIPO CAMISERO MUJER NICOPOLY",
+      "vendor": "NICOPOLY",
+      "marketplace_sku": "10002967232",
+      "price": 32990.0,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "CARDIGAN BASICO ROSADO MUJER NICOPOLY",
+      "vendor": "NICOPOLY",
+      "marketplace_sku": "10002924256",
+      "price": 21990.0,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "BLAZER 4 BOTONES DECORATIVOS NEGRO MUJER NICOPOLY",
+      "vendor": "NICOPOLY",
+      "marketplace_sku": "10001713165",
+      "price": 39990.0,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    }
+  ],
+  "autoclaw_actions": 0,
+  "manual_actions": 0,
+  "synthetic_contribution": 0,
+  "hardcoded_result_contribution": 0,
+  "pipeline_exit_code": 0,
+  "first_failure": null,
+  "verdict": "PASS"
+}

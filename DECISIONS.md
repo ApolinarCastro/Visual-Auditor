@@ -91,3 +91,12 @@ VA-SVMP-CATEGORY-SYNC-001 synchronized and certified all 44 categories from `SVM
 3. Boundary & Scope: Exactly 2 production files modified, 0 new production files, 0 new dependencies. AutoClaw=0, manual=0. Zero modifications to MRI.
 4. Independent verification: Reconciled 44/44 categories across all 4 marketplaces (`difference = 0`).
 
+## D-020 — Ripley Autonomous Brand Routing & Brand Filter Schema Compatibility
+MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001 resolved the Ripley integrated blocker:
+1. Forensic causal separation: Proved rate limiting was `NOT_TRIGGERED` in clean isolated attempts (HTTP 200 on both hub and filtered routes). In contrast, brand constraint loss was deterministically reproduced (`FAIL`) due to a schema mismatch between `outputs/mri_autonomy_004/diagnostic/mechanism.json` (`mechanism_type: 'URL_QUERY (server-side document navigation)'`, missing `type` and `param`) and `build_facet_url` / `autonomous_pipeline.py` (which checked `== 'URL_QUERY'` and `mechanism.get('param')`). This caused `build_facet_url` to return `None`, leaving `_facet_state['applied'] = False` and falling back to unconstrained category navigation (`zapatos-y-zapatillas`).
+2. Surgical resolution:
+   - `app/mri_autonomous/category_discoverer.py`: Updated `build_facet_url` to support `URL_QUERY` schema variants (checking prefix `URL_QUERY`) and dynamically resolve parameter name (`param`, `query_param`, or regex parsing of mechanism transition text) without hardcoded values. Updated `prioritize_children` to prioritize certified categories directly.
+   - `app/mri_autonomous/autonomous_pipeline.py`: Updated mechanism check to support prefix `URL_QUERY`; ensured `_target` prioritizes `_furl` when built so unconstrained raw URLs are never scraped for brand audits; preserved seed surface across navigation sanitization.
+3. Strict governance: Exactly 2 production files modified, 0 new production files, 0 new dependencies, AutoClaw=0, manual=0, regression=PASS (94/94 passing).
+4. Certified in real run: 1439 routes discovered, 1 route verified, 48 products observed, 48 direct brand evidence (100%), 48 membership evidence (100%), independent verification PASS.
+

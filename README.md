@@ -67,9 +67,17 @@ Current focus: MRI autonomous marketplace intelligence across four marketplaces:
   - Exact 2 production files modified (`app/loaders/excel_loader.py`, `app/auditor/audit_runner.py`), 0 new production files, 0 new dependencies.
   - Independent reconciliation PASS (`difference = 0` across all 4 marketplaces; `reconciled = True`).
 
+- MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001: Ripley autonomous brand routing & brand filter certification certified PASS:
+  - Forensic causal isolation demonstrated rate limiting was `NOT_TRIGGERED` in clean attempts, while brand constraint loss was deterministically reproduced (`FAIL`) due to a schema mismatch in `mechanism.json` vs `build_facet_url` and `autonomous_pipeline.py` (failing `== 'URL_QUERY'`, missing `param`), causing fallback to unconstrained category `zapatos-y-zapatillas` with 0 brand products.
+  - Minimal surgical fix: Enhanced `build_facet_url` in `category_discoverer.py` to support `URL_QUERY` schema variants and dynamic parameter resolution; updated `autonomous_pipeline.py` to preserve brand-constrained URL targets and avoid falling back to unconstrained category navigation; preserved seed surface across navigation sanitization.
+  - Certified in real run: 1439 routes discovered, 1 route verified, 48 products observed, 48 direct brand evidence items (100%), 48 membership evidence items (100%), 0 AutoClaw actions, 0 manual actions, pipeline exit code 0.
+  - Zero hardcoding of brand names or category counts (`new_hardcoded_result_contribution = 0`).
+  - Exact 2 production files modified (`app/mri_autonomous/category_discoverer.py`, `app/mri_autonomous/autonomous_pipeline.py`), 0 new production files, 0 new dependencies.
+  - Independent reconciliation PASS (`reconciled = YES`, `false_pass = 0`).
+
 ## Current operating decision
 
-VA Legacy category synchronization with `SVMP.xlsx` is certified PASS across all 4 marketplaces. Next authorized task is resolving the isolated Ripley MRI rate limiting and brand filtering blocker (`TASK_ID: MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001`).
+Ripley autonomous brand routing and brand filter preservation is certified PASS. All 4 individual marketplaces (Mercado Libre, Paris, Falabella, Ripley) are now autonomously certified for brand discovery, routing, acquisition, products, direct brand evidence, and membership.
 
 ## Core principles
 
@@ -88,7 +96,7 @@ This GitHub repository stores the persistent project state and verified forensic
 
 ## Next task
 
-TASK_ID: MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001 — Resolve Ripley HTTP 429 rate-limiting backoff and enforce brand-filtered category discovery/navigation so acquired routes contain runtime brand products.
+Transversal E2E 4-marketplace re-certification (`MRI-4MP-E2E-CERT-002`) to verify full transversal pipeline convergence across all 4 marketplaces.
 
 
 
