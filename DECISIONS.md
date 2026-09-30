@@ -69,6 +69,15 @@ MRI-FALABELLA-BRAND-ROUTING-001 implemented and certified autonomous brand routi
 3. Category URL normalization: `category_name_from_url()` parses unquoted facet values into clean human category names ("Pantalones", "Blazers", "Mujer").
 4. Route acquisition and structured extraction: Updated `FalabellaScraper.scrape_autonomous_category()` to acquire category routes via HTTP SSR and parse structured product records directly from `__NEXT_DATA__.props.pageProps.results` (`displayName`, `brandName`/`sellerName`, `skuId`, `prices`, `url`), with fallback to DOM pods.
 5. Exact 3 production files modified (`surface_classifier.py`, `category_discoverer.py`, `falabella_scraper.py`), 0 new production files, 0 new dependencies. AutoClaw=0, manual=0. exit code=0.
-
-
-
+## D-018 — Four-Marketplace Integrated E2E Certification and Blocker Isolation
+MRI-4MP-E2E-CERT-001 executed the first transversal end-to-end certification across all 4 marketplaces:
+1. Operational discipline: Strictly 0 production files modified, 0 new production files, 0 new dependencies. AutoClaw=0, manual=0. No in-flight bug fixes allowed.
+2. Independent runs: Each marketplace executed in isolation with separate browser sessions, memory states, and clean temporary stores.
+3. Demonstrated outcomes:
+   - Mercado Libre: E2E_MARKETPLACE_PASS (524 products observed, 524 brand confirmed, 524 unique products, 3 routes verified).
+   - Paris: E2E_MARKETPLACE_PASS (539 products observed, 539 brand confirmed, 539 unique products, 3 routes verified).
+   - Falabella: E2E_MARKETPLACE_PASS (249 products observed, 249 brand confirmed, 249 unique products, 4 routes verified).
+   - Ripley: E2E_MARKETPLACE_FAIL (initial search hit HTTP 429 rate limit; unconstrained category navigation to `zapatos-y-zapatillas` returned 0 brand products).
+4. Global verdict: MRI_4MP_E2E_CERT_FAIL (3/4 PASS, 1/4 FAIL).
+5. Blocker isolated: `FIRST_GLOBAL_BLOCKER = RIPLEY_RATE_LIMIT_AND_UNFILTERED_CATEGORY_ZERO_BRAND`.
+6. Next smallest task defined: `TASK_ID: MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001`.

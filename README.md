@@ -51,9 +51,18 @@ Current focus: MRI autonomous marketplace intelligence across four marketplaces:
   - Zero evasions, zero proxies, zero CAPTCHAs, exact 3 production files modified (`surface_classifier.py`, `category_discoverer.py`, `falabella_scraper.py`), 0 new production files, 0 new dependencies. AutoClaw=0, manual=0.
   - Independent reconciliation PASS (`reconciled = YES`, `false_pass = 0`, `synthetic_contribution = 0`, `hardcoded_result_contribution = 0`).
 
+- MRI-4MP-E2E-CERT-001: First integrated four-marketplace E2E certification run executed:
+  - Mercado Libre: `E2E_MARKETPLACE_PASS` (524 products observed, 524 brand confirmed, 524 unique products, 3 routes verified).
+  - Paris: `E2E_MARKETPLACE_PASS` (539 products observed, 539 brand confirmed, 539 unique products, 3 routes verified).
+  - Falabella: `E2E_MARKETPLACE_PASS` (249 products observed, 249 brand confirmed, 249 unique products, 4 routes verified).
+  - Ripley: `E2E_MARKETPLACE_FAIL` (HTTP 429 rate-limiting on initial search navigation; fallback category `zapatos-y-zapatillas` yielded 0 Nicopoly products).
+  - First Global Blocker isolated: `RIPLEY_RATE_LIMIT_AND_UNFILTERED_CATEGORY_ZERO_BRAND` (Stage: `BRAND_DISCOVERY / ACQUISITION / PRODUCT_EXTRACTION`).
+  - Resource discipline: 0 production files modified, 0 new production files, 0 new dependencies. AutoClaw=0, manual=0.
+  - Independent recount: `reconciled_marketplaces=4`, `false_pass_total=0`, `unsupported_fail_total=0`.
+
 ## Current operating decision
 
-Mercado Libre, Paris, and Falabella brand routing are certified and frozen. Do not reopen without regression. Do not reopen Ripley.
+Mercado Libre, Paris, and Falabella are certified PASS on autonomous E2E operation. Ripley requires resolution of HTTP 429 rate limiting and brand-filtered category discovery. Do not modify production code or create broad architecture.
 
 ## Core principles
 
@@ -72,6 +81,7 @@ This GitHub repository stores the persistent project state and verified forensic
 
 ## Next task
 
-Awaiting next authorized task from product governance. Falabella brand routing is certified PASS across discovery, acquisition, products, brand evidence, and membership. Do not expand to coverage or reopen ML, Paris, or Ripley.
+TASK_ID: MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001 — Resolve Ripley HTTP 429 rate-limiting backoff and enforce brand-filtered category discovery/navigation so acquired routes contain runtime brand products.
+
 
 

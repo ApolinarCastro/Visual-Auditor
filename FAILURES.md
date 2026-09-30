@@ -68,4 +68,9 @@ Resolution in MRI-FALABELLA-BRAND-ROUTING-001:
 2. `category_discoverer.py`: extract commercial category facet options from `__NEXT_DATA__.props.pageProps.facets`.
 3. `falabella_scraper.py`: parse structured product records from `__NEXT_DATA__.props.pageProps.results` with direct brand and membership evidence.
 4. Certified in real run: 22 routes discovered, 2 routes verified, 157 products observed, 100% direct brand evidence (157/157), 100% membership evidence (157/157), independent reconciliation PASS.
-Status: RESOLVED_AND_CERTIFIED (PASS).
+## F-013 — Ripley HTTP 429 rate limiting and unconstrained category navigation
+During MRI-4MP-E2E-CERT-001 transversal certification, Ripley execution failed to observe brand products:
+1. Root cause 1 (Rate Limiting): Initial search navigation attempts to `https://simple.ripley.cl/search/nicopoly` returned HTTP 429 (Too Many Requests), preventing dynamic category discovery on the brand surface.
+2. Root cause 2 (Unconstrained Category Navigation): Pipeline fallback / category verification navigated to `https://simple.ripley.cl/zapatos-y-zapatillas`, which is an unconstrained top-level category containing 48 generic store products and 0 Nicopoly products (`products_observed=0`, `direct_brand_evidence=0`, `membership_evidence=0`).
+3. Resolution required: Implement backoff / jitter handling for Ripley HTTP 429 responses, and constrain category navigation to verified brand-filtered URLs or preserve brand filter facets during category traversal.
+Status: OPEN (`FIRST_GLOBAL_BLOCKER = RIPLEY_RATE_LIMIT_AND_UNFILTERED_CATEGORY_ZERO_BRAND`). Next task: `MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001`.

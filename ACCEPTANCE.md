@@ -153,10 +153,33 @@ A Falabella brand routing PASS requires:
 - new_dependencies = 0
 - pipeline_exit_code = 0
 
+## Four-marketplace E2E certification gate (MRI-4MP-E2E-CERT-001)
+
+A 4-marketplace E2E certification requires:
+- execution_across_4_marketplaces = YES (ML, Paris, Ripley, Falabella)
+- no_shared_session_state = YES
+- production_files_changed = 0 (exact: 0)
+- new_production_files = 0 (exact: 0)
+- new_dependencies = 0 (exact: 0)
+- autoclaw_actions = 0 (exact: 0)
+- manual_actions = 0 (exact: 0)
+- code_fix_cycles = 0 (exact: 0)
+- hardcoded_result_contribution = 0 (exact: 0)
+- synthetic_contribution = 0 (exact: 0)
+- independent_recount_reconciled = 4/4
+- false_pass_total = 0 (exact: 0)
+- unsupported_fail_total = 0 (exact: 0)
+- ml_verdict = E2E_MARKETPLACE_PASS (524 products observed, 524 brand confirmed)
+- paris_verdict = E2E_MARKETPLACE_PASS (539 products observed, 539 brand confirmed)
+- falabella_verdict = E2E_MARKETPLACE_PASS (249 products observed, 249 brand confirmed)
+- ripley_verdict = E2E_MARKETPLACE_FAIL (0 products observed; HTTP 429 rate limit + unconstrained category routing)
+- global_verdict = MRI_4MP_E2E_CERT_FAIL (3/4 PASS, 1/4 FAIL)
+- first_global_blocker = RIPLEY_RATE_LIMIT_AND_UNFILTERED_CATEGORY_ZERO_BRAND
+- next_smallest_task = TASK_ID: MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001
+
 ## Global completion
 
-
-- required marketplaces meet their own acceptance gates
-- no unresolved required discovery/acquisition blocker
+- required marketplaces meet their own acceptance gates (3/4 PASS; Ripley blocked on rate-limiting & category brand filtering)
+- no unresolved required discovery/acquisition blocker (Ripley blocker isolated)
 - no unprocessed viable frontier required by the declared coverage contract
 - final evidence is reproducible from persisted artifacts

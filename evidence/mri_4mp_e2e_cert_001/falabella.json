@@ -1,0 +1,135 @@
+{
+  "run_id": "cert_falabella_1790778404",
+  "pid": 9376,
+  "marketplace": "Falabella",
+  "brand_runtime": "Nicopoly",
+  "start_time": "2026-09-30T11:26:44.721502",
+  "end_time": "2026-09-30T11:27:18.987552",
+  "duration_seconds": 34.27,
+  "entry_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly",
+  "final_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly",
+  "routes_discovered": 4,
+  "routes_verified": 4,
+  "verified_routes_detail": [
+    {
+      "name": "Brand Hub",
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly",
+      "products_found": 102,
+      "stop_reason": "EXHAUSTION"
+    },
+    {
+      "name": "Mujer",
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.L0_category_paths=cat7330051%7C%7CMujer",
+      "products_found": 104,
+      "stop_reason": "EXHAUSTION"
+    },
+    {
+      "name": "Pantalones",
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Pantalones",
+      "products_found": 54,
+      "stop_reason": "EXHAUSTION"
+    },
+    {
+      "name": "Blazers",
+      "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Blazers",
+      "products_found": 46,
+      "stop_reason": "EXHAUSTION"
+    }
+  ],
+  "products_observed": 249,
+  "unique_products": 249,
+  "direct_brand_evidence": 249,
+  "membership_evidence": 249,
+  "position_evidence": 249,
+  "sample_products": [
+    {
+      "title": "Blazer Cruzado Rayas Diplomáticas Café Mujer",
+      "vendor": "NICOPOLY",
+      "marketplace_sku": "156911491",
+      "price": 54990.0,
+      "position_absolute": 1,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Blazer Manga 3/4 Ajustado con Solapas Amarillo Mantequilla Mujer",
+      "vendor": "NICOPOLY",
+      "marketplace_sku": "156820389",
+      "price": 53990.0,
+      "position_absolute": 2,
+      "categories": [
+        "Brand Hub",
+        "Blazers"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Blazer Dos Botones Burdeo Mujer",
+      "vendor": "NICOPOLY",
+      "marketplace_sku": "152147936",
+      "price": 41990.0,
+      "position_absolute": 3,
+      "categories": [
+        "Brand Hub",
+        "Mujer",
+        "Blazers"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Chaqueta Tipo Barbour Mocca Mujer",
+      "vendor": "NICOPOLY",
+      "marketplace_sku": "152209126",
+      "price": 36990.0,
+      "position_absolute": 4,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Pantalón Básico Café Mujer",
+      "vendor": "NICOPOLY",
+      "marketplace_sku": "152153570",
+      "price": 39990.0,
+      "position_absolute": 5,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    }
+  ],
+  "checkpoint_written": "YES",
+  "resume_checked": "YES",
+  "resume_duplicate_work": 0,
+  "experience_loaded": "YES",
+  "experience_used": "YES",
+  "experience_decisions_count": 3,
+  "decision_changed": "NO",
+  "autoclaw_actions": 0,
+  "manual_actions": 0,
+  "synthetic_contribution": 0,
+  "hardcoded_result_contribution": 0,
+  "pipeline_exit_code": 0,
+  "first_failure": null,
+  "last_successful_checkpoint": "Blazers",
+  "capability_matrix": {
+    "ENTRY": "PASS",
+    "DISCOVERY": "PASS",
+    "NAVIGATION_ROUTING": "PASS",
+    "CATEGORY": "PASS",
+    "BRAND_DISCOVERY": "PASS",
+    "ACQUISITION": "PASS",
+    "PRODUCT_EXTRACTION": "PASS",
+    "IDENTITY": "PASS",
+    "MEMBERSHIP": "PASS",
+    "POSITION": "PASS",
+    "EVIDENCE": "PASS",
+    "CHECKPOINT_RESUME": "PASS",
+    "EXPERIENCE": "PASS",
+    "VERIFICATION": "PASS"
+  },
+  "verdict": "E2E_MARKETPLACE_PASS"
+}

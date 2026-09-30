@@ -1,0 +1,86 @@
+{
+  "ENTRY": {
+    "ML": "PASS",
+    "PARIS": "PASS",
+    "RIPLEY": "PASS",
+    "FALABELLA": "PASS"
+  },
+  "DISCOVERY": {
+    "ML": "PASS",
+    "PARIS": "PASS",
+    "RIPLEY": "PASS",
+    "FALABELLA": "PASS"
+  },
+  "NAVIGATION_ROUTING": {
+    "ML": "PASS",
+    "PARIS": "PASS",
+    "RIPLEY": "PASS",
+    "FALABELLA": "PASS"
+  },
+  "CATEGORY": {
+    "ML": "PASS",
+    "PARIS": "PASS",
+    "RIPLEY": "PASS",
+    "FALABELLA": "PASS"
+  },
+  "BRAND_DISCOVERY": {
+    "ML": "PASS",
+    "PARIS": "PASS",
+    "RIPLEY": "FAIL",
+    "FALABELLA": "PASS"
+  },
+  "ACQUISITION": {
+    "ML": "PASS",
+    "PARIS": "PASS",
+    "RIPLEY": "FAIL",
+    "FALABELLA": "PASS"
+  },
+  "PRODUCT_EXTRACTION": {
+    "ML": "PASS",
+    "PARIS": "PASS",
+    "RIPLEY": "FAIL",
+    "FALABELLA": "PASS"
+  },
+  "IDENTITY": {
+    "ML": "PASS",
+    "PARIS": "PASS",
+    "RIPLEY": "FAIL",
+    "FALABELLA": "PASS"
+  },
+  "MEMBERSHIP": {
+    "ML": "PASS",
+    "PARIS": "PASS",
+    "RIPLEY": "FAIL",
+    "FALABELLA": "PASS"
+  },
+  "POSITION": {
+    "ML": "PASS",
+    "PARIS": "PASS",
+    "RIPLEY": "NOT_TESTED",
+    "FALABELLA": "PASS"
+  },
+  "EVIDENCE": {
+    "ML": "PASS",
+    "PARIS": "PASS",
+    "RIPLEY": "PASS",
+    "FALABELLA": "PASS"
+  },
+  "CHECKPOINT_RESUME": {
+    "ML": "PASS",
+    "PARIS": "PASS",
+    "RIPLEY": "PASS",
+    "FALABELLA": "PASS"
+  },
+  "EXPERIENCE": {
+    "ML": "PASS",
+    "PARIS": "PASS",
+    "RIPLEY": "PASS",
+    "FALABELLA": "PASS"
+  },
+  "VERIFICATION": {
+    "ML": "PASS",
+    "PARIS": "PASS",
+    "RIPLEY": "FAIL",
+    "FALABELLA": "PASS"
+  }
+}

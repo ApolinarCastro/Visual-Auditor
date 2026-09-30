@@ -1,0 +1,119 @@
+{
+  "task_id": "MRI-4MP-E2E-CERT-001",
+  "baseline_sha": "0ef28c71666dfdd3fae9af4f3c7311d63c4cd44a",
+  "brand_runtime": "Nicopoly",
+  "marketplaces_tested": [
+    "Mercado Libre",
+    "Paris",
+    "Ripley",
+    "Falabella"
+  ],
+  "production_files_changed": 0,
+  "new_production_files": 0,
+  "new_dependencies": 0,
+  "ml_verdict": "E2E_MARKETPLACE_PASS",
+  "paris_verdict": "E2E_MARKETPLACE_PASS",
+  "ripley_verdict": "E2E_MARKETPLACE_FAIL",
+  "falabella_verdict": "E2E_MARKETPLACE_PASS",
+  "capability_matrix": {
+    "ENTRY": {
+      "ML": "PASS",
+      "PARIS": "PASS",
+      "RIPLEY": "PASS",
+      "FALABELLA": "PASS"
+    },
+    "DISCOVERY": {
+      "ML": "PASS",
+      "PARIS": "PASS",
+      "RIPLEY": "PASS",
+      "FALABELLA": "PASS"
+    },
+    "NAVIGATION_ROUTING": {
+      "ML": "PASS",
+      "PARIS": "PASS",
+      "RIPLEY": "PASS",
+      "FALABELLA": "PASS"
+    },
+    "CATEGORY": {
+      "ML": "PASS",
+      "PARIS": "PASS",
+      "RIPLEY": "PASS",
+      "FALABELLA": "PASS"
+    },
+    "BRAND_DISCOVERY": {
+      "ML": "PASS",
+      "PARIS": "PASS",
+      "RIPLEY": "FAIL",
+      "FALABELLA": "PASS"
+    },
+    "ACQUISITION": {
+      "ML": "PASS",
+      "PARIS": "PASS",
+      "RIPLEY": "FAIL",
+      "FALABELLA": "PASS"
+    },
+    "PRODUCT_EXTRACTION": {
+      "ML": "PASS",
+      "PARIS": "PASS",
+      "RIPLEY": "FAIL",
+      "FALABELLA": "PASS"
+    },
+    "IDENTITY": {
+      "ML": "PASS",
+      "PARIS": "PASS",
+      "RIPLEY": "FAIL",
+      "FALABELLA": "PASS"
+    },
+    "MEMBERSHIP": {
+      "ML": "PASS",
+      "PARIS": "PASS",
+      "RIPLEY": "FAIL",
+      "FALABELLA": "PASS"
+    },
+    "POSITION": {
+      "ML": "PASS",
+      "PARIS": "PASS",
+      "RIPLEY": "NOT_TESTED",
+      "FALABELLA": "PASS"
+    },
+    "EVIDENCE": {
+      "ML": "PASS",
+      "PARIS": "PASS",
+      "RIPLEY": "PASS",
+      "FALABELLA": "PASS"
+    },
+    "CHECKPOINT_RESUME": {
+      "ML": "PASS",
+      "PARIS": "PASS",
+      "RIPLEY": "PASS",
+      "FALABELLA": "PASS"
+    },
+    "EXPERIENCE": {
+      "ML": "PASS",
+      "PARIS": "PASS",
+      "RIPLEY": "PASS",
+      "FALABELLA": "PASS"
+    },
+    "VERIFICATION": {
+      "ML": "PASS",
+      "PARIS": "PASS",
+      "RIPLEY": "FAIL",
+      "FALABELLA": "PASS"
+    }
+  },
+  "false_pass_total": 0,
+  "unsupported_fail_total": 0,
+  "synthetic_contribution_total": 0,
+  "hardcoded_result_contribution_total": 0,
+  "autoclaw_actions_total": 0,
+  "manual_actions_total": 0,
+  "reconciled_marketplaces": 4,
+  "first_global_blocker": "RIPLEY_RATE_LIMIT_AND_UNFILTERED_CATEGORY_ZERO_BRAND",
+  "first_blocker_marketplace": "Ripley",
+  "first_blocker_stage": "BRAND_DISCOVERY / ACQUISITION / PRODUCT_EXTRACTION",
+  "first_blocker_evidence": "Ripley returned HTTP 429 on initial search attempts, and subsequent acquisition of category 'zapatos-y-zapatillas' yielded 0 Nicopoly products (direct_brand_evidence=0, products_observed=0).",
+  "next_smallest_task": "TASK_ID: MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001 — Resolve Ripley HTTP 429 rate-limiting backoff and enforce brand-filtered category discovery/navigation so acquired routes contain runtime brand products.",
+  "independent_verification": "PASS",
+  "global_status": "FAIL",
+  "verdict": "MRI_4MP_E2E_CERT_FAIL"
+}

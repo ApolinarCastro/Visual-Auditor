@@ -1,0 +1,48 @@
+{
+  "run_id": "cert_falabella_1790778404",
+  "marketplace": "Falabella",
+  "brand": "Nicopoly",
+  "checkpoints": [
+    {
+      "timestamp": "2026-09-30T11:26:56.476110",
+      "kind": "category_done",
+      "category_name": "Brand Hub",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly",
+      "raw_count": 102,
+      "cumulative_unique_count": 102
+    },
+    {
+      "timestamp": "2026-09-30T11:26:56.492730",
+      "kind": "navigation_discovered",
+      "category_name": null,
+      "category_url": null,
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-09-30T11:27:01.817869",
+      "kind": "category_done",
+      "category_name": "Mujer",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.L0_category_paths=cat7330051%7C%7CMujer",
+      "raw_count": 104,
+      "cumulative_unique_count": 174
+    },
+    {
+      "timestamp": "2026-09-30T11:27:08.132461",
+      "kind": "category_done",
+      "category_name": "Pantalones",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Pantalones",
+      "raw_count": 54,
+      "cumulative_unique_count": 222
+    },
+    {
+      "timestamp": "2026-09-30T11:27:17.674459",
+      "kind": "category_done",
+      "category_name": "Blazers",
+      "category_url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo=Blazers",
+      "raw_count": 46,
+      "cumulative_unique_count": 249
+    }
+  ],
+  "checkpoint_written": true
+}

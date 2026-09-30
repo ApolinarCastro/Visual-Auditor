@@ -1,0 +1,136 @@
+{
+  "run_id": "cert_mercado_libre_1790777832",
+  "pid": 1896,
+  "marketplace": "Mercado Libre",
+  "brand_runtime": "Nicopoly",
+  "start_time": "2026-09-30T11:17:12.394049",
+  "end_time": "2026-09-30T11:20:13.669543",
+  "duration_seconds": 181.28,
+  "entry_url": "https://www.mercadolibre.cl/tienda/nicopoly",
+  "final_url": "https://www.mercadolibre.cl/tienda/nicopoly",
+  "routes_discovered": 3,
+  "routes_verified": 3,
+  "verified_routes_detail": [
+    {
+      "name": "Brand Hub",
+      "url": "https://www.mercadolibre.cl/tienda/nicopoly",
+      "products_found": 544,
+      "stop_reason": "EXHAUSTION"
+    },
+    {
+      "name": "New In",
+      "url": "https://listado.mercadolibre.cl/tienda/nicopoly/_Container_ESP-1E4957B3099140B3A05F3AEEA297D34F386329223-New-In?tracking_id=530d43c1d9d60c8552931bed1182cd21",
+      "products_found": 544,
+      "stop_reason": "EXHAUSTION"
+    },
+    {
+      "name": "Conjuntos",
+      "url": "https://listado.mercadolibre.cl/tienda/nicopoly/_Container_ESP-1E4957B3099140B3A05F3AEEA297D34F386329223-Conjuntos?tracking_id=ccde4281ec17afbf1ca02850887844ca",
+      "products_found": 544,
+      "stop_reason": "EXHAUSTION"
+    }
+  ],
+  "products_observed": 524,
+  "unique_products": 524,
+  "direct_brand_evidence": 524,
+  "membership_evidence": 524,
+  "position_evidence": 524,
+  "sample_products": [
+    {
+      "title": "Chaqueta Corta Tipo Gamuza Café Nicopoly",
+      "vendor": "NICOPOLY",
+      "marketplace_sku": "MLC3741541596",
+      "price": 64990.0,
+      "position_absolute": 1,
+      "categories": [
+        "Brand Hub",
+        "New In",
+        "Conjuntos"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Jeans Rectos Tiro Alto Negro Nicopoly",
+      "vendor": "NICOPOLY",
+      "marketplace_sku": "MLC3614273550",
+      "price": 41990.0,
+      "position_absolute": 2,
+      "categories": [
+        "Brand Hub",
+        "New In",
+        "Conjuntos"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Cárdigan Manga Globo Negro Nicopoly",
+      "vendor": "NICOPOLY",
+      "marketplace_sku": "MLC3726612454",
+      "price": 42990.0,
+      "position_absolute": 3,
+      "categories": [
+        "Brand Hub",
+        "New In",
+        "Conjuntos"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Polera Manga 3/4 Cuello Bote Burdeo Nicopoly",
+      "vendor": "NICOPOLY",
+      "marketplace_sku": "MLC3614377498",
+      "price": 12990.0,
+      "position_absolute": 4,
+      "categories": [
+        "Brand Hub",
+        "New In",
+        "Conjuntos"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Blusa Rayas Lazo Desmontable Blanco Nicopoly",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "MLC4456986160",
+      "price": 29990.0,
+      "position_absolute": 5,
+      "categories": [
+        "Brand Hub",
+        "New In",
+        "Conjuntos"
+      ],
+      "is_direct_brand": true
+    }
+  ],
+  "checkpoint_written": "YES",
+  "resume_checked": "YES",
+  "resume_duplicate_work": 0,
+  "experience_loaded": "YES",
+  "experience_used": "YES",
+  "experience_decisions_count": 2,
+  "decision_changed": "NO",
+  "autoclaw_actions": 0,
+  "manual_actions": 0,
+  "synthetic_contribution": 0,
+  "hardcoded_result_contribution": 0,
+  "pipeline_exit_code": 0,
+  "first_failure": null,
+  "last_successful_checkpoint": "Conjuntos",
+  "capability_matrix": {
+    "ENTRY": "PASS",
+    "DISCOVERY": "PASS",
+    "NAVIGATION_ROUTING": "PASS",
+    "CATEGORY": "PASS",
+    "BRAND_DISCOVERY": "PASS",
+    "ACQUISITION": "PASS",
+    "PRODUCT_EXTRACTION": "PASS",
+    "IDENTITY": "PASS",
+    "MEMBERSHIP": "PASS",
+    "POSITION": "PASS",
+    "EVIDENCE": "PASS",
+    "CHECKPOINT_RESUME": "PASS",
+    "EXPERIENCE": "PASS",
+    "VERIFICATION": "PASS"
+  },
+  "verdict": "E2E_MARKETPLACE_PASS"
+}

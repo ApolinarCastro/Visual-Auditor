@@ -1,0 +1,126 @@
+{
+  "run_id": "cert_paris_1790778058",
+  "pid": 29184,
+  "marketplace": "Paris",
+  "brand_runtime": "Nicopoly",
+  "start_time": "2026-09-30T11:20:58.011741",
+  "end_time": "2026-09-30T11:23:39.826914",
+  "duration_seconds": 161.82,
+  "entry_url": "https://www.paris.cl/search?q=nicopoly",
+  "final_url": "https://www.paris.cl/search?q=nicopoly",
+  "routes_discovered": 3,
+  "routes_verified": 3,
+  "verified_routes_detail": [
+    {
+      "name": "Brand Hub",
+      "url": "https://www.paris.cl/search?q=nicopoly",
+      "products_found": 539,
+      "stop_reason": "EXHAUSTION"
+    },
+    {
+      "name": "Abrigos",
+      "url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Abrigos",
+      "products_found": 24,
+      "stop_reason": "EXHAUSTION"
+    },
+    {
+      "name": "Blusas",
+      "url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Blusas",
+      "products_found": 61,
+      "stop_reason": "EXHAUSTION"
+    }
+  ],
+  "products_observed": 539,
+  "unique_products": 539,
+  "direct_brand_evidence": 539,
+  "membership_evidence": 539,
+  "position_evidence": 539,
+  "sample_products": [
+    {
+      "title": "Polera Manga 3/4 Cuello Bote Burdeo Nicopoly",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "polera-manga-34-cuello-bote-burdeo-nicopoly-MKR0DY2RRE",
+      "price": 11990.0,
+      "position_absolute": 2,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Chaqueta Corta Tipo Gamuza Negro Nicopoly",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "chaqueta-corta-tipo-gamuza-negro-nicopoly-MKZZ6TNAKM",
+      "price": 29990.0,
+      "position_absolute": 3,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Blazer Básico De Tope Morado Nicopoly",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "blazer-basico-de-tope-morado-nicopoly-MKDDB5YG89",
+      "price": 33990.0,
+      "position_absolute": 4,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Pantalón Corte Barrel Beige Nicopoly",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "pantalon-corte-barrel-beige-nicopoly-MKC5X5PH61",
+      "price": 41990.0,
+      "position_absolute": 5,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    },
+    {
+      "title": "Gilet Eco Cuero Café Nicopoly",
+      "vendor": "Nicopoly",
+      "marketplace_sku": "gilet-eco-cuero-cafe-nicopoly-MKG33PDMU4",
+      "price": 29990.0,
+      "position_absolute": 6,
+      "categories": [
+        "Brand Hub"
+      ],
+      "is_direct_brand": true
+    }
+  ],
+  "checkpoint_written": "YES",
+  "resume_checked": "YES",
+  "resume_duplicate_work": 0,
+  "experience_loaded": "YES",
+  "experience_used": "YES",
+  "experience_decisions_count": 2,
+  "decision_changed": "NO",
+  "autoclaw_actions": 0,
+  "manual_actions": 0,
+  "synthetic_contribution": 0,
+  "hardcoded_result_contribution": 0,
+  "pipeline_exit_code": 0,
+  "first_failure": null,
+  "last_successful_checkpoint": "Blusas",
+  "capability_matrix": {
+    "ENTRY": "PASS",
+    "DISCOVERY": "PASS",
+    "NAVIGATION_ROUTING": "PASS",
+    "CATEGORY": "PASS",
+    "BRAND_DISCOVERY": "PASS",
+    "ACQUISITION": "PASS",
+    "PRODUCT_EXTRACTION": "PASS",
+    "IDENTITY": "PASS",
+    "MEMBERSHIP": "PASS",
+    "POSITION": "PASS",
+    "EVIDENCE": "PASS",
+    "CHECKPOINT_RESUME": "PASS",
+    "EXPERIENCE": "PASS",
+    "VERIFICATION": "PASS"
+  },
+  "verdict": "E2E_MARKETPLACE_PASS"
+}

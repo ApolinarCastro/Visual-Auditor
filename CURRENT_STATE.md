@@ -4,16 +4,25 @@
 Visual Auditor / MRI
 
 ## Status
-IN_PROGRESS
+BLOCKED_ON_RIPLEY_RATE_LIMIT
 
 ## Last completed task
-MRI-FALABELLA-BRAND-ROUTING-001
+MRI-4MP-E2E-CERT-001
 
 ## Last reported verdict
-MRI_FALABELLA_BRAND_ROUTING_PASS
+MRI_4MP_E2E_CERT_FAIL
 
 ## Evidence status
-Physical certified evidence persisted in `outputs/mri_falabella_brand_routing_001/` and `evidence/mri_falabella_brand_routing_001/`. Autonomous Falabella brand routing certified via SSR `__NEXT_DATA__` facet extraction and structured product acquisition: 22 commercial category routes discovered, 2 routes verified (`Mujer` and `Pantalones`), 157 products observed, 157 direct brand evidence items (100%), 157 membership evidence items (100%), exact 3 production files modified (`app/mri_autonomous/surface_classifier.py`, `app/mri_autonomous/category_discoverer.py`, `app/scrapers/falabella_scraper.py`), 0 new production files, 0 new dependencies, AutoClaw=0, manual=0, exit code=0, and independent reconciliation PASS.
+Physical certified evidence persisted in `outputs/mri_4mp_e2e_cert_001/` and `evidence/mri_4mp_e2e_cert_001/`. The first cross-marketplace end-to-end certification demonstrated:
+- Mercado Libre: E2E_MARKETPLACE_PASS (524 products observed, 524 brand confirmed, 524 unique products, 3 routes verified: Brand Hub, New In, Conjuntos; duplicate work=0).
+- Paris: E2E_MARKETPLACE_PASS (539 products observed, 539 brand confirmed, 539 unique products, 3 routes verified: Brand Hub, Abrigos, Blusas; duplicate work=0).
+- Falabella: E2E_MARKETPLACE_PASS (249 products observed, 249 brand confirmed, 249 unique products, 4 routes verified: Brand Hub, Mujer, Pantalones, Blazers; duplicate work=0).
+- Ripley: E2E_MARKETPLACE_FAIL (encountered HTTP 429 on search attempt; unconstrained category navigation to `zapatos-y-zapatillas` yielded 0 brand products and 0 membership).
+- Global: MRI_4MP_E2E_CERT_FAIL (3/4 PASS, 1/4 FAIL).
+- Production code: 0 files changed, 0 new files, 0 new dependencies.
+- Independent recount: reconciled = 4/4, false_pass = 0, unsupported_fail = 0, synthetic = 0, hardcoded = 0, autoclaw = 0, manual = 0.
+- First global blocker: `FIRST_GLOBAL_BLOCKER = RIPLEY_RATE_LIMIT_AND_UNFILTERED_CATEGORY_ZERO_BRAND`.
+- Next smallest task: `TASK_ID: MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001`.
 
 ## Demonstrated / reported milestones
 - MRI-AUTONOMY-006: Ripley facet application recertified MRI-only after fixing `page_signature`; AutoClaw=0, manual=0.
@@ -23,19 +32,14 @@ Physical certified evidence persisted in `outputs/mri_falabella_brand_routing_00
 - MRI-ML-BRAND-ROUTING-001: Mercado Libre autonomous brand routing certified PASS (official store commercial categories, address rejection, 525 products, 100% brand evidence).
 - MRI-PARIS-BRAND-ROUTING-001: Paris autonomous brand routing certified PASS (Next.js App Router streaming RSC facets, mega-menu isolation, 539 products, 100% brand evidence).
 - MRI-FALABELLA-ENTRY-001: Falabella ENTRY certified PASS (HTTP SSR acquisition fallback F1/F2/F3, 100 pods, 48 products in structured state, independent reconciliation PASS).
-- MRI-FALABELLA-BRAND-ROUTING-001: Falabella autonomous brand routing certified PASS:
-  - Discovery: 22 commercial category routes extracted from SSR `__NEXT_DATA__.props.pageProps.facets` (`attribute.Tipo`, `L0_category_paths`).
-  - Classification: `surface_classifier.py` recognizes Falabella category facet query parameters as `COMMERCIAL_CATEGORY`.
-  - Acquisition: `FalabellaScraper.scrape_autonomous_category()` retrieves and navigates category routes via certified HTTP SSR.
-  - Extraction: 157 products observed across 2 verified routes (`Mujer`, `Pantalones`) with 100% direct brand evidence (157/157) and 100% membership evidence (157/157).
-  - Scope: 3 production files modified, 0 new production files, 0 new dependencies, AutoClaw=0, manual=0, exit code=0.
-  - Independent reconciliation: `reconciled = YES`, `false_pass = 0`, `synthetic_contribution = 0`, `hardcoded_result_contribution = 0`.
+- MRI-FALABELLA-BRAND-ROUTING-001: Falabella autonomous brand routing certified PASS (22 routes discovered, 2 routes verified, 157 products observed, 100% brand evidence).
+- MRI-4MP-E2E-CERT-001: First transversal E2E certification across 4 marketplaces. 3/4 marketplaces achieved E2E_MARKETPLACE_PASS (ML: 524 products; Paris: 539 products; Falabella: 249 products). Ripley failed on HTTP 429 rate-limiting and zero-brand category navigation. Global verdict: MRI_4MP_E2E_CERT_FAIL.
 
 ## Current first blockers by marketplace
-- Mercado Libre: Brand routing PASS.
-- Paris: Brand routing PASS.
-- Falabella: Brand routing PASS.
-- Ripley: Frozen (positive control intact).
+- Mercado Libre: E2E Certified PASS (Brand routing, acquisition, products, brand evidence, membership, resume).
+- Paris: E2E Certified PASS (RSC brand routing, acquisition, products, brand evidence, membership, resume).
+- Falabella: E2E Certified PASS (SSR brand routing, acquisition, products, brand evidence, membership, resume).
+- Ripley: BLOCKED by HTTP 429 rate limiting on brand search and unconstrained category navigation yielding zero brand products (`RIPLEY_RATE_LIMIT_AND_UNFILTERED_CATEGORY_ZERO_BRAND`).
 
 ## Frozen capabilities
 Do not reopen without demonstrated regression:
@@ -53,7 +57,7 @@ Do not reopen without demonstrated regression:
 - Experience decision policy
 
 ## Next exact action
-Awaiting next authorized task from product governance. Falabella brand routing is certified PASS across discovery, acquisition, products, brand evidence, and membership. Do not expand to coverage or reopen Mercado Libre, Paris, or Ripley.
+Execute `TASK_ID: MRI-RIPLEY-RATE-LIMIT-AND-BRAND-FILTER-001` to resolve Ripley HTTP 429 rate-limiting backoff and enforce brand-filtered category discovery/navigation. Do NOT modify production code or reopen ML, Paris, or Falabella.
 
 
 ## Prohibitions

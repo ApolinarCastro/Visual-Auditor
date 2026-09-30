@@ -1,0 +1,72 @@
+{
+  "task_id": "MRI-4MP-E2E-CERT-001",
+  "recount_by_marketplace": {
+    "Mercado Libre": {
+      "reported": {
+        "products_observed": 524,
+        "unique_products": 524,
+        "direct_brand_evidence": 524,
+        "membership_evidence": 524,
+        "position_evidence": 524,
+        "routes_discovered": 3,
+        "routes_verified": 3,
+        "verdict": "E2E_MARKETPLACE_PASS"
+      },
+      "reconciled": "YES",
+      "false_pass": 0,
+      "unsupported_fail": 0
+    },
+    "Paris": {
+      "reported": {
+        "products_observed": 539,
+        "unique_products": 539,
+        "direct_brand_evidence": 539,
+        "membership_evidence": 539,
+        "position_evidence": 539,
+        "routes_discovered": 3,
+        "routes_verified": 3,
+        "verdict": "E2E_MARKETPLACE_PASS"
+      },
+      "reconciled": "YES",
+      "false_pass": 0,
+      "unsupported_fail": 0
+    },
+    "Ripley": {
+      "reported": {
+        "products_observed": 0,
+        "unique_products": 0,
+        "direct_brand_evidence": 0,
+        "membership_evidence": 0,
+        "position_evidence": 0,
+        "routes_discovered": 1,
+        "routes_verified": 0,
+        "verdict": "E2E_MARKETPLACE_FAIL"
+      },
+      "reconciled": "YES",
+      "false_pass": 0,
+      "unsupported_fail": 0
+    },
+    "Falabella": {
+      "reported": {
+        "products_observed": 249,
+        "unique_products": 249,
+        "direct_brand_evidence": 249,
+        "membership_evidence": 249,
+        "position_evidence": 249,
+        "routes_discovered": 4,
+        "routes_verified": 4,
+        "verdict": "E2E_MARKETPLACE_PASS"
+      },
+      "reconciled": "YES",
+      "false_pass": 0,
+      "unsupported_fail": 0
+    }
+  },
+  "reconciled_marketplaces": 4,
+  "false_pass_total": 0,
+  "unsupported_fail_total": 0,
+  "synthetic_contribution_total": 0,
+  "hardcoded_result_contribution_total": 0,
+  "autoclaw_actions_total": 0,
+  "manual_actions_total": 0
+}
