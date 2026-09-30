@@ -1,0 +1,33 @@
+{
+  "task_id": "MRI-PARIS-BRAND-ROUTING-001",
+  "verifier": "Independent Evidence Reconciler",
+  "reported_metrics": {
+    "commercial_routes_discovered": 1,
+    "commercial_routes_verified": 1,
+    "products_observed": 539,
+    "direct_brand_evidence": 539,
+    "membership_evidence": 539,
+    "pipeline_exit_code": 0
+  },
+  "recalculated_metrics": {
+    "commercial_routes_discovered": 1,
+    "commercial_routes_verified": 1,
+    "products_observed": 539,
+    "direct_brand_evidence": 539,
+    "membership_evidence": 539,
+    "categories_done_events": 2
+  },
+  "reconciliation_matches": {
+    "commercial_routes_discovered": true,
+    "commercial_routes_verified": true,
+    "products_observed": true,
+    "direct_brand_evidence": true,
+    "membership_evidence": true,
+    "pipeline_exit_code": true
+  },
+  "reconciled": "YES",
+  "false_pass": 0,
+  "synthetic_contribution": 0,
+  "hardcoded_result_contribution": 0,
+  "verdict": "MRI_PARIS_BRAND_ROUTING_PASS"
+}

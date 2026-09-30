@@ -28,10 +28,16 @@ Current focus: MRI autonomous marketplace intelligence across four marketplaces:
   - Discovered category navigated autonomously; 525 products observed with 100% direct brand evidence (525/525).
   - Independent reconciliation PASS (`reconciled = YES`, `false_pass = 0`).
   - Exact 3 production files modified (`surface_classifier.py`, `category_discoverer.py`, `autonomous_pipeline.py`), 0 new production files, 0 new dependencies.
+- MRI-PARIS-BRAND-ROUTING-001: Paris autonomous brand routing certified PASS:
+  - Next.js App Router streaming RSC category facets (`generalFacets.tipoProductoAll`) discovered autonomously.
+  - Non-commercial navigation URLs (`/mi-cuenta`, `/iniciar-sesion`, `/centro-de-ayuda`, `/seguimiento`) and corporate outlet (`/outlet/`) rejected (`mega_menu_false_positives = 0`).
+  - Discovered category navigated autonomously via URL query routing (`search?q={brand}&tipoProductoAll={category}`); 24 products observed with 100% direct brand evidence (24/24) and 24 membership evidence items.
+  - Independent reconciliation PASS (`reconciled = YES`, `false_pass = 0`, `synthetic_contribution = 0`, `hardcoded_result_contribution = 0`).
+  - Exact 2 production files modified (`surface_classifier.py`, `category_discoverer.py`), 0 new production files, 0 new dependencies.
 
 ## Current operating decision
 
-Mercado Libre official store brand routing is certified and frozen. Do not reopen without regression. Do not continue expanding Ripley's large frontier. Drive the next implementation fix under strict governance toward Paris Next.js App Router RSC facet parser.
+Mercado Libre and Paris autonomous brand routing are both certified and frozen. Do not reopen without regression. Do not attempt Falabella bypass without explicit governance authorization. Do not reopen Ripley.
 
 ## Core principles
 
@@ -50,4 +56,5 @@ This GitHub repository stores the persistent project state and verified forensic
 
 ## Next task
 
-Implement Paris BRAND_DISCOVERY (Next.js App Router streaming RSC facet parser and Mega-Menu isolation) under strict single-mission governance. Do not attempt Falabella bypass without explicit authorization. Do not reopen Ripley.
+Awaiting next authorized task from product governance. Falabella remains classified as `CHALLENGE_PAGE` (Cloudflare WAF). Do not attempt bypass without explicit authorization.
+

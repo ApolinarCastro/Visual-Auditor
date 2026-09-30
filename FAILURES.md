@@ -39,8 +39,12 @@ Status: RESOLVED_AND_CERTIFIED (PASS).
 
 ## F-009 — Paris brand routing
 4-marketplace baseline reported core extraction/pagination working, but BRAND_DISCOVERY failed/unresolved.
-Resolution in MRI-CROSSMARKET-BLOCKERS-001: Root cause demonstrated causally. Paris uses Next.js App Router streaming RSC (`self.__next_f.push`) rather than `__NEXT_DATA__`. Category discoverer fell back to uncollapsed site-wide Mega-Menu DOM links (`Outlet Televisores`), yielding 0 brand products.
-Status: FORENSICALLY_RESOLVED (Awaiting implementation).
+Resolution in MRI-CROSSMARKET-BLOCKERS-001 & MRI-PARIS-BRAND-ROUTING-001:
+1. Rejection of non-commercial navigation URLs (`/mi-cuenta`, `/iniciar-sesion`, `/centro-de-ayuda`, `/seguimiento`, `/legales/`, `/terminos`) and site-wide corporate outlet (`/outlet/`) via `surface_classifier.py`.
+2. Extraction of real brand category facets from Next.js App Router streaming RSC chunks (`self.__next_f.push`, `generalFacets.tipoProductoAll`) and brand store route in `category_discoverer.py`, isolating from site-wide uncollapsed Mega-Menu noise.
+3. Category query parameter URL routing (`search?q={brand}&tipoProductoAll={category}`) discovered and navigated autonomously.
+4. Certified in real run: 539 products observed in brand hub, 24 products observed in navigated commercial category with 100% direct brand evidence (24/24), independent reconciliation PASS.
+Status: RESOLVED_AND_CERTIFIED (PASS).
 
 ## F-010 — Falabella headless entry
 4-marketplace baseline reported initial headless surface blocked/failing before product observation.

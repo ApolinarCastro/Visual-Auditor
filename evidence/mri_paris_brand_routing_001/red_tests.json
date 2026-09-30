@@ -1,0 +1,32 @@
+{
+  "task_id": "MRI-PARIS-BRAND-ROUTING-001",
+  "marketplace": "Paris",
+  "test_file": "tests/test_mri_paris_brand_routing.py",
+  "tests_run": 5,
+  "tests_failed": 4,
+  "tests_passed": 1,
+  "failures": [
+    {
+      "test_name": "test_paris_01_reject_noncommercial_navigation",
+      "error": "AssertionError: URL https://www.paris.cl/mi-cuenta/compras wrongly classified as COMMERCIAL_CATEGORY",
+      "root_cause": "surface_classifier.py lacked non-commercial navigation rules for Paris account, login, tracking, help URLs."
+    },
+    {
+      "test_name": "test_paris_02_extract_commercial_facets_from_rsc_fixture",
+      "error": "AssertionError: No commercial categories extracted from Paris RSC fixture (len([]) == 0)",
+      "root_cause": "category_discoverer.py looks for __NEXT_DATA__ which is null on Next.js App Router streaming RSC pages; no parser exists for self.__next_f.push chunks containing generalFacets / tipoProductoAll."
+    },
+    {
+      "test_name": "test_paris_03_preserve_provenance_and_category_name",
+      "error": "AssertionError: Expected 'Blusas', got 'Search'",
+      "root_cause": "category_name_from_url in category_discoverer.py does not recognize tipoProductoAll query parameter."
+    },
+    {
+      "test_name": "test_paris_04_dynamic_brand_runtime_generalization",
+      "error": "AssertionError: Expected 'Chaquetas', got 'Search'",
+      "root_cause": "category_name_from_url does not derive name from dynamic brand search URLs with tipoProductoAll."
+    }
+  ],
+  "first_failure": "test_paris_01_reject_noncommercial_navigation",
+  "verdict": "RED_TESTS_REPRODUCED"
+}

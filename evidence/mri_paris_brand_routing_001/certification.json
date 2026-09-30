@@ -1,0 +1,61 @@
+{
+  "task_id": "MRI-PARIS-BRAND-ROUTING-001",
+  "marketplace": "Paris",
+  "brand_runtime": "Nicopoly",
+  "run_id": "cert_paris_20260930_092348",
+  "pid": 18772,
+  "duration_seconds": 138.8,
+  "pipeline_exit_code": 0,
+  "error": null,
+  "autoclaw_actions": 0,
+  "manual_actions": 0,
+  "commercial_routes_discovered": 1,
+  "discovered_categories": [
+    {
+      "name": "Brand Hub",
+      "url": "https://www.paris.cl/search?q=nicopoly",
+      "classification": "BRAND_SURFACE",
+      "provenance": "BRAND_SEARCH_PARIS",
+      "source": "https://www.paris.cl/search?q=nicopoly"
+    },
+    {
+      "name": "Abrigos",
+      "url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Abrigos",
+      "classification": "COMMERCIAL_CATEGORY",
+      "provenance": "BRAND_SEARCH_PARIS",
+      "source": "https://www.paris.cl/search?q=nicopoly"
+    }
+  ],
+  "commercial_routes_verified": 1,
+  "products_observed": 539,
+  "direct_brand_evidence": 539,
+  "membership_evidence": 539,
+  "category_done_summaries": [
+    {
+      "category_name": "Brand Hub",
+      "category_url": "https://www.paris.cl/search?q=nicopoly",
+      "pages_traversed": 21,
+      "stop_reason": "EXHAUSTION",
+      "raw_count": 539,
+      "brand_evidence_count_text": 539
+    },
+    {
+      "category_name": "Abrigos",
+      "category_url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll=Abrigos",
+      "pages_traversed": 1,
+      "stop_reason": "EXHAUSTION",
+      "raw_count": 24,
+      "brand_evidence_count_text": 24
+    }
+  ],
+  "verdict_phase_10": {
+    "entry": "PASS",
+    "commercial_source_discovery": "PASS",
+    "commercial_route_discovery": "PASS",
+    "autonomous_navigation": "PASS",
+    "product_extraction": "PASS",
+    "direct_brand_evidence": "PASS",
+    "membership_evidence": "PASS",
+    "evidence": "PASS"
+  }
+}

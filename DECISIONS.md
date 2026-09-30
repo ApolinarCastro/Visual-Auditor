@@ -46,3 +46,12 @@ MRI-ML-BRAND-ROUTING-001 implemented and certified autonomous brand routing on M
 3. Canonical emission of `brand_evidence_count_text` and `brand_present` on all category batches in `autonomous_pipeline.py`.
 4. Max 3 production files modified (`surface_classifier.py`, `category_discoverer.py`, `autonomous_pipeline.py`), 0 new production files, 0 new dependencies. AutoClaw=0, manual=0.
 
+## D-015 — Paris autonomous brand routing architecture
+MRI-PARIS-BRAND-ROUTING-001 implemented and certified autonomous brand routing on Paris through:
+1. Rejection of non-commercial navigation URLs (`/mi-cuenta`, `/iniciar-sesion`, `/centro-de-ayuda`, `/seguimiento`, `/legales/`, `/terminos`) and site-wide corporate outlet (`/outlet/`) via `surface_classifier.py` (`GENERAL_NAVIGATION` and `CORPORATE`).
+2. Detection of product category facet query parameters (`tipoProductoAll`, `tipoProducto`) in `surface_classifier.py` as `COMMERCIAL_CATEGORY`.
+3. Extraction of real brand category facets from Next.js App Router streaming RSC chunks (`self.__next_f.push`, specifically `generalFacets.tipoProductoAll`) and official brand store route in `category_discoverer.py`, isolating from site-wide uncollapsed Mega-Menu noise without hardcoding brand or category literals.
+4. Parsing of category query parameters (`tipoProductoAll={category}`) into clean human names in `category_name_from_url`.
+5. Max 2 production files modified (`surface_classifier.py`, `category_discoverer.py`), 0 new production files, 0 new dependencies. AutoClaw=0, manual=0.
+
+

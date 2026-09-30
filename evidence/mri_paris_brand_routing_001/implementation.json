@@ -1,0 +1,23 @@
+{
+  "task_id": "MRI-PARIS-BRAND-ROUTING-001",
+  "marketplace": "Paris",
+  "production_files_changed": [
+    "app/mri_autonomous/surface_classifier.py",
+    "app/mri_autonomous/category_discoverer.py"
+  ],
+  "production_files_count": 2,
+  "max_production_files_allowed": 3,
+  "new_production_files": 0,
+  "new_dependencies": 0,
+  "changes": [
+    {
+      "file": "app/mri_autonomous/surface_classifier.py",
+      "summary": "Added non-commercial navigation patterns for Paris (account, login, help, tracking, legal) to _GENERAL_NAV_RES; added category facet query parameter detection in classify_surface to classify faceted brand URLs as COMMERCIAL_CATEGORY."
+    },
+    {
+      "file": "app/mri_autonomous/category_discoverer.py",
+      "summary": "Added Next.js App Router streaming RSC parser to discover_categories_from_page for Paris, extracting tipoProductoAll options from self.__next_f.push scripts; added tipoProductoAll query parameter parsing to category_name_from_url; cleaned static selectors."
+    }
+  ],
+  "status": "IMPLEMENTATION_COMPLETE"
+}

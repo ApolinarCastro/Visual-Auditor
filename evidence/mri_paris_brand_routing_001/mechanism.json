@@ -1,0 +1,31 @@
+{
+  "task_id": "MRI-PARIS-BRAND-ROUTING-001",
+  "marketplace": "Paris",
+  "mechanism_type": "RSC",
+  "source": "Next.js App Router streaming RSC chunks (self.__next_f.push)",
+  "source_url": "https://www.paris.cl/search?q=nicopoly",
+  "payload_type": "text/javascript (inline script streaming RSC JSON state)",
+  "commercial_routes_observed": [
+    "Abrigos",
+    "Blusas",
+    "Calzas",
+    "Chalecos",
+    "Chaquetas",
+    "Enteritos",
+    "Faldas",
+    "Jeans",
+    "Pantalones",
+    "Parkas",
+    "Pañuelos y Bufandas",
+    "Poleras",
+    "Polerones",
+    "Shorts",
+    "Sweaters",
+    "Vestidos",
+    "Vestidos de Fiesta"
+  ],
+  "brand_route_observed": "https://www.paris.cl/search?q={brand}&tipoProductoAll={category}",
+  "reproducible": "YES",
+  "evidence_hash": "2f6a8b13d395c8087796d1945ab5c7b8",
+  "notes": "Paris uses Next.js App Router with streaming React Server Components (RSC) embedded in self.__next_f.push calls. The commercial facets (tipoProductoAll) are present inside chunk 285 in generalFacets. Products can be navigated deterministically using the URL query parameter ?tipoProductoAll={category} appended to the brand search URL, or via brand store /mujer/marcas/{brand}/. The Mega Menu is an uncollapsed DOM component that must be isolated/ignored."
+}

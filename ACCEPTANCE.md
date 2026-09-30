@@ -73,10 +73,32 @@ A Mercado Libre brand routing PASS requires:
 - new_dependencies = 0
 - pipeline_exit_code = 0
 
+## Paris brand routing gate (MRI-PARIS-BRAND-ROUTING-001)
+
+A Paris brand routing PASS requires:
+- red_tests_reproduced = YES (4/4 initial tests failed)
+- green_tests = PASS (5/5 passed)
+- regression = PASS (70/70 passed across full test suite)
+- commercial_category_discovery = PASS (Next.js App Router RSC facets discovered)
+- noncommercial_navigation_rejection = PASS (account, help, outlet URLs rejected)
+- autonomous_category_navigation = PASS (navigated commercial category via URL query routing without manual URL)
+- product_extraction = PASS (products observed > 0)
+- direct_brand_evidence = PASS (brand evidence > 0)
+- membership_evidence = PASS (surface provenance recorded)
+- mega_menu_false_positive = 0
+- autoclaw_actions = 0
+- manual_actions = 0
+- synthetic_contribution = 0
+- hardcoded_result_contribution = 0
+- independent_verification = PASS
+- reconciled = YES
+- production_files_changed <= 3 (exact: 2)
+- new_production_files = 0
+- new_dependencies = 0
+- pipeline_exit_code = 0
 
 ## Global completion
 
-Global CONFIRMED additionally requires:
 - required marketplaces meet their own acceptance gates
 - no unresolved required discovery/acquisition blocker
 - no unprocessed viable frontier required by the declared coverage contract

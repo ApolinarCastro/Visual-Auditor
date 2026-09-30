@@ -1,0 +1,50 @@
+{
+  "task_id": "MRI-PARIS-BRAND-ROUTING-001",
+  "marketplace": "Paris",
+  "brand_runtime": "Nicopoly",
+  "mechanism_type": "RSC",
+  "mechanism_source": "Next.js App Router streaming RSC chunks (self.__next_f.push)",
+  "production_files_changed": [
+    "app/mri_autonomous/surface_classifier.py",
+    "app/mri_autonomous/category_discoverer.py"
+  ],
+  "new_production_files": 0,
+  "new_dependencies": 0,
+  "red_tests": {
+    "tests_run": 5,
+    "failed_initially": 4,
+    "file": "tests/test_mri_paris_brand_routing.py"
+  },
+  "green_tests": {
+    "tests_run": 5,
+    "passed": 5,
+    "file": "tests/test_mri_paris_brand_routing.py"
+  },
+  "regression": {
+    "tests_run": 65,
+    "passed": 65,
+    "suites": [
+      "test_mri_paris_brand_routing.py",
+      "test_mri_ml_brand_routing.py",
+      "test_mri_surface_classifier.py",
+      "test_mri_sanitize_surfaces.py",
+      "test_mri_experience_store.py",
+      "test_mri_experience_strategy.py",
+      "test_mri_hub_retry_policy.py",
+      "test_mri_contradiction.py",
+      "test_regression_guardrails.py"
+    ]
+  },
+  "commercial_routes_discovered": 1,
+  "commercial_routes_verified": 1,
+  "products_observed": 539,
+  "brand_evidence": 539,
+  "membership_evidence": 539,
+  "autoclaw_actions": 0,
+  "manual_actions": 0,
+  "synthetic_contribution": 0,
+  "hardcoded_result_contribution": 0,
+  "independent_verification": "PASS",
+  "first_failure": null,
+  "verdict": "MRI_PARIS_BRAND_ROUTING_PASS"
+}
