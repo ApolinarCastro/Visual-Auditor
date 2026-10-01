@@ -1,0 +1,19 @@
+{
+  "task_id": "VA-CONTROLLED-PRODUCTION-MAINTENANCE-001",
+  "contract_name": "Incident Handling and Failure Isolation Contract",
+  "incident_state": "INVESTIGATION_REQUIRED",
+  "mandatory_workflow": [
+    "OBSERVE (Detect deviation in operational health check or run metrics)",
+    "CAPTURE (Preserve raw HTML, network responses, and DOM logs without modifying code)",
+    "REPRODUCE (Create minimal standalone reproduction test script)",
+    "CLASSIFY (Distinguish SOURCE_BLOCKED vs EXTERNAL_BEHAVIOR_CHANGE vs ACCOUNTING_DEFECT vs CODE_DEFECT)",
+    "LOCATE FIRST DIVERGENCE (Pinpoint exact pipeline stage where divergence originates)",
+    "RED TEST (Write failing assertion capturing the defect)",
+    "MINIMAL FIX (Implement fix respecting budget: <= 2 production files, 0 dependencies)",
+    "GREEN TEST (Verify test turns green)",
+    "REGRESSION SUITE (Verify 94/94 regression suite passes with 0 failures)",
+    "TARGETED RECERTIFICATION (Execute certified run on affected marketplace)",
+    "PERSIST (Document failure in FAILURES.md and update DECISIONS.md if architectural policy changed)"
+  ],
+  "prohibition": "Never apply an in-flight quick-fix without reproducing and isolating first divergence."
+}

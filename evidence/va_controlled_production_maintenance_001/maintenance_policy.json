@@ -1,0 +1,21 @@
+{
+  "task_id": "VA-CONTROLLED-PRODUCTION-MAINTENANCE-001",
+  "policy_name": "Controlled Production Maintenance Policy",
+  "primary_rule": "NO CHANGE WITHOUT FAILURE EVIDENCE",
+  "rules": {
+    "no_speculative_development": "Prohibited to initiate work based on hypothetical improvements, aesthetics, or newly emerged technology.",
+    "code_change_gate": "A production code change is authorized ONLY with: OBSERVED_FAILURE + REPRODUCIBLE_EVIDENCE + FIRST_DIVERGENCE + BOUNDED_FIX + ACCEPTANCE_TEST.",
+    "fix_budget": {
+      "max_production_files_changed": 2,
+      "new_dependencies": 0,
+      "fix_cycles": 1
+    },
+    "recertification": {
+      "default": "TARGETED_RECERTIFICATION of affected marketplace/component",
+      "full_4mp_trigger": "Only when shared acquisition, discovery, frontier engine, database schema, or materialization logic is touched."
+    },
+    "technology_policy": "RADAR_ONLY by default. Any new library/framework requires an unblockable obstacle, cost-benefit analysis, minimal proof, and rollback plan.",
+    "autonomy": "AUTOCLAW_ACTIONS = 0 during operational execution. AutoClaw is reserved solely as a diagnostic learning tool upon persistent unknown failures.",
+    "data_safety": "Never commit cookies, tokens, credentials, sessions, or browser profiles to Git."
+  }
+}

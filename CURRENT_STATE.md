@@ -4,13 +4,23 @@
 Visual Auditor / MRI
 
 ## Status
-MRI_4MP_FINAL_E2E_CERT_PASS
+CONTROLLED_PRODUCTION_MAINTENANCE
+
+## Project Phase
+CONTROLLED_PRODUCTION_MAINTENANCE (BUILD PHASE CLOSED, ARCHITECTURE FROZEN)
 
 ## Last completed task
-MRI-4MP-FINAL-E2E-CERT-001
+VA-CONTROLLED-PRODUCTION-MAINTENANCE-001
 
 ## Last reported verdict
-MRI_4MP_FINAL_E2E_CERT_PASS
+VA_CONTROLLED_PRODUCTION_MAINTENANCE_PASS
+
+## Operational State
+- **Certified Baseline SHA**: `a7df2aeedcda5b8f1f3615fef5fce83f341f47fa`
+- **Certified Run ID**: `run_mri_4mp_final_cert_1790865503`
+- **Operational Scope**: Mercado Libre, Paris, Ripley, Falabella.
+- **Operating Policy**: NO CHANGE WITHOUT FAILURE EVIDENCE.
+- **Maintenance Control Artifacts**: Persisted in `evidence/va_controlled_production_maintenance_001/` (`transition.json`, `certified_baseline.json`, `maintenance_policy.json`, `health_check_contract.json`, `incident_contract.json`, `final.json`).
 
 ## Evidence status
 Physical certified evidence persisted in `outputs/mri_4mp_final_e2e_cert_001/` and `evidence/mri_4mp_final_e2e_cert_001/`:

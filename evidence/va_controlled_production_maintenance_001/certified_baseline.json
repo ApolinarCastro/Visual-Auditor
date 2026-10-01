@@ -1,0 +1,79 @@
+{
+  "task_id": "VA-CONTROLLED-PRODUCTION-MAINTENANCE-001",
+  "certified_commit_sha": "a7df2aeedcda5b8f1f3615fef5fce83f341f47fa",
+  "remote_branch": "origin/main",
+  "certified_run_id": "run_mri_4mp_final_cert_1790865503",
+  "certified_scope": [
+    "Mercado Libre",
+    "Paris",
+    "Ripley",
+    "Falabella",
+    "autonomous discovery",
+    "acquisition",
+    "identity",
+    "membership",
+    "position",
+    "evidence",
+    "frontier",
+    "materialization",
+    "dashboard read model",
+    "independent reconciliation"
+  ],
+  "verified_metrics": {
+    "mercado_libre": {
+      "unique_products": 321,
+      "direct_brand_evidence": 321,
+      "membership_evidence": 348,
+      "positions_materialized": 321,
+      "frontier_remaining": 0,
+      "exit_code": 0
+    },
+    "paris": {
+      "unique_products": 538,
+      "direct_brand_evidence": 538,
+      "membership_evidence": 1407,
+      "positions_materialized": 538,
+      "frontier_remaining": 0,
+      "exit_code": 0
+    },
+    "ripley": {
+      "unique_products": 96,
+      "direct_brand_evidence": 48,
+      "membership_evidence": 96,
+      "positions_materialized": 96,
+      "frontier_remaining": 0,
+      "raw_discovered": 1435,
+      "terminal": 1435,
+      "pending": 0,
+      "exit_code": 0
+    },
+    "falabella": {
+      "unique_products": 407,
+      "direct_brand_evidence": 407,
+      "membership_evidence": 500,
+      "positions_materialized": 407,
+      "frontier_remaining": 0,
+      "exit_code": 0
+    },
+    "materialization": {
+      "products_materialized": 1314,
+      "categories_materialized": 2303,
+      "memberships_materialized": 2303,
+      "positions_materialized": 1314,
+      "evidence_materialized": 1314,
+      "records_after": 2043,
+      "errors": 0
+    },
+    "dashboard": {
+      "mismatch_count": 0,
+      "stale_research_recurrence": 0,
+      "stale_dates_count": 0,
+      "reconciled": true
+    },
+    "regression": {
+      "tests_run": 94,
+      "tests_passed": 94,
+      "tests_failed": 0
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "task_id": "VA-CONTROLLED-PRODUCTION-MAINTENANCE-001",
+  "contract_name": "Operational Health Check Contract",
+  "invariants": {
+    "pipeline_completion": "exit_code == 0",
+    "observation_materiality": "products_observed > 0, direct_brand_evidence > 0, membership_evidence > 0, positions_materialized > 0",
+    "frontier_accounting": {
+      "equation": "DISCOVERED = TERMINAL + PENDING",
+      "healthy_closure": "PENDING == 0"
+    },
+    "ripley_special_accounting": "raw_discovered == (terminal + pending) AND pending == 0",
+    "lineage_consistency": {
+      "chain": "EVIDENCE -> DB -> READ MODEL -> DASHBOARD",
+      "mismatch_tolerance": 0
+    },
+    "freshness": {
+      "rule": "Timestamps must derive solely from verified runtime evidence. Prohibition of NOW() updates without real observation.",
+      "stale_research_recurrence_tolerance": 0,
+      "stale_dates_tolerance": 0
+    },
+    "anti_simulation": {
+      "false_pass": 0,
+      "synthetic_contribution": 0,
+      "hardcoded_result_contribution": 0,
+      "manual_contribution": 0
+    }
+  }
+}

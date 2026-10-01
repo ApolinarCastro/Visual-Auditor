@@ -415,13 +415,32 @@ A final 4-marketplace certification PASS requires:
 - independent verification = PASS (0 false passes)
 - final_verdict = MRI_4MP_FINAL_E2E_CERT_PASS
 
+## Controlled Production Maintenance Transition Gate (VA-CONTROLLED-PRODUCTION-MAINTENANCE-001)
+
+A transition to Controlled Production Maintenance PASS requires:
+- certified baseline verified at commit `a7df2aeedcda5b8f1f3615fef5fce83f341f47fa`
+- local SHA matches remote SHA exactly (`a7df2aeedcda5b8f1f3615fef5fce83f341f47fa`)
+- certified commit confirmed as reachable ancestor
+- 4-marketplace final certification evidence verified in `evidence/mri_4mp_final_e2e_cert_001/` (4/4 PASS, 0 pending, 94/94 regression PASS)
+- project phase transition declared: `CONTROLLED_PRODUCTION_MAINTENANCE`
+- build phase declared: `CLOSED`
+- architecture declared: `FROZEN`
+- zero speculative features or unbudgeted fixes permitted
+- production code changes during transition = 0
+- new dependencies = 0
+- maintenance policy persisted in `evidence/va_controlled_production_maintenance_001/maintenance_policy.json`
+- health check contract persisted in `evidence/va_controlled_production_maintenance_001/health_check_contract.json`
+- incident contract persisted in `evidence/va_controlled_production_maintenance_001/incident_contract.json`
+- final verdict = `VA_CONTROLLED_PRODUCTION_MAINTENANCE_PASS`
+
 ## Global completion
 
 - required marketplaces meet their own acceptance gates (4/4 PASS: Mercado Libre, Paris, Falabella, Ripley)
 - no unresolved required discovery/acquisition blocker
 - no unprocessed viable frontier required by the declared coverage contract (Ripley frontier_remaining = 0)
 - final evidence is reproducible from persisted artifacts
-- system enters controlled production maintenance
+- system operates under controlled production maintenance with zero modifications without failure evidence
+
 
 
 

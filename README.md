@@ -2,16 +2,21 @@
 
 Evidence-first marketplace observation and intelligence project.
 
-## Current state — 2026-09-29
+## Current state — 2026-10-01
+Project Phase: **CONTROLLED PRODUCTION MAINTENANCE** (BUILD PHASE CLOSED, ARCHITECTURE FROZEN)
 
-Current focus: MRI autonomous marketplace intelligence across four marketplaces:
-- Mercado Libre
-- Paris
-- Falabella
-- Ripley
+Visual Auditor / MRI has achieved full End-to-End Autonomous 4-Marketplace Certification at commit `a7df2aeedcda5b8f1f3615fef5fce83f341f47fa`.
+Operating Policy: **NO CHANGE WITHOUT FAILURE EVIDENCE**.
+
+Operational scope across four marketplaces:
+- Mercado Libre (Operational)
+- Paris (Operational)
+- Falabella (Operational)
+- Ripley (Operational)
 
 ### Latest milestones
 
+- VA-CONTROLLED-PRODUCTION-MAINTENANCE-001: Visual Auditor / MRI formally transitioned to Controlled Production Maintenance. Build phase closed; architecture frozen; maintenance policy, health check contract, and incident handling protocols persisted.
 - MRI-4MP-FINAL-E2E-CERT-001: End-to-End Autonomous 4-Marketplace Final Certification certified PASS. Executed sequentially across Mercado Libre, Paris, Ripley, and Falabella with strictly `PRODUCTION_CODE_CHANGES=0` during certification. 1362 unique products observed, 1314 direct brand evidence items, 2351 memberships, 1362 positions. Frontier 100% reconciled across all 4 marketplaces (pending = 0). Official DB materialization (1314 products) and dynamic dashboard read model reconciled with 0 mismatches. Regression suite 94/94 passing.
 - MRI-RIPLEY-FRONTIER-VALIDATION-001: Ripley frontier exhaustion certified PASS (1435 discovered = 1435 terminal + 0 pending).
 - MRI-DASHBOARD-LIVE-MATERIALIZATION-001: Live dashboard materialization certified PASS (CATEGORÍAS and COMPARACIÓN LEGACY dynamically projected from SQLite).

@@ -173,3 +173,13 @@ MRI-4MP-FINAL-E2E-CERT-001 executed and passed the final End-to-End Autonomous C
 5. Regression suite: 94/94 passing (0 failures).
 6. Global verdict: `MRI_4MP_FINAL_E2E_CERT_PASS`. Enter controlled production maintenance.
 
+## D-027 — Transition to Controlled Production Maintenance (VA-CONTROLLED-PRODUCTION-MAINTENANCE-001)
+Formal transition of Visual Auditor / MRI from Build / Correction Mode to Controlled Production Maintenance:
+1. Build phase officially closed: The core build and iterative correction cycle is complete following the certified 4/4 End-to-End autonomous pass at commit `a7df2aeedcda5b8f1f3615fef5fce83f341f47fa`.
+2. Architecture frozen: No speculative feature development, structural redesigns, or dependency changes are permitted.
+3. Primary maintenance governance: NO CHANGE WITHOUT FAILURE EVIDENCE. Any future production code modification strictly requires an observed failure, reproducible evidence, isolated first divergence, red test, minimal bounded fix (max 2 production files, 0 dependencies), and green test.
+4. Recertification policy: Targeted recertification is the mandatory first line for any future fix. Full 4-marketplace recertification is reserved only for changes impacting shared core components or cross-marketplace contracts.
+5. Technology policy: All emerging frameworks, libraries, or tools remain RADAR_ONLY unless a demonstrated, insurmountable blocker occurs.
+6. Control artifacts: Persisted in `evidence/va_controlled_production_maintenance_001/` (`transition.json`, `certified_baseline.json`, `maintenance_policy.json`, `health_check_contract.json`, `incident_contract.json`, `final.json`).
+
+
