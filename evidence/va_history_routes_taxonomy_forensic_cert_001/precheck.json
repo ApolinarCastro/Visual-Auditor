@@ -1,11 +1,7 @@
 {
-  "task_id": "VA-HISTORY-ROUTES-TAXONOMY-FORENSIC-CERT-001",
   "PREVIOUS_CERTIFIED_SHA": "20bdd7a24236da4ac8142244376da8f477c8f8ae",
-  "CURRENT_LOCAL_SHA": "792ea8d1b08568ee51fde73f8e22281c35af6fff",
-  "CURRENT_REMOTE_SHA": "20bdd7a24236da4ac8142244376da8f477c8f8ae",
-  "SHA_MATCH": false,
-  "PREVIOUS_CERTIFIED_SHA_IS_ANCESTOR": true,
-  "FINAL_VERDICT": "VA_HISTORY_FORENSIC_CERT_FAIL",
-  "FIRST_FAILURE": "GIT_SHA_MISMATCH",
-  "reason": "Local SHA does not match remote SHA, which indicates that the original implementation task failed to push the commit."
+  "CURRENT_LOCAL_SHA": "498ade2f5cc04cf4dc247205a9f62512fb59de2b",
+  "CURRENT_REMOTE_SHA": "498ade2f5cc04cf4dc247205a9f62512fb59de2b",
+  "SHA_MATCH": true,
+  "PREVIOUS_CERTIFIED_SHA_IS_ANCESTOR": true
 }

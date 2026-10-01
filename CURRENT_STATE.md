@@ -109,4 +109,5 @@ Production operations and periodic autonomous audit monitoring.
 
 
 V A - H I S T O R Y - R O U T E S - T A X O N O M Y - F O R E N S I C - C E R T - 0 0 1 :   F A I L E D   a t   p r e c h e c k   d u e   t o   G I T _ S H A _ M I S M A T C H .  
+ V A - H I S T O R Y - R O U T E S - T A X O N O M Y - F O R E N S I C - C E R T - 0 0 1 :   F A I L E D   d u e   t o   u n j u s t i f i e d   t r a c k i n g   o f   s c r a t c h /  
  

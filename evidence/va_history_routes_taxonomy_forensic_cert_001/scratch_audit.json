@@ -1,0 +1,7 @@
+{
+  "SCRATCH_TRACKED": true,
+  "SCRATCH_FILES": 420,
+  "SCRATCH_JUSTIFIED": false,
+  "SCRATCH_CLEANUP_REQUIRED": true,
+  "decision": "FAIL due to 400+ unjustified scratch files committed to baseline."
+}
