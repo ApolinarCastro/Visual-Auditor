@@ -1,0 +1,8 @@
+{
+  "many_to_many_preserved": "YES",
+  "brand_hub_is_commercial_category": "NO",
+  "total_canal_semantics_changed": "NO",
+  "fulfillment_logic_added": "NO",
+  "multi_category_preserved": "YES",
+  "not_observed_equals_deleted": "NO"
+}

@@ -1,0 +1,10 @@
+{
+  "historical_publications": "YES",
+  "historical_categories": "YES",
+  "historical_publication_categories": "YES",
+  "additive": "YES",
+  "existing_columns_removed": "NO",
+  "existing_columns_renamed": "NO",
+  "destructive_ddl": "NO",
+  "idempotent": "YES"
+}

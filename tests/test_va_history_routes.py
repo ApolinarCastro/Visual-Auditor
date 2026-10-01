@@ -129,5 +129,32 @@ def test_red_publication_category_history():
     If a product moves to a new category, its previous category mapping for that run MUST be preserved.
     """
     conn = setup_test_db()
-    # Need to check `mri_historical_publication_categories`
-    pass
+    pub_id = "pub_hist_001"
+    cat_id1 = "cat_hist_001"
+    cat_id2 = "cat_hist_002"
+    
+    # Run 1: Pub in Cat 1
+    run_1 = "run_junction_001"
+    conn.cursor().execute("INSERT INTO mri_runs (run_id, started_at, marketplace, brand, execution_mode, truth_model_version, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (run_1, "2026-10-01", "Ripley", "Nicopoly", "LIVE", "1.0", "VERIFIED", "2026-10-01"))
+    
+    from app.storage.mri_foundation import persist_identity, assign_categories
+    persist_identity(conn, "prod_01", "Nicopoly", pub_id, "Ripley", "R_01", "url", [], run_id=run_1)
+    assign_categories(conn, pub_id, [{"category_id": cat_id1, "category_name": "Poleras", "marketplace": "Ripley", "run_id": run_1}])
+    
+    # Run 2: Pub in Cat 2
+    run_2 = "run_junction_002"
+    conn.cursor().execute("INSERT INTO mri_runs (run_id, started_at, marketplace, brand, execution_mode, truth_model_version, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (run_2, "2026-10-02", "Ripley", "Nicopoly", "LIVE", "1.0", "VERIFIED", "2026-10-02"))
+    
+    assign_categories(conn, pub_id, [{"category_id": cat_id2, "category_name": "Jeans", "marketplace": "Ripley", "run_id": run_2}])
+    
+    # Check history table for junction
+    cur = conn.cursor()
+    cur.execute("SELECT category_id FROM mri_historical_publication_categories WHERE publication_id=? AND run_id=?", (pub_id, run_1))
+    rows = cur.fetchall()
+    assert len(rows) > 0, "No history for run 1"
+    assert rows[0][0] == cat_id1
+    
+    cur.execute("SELECT category_id FROM mri_historical_publication_categories WHERE publication_id=? AND run_id=?", (pub_id, run_2))
+    rows = cur.fetchall()
+    assert len(rows) > 0, "No history for run 2"
+    assert rows[0][0] == cat_id2

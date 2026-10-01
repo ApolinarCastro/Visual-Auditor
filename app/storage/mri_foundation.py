@@ -194,6 +194,16 @@ CREATE TABLE IF NOT EXISTS mri_historical_categories (
     observed_at TEXT NOT NULL,
     FOREIGN KEY (category_id) REFERENCES mri_categories(category_id)
 );
+
+CREATE TABLE IF NOT EXISTS mri_historical_publication_categories (
+    history_id TEXT PRIMARY KEY,
+    publication_id TEXT NOT NULL,
+    category_id TEXT NOT NULL,
+    run_id TEXT,
+    observed_at TEXT NOT NULL,
+    FOREIGN KEY (publication_id) REFERENCES mri_publications(publication_id),
+    FOREIGN KEY (category_id) REFERENCES mri_categories(category_id)
+);
 """
 
 
@@ -433,5 +443,16 @@ def assign_categories(
             VALUES (?, ?, ?, ?)
             """,
             (publication_id, cat_id, status, observed_at)
+        )
+        
+        # Preserve historical junction
+        j_history_id = str(uuid.uuid4())
+        cursor.execute(
+            """
+            INSERT INTO mri_historical_publication_categories (
+                history_id, publication_id, category_id, run_id, observed_at
+            ) VALUES (?, ?, ?, ?, ?)
+            """,
+            (j_history_id, publication_id, cat_id, run_id, observed_at)
         )
     conn.commit()
