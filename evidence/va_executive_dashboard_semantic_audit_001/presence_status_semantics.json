@@ -1,0 +1,38 @@
+{
+  "task_id": "VA-EXECUTIVE-DASHBOARD-SEMANTIC-AUDIT-001",
+  "source_code": "app/auditor/classifier.py + app/config/thresholds.py",
+  "evaluation_basis": "Exclusively pct_30 (the percentage of Nicopoly's published catalog in that category that ranks in TOP 30 positions)",
+  "threshold_definitions": {
+    "EXCELENTE": {
+      "department_stores": ">= 30.0% TOP30 presence",
+      "mercado_libre": ">= 70.0% TOP30 presence",
+      "semantic_meaning": "Strong organic visibility. At least 30% (or 70% in ML) of our published items in this category appear on the first page.",
+      "managerial_meaning": "Healthy organic traffic share; minimal immediate intervention required."
+    },
+    "BUENA": {
+      "department_stores": "20.0% to 29.9% TOP30 presence",
+      "mercado_libre": "50.0% to 69.9% TOP30 presence",
+      "semantic_meaning": "Solid organic visibility with room for optimization.",
+      "managerial_meaning": "Good visibility; watch competitor moves."
+    },
+    "MEDIA": {
+      "department_stores": "10.0% to 19.9% TOP30 presence",
+      "mercado_libre": "25.0% to 49.9% TOP30 presence",
+      "semantic_meaning": "Subdued visibility. Only 10-25% of catalog reaches top 30 positions.",
+      "managerial_meaning": "Risk of organic sales loss; consider pricing or sponsored push."
+    },
+    "CRITICA": {
+      "department_stores": "< 10.0% TOP30 presence (or 0 items in top 30)",
+      "mercado_libre": "< 25.0% TOP30 presence",
+      "semantic_meaning": "Near-total organic invisibility in the top 30 search results.",
+      "managerial_meaning": "CRITICAL RISK: A category marked as 'CRITICA' does NOT mean the product is missing, unpublished, or out of stock. It means our products are buried past position 30 on the category search page. A manager must NOT interpret 'CRITICA' as catalog loss, but as poor search rank."
+    }
+  },
+  "risk_level_mapping": {
+    "EXCELENTE": "BAJO (Presencia robusta en primeras posiciones)",
+    "BUENA": "MEDIO (Visibilidad aceptable pero con margen de mejora)",
+    "MEDIA": "ALTO (Baja visibilidad, alto riesgo de no venta)",
+    "CRITICA": "CRITICO (Invisibilidad casi total en el marketplace)"
+  },
+  "managerial_guidance": "Eliminate the ambiguity where managers panic thinking products are unpublished when labeled CRITICA. The dashboard must clearly distinguish PUBLICATION STATUS (Published vs Unpublished) from VISIBILITY STATUS (Top 30 Visibility)."
+}

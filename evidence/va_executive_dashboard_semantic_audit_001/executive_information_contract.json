@@ -1,0 +1,62 @@
+{
+  "task_id": "VA-EXECUTIVE-DASHBOARD-SEMANTIC-AUDIT-001",
+  "contract_purpose": "Define the minimal executive questions and metrics that an executive view must answer, without requiring knowledge of internal crawler machinery (RSC, cookies, frontiers, selectors).",
+  "executive_questions": [
+    {
+      "id": "Q1",
+      "question": "\u00bfC\u00f3mo estamos hoy?",
+      "executive_metric": "\u00cdndice General de Salud Comercial (Global Commercial Health Score)",
+      "definition": "% de publicaciones activas con visibilidad TOP30 y categorizaci\u00f3n correcta."
+    },
+    {
+      "id": "Q2",
+      "question": "\u00bfCu\u00e1ntas publicaciones reales tenemos activas por marketplace?",
+      "executive_metric": "Publicaciones Reales Observadas (Deduplicated Canonical Publications)",
+      "definition": "Conteo \u00fanico de productos de Nicopoly encontrados en el marketplace en el \u00faltimo ciclo auditado."
+    },
+    {
+      "id": "Q3",
+      "question": "\u00bfCu\u00e1ntas est\u00e1n correctamente categorizadas?",
+      "executive_metric": "Publicaciones Correctamente Categorizadas (% y conteo)",
+      "definition": "Publicaciones observadas en la categor\u00eda comercial donde deben competir seg\u00fan su tipo de producto."
+    },
+    {
+      "id": "Q4",
+      "question": "\u00bfCu\u00e1ntas est\u00e1n fuera de categor\u00eda o solo en Brand Hub?",
+      "executive_metric": "Publicaciones Fuera de Categor\u00eda / Solo Brand Hub (% y conteo)",
+      "definition": "Publicaciones que existen pero NO aparecen en su categor\u00eda comercial abierta (fuga de tr\u00e1fico org\u00e1nico)."
+    },
+    {
+      "id": "Q5",
+      "question": "\u00bfQu\u00e9 porcentaje tiene visibilidad comercial relevante?",
+      "executive_metric": "Visibilidad Relevante (% TOP30 y % TOP60)",
+      "definition": "Porcentaje de publicaciones observadas que alcanzan las primeras 30 y 60 posiciones."
+    },
+    {
+      "id": "Q6",
+      "question": "\u00bfD\u00f3nde est\u00e1n los principales problemas?",
+      "executive_metric": "Matriz de Focos Rojos (Top Categor\u00edas/Canales con Invisibilidad o Desalineaci\u00f3n)",
+      "definition": "Listado de categor\u00edas con mayor volumen de productos invisibles o fuera de categor\u00eda."
+    },
+    {
+      "id": "Q7",
+      "question": "\u00bfQu\u00e9 cambi\u00f3 desde la auditor\u00eda anterior?",
+      "executive_metric": "Delta de Visibilidad y Cat\u00e1logo (Gainers & Losers)",
+      "definition": "Publicaciones que ganaron/perdieron TOP30 o desaparecieron respecto a la corrida previa."
+    },
+    {
+      "id": "Q8",
+      "question": "\u00bfQu\u00e9 requiere acci\u00f3n inmediata?",
+      "executive_metric": "Acciones Prioritarias (Action Items)",
+      "definition": "Re-categorizar X productos en Falabella/Ripley, ajustar precio en Y productos de ML."
+    }
+  ],
+  "strictly_excluded_from_executive_view": [
+    "Selectores DOM o adaptadores CSS",
+    "Tokens BFF, session JSON, o cookies",
+    "Mecanismos de adquisici\u00f3n (RSC, SSR, Playwright)",
+    "Nodos de men\u00fa internos y estado de frontera (frontiers)",
+    "Enums t\u00e9cnicos internos (LEGACY_CONFIGURED_CATEGORY, MRI_PRIMARY)",
+    "Pistas criptogr\u00e1ficas de hash SHA-256"
+  ]
+}

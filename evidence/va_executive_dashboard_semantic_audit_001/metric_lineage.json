@@ -1,0 +1,159 @@
+{
+  "total_metrics_traced": 14,
+  "lineage": [
+    {
+      "metric": "MARKETPLACES",
+      "ui_location": "Legacy Header Stats Card #1 (#s-mp)",
+      "read_model": "SQLiteManager.get_summary_stats()",
+      "query": "SELECT COUNT(DISTINCT marketplace) as marketplace_count FROM audits WHERE id IN (SELECT MAX(id) FROM audits GROUP BY LOWER(marketplace), LOWER(category))",
+      "db_origin": "audits.marketplace",
+      "acquisition_origin": "ExcelLoader (SVMP.xlsx) / AuditTask.marketplace",
+      "formula": "COUNT(DISTINCT marketplace)",
+      "time_scope": "Latest audit run per category",
+      "verdict": "VERIFIED_ACCURATE"
+    },
+    {
+      "metric": "CATEGOR\u00cdAS",
+      "ui_location": "Legacy Header Stats Card #2 (#s-cat)",
+      "read_model": "SQLiteManager.get_summary_stats()",
+      "query": "SELECT COUNT(DISTINCT category) as category_count FROM audits WHERE id IN (SELECT MAX(id) FROM audits GROUP BY LOWER(marketplace), LOWER(category))",
+      "db_origin": "audits.category",
+      "acquisition_origin": "ExcelLoader (SVMP.xlsx) / AuditTask.category",
+      "formula": "COUNT(DISTINCT category)",
+      "time_scope": "Latest audit run per category",
+      "verdict": "VERIFIED_ACCURATE"
+    },
+    {
+      "metric": "AUDITOR\u00cdAS",
+      "ui_location": "Legacy Header Stats Card #3 (#s-total)",
+      "read_model": "SQLiteManager.get_summary_stats()",
+      "query": "SELECT COUNT(*) as total_audits FROM audits WHERE id IN (SELECT MAX(id) FROM audits GROUP BY LOWER(marketplace), LOWER(category))",
+      "db_origin": "audits.id",
+      "acquisition_origin": "AuditRunner execution loop",
+      "formula": "COUNT(*)",
+      "time_scope": "Latest audit run per category",
+      "verdict": "VERIFIED_ACCURATE"
+    },
+    {
+      "metric": "AVG VISIB. TOP30",
+      "ui_location": "Legacy Header Stats Card #4 (#s-avg)",
+      "read_model": "SQLiteManager.get_summary_stats()",
+      "query": "SELECT AVG(pct_30) as avg_pct_30 FROM audits WHERE id IN (SELECT MAX(id) FROM audits GROUP BY LOWER(marketplace), LOWER(category))",
+      "db_origin": "audits.pct_30",
+      "acquisition_origin": "VisibilityEngine.calculate_percentages",
+      "formula": "SUM(pct_30) / COUNT(categories)",
+      "time_scope": "Latest audit run per category",
+      "verdict": "SEMANTIC_QUALIFICATION_REQUIRED (Unweighted arithmetic mean of percentages, not weighted by product volume)"
+    },
+    {
+      "metric": "CR\u00cdTICAS",
+      "ui_location": "Legacy Header Stats Card #5 (#s-crit)",
+      "read_model": "SQLiteManager.get_summary_stats()",
+      "query": "SELECT SUM(CASE WHEN presence_level='CRITICA' THEN 1 ELSE 0 END) as critical_count FROM audits WHERE id IN (SELECT MAX(id) FROM audits GROUP BY LOWER(marketplace), LOWER(category))",
+      "db_origin": "audits.presence_level",
+      "acquisition_origin": "classifier.classify_presence(pct_30)",
+      "formula": "COUNT(categories where pct_30 < PRESENCE_THRESHOLDS['MEDIA'])",
+      "time_scope": "Latest audit run per category",
+      "verdict": "SEMANTIC_QUALIFICATION_REQUIRED (Measures low TOP30 presence; does not mean uncatalogued/unlisted)"
+    },
+    {
+      "metric": "EXCELENTES",
+      "ui_location": "Legacy Header Stats Card #6 (#s-exc)",
+      "read_model": "SQLiteManager.get_summary_stats()",
+      "query": "SELECT SUM(CASE WHEN presence_level='EXCELENTE' THEN 1 ELSE 0 END) as excellent_count FROM audits WHERE id IN (SELECT MAX(id) FROM audits GROUP BY LOWER(marketplace), LOWER(category))",
+      "db_origin": "audits.presence_level",
+      "acquisition_origin": "classifier.classify_presence(pct_30)",
+      "formula": "COUNT(categories where pct_30 >= PRESENCE_THRESHOLDS['EXCELENTE'])",
+      "time_scope": "Latest audit run per category",
+      "verdict": "VERIFIED_ACCURATE"
+    },
+    {
+      "metric": "TOTAL CANAL",
+      "ui_location": "Legacy Audit Table Column #3",
+      "read_model": "SQLiteManager.get_latest_audits()",
+      "query": "SELECT total_marketplace FROM audits",
+      "db_origin": "audits.total_marketplace",
+      "acquisition_origin": "scraper.get_total_count(cat_visibility_url)",
+      "formula": "Raw DOM search/catalog count of entire category corridor",
+      "time_scope": "Execution timestamp",
+      "verdict": "VERIFIED_ACCURATE"
+    },
+    {
+      "metric": "TOTAL NICO",
+      "ui_location": "Legacy Audit Table Column #4",
+      "read_model": "SQLiteManager.get_latest_audits()",
+      "query": "SELECT total_nicopoly FROM audits",
+      "db_origin": "audits.total_nicopoly",
+      "acquisition_origin": "scraper.get_total_count(cat_census_url)",
+      "formula": "Raw DOM search/filter count with brand=Nicopoly",
+      "time_scope": "Execution timestamp",
+      "verdict": "VERIFIED_ACCURATE"
+    },
+    {
+      "metric": "TOP30 / TOP60 / TOP90 / TOP120 / TOP240",
+      "ui_location": "Legacy Audit Table Columns #5-#9",
+      "read_model": "SQLiteManager.get_latest_audits()",
+      "query": "SELECT top_30, top_60, top_90, top_120, top_240 FROM audits",
+      "db_origin": "audits.top_N",
+      "acquisition_origin": "scraper.scrape_top_240(cat_visibility_url) + VisibilityEngine.calculate_cumulative_kpis",
+      "formula": "COUNT(distinct nicopoly items with position_absolute <= N)",
+      "time_scope": "Execution timestamp",
+      "verdict": "VERIFIED_ACCURATE"
+    },
+    {
+      "metric": "%TOP30 / %TOP60 / %TOP90 / %TOP120 / %TOP240",
+      "ui_location": "Legacy Audit Table Columns #10-#14",
+      "read_model": "SQLiteManager.get_latest_audits()",
+      "query": "SELECT pct_30, pct_60, pct_90, pct_120, pct_240 FROM audits",
+      "db_origin": "audits.pct_N",
+      "acquisition_origin": "VisibilityEngine.calculate_percentages(kpis, nicopoly_denom)",
+      "formula": "(top_N / max(total_nicopoly, top_N)) * 100",
+      "time_scope": "Execution timestamp",
+      "verdict": "VERIFIED_ACCURATE_FORMULA (Denominator is strictly Total Nico)"
+    },
+    {
+      "metric": "PUBLICACIONES REALES MATERIALIZADAS (MRI)",
+      "ui_location": "MRI V2 Resumen Tab Cards & Header",
+      "read_model": "MRIReadModel.get_summary()",
+      "query": "SELECT lower(replace(marketplace, ' ', '')) as mkt, count(*) as cnt FROM mri_publications WHERE run_id != 'run_golden_shadow_001' AND run_id NOT LIKE '%test%' GROUP BY lower(replace(marketplace, ' ', ''))",
+      "db_origin": "mri_publications rows",
+      "acquisition_origin": "GenericCommercialMaterializer from autonomous run evidence (run_mri_4mp_final_cert_1790865503)",
+      "formula": "COUNT(*) in mri_publications",
+      "time_scope": "Persisted database state",
+      "verdict": "VERIFIED_CANONICAL"
+    },
+    {
+      "metric": "CENSO DE INVESTIGACI\u00d3N (MRI)",
+      "ui_location": "MRI V2 Resumen Tab Cards & Header",
+      "read_model": "MRIReadModel.get_summary()",
+      "query": "Static dictionary mapping from frozen census artifacts (2026-09-21)",
+      "db_origin": "commercial_reconciliation/v001/09_CENSUS_RECONCILIATION.csv etc.",
+      "acquisition_origin": "Deep research exploratory census (frozen baseline)",
+      "formula": "Sum of discovered rows in research manifests",
+      "time_scope": "Frozen 2026-09-21",
+      "verdict": "HISTORICAL_BENCHMARK_ONLY"
+    },
+    {
+      "metric": "SALUD DE FUENTES",
+      "ui_location": "MRI V2 Salud de Fuentes Tab",
+      "read_model": "MRIReadModel.get_source_health()",
+      "query": "Static dictionary reflecting 2026-09-21 research run status",
+      "db_origin": "In-memory research health summary",
+      "acquisition_origin": "Exploratory audit probes",
+      "formula": "Qualitative status (HEALTHY, PARTIAL, BLOCKED)",
+      "time_scope": "Frozen 2026-09-21",
+      "verdict": "TECHNICAL_OPERATION_ONLY"
+    },
+    {
+      "metric": "COMPARACI\u00d3N LEGACY",
+      "ui_location": "MRI V2 Comparaci\u00f3n Legacy Tab",
+      "read_model": "MRIReadModel.get_legacy_comparison()",
+      "query": "SELECT count(distinct publication_id), max(observed_at) FROM mri_publications GROUP BY marketplace vs legacy benchmark strings",
+      "db_origin": "mri_publications vs legacy benchmark metadata",
+      "acquisition_origin": "Dynamic recount from mri_publications joined with historical text descriptions",
+      "formula": "Direct recount of distinct publication_id",
+      "time_scope": "Latest MRI materialization vs historical text benchmark",
+      "verdict": "VERIFIED_CANONICAL_WITH_QUALIFICATION"
+    }
+  ]
+}

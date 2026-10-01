@@ -1,0 +1,31 @@
+{
+  "task_id": "VA-EXECUTIVE-DASHBOARD-SEMANTIC-AUDIT-001",
+  "source_marketplace": "Ripley & Cross-Marketplace Learning",
+  "original_observation": "In Ripley and Paris, products exist and are published in the brand store/hub (e.g. 52 products in Brand Hub), but navigation into commercial categories (e.g. blusas, enteritos, vestidos) revealed that many items do not appear in the commercial category search results, or appear in unexpected categories (e.g. Blusa in Vestidos). AutoClaw demonstrated that site menu hierarchies contain non-commercial competitor showcases (marcas-destacadas) and that observing a product in a brand showcase does not guarantee presence on the commercial shelf.",
+  "generalizable_principle": "PUBLICADO \u2260 CORRECTAMENTE CATEGORIZADO \u2260 VISIBLE",
+  "marketplace_neutral_states": {
+    "A_PUBLICADO": "Verifiable existence of the product/publication in the marketplace catalog (e.g., active PDP or listing in brand store).",
+    "B_OBSERVADO": "MRI physically acquired and parsed the publication on a concrete URL or surface.",
+    "C_CORRECTAMENTE_CATEGORIZADO": "The publication is observed inside a commercial category corridor compatible with its product identity/type.",
+    "D_FUERA_DE_CATEGORIA_ESPERADA": "The publication exists on the platform, but evidence proves it is missing from its expected commercial category, or only reachable via brand store search.",
+    "E_MULTI_CATEGORIA": "The publication legitimately appears in more than one category or surface (e.g., Dress in 'Vestidos' and 'Fiesta').",
+    "F_VISIBLE": "The publication achieves a verified commercial ranking position within the evaluated threshold (e.g. position <= 30).",
+    "G_NO_VISIBLE": "The publication is published and categorized, but buried beyond the visibility threshold (position > 30 or unranked).",
+    "H_CATEGORY_UNRESOLVED": "Insufficient evidence or unmapped taxonomy prevents verifying whether the observed category is correct."
+  },
+  "non_generalizable_details": [
+    "Ripley-specific URL query parameter schemas (?marcas=nicopoly)",
+    "Ripley menucomponent JSON hierarchy specifics",
+    "Paris streaming RSC push chunk formats",
+    "Falabella __NEXT_DATA__ JSON property paths",
+    "Mercado Libre official store carousel class names"
+  ],
+  "required_evidence": [
+    "Product Identity (Title, Seller SKU, Master Product Type)",
+    "Expected Category (Derived from product type / taxonomy contract)",
+    "Observed Surfaces & Categories (Exact URLs and category nodes where item appeared)",
+    "Observed Position (Rank on each observed surface)",
+    "Direct Brand Evidence (Confirmed seller/brand provenance)"
+  ],
+  "decision_semantics": "A product published in Brand Hub but absent from its commercial category represents a CATALOG CATEGORIZATION DEFECT, causing severe organic revenue loss because category-browsing shoppers never see it."
+}

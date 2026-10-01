@@ -1,0 +1,125 @@
+{
+  "total_examples": 6,
+  "examples": [
+    {
+      "case_type": "PRODUCT_OBSERVED_ONLY_IN_BRAND_HUB",
+      "marketplace": "Falabella",
+      "publication_id": "pub_falabella_00d16640c923",
+      "marketplace_product_id": "152411485",
+      "title": "Bomber Tipo Lanilla Negro Mujer",
+      "product_identity": "Chaqueta / Bomber",
+      "expected_category": "Chaquetas y Abrigos",
+      "observed_categories": [
+        "Brand Hub"
+      ],
+      "observed_surfaces": [
+        "Brand Hub"
+      ],
+      "alignment_status": "UNRESOLVED_ABSENT_FROM_COMMERCIAL_CATEGORY",
+      "position": 1,
+      "evidence_id": "ev_falabella_pub_pub_falabella_00d16640c923",
+      "commercial_impact": "Shoppers in Falabella's 'Chaquetas' corridor cannot find this bomber unless they navigate specifically to Nicopoly's brand hub."
+    },
+    {
+      "case_type": "PRODUCT_OBSERVED_IN_SPECIFIC_CATEGORY",
+      "marketplace": "Mercado Libre",
+      "publication_id": "pub_mercado libre_dd0e1da77d26",
+      "marketplace_product_id": "MLC2237924787",
+      "title": "Vestido Rayas Camisero Celeste Nicopoly",
+      "product_identity": "Vestido",
+      "expected_category": "Vestidos",
+      "observed_categories": [
+        "Vestidos"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "alignment_status": "ALIGNED",
+      "position": 1,
+      "evidence_id": "ev_mercado libre_pub_pub_mercado libre_dd0e1da77d26",
+      "commercial_impact": "Optimal commercial alignment: product is indexed in Vestidos and ranks #1 in TOP30."
+    },
+    {
+      "case_type": "PRODUCT_OBSERVED_IN_MULTIPLE_CATEGORIES",
+      "marketplace": "Paris",
+      "publication_id": "pub_paris_005e45afd4ca",
+      "marketplace_product_id": "pantalon-recto-con-pinza-mocca-nicopoly-MK410ASC3E",
+      "title": "Pantal\u00f3n Recto Con Pinza Mocca Nicopoly",
+      "product_identity": "Pantal\u00f3n",
+      "expected_category": "Jeans y Pantalones",
+      "observed_categories": [
+        "Jeans y Pantalones",
+        "Pantalones",
+        "Brand Hub",
+        "Brand Store"
+      ],
+      "observed_surfaces": [
+        "Brand Hub",
+        "Category Browse"
+      ],
+      "alignment_status": "MULTI_CATEGORY",
+      "position": 1,
+      "evidence_id": "ev_paris_pub_pub_paris_005e45afd4ca",
+      "commercial_impact": "Multi-category exposure increases organic discovery across both general and specific pant corridors."
+    },
+    {
+      "case_type": "PRODUCT_CLASSIFIED_LEGACY_BUT_NOT_DEMONSTRATED_COMMERCIALLY",
+      "marketplace": "Paris",
+      "publication_id": "pub_paris_50658d0ef6bc",
+      "marketplace_product_id": "cardigan-calado-cuello-redondo-negro-nicopoly-MK0I4DC9W7",
+      "title": "C\u00e1rdigan Calado Cuello Redondo Negro Nicopoly",
+      "product_identity": "C\u00e1rdigan / Sweater",
+      "expected_category": "Sweaters, Chalecos y Tejidos",
+      "observed_categories": [
+        "Sweaters, Chalecos y Tejidos",
+        "Brand Hub"
+      ],
+      "observed_surfaces": [
+        "Category Browse",
+        "Brand Hub"
+      ],
+      "alignment_status": "ALIGNED_BUT_BURIED",
+      "position": 272,
+      "evidence_id": "ev_paris_pub_pub_paris_50658d0ef6bc",
+      "commercial_impact": "Correctly categorized in Sweaters, but rank #272 is beyond TOP240; essentially invisible to organic buyers."
+    },
+    {
+      "case_type": "PRODUCT_POTENTIALLY_MISALIGNED_OR_CROSS_INDEXED",
+      "marketplace": "Ripley",
+      "publication_id": "pub_ripley_72df33d13e81",
+      "marketplace_product_id": "2000312460001",
+      "title": "Blusa Saten Cruzado Rojo Nicopoly",
+      "product_identity": "Blusa",
+      "expected_category": "Blusas y poleras",
+      "observed_categories": [
+        "Vestidos"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "alignment_status": "MISALIGNED",
+      "position": 2,
+      "evidence_id": "ev_ripley_pub_pub_ripley_72df33d13e81",
+      "commercial_impact": "A blouse indexed under 'Vestidos' confuses category shoppers looking for dresses and loses sales from shoppers looking for blouses."
+    },
+    {
+      "case_type": "PRODUCT_WITH_UNRESOLVED_CATEGORIZATION",
+      "marketplace": "Ripley",
+      "publication_id": "pub_ripley_b15be9ea5ac7",
+      "marketplace_product_id": "10002617343",
+      "title": "CHAQUETA BIKER NEGRO MUJER NICOPOLY",
+      "product_identity": "Chaqueta Biker",
+      "expected_category": "Chaquetas y blazers",
+      "observed_categories": [
+        "Brand Hub"
+      ],
+      "observed_surfaces": [
+        "Brand Hub"
+      ],
+      "alignment_status": "UNRESOLVED",
+      "position": 1,
+      "evidence_id": "ev_ripley_pub_pub_ripley_b15be9ea5ac7",
+      "commercial_impact": "Product is verified on brand showcase, but no evidence exists showing whether it appears in the commercial Chaquetas tree."
+    }
+  ]
+}

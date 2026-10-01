@@ -1,0 +1,45 @@
+{
+  "task_id": "VA-EXECUTIVE-DASHBOARD-SEMANTIC-AUDIT-001",
+  "readiness_for_executive_redesign": {
+    "A_EXISTING_AND_RELIABLE": [
+      "PUBLICACIONES_REALES_MATERIALIZADAS (mri_publications distinct publication_id)",
+      "POSICI\u00d3N_OBSERVADA_POR_PRODUCTO (mri_publications.position)",
+      "PRECIO_REGULAR_Y_OFERTA (mri_prices)",
+      "EVIDENCIA_DIRECTA_DE_MARCA (mri_evidence_ledger / brand presence)",
+      "CONTEO_TOTAL_CANAL (audits.total_marketplace)",
+      "CONTEO_TOTAL_NICO_POR_CATEGORIA (audits.total_nicopoly)"
+    ],
+    "B_EXISTING_BUT_AMBIGUOUS": [
+      "AVG_VISIB_TOP30 (Currently computed as an unweighted arithmetic average of category percentages rather than product-weighted visibility)",
+      "CR\u00cdTICA / EXCELENTE (Interpreted as catastrophic failure or catalog loss rather than simple Top30 presence threshold)",
+      "CLASIFICADO_COMO (UI column displays internal provenance enums like LEGACY_CONFIGURED_CATEGORY instead of taxonomy categories)"
+    ],
+    "C_EXISTING_BUT_NOT_COMPARABLE": [
+      "LEGACY_TOTAL_NICO_VS_MRI_PUBLICATIONS (Sum of 14 raw search corridor counters with multi-category duplication vs deduplicated unique catalog publications)"
+    ],
+    "D_EXISTING_ONLY_AS_TECHNICAL_EVIDENCE": [
+      "LIBRO_MAYOR_DE_EVIDENCIA (5,189 rows in mri_evidence_ledger)",
+      "HASHES_CRIPTOGRAFICOS (SHA-256)",
+      "SUPERFICIES_DE_INVESTIGACION_FRONTIER (1,435 terminal nodes in Ripley)"
+    ],
+    "E_NOT_EXISTING_YET": [
+      "TOTAL_CORRECTAMENTE_CATEGORIZADAS (Requires mapping between product identity and expected category)",
+      "TOTAL_FUERA_DE_CATEGORIA (Requires comparing observed category with expected commercial category)",
+      "CATEGORY_ALIGNMENT_STATUS (ALIGNED, MISALIGNED, MULTI_CATEGORY, UNRESOLVED)"
+    ],
+    "F_REQUIRES_NEW_ENGINE_CAPABILITY": [
+      "DETERMINISTIC_PRODUCT_TYPE_EXTRACTION (Engine currently extracts raw titles and seller SKUs, but does not standardize 'Product Type' e.g. Vestido vs Blusa into a dedicated normalized column in mri_products)",
+      "EXPECTED_CATEGORY_RULES_ENGINE (Engine needs a lightweight rule mapping: Product Type -> Expected Marketplace Category Corridor)"
+    ]
+  },
+  "can_calculate_today": {
+    "PUBLICACIONES_OBSERVADAS": "YES (1,314 canonical publications materialized in DB across 4 marketplaces)",
+    "CORRECTAMENTE_CATEGORIZADAS": "NO (Requires Product Type to Expected Category resolution engine)",
+    "FUERA_DE_CATEGORIA": "NO (Requires Product Type to Expected Category resolution engine)",
+    "CATEGORY_UNRESOLVED": "YES (Can classify Brand Hub-only publications as UNRESOLVED)",
+    "VISIBLE_TOP30": "YES (Directly computable from position <= 30 in mri_publications)",
+    "VISIBLE_TOP60": "YES (Directly computable from position <= 60 in mri_publications)",
+    "NO_VISIBLE": "YES (Directly computable from position > 60 or unranked in mri_publications)"
+  },
+  "engine_gap": "YES (A minimal commercial taxonomy resolution capability is required before an executive dashboard can accurately display 'FUERA DE CATEGOR\u00cdA' without manual guessing)."
+}

@@ -1,0 +1,9 @@
+{
+  "task_id": "VA-EXECUTIVE-DASHBOARD-SEMANTIC-AUDIT-001",
+  "forensic_finding": "In the MRI V2 'Cat\u00e1logo y Publicaciones Observadas' table, the SQL query performs a LEFT JOIN across mri_publications, mri_variants, mri_prices, and mri_publication_categories. Because a single publication can be associated with multiple categories (e.g. pub_paris_005e45afd4ca is linked to 4 categories: 'Jeans y Pantalones', 'Pantalones', 'Brand Hub', 'Brand Store'), the SQL result produces 5,381 rows from 2,043 unique publications.",
+  "is_erroneous_duplication": false,
+  "relationship_nature": "MANY_TO_MANY publication <-> surface/category evidence",
+  "problem_in_ui": "The table renders each joined tuple as an independent flat table row. To an executive, it appears that the system has duplicated product records multiple times, inflating row counts and creating visual confusion.",
+  "destructive_deduplication_permitted": false,
+  "recommended_executive_presentation": "Present exactly ONE row per canonical publication (keyed by publication_id). Include an expandable badge or drawer: 'Observada en N superficies/categor\u00edas' (e.g., '+3 categor\u00edas'). Clicking the row expands to show the granular breakdown of positions across each observed surface without destroying underlying evidence."
+}

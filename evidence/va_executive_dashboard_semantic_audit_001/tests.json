@@ -1,0 +1,25 @@
+{
+  "task_id": "VA-EXECUTIVE-DASHBOARD-SEMANTIC-AUDIT-001",
+  "security_test": {
+    "test_file": "tests/test_secret_not_rendered_in_ui.py",
+    "red_result": "FAIL (assertNotIn('raw_cookies', rip) failed: /api/sessions returned raw_cookies)",
+    "green_result": "PASS (1 passed in 0.01s: raw_cookies removed, zero secrets in JSON response)"
+  },
+  "regression_tests": [
+    {
+      "test_file": "tests/test_regression_guardrails.py",
+      "passed": 13,
+      "failed": 0,
+      "status": "PASS"
+    },
+    {
+      "test_file": "tests/test_dashboard_live_materialization.py",
+      "passed": 2,
+      "failed": 0,
+      "status": "PASS"
+    }
+  ],
+  "total_tests_run": 16,
+  "total_failures": 0,
+  "overall_status": "PASS"
+}

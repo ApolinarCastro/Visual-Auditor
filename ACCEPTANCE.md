@@ -433,6 +433,32 @@ A transition to Controlled Production Maintenance PASS requires:
 - incident contract persisted in `evidence/va_controlled_production_maintenance_001/incident_contract.json`
 - final verdict = `VA_CONTROLLED_PRODUCTION_MAINTENANCE_PASS`
 
+## Executive Dashboard Semantic Audit Gate (VA-EXECUTIVE-DASHBOARD-SEMANTIC-AUDIT-001)
+
+A dashboard semantic audit PASS requires:
+- certified baseline verified at commit `a7df2aeedcda5b8f1f3615fef5fce83f341f47fa` as historical ancestor
+- local SHA matches remote SHA exactly (`5f6ed9b8291870ad9ba598c17bf8e6c07a09d58e`)
+- physical read of truth documents (`README.md`, `CURRENT_STATE.md`, `DECISIONS.md`, `FAILURES.md`, `ACCEPTANCE.md`)
+- resource gate strictly enforced: 0 scraping runs, 0 marketplace requests, 0 AutoClaw actions
+- 0 production scraper changes, 0 MRI engine changes, 0 database schema changes, 0 new dependencies
+- complete inventory of 28 dashboard elements across Legacy VA and MRI V2 persisted in `dashboard_inventory.json`
+- full lineage tracing of all 14 primary metrics to source queries, formulas, and time scopes in `metric_lineage.json`
+- mathematical verification of metric denominators: confirmed formula `top_N / max(total_nicopoly, top_N) * 100` with 0 mismatches across 43 categories in `metric_recalculation.json`
+- rigorous classification of Legacy vs MRI comparability across all 4 marketplaces in `legacy_mri_comparability.json`
+- Ripley 500 vs 52 comparability forensically explained (search hit occurrences vs deduplicated catalog) in `ripley_comparability.json`
+- presence statuses `CRÍTICA`, `MEDIA`, `BUENA`, `EXCELENTE` defined unambiguously as organic shelf visibility rank, not catalog loss, in `presence_status_semantics.json`
+- universal commercial principle `PUBLICADO ≠ CORRECTAMENTE CATEGORIZADO ≠ VISIBLE` persisted as marketplace-neutral in `cross_marketplace_category_principle.json`
+- category alignment contract and real evidence-based cases documented in `category_alignment_contract.json` and `category_alignment_examples.json`
+- catalog and publications table semantics and duplicate row explanation (many-to-many relationship) documented in `catalog_publications_semantics.json` and `duplicate_row_semantics.json`
+- executive information contract (8 key questions) and 4 information layers matrix defined in `executive_information_contract.json` and `information_layer_matrix.json`
+- comprehensive semantic truth matrix generated in CSV and JSON (`dashboard_semantic_truth_matrix.json` and `.csv`)
+- security incident audit: raw cookie values found exposed in `/api/sessions` and textarea DOM (`INCIDENT_CONFIRMED=YES`)
+- security fix executed under Section 21 constraints: max 2 production files modified (`app/dashboard/api.py`, `app/dashboard/static/dashboard.js`), 0 new dependencies, 1 fix cycle
+- RED test reproduced (`tests/test_secret_not_rendered_in_ui.py`), GREEN verified, regression suite passed (13/13 guardrails, 2/2 materialization)
+- technical evasion instruction audit documented in `technical_instruction_exposure.json`
+- comprehensive gap analysis completed in `gap_analysis.json`
+- final verdict = `VA_EXECUTIVE_DASHBOARD_SEMANTIC_AUDIT_PASS`
+
 ## Global completion
 
 - required marketplaces meet their own acceptance gates (4/4 PASS: Mercado Libre, Paris, Falabella, Ripley)

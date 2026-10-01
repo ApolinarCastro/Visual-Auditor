@@ -1,0 +1,35 @@
+{
+  "task_id": "VA-EXECUTIVE-DASHBOARD-SEMANTIC-AUDIT-001",
+  "marketplace": "Ripley",
+  "legacy_count": 500,
+  "legacy_categories_count": 14,
+  "legacy_details_by_category": {
+    "Abrigos": 31,
+    "Accesorios y complementos": 27,
+    "Blusas y poleras": 152,
+    "Calzas": 6,
+    "Chaquetas y blazers": 143,
+    "Enteritos": 0,
+    "Faldas": 4,
+    "Jeans": 18,
+    "Kimonos": 2,
+    "Pantalones": 50,
+    "Parkas": 6,
+    "Shorts": 9,
+    "Sweaters y chalecos": 46,
+    "Vestidos": 6
+  },
+  "legacy_sum_formula": "31 + 27 + 152 + 6 + 143 + 0 + 4 + 18 + 2 + 50 + 6 + 9 + 46 + 6 = 500",
+  "mri_materialized_count": 52,
+  "mri_certified_run_count": 48,
+  "same_universe": false,
+  "comparability_verdict": "NOT_COMPARABLE",
+  "comparability_with_qualification": "COMPARABLE_WITH_QUALIFICATION (Only if explained that 500 is cross-category observation occurrences while 52 is deduplicated physical catalog)",
+  "forensic_breakdown": {
+    "what_500_measures": "The number 500 in Legacy VA represents the raw arithmetic sum of the search result counters returned by Ripley's search engine across 14 separate category URLs. Because products in fashion retail are indexed under multiple search terms and parent/child categories (e.g. a 'Chaqueta' appears in 'Chaquetas y blazers', 'Abrigos', and general clothing searches), a single SKU is counted 3 to 5 times. Zero cross-category deduplication was performed by Legacy VA.",
+    "what_52_measures": "The number 52 in MRI represents the exact count of unique, distinct physical publications with native marketplace product IDs (e.g. 10002617343) materialized into the database after deduplication, direct brand verification, and surface classification.",
+    "identity_unit_contrast": "Legacy = Aggregated search hit counter text from HTML. MRI = Discrete canonical entity in mri_publications with unique product_id.",
+    "surface_contrast": "Legacy = 14 search corridor URLs. MRI = Brand Hub showcase + navigated commercial categories.",
+    "managerial_takeaway": "Ripley does NOT have 500 products, nor did it lose 448 products. Nicopoly has approximately 48 to 52 active published products in Ripley, which generate 500 search impressions across 14 category corridors."
+  }
+}

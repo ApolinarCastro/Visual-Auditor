@@ -1,0 +1,23 @@
+{
+  "task_id": "VA-EXECUTIVE-DASHBOARD-SEMANTIC-AUDIT-001",
+  "inspected_files": [
+    "app/dashboard/templates/index.html"
+  ],
+  "evasion_instruction_findings": [
+    {
+      "location": "app/dashboard/templates/index.html:165",
+      "header": "Control de Sesiones (Cookies de Evasi\u00f3n)",
+      "classification": "TECHNICAL_OPERATION",
+      "is_appropriate_for_executive_view": false,
+      "rationale": "Using terms like 'Cookies de Evasi\u00f3n' in executive dashboards conveys illicit hacking rather than deterministic marketplace monitoring. It belongs strictly in an admin/technical operations view."
+    },
+    {
+      "location": "app/dashboard/templates/index.html:171-188",
+      "text_snippet": "Gu\u00eda de Ayuda R\u00e1pida: \u00bfC\u00f3mo actualizar las cookies en 1 minuto? ... Instala la Extensi\u00f3n Cookie Editor ... Exporta en Formato JSON ... Pega y Haz Clic en Actualizar",
+      "classification": "TECHNICAL_OPERATION",
+      "is_appropriate_for_executive_view": false,
+      "rationale": "Manual browser extension instructions for evading Cloudflare blocks distract executives and clutter commercial decision screens."
+    }
+  ],
+  "recommendation": "In the upcoming dashboard redesign (VA-EXECUTIVE-DASHBOARD-REDESIGN-001), move all session cookie controls, extension tutorials, and bypass instructions to a separate, dedicated 'Configuraci\u00f3n T\u00e9cnica / Operaciones' tab, completely isolated from the Executive and Analytical commercial views."
+}

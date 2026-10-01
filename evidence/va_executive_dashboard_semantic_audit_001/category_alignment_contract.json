@@ -1,0 +1,29 @@
+{
+  "contract_name": "CategoryAlignmentModel",
+  "version": "1.0.0",
+  "architecture_status": "CONTRACT_SPECIFICATION_ONLY (Zero production changes in current task)",
+  "fields": {
+    "PUBLICATION_ID": "String (Unique publication identifier in MRI)",
+    "PRODUCT_IDENTITY": {
+      "title": "String",
+      "seller_sku": "String",
+      "product_type": "String (Normalized product type: Vestido, Blusa, Pantal\u00f3n, Blazer, Chaqueta, Calzas, etc.)"
+    },
+    "EXPECTED_COMMERCIAL_CATEGORY": "String (Taxonomy leaf node where this product type should compete)",
+    "OBSERVED_COMMERCIAL_CATEGORIES": "List[String] (Categories where product was physically observed)",
+    "OBSERVED_NON_CATEGORY_SURFACES": "List[String] (e.g. ['Brand Hub', 'Search Grid', 'Brand Store'])",
+    "CATEGORY_ALIGNMENT": {
+      "type": "Enum",
+      "values": [
+        "ALIGNED",
+        "MISALIGNED",
+        "MULTI_CATEGORY",
+        "UNRESOLVED"
+      ],
+      "derivation_rule": "Deterministic rule: If OBSERVED_COMMERCIAL_CATEGORIES contains EXPECTED_COMMERCIAL_CATEGORY -> ALIGNED. If OBSERVED has > 1 commercial category -> MULTI_CATEGORY. If OBSERVED has categories but none match EXPECTED -> MISALIGNED. If only observed on Brand Hub or unmapped -> UNRESOLVED."
+    },
+    "POSITION_BY_CATEGORY": "List[Dict[category, position, top30_status]]",
+    "VISIBILITY_STATUS": "Enum ['VISIBLE_TOP30', 'VISIBLE_TOP60', 'NO_VISIBLE', 'UNRANKED']",
+    "EVIDENCE": "String (Reference ID in mri_evidence_ledger)"
+  }
+}

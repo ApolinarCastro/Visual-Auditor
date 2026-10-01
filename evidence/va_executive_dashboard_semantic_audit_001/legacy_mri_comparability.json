@@ -1,0 +1,66 @@
+{
+  "task_id": "VA-EXECUTIVE-DASHBOARD-SEMANTIC-AUDIT-001",
+  "evaluation_summary": "Legacy VA and MRI measure fundamentally different object layers. Legacy measures category-corridor search counters and top-240 visual pods from predefined URL lists. MRI measures canonical physical product publications discovered autonomously with deterministic evidence of identity, membership, and surface position. Presenting differences between their counts as 'performance drops' or 'data loss' is methodologically invalid.",
+  "marketplaces": {
+    "Mercado Libre": {
+      "comparability": "COMPARABLE_WITH_QUALIFICATION",
+      "qualification": "Legacy VA queries 12 configured category search URLs (SVMP.xlsx) and sums category counters (573 total canal, 11 total nico on latest single run; historically ~422 in store). MRI autonomous engine navigates the official store and discovered categories, extracting 321 to 572 unique publications with MLC identity deduplication and 100% direct brand evidence. Comparable only as an index of active store publications, but dissimilar in category corridor scope.",
+      "dimensions": {
+        "population": "Legacy: Predefined category search corridors. MRI: Full official store catalog + discovered commercial categories.",
+        "identity_unit": "Legacy: Scraped title and search pod. MRI: Canonical MLC item ID (e.g. MLC2237924787) and SKU.",
+        "deduplication": "Legacy: Per-category title deduplication within top 240. No cross-category deduplication. MRI: Global canonical publication deduplication across all routes.",
+        "category_scope": "Legacy: 12 static Excel rows. MRI: Autonomous category discovery on official store DOM.",
+        "surface_scope": "Legacy: Search result grids. MRI: Official Store showcases + Category containers.",
+        "time_scope": "Legacy: Snapshot execution per scheduled category. MRI: Autonomous crawler run.",
+        "brand_constraint": "Legacy: Query param (marca=Nicopoly). MRI: Official store namespace + direct brand extraction.",
+        "position_semantics": "Legacy: Absolute index in search grid (1..240). MRI: Position within observed surface corridor.",
+        "publication_semantics": "Legacy: Search result item. MRI: Persisted canonical publication entity."
+      }
+    },
+    "Paris": {
+      "comparability": "COMPARABLE_WITH_QUALIFICATION",
+      "qualification": "Legacy VA scraped 8 static category URLs, summing ~335 items. MRI extracts streaming Next.js App Router RSC facet chunks (generalFacets.tipoProductoAll), discovering 538 to 561 unique publications. The difference represents newly discovered commercial scope in Paris that was invisible to static Legacy URLs.",
+      "dimensions": {
+        "population": "Legacy: 8 static category queries. MRI: Full autonomous facet discovery via streaming RSC.",
+        "identity_unit": "Legacy: Scraped title and slug. MRI: Canonical Paris product slug and seller SKU.",
+        "deduplication": "Legacy: Local per-category. MRI: Global canonical deduplication in mri_publications.",
+        "category_scope": "Legacy: 8 hardcoded categories. MRI: 25 discovered commercial categories.",
+        "surface_scope": "Legacy: Search PLP pages. MRI: Brand hub + faceted commercial routes.",
+        "time_scope": "Legacy: Point-in-time category scrapes. MRI: Certified autonomous crawl.",
+        "brand_constraint": "Legacy: Search query term 'nicopoly'. MRI: Streaming brand facet parameter.",
+        "position_semantics": "Legacy: Pod index in search results. MRI: Rank within navigated facet corridor.",
+        "publication_semantics": "Legacy: Search card appearance. MRI: Verified physical product listing."
+      }
+    },
+    "Ripley": {
+      "comparability": "NOT_COMPARABLE",
+      "qualification": "Legacy VA reports 500 Nicopoly publications across 14 categories by summing raw search engine result counters. MRI materializes 52 canonical unique publications. They are NOT comparable without qualification because 500 is a non-deduplicated sum of multi-category search occurrences, while 52 is the physical count of unique Nicopoly product items active on the platform.",
+      "dimensions": {
+        "population": "Legacy: Sum of 14 search query counter results. MRI: Physical product catalog extracted from Brand Hub and verified routes.",
+        "identity_unit": "Legacy: Search result counter number (no individual ID). MRI: Unique marketplace product ID (e.g. 10002617343).",
+        "deduplication": "Legacy: ZERO cross-category deduplication (31 + 27 + 152 + ... = 500). MRI: 100% deduplicated by native marketplace product ID.",
+        "category_scope": "Legacy: 14 predefined category URLs. MRI: Brand Hub + validated commercial categories.",
+        "surface_scope": "Legacy: Unfiltered and filtered category search pages. MRI: Brand Hub showcase + constrained category navigation.",
+        "time_scope": "Legacy: Scheduled daily scraper. MRI: Certified autonomous run.",
+        "brand_constraint": "Legacy: Filter param 'marcas=nicopoly' (which includes related brand suggestions in search counters). MRI: Validated brand evidence on product detail/card.",
+        "position_semantics": "Legacy: Position in search grid. MRI: Position in Brand Hub / category corridor.",
+        "publication_semantics": "Legacy: Search query hit counter. MRI: Canonical materialized publication record in mri_publications."
+      }
+    },
+    "Falabella": {
+      "comparability": "COMPARABLE_WITH_QUALIFICATION",
+      "qualification": "Legacy VA was historically capped at ~198 items due to Cloudflare anti-bot blocks truncating search pagination. MRI bypasses Cloudflare via legitimate HTTP SSR acquisition fallback and extracts structured data from __NEXT_DATA__, materializing 407 to 858 publications. The difference reflects anti-bot truncation in Legacy vs full catalog extraction in MRI.",
+      "dimensions": {
+        "population": "Legacy: Truncated search grid (Cloudflare block). MRI: Full SSR catalog and facet discovery.",
+        "identity_unit": "Legacy: Scraped title and search pod. MRI: Falabella skuId and canonical URL.",
+        "deduplication": "Legacy: Title-based in top 240. MRI: Canonical skuId deduplication.",
+        "category_scope": "Legacy: 9 configured Excel categories. MRI: 22 commercial facet categories from SSR.",
+        "surface_scope": "Legacy: Search result grids. MRI: SSR Next.js payloads and department facets.",
+        "time_scope": "Legacy: Scheduled category runs. MRI: Certified autonomous crawl.",
+        "brand_constraint": "Legacy: Search term 'nicopoly'. MRI: attribute.Tipo and brand filters in SSR.",
+        "position_semantics": "Legacy: Visual rank in search results. MRI: Rank within structured SSR results list.",
+        "publication_semantics": "Legacy: Visual DOM pod. MRI: Canonical product publication in SQLite."
+      }
+    }
+  }
+}

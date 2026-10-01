@@ -182,4 +182,20 @@ Formal transition of Visual Auditor / MRI from Build / Correction Mode to Contro
 5. Technology policy: All emerging frameworks, libraries, or tools remain RADAR_ONLY unless a demonstrated, insurmountable blocker occurs.
 6. Control artifacts: Persisted in `evidence/va_controlled_production_maintenance_001/` (`transition.json`, `certified_baseline.json`, `maintenance_policy.json`, `health_check_contract.json`, `incident_contract.json`, `final.json`).
 
+## D-028 — Four Information Layers Architecture for Visual Auditor Dashboard
+Formal decision established in VA-EXECUTIVE-DASHBOARD-SEMANTIC-AUDIT-001:
+The Visual Auditor dashboard must strictly separate all current and future indicators into four independent operational layers:
+1. **EXECUTIVE**: Commercial health score, real observed catalog counts, correctly categorized rate, misaligned rate (traffic leakage), catalog % in TOP 30, and high-priority action items. Zero technical jargon.
+2. **ANALYTICAL**: Channel/category/product deep-dive, historical visibility trends, price intelligence vs Multivende, SKU seller mapping, and multi-surface distribution.
+3. **AUDIT_EVIDENCE**: Cryptographic proof, sanitized SHA-256 hashes, physical evidence ledger links, independent reconciliation counts, and verification records.
+4. **TECHNICAL_OPERATION**: Scraper health, circuit breakers, request latencies, session authentication status (masked), and operational diagnostic tools. Evasion instructions and session tokens must never appear on executive views.
+
+## D-029 — Cross-Marketplace Commercial Principle: PUBLICADO ≠ CORRECTAMENTE CATEGORIZADO ≠ VISIBLE
+Commercial truth principle derived from operational audits and formalized in VA-EXECUTIVE-DASHBOARD-SEMANTIC-AUDIT-001:
+Across any marketplace (Mercado Libre, Paris, Ripley, Falabella), presence must distinguish three discrete states:
+1. **PUBLICADO**: Product listing exists and is active on the platform.
+2. **CORRECTAMENTE CATEGORIZADO**: Product is indexed in the commercial category corridor where target buyers look for that product type. A product published only in Brand Hub or in an unrelated category is misaligned, causing severe organic revenue leakage.
+3. **VISIBLE**: Product achieves a verified ranking position (e.g. position <= 30) within the evaluated category corridor.
+Category misalignment is critical commercial intelligence, not technical noise.
+
 

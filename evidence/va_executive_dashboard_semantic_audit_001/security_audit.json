@@ -1,0 +1,32 @@
+{
+  "task_id": "VA-EXECUTIVE-DASHBOARD-SEMANTIC-AUDIT-001",
+  "timestamp": "2026-10-01T13:10:00-03:00",
+  "incident_confirmed": true,
+  "findings": [
+    {
+      "secret_type": "Session Cookies (including cf_clearance, ssid, auth tokens)",
+      "location": "app/dashboard/api.py:407 (GET /api/sessions -> raw_cookies)",
+      "exposed": true,
+      "masked": false,
+      "remediation": "Removed raw_cookies key from inspect_session response. API now returns only safe status metadata (name, exists, cookie_count, last_updated, status, status_class)."
+    },
+    {
+      "secret_type": "Session Cookies plain text rendering",
+      "location": "app/dashboard/static/dashboard.js:73,77 -> cookies-ripley and cookies-ml textareas",
+      "exposed": true,
+      "masked": false,
+      "remediation": "Removed DOM value injection. Textareas remain empty, available only for user write-in if updating session."
+    }
+  ],
+  "verification_test": "tests/test_secret_not_rendered_in_ui.py",
+  "red_reproduced": true,
+  "fix_applied": true,
+  "green_verified": true,
+  "production_files_changed": [
+    "app/dashboard/api.py",
+    "app/dashboard/static/dashboard.js"
+  ],
+  "max_production_files_allowed": 2,
+  "new_dependencies": 0,
+  "regression_suite_result": "PASS (13/13 test_regression_guardrails.py, 2/2 test_dashboard_live_materialization.py, 1/1 test_secret_not_rendered_in_ui.py)"
+}

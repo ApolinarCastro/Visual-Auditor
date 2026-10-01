@@ -1,0 +1,102 @@
+{
+  "columns": [
+    {
+      "column": "Marketplace",
+      "semantic_meaning": "Canal de venta donde fue observada la publicaci\u00f3n.",
+      "source": "mri_publications.marketplace",
+      "layer": "EXECUTIVE",
+      "risk_of_misinterpretation": "Bajo."
+    },
+    {
+      "column": "Publicaci\u00f3n / Item",
+      "semantic_meaning": "T\u00edtulo del producto en el marketplace.",
+      "source": "mri_variants.variant_title",
+      "layer": "ANALYTICAL",
+      "risk_of_misinterpretation": "Bajo; identificar producto."
+    },
+    {
+      "column": "Marketplace ID",
+      "semantic_meaning": "Identificador \u00fanico asignado por la plataforma (MLC, SKU tienda, etc.).",
+      "source": "mri_publications.marketplace_product_id",
+      "layer": "AUDIT_EVIDENCE",
+      "risk_of_misinterpretation": "T\u00e9cnico; necesario para auditor\u00eda."
+    },
+    {
+      "column": "SKU Seller",
+      "semantic_meaning": "SKU interno del vendedor (Nicopoly).",
+      "source": "mri_variants.seller_sku",
+      "layer": "ANALYTICAL",
+      "risk_of_misinterpretation": "Muestra 'MASTER_UNMAPPED' cuando la publicaci\u00f3n no tiene SKU resuelto en cat\u00e1logo interno. Esto NO es un error de publicaci\u00f3n; es una falta de mapeo interno."
+    },
+    {
+      "column": "Precio Reg / Oferta",
+      "semantic_meaning": "Precios capturados en vivo (efectivo y tachado).",
+      "source": "mri_prices",
+      "layer": "EXECUTIVE",
+      "risk_of_misinterpretation": "Bajo; valor comercial directo."
+    },
+    {
+      "column": "Disponibilidad",
+      "semantic_meaning": "Estado de stock en la superficie observada.",
+      "source": "mri_read_model.py:availability",
+      "layer": "TECHNICAL_OPERATION",
+      "risk_of_misinterpretation": "Actualmente siempre muestra 'UNKNOWN' en la UI; dato no materializado a nivel de fila."
+    },
+    {
+      "column": "Clasificado Como (Taxonom\u00eda)",
+      "semantic_meaning": "Tipo de relaci\u00f3n taxon\u00f3mica (COMMERCIAL_CATEGORY o LEGACY_CONFIGURED_CATEGORY).",
+      "source": "mri_publications.category_relationship",
+      "layer": "TECHNICAL_OPERATION",
+      "risk_of_misinterpretation": "ALTO RIESGO. El t\u00edtulo de la columna sugiere una categor\u00eda (ej. Vestidos), pero el contenido muestra enums t\u00e9cnicos internos ('LEGACY_CONFIGURED_CATEGORY')."
+    },
+    {
+      "column": "Observado En (Canal/Browse)",
+      "semantic_meaning": "Nombre de la categor\u00eda del marketplace donde fue detectado el producto.",
+      "source": "mri_categories.category_name",
+      "layer": "ANALYTICAL",
+      "risk_of_misinterpretation": "Medio; cuando un producto est\u00e1 en varias categor\u00edas, la fila se multiplica."
+    },
+    {
+      "column": "Superficie",
+      "semantic_meaning": "Tipo de superficie HTML donde se observ\u00f3 el producto (Brand Hub, Category Browse, etc.).",
+      "source": "mri_publications.surface",
+      "layer": "ANALYTICAL",
+      "risk_of_misinterpretation": "Medio; \u00fatil para saber si est\u00e1 en tienda de marca o cat\u00e1logo abierto."
+    },
+    {
+      "column": "Posici\u00f3n",
+      "semantic_meaning": "Posici\u00f3n ordinal en la superficie observada.",
+      "source": "mri_publications.position",
+      "layer": "EXECUTIVE",
+      "risk_of_misinterpretation": "Bajo; mide ranking directo."
+    },
+    {
+      "column": "TopN",
+      "semantic_meaning": "Rango TopN alcanzado.",
+      "source": "mri_read_model.py hardcoded 'N/A'",
+      "layer": "TECHNICAL_OPERATION",
+      "risk_of_misinterpretation": "Actualmente in\u00fatil; siempre dice N/A."
+    },
+    {
+      "column": "Estado Evidencia",
+      "semantic_meaning": "Estado de verificaci\u00f3n (VERIFIED / OBSERVED).",
+      "source": "mri_publications.status",
+      "layer": "AUDIT_EVIDENCE",
+      "risk_of_misinterpretation": "T\u00e9cnico."
+    },
+    {
+      "column": "\u00daltima Verificaci\u00f3n",
+      "semantic_meaning": "Fecha y hora de la observaci\u00f3n f\u00edsica.",
+      "source": "mri_publications.observed_at",
+      "layer": "AUDIT_EVIDENCE",
+      "risk_of_misinterpretation": "Bajo."
+    },
+    {
+      "column": "Evidencia",
+      "semantic_meaning": "Bot\u00f3n modal que abre el registro criptogr\u00e1fico y referencia f\u00edsica.",
+      "source": "mri_evidence_ledger",
+      "layer": "AUDIT_EVIDENCE",
+      "risk_of_misinterpretation": "Bajo; herramienta de auditor\u00eda."
+    }
+  ]
+}

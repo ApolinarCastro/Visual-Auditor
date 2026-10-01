@@ -1,0 +1,46 @@
+{
+  "task_id": "VA-EXECUTIVE-DASHBOARD-SEMANTIC-AUDIT-001",
+  "layers": {
+    "EXECUTIVE": {
+      "purpose": "Decisi\u00f3n comercial gerencial, alertas de negocio y asignaci\u00f3n de prioridades.",
+      "metrics": [
+        "Publicaciones Reales Observadas por Marketplace",
+        "% y Total Correctamente Categorizadas",
+        "% y Total Fuera de Categor\u00eda (Fuga Comercial)",
+        "% Visibilidad TOP30 (ponderada por cat\u00e1logo)",
+        "Categor\u00edas en Estado Cr\u00edtico de Visibilidad",
+        "Alertas Comerciales Activas (Ca\u00eddas bruscas, desalineaciones)"
+      ]
+    },
+    "ANALYTICAL": {
+      "purpose": "An\u00e1lisis profundo por categor\u00eda, producto, posici\u00f3n y precio para jefes de canal.",
+      "metrics": [
+        "Ranking Top30, Top60, Top90, Top120, Top240 por producto",
+        "Historial de tendencias de visibilidad a 7 y 30 d\u00edas",
+        "Comparativa de precios publicado vs Multivende",
+        "Mapeo de SKU Seller vs Marketplace ID",
+        "Desglose de superficies observadas por publicaci\u00f3n"
+      ]
+    },
+    "AUDIT_EVIDENCE": {
+      "purpose": "Trazabilidad forense, comprobaci\u00f3n jur\u00eddica/contractual y verificaci\u00f3n independiente.",
+      "metrics": [
+        "Libro Mayor de Evidencia (mri_evidence_ledger)",
+        "Hashes SHA-256 sanitizados de payloads de captura",
+        "URLs can\u00f3nicas exactas y capturas de pantalla/snapshots",
+        "Reconciliaci\u00f3n de conteos contra bases de datos can\u00f3nicas",
+        "Marca temporal exacta y m\u00e9todo de extracci\u00f3n"
+      ]
+    },
+    "TECHNICAL_OPERATION": {
+      "purpose": "Monitoreo de infraestructura, salud de conectores, latencia y autenticaci\u00f3n para ingenieros.",
+      "metrics": [
+        "Estado de salud de scrapers y conectores (HEALTHY, DEGRADED, BLOCKED)",
+        "Circuit Breakers y tiempos de respuesta",
+        "Latencia de scraping y duraci\u00f3n por categor\u00eda",
+        "Estado de vigencia de sesiones (ACTIVO, EXPIRADO, FALTA)",
+        "Contador de reintentos, ca\u00eddas WAF y bloqueos HTTP"
+      ]
+    }
+  }
+}

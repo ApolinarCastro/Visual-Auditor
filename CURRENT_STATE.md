@@ -10,17 +10,20 @@ CONTROLLED_PRODUCTION_MAINTENANCE
 CONTROLLED_PRODUCTION_MAINTENANCE (BUILD PHASE CLOSED, ARCHITECTURE FROZEN)
 
 ## Last completed task
-VA-CONTROLLED-PRODUCTION-MAINTENANCE-001
+VA-EXECUTIVE-DASHBOARD-SEMANTIC-AUDIT-001
 
 ## Last reported verdict
-VA_CONTROLLED_PRODUCTION_MAINTENANCE_PASS
+VA_EXECUTIVE_DASHBOARD_SEMANTIC_AUDIT_PASS
 
 ## Operational State
 - **Certified Baseline SHA**: `a7df2aeedcda5b8f1f3615fef5fce83f341f47fa`
 - **Certified Run ID**: `run_mri_4mp_final_cert_1790865503`
 - **Operational Scope**: Mercado Libre, Paris, Ripley, Falabella.
 - **Operating Policy**: NO CHANGE WITHOUT FAILURE EVIDENCE.
-- **Maintenance Control Artifacts**: Persisted in `evidence/va_controlled_production_maintenance_001/` (`transition.json`, `certified_baseline.json`, `maintenance_policy.json`, `health_check_contract.json`, `incident_contract.json`, `final.json`).
+- **Dashboard Semantic State**: Semantic audit complete. 28 dashboard elements inventoried; 14 primary metrics traced with exact formulas and verified denominators (`top_N / max(total_nicopoly, top_N) * 100`). Legacy vs MRI classified (Ripley 500 vs 52 forensically explained: search corridor occurrences vs deduplicated catalog). Four information layers defined (Executive, Analytical, Audit, Technical). Transversal principle `PUBLICADO ≠ CORRECTAMENTE CATEGORIZADO ≠ VISIBLE` formalized.
+- **Security Incident Resolution**: Exposed session cookies removed from `/api/sessions` and textarea DOM in compliance with Section 21 (`INCIDENT_CONFIRMED=YES`, RED reproduced, GREEN verified, 2 production files modified, 0 dependencies).
+- **Audit Artifacts**: Persisted in `evidence/va_executive_dashboard_semantic_audit_001/` (22 required artifacts).
+- **Maintenance Control Artifacts**: Persisted in `evidence/va_controlled_production_maintenance_001/`.
 
 ## Evidence status
 Physical certified evidence persisted in `outputs/mri_4mp_final_e2e_cert_001/` and `evidence/mri_4mp_final_e2e_cert_001/`:

@@ -138,3 +138,16 @@ Official materialization and dynamic dashboard read model projection reconciled 
 Regression suite: 94/94 passing.
 Status: CERTIFIED_PASS (MRI_4MP_FINAL_E2E_CERT_PASS).
 
+## F-020 — Exposición de tokens y cookies de sesión crudas en /api/sessions e inyección en textarea DOM
+Durante la auditoría semántica de seguridad en VA-EXECUTIVE-DASHBOARD-SEMANTIC-AUDIT-001, se detectó que el endpoint `/api/sessions` serializaba el array completo de cookies almacenadas (`raw_cookies: cookies`) y el cliente `dashboard.js` inyectaba automáticamente estos valores en texto plano dentro de los `<textarea>` de Ripley y Mercado Libre en el DOM:
+1. Síntomas: Tokens de sesión y cookies de evasión (como `cf_clearance` y `ssid`) eran accesibles a través de la API y visibles en el frontend HTML.
+2. Resolución conforme a la Sección 21:
+   - `app/dashboard/api.py`: Eliminado el campo `raw_cookies` de la respuesta de `inspect_session()`. El endpoint expone exclusivamente metadatos seguros de estado (`status`, `cookie_count`, `last_updated`).
+   - `app/dashboard/static/dashboard.js`: Eliminada la inyección automática de cookies en los textareas del DOM.
+   - Seguridad: Cero valores secretos expuestos; preservada la capacidad del operador de subir nuevas sesiones en caso de requerirse.
+3. Verificación:
+   - RED test creado en `tests/test_secret_not_rendered_in_ui.py` reproduciendo la exposición inicial.
+   - GREEN test confirmado pasando (0 errores, 0 fallos).
+   - Suite de regresión pasando (13/13 guardrails, 2/2 materialización).
+Status: RESOLVED_AND_VERIFIED (PASS).
+
