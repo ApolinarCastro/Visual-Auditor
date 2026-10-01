@@ -1,0 +1,427 @@
+{
+  "total": 331,
+  "by_cause": {
+    "EXPECTED_CATEGORY_NOT_AUDITED": 233,
+    "UNKNOWN_PRODUCT_TYPE": 57,
+    "NO_EXPECTED_CATEGORY_MAPPING": 41
+  },
+  "cause_definitions": {
+    "UNKNOWN_PRODUCT_TYPE": "Title keyword extraction returned no match",
+    "NO_EXPECTED_CATEGORY_MAPPING": "Canonical type has no mapping for this marketplace",
+    "EXPECTED_CATEGORY_NOT_AUDITED": "Product found only on non-commercial surfaces or expected cat not covered"
+  },
+  "sample": [
+    {
+      "publication_id": "pub_falabella_000086339051",
+      "marketplace": "Falabella",
+      "title": "Gilet Sastre Entallado Verde Oscuro Mujer",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_categories": [
+        "Gillette"
+      ],
+      "observed_surfaces": [
+        "Gillette"
+      ],
+      "commercial_observed_categories": [],
+      "alignment_status": "UNRESOLVED",
+      "is_multi_category": false,
+      "alignment_reason": "EXPECTED_CATEGORY_NOT_AUDITED: product only observed on non-commercial surfaces (e.g. Brand Hub)",
+      "expected_category_coverage": false
+    },
+    {
+      "publication_id": "pub_falabella_00d16640c923",
+      "marketplace": "Falabella",
+      "title": "Bomber Tipo Lanilla Negro Mujer",
+      "canonical_product_type": "Bomber",
+      "expected_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_categories": [
+        "Brand Hub"
+      ],
+      "observed_surfaces": [
+        "Brand Hub"
+      ],
+      "commercial_observed_categories": [],
+      "alignment_status": "UNRESOLVED",
+      "is_multi_category": false,
+      "alignment_reason": "EXPECTED_CATEGORY_NOT_AUDITED: product only observed on non-commercial surfaces (e.g. Brand Hub)",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_064fd764f849",
+      "marketplace": "Falabella",
+      "title": "Gilet Rayas Diplomáticas Negro Mujer",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_categories": [
+        "Brand Hub",
+        "Mujer"
+      ],
+      "observed_surfaces": [
+        "Mujer"
+      ],
+      "commercial_observed_categories": [],
+      "alignment_status": "UNRESOLVED",
+      "is_multi_category": false,
+      "alignment_reason": "EXPECTED_CATEGORY_NOT_AUDITED: product only observed on non-commercial surfaces (e.g. Brand Hub)",
+      "expected_category_coverage": false
+    },
+    {
+      "publication_id": "pub_falabella_069af4faae42",
+      "marketplace": "Falabella",
+      "title": "Gilet Básico Ajustable Negro Mujer",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_categories": [
+        "Brand Hub"
+      ],
+      "observed_surfaces": [
+        "Brand Hub"
+      ],
+      "commercial_observed_categories": [],
+      "alignment_status": "UNRESOLVED",
+      "is_multi_category": false,
+      "alignment_reason": "EXPECTED_CATEGORY_NOT_AUDITED: product only observed on non-commercial surfaces (e.g. Brand Hub)",
+      "expected_category_coverage": false
+    },
+    {
+      "publication_id": "pub_falabella_06e2df1d0dfd",
+      "marketplace": "Falabella",
+      "title": "Blazer Oversize Tipo Gamuza Café Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Mujer"
+      ],
+      "observed_surfaces": [
+        "Mujer"
+      ],
+      "commercial_observed_categories": [],
+      "alignment_status": "UNRESOLVED",
+      "is_multi_category": false,
+      "alignment_reason": "EXPECTED_CATEGORY_NOT_AUDITED: product only observed on non-commercial surfaces (e.g. Brand Hub)",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_085210d8ae32",
+      "marketplace": "Falabella",
+      "title": "Blazer Básico Sastrero Rosado Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Mujer"
+      ],
+      "observed_surfaces": [
+        "Mujer"
+      ],
+      "commercial_observed_categories": [],
+      "alignment_status": "UNRESOLVED",
+      "is_multi_category": false,
+      "alignment_reason": "EXPECTED_CATEGORY_NOT_AUDITED: product only observed on non-commercial surfaces (e.g. Brand Hub)",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_0b7beab54339",
+      "marketplace": "Falabella",
+      "title": "Gilet Sastrero Rayas Diplomáticas Azul Marino Mujer",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "UNRESOLVED",
+      "is_multi_category": false,
+      "alignment_reason": "EXPECTED_CATEGORY_NOT_AUDITED: found in other commercial categories but expected category coverage not confirmed",
+      "expected_category_coverage": false
+    },
+    {
+      "publication_id": "pub_falabella_0bf6a4f75bd1",
+      "marketplace": "Falabella",
+      "title": "Gilet Básico Ajustable Rosado Mujer",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_categories": [
+        "Brand Hub",
+        "Gillette"
+      ],
+      "observed_surfaces": [
+        "Brand Hub"
+      ],
+      "commercial_observed_categories": [],
+      "alignment_status": "UNRESOLVED",
+      "is_multi_category": false,
+      "alignment_reason": "EXPECTED_CATEGORY_NOT_AUDITED: product only observed on non-commercial surfaces (e.g. Brand Hub)",
+      "expected_category_coverage": false
+    },
+    {
+      "publication_id": "pub_falabella_0dd3a23443ce",
+      "marketplace": "Falabella",
+      "title": "Gilet Básico Ajustable Beige Mujer",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_categories": [
+        "Gillette"
+      ],
+      "observed_surfaces": [
+        "Gillette"
+      ],
+      "commercial_observed_categories": [],
+      "alignment_status": "UNRESOLVED",
+      "is_multi_category": false,
+      "alignment_reason": "EXPECTED_CATEGORY_NOT_AUDITED: product only observed on non-commercial surfaces (e.g. Brand Hub)",
+      "expected_category_coverage": false
+    },
+    {
+      "publication_id": "pub_falabella_0df484cc562d",
+      "marketplace": "Falabella",
+      "title": "Blazer Manga 3/4 Ajustado con Solapas Oliva Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Brand Hub",
+        "Mujer"
+      ],
+      "observed_surfaces": [
+        "Mujer"
+      ],
+      "commercial_observed_categories": [],
+      "alignment_status": "UNRESOLVED",
+      "is_multi_category": false,
+      "alignment_reason": "EXPECTED_CATEGORY_NOT_AUDITED: product only observed on non-commercial surfaces (e.g. Brand Hub)",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_1036020c6f21",
+      "marketplace": "Falabella",
+      "title": "Chaqueta Tipo Gamuza Cuello Ecocuero Oliva Mujer",
+      "canonical_product_type": "Chaqueta",
+      "expected_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_categories": [
+        "Brand Hub"
+      ],
+      "observed_surfaces": [
+        "Brand Hub"
+      ],
+      "commercial_observed_categories": [],
+      "alignment_status": "UNRESOLVED",
+      "is_multi_category": false,
+      "alignment_reason": "EXPECTED_CATEGORY_NOT_AUDITED: product only observed on non-commercial surfaces (e.g. Brand Hub)",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_11b24aa3f2d6",
+      "marketplace": "Falabella",
+      "title": "Cárdigan Tejido Calado Cuello V Celeste Mujer",
+      "canonical_product_type": "Cardigan",
+      "expected_categories": [
+        "Cardigans"
+      ],
+      "observed_categories": [
+        "Brand Hub"
+      ],
+      "observed_surfaces": [
+        "Brand Hub"
+      ],
+      "commercial_observed_categories": [],
+      "alignment_status": "UNRESOLVED",
+      "is_multi_category": false,
+      "alignment_reason": "EXPECTED_CATEGORY_NOT_AUDITED: product only observed on non-commercial surfaces (e.g. Brand Hub)",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_15bd65cc0b27",
+      "marketplace": "Falabella",
+      "title": "Polera Manga Larga Cuello Bote Negro Mujer",
+      "canonical_product_type": "Polera",
+      "expected_categories": [
+        "Poleras"
+      ],
+      "observed_categories": [
+        "Mujer"
+      ],
+      "observed_surfaces": [
+        "Mujer"
+      ],
+      "commercial_observed_categories": [],
+      "alignment_status": "UNRESOLVED",
+      "is_multi_category": false,
+      "alignment_reason": "EXPECTED_CATEGORY_NOT_AUDITED: product only observed on non-commercial surfaces (e.g. Brand Hub)",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_17b8c6dc429a",
+      "marketplace": "Falabella",
+      "title": "Gilet Rayas Diplomáticas Blanco Mujer",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_categories": [
+        "Brand Hub",
+        "Mujer",
+        "Gillette"
+      ],
+      "observed_surfaces": [
+        "Brand Hub"
+      ],
+      "commercial_observed_categories": [],
+      "alignment_status": "UNRESOLVED",
+      "is_multi_category": false,
+      "alignment_reason": "EXPECTED_CATEGORY_NOT_AUDITED: product only observed on non-commercial surfaces (e.g. Brand Hub)",
+      "expected_category_coverage": false
+    },
+    {
+      "publication_id": "pub_falabella_1cd35bf04e95",
+      "marketplace": "Falabella",
+      "title": "Gilet Básico Ajustable Blanco Mujer",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_categories": [
+        "Brand Hub",
+        "Mujer"
+      ],
+      "observed_surfaces": [
+        "Mujer"
+      ],
+      "commercial_observed_categories": [],
+      "alignment_status": "UNRESOLVED",
+      "is_multi_category": false,
+      "alignment_reason": "EXPECTED_CATEGORY_NOT_AUDITED: product only observed on non-commercial surfaces (e.g. Brand Hub)",
+      "expected_category_coverage": false
+    },
+    {
+      "publication_id": "pub_falabella_1edaa6b811bb",
+      "marketplace": "Falabella",
+      "title": "Gilet Vichy Negro Mujer",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "UNRESOLVED",
+      "is_multi_category": false,
+      "alignment_reason": "EXPECTED_CATEGORY_NOT_AUDITED: found in other commercial categories but expected category coverage not confirmed",
+      "expected_category_coverage": false
+    },
+    {
+      "publication_id": "pub_falabella_1fb9b3d648f0",
+      "marketplace": "Falabella",
+      "title": "Gilet Sastrero Rayas Diplomáticas Khaki Mujer",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_categories": [
+        "Brand Hub",
+        "Mujer",
+        "Gillette"
+      ],
+      "observed_surfaces": [
+        "Mujer"
+      ],
+      "commercial_observed_categories": [],
+      "alignment_status": "UNRESOLVED",
+      "is_multi_category": false,
+      "alignment_reason": "EXPECTED_CATEGORY_NOT_AUDITED: product only observed on non-commercial surfaces (e.g. Brand Hub)",
+      "expected_category_coverage": false
+    },
+    {
+      "publication_id": "pub_falabella_224546f09a29",
+      "marketplace": "Falabella",
+      "title": "Gilet Espalda Ajustable Khaki Mujer",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_categories": [
+        "Brand Hub"
+      ],
+      "observed_surfaces": [
+        "Brand Hub"
+      ],
+      "commercial_observed_categories": [],
+      "alignment_status": "UNRESOLVED",
+      "is_multi_category": false,
+      "alignment_reason": "EXPECTED_CATEGORY_NOT_AUDITED: product only observed on non-commercial surfaces (e.g. Brand Hub)",
+      "expected_category_coverage": false
+    },
+    {
+      "publication_id": "pub_falabella_22ceca64b29c",
+      "marketplace": "Falabella",
+      "title": "Pantalón Recto Raya Diplomática Café Mujer",
+      "canonical_product_type": "Pantalon",
+      "expected_categories": [
+        "Pantalones"
+      ],
+      "observed_categories": [
+        "Brand Hub"
+      ],
+      "observed_surfaces": [
+        "Brand Hub"
+      ],
+      "commercial_observed_categories": [],
+      "alignment_status": "UNRESOLVED",
+      "is_multi_category": false,
+      "alignment_reason": "EXPECTED_CATEGORY_NOT_AUDITED: product only observed on non-commercial surfaces (e.g. Brand Hub)",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_2988f1598829",
+      "marketplace": "Falabella",
+      "title": "Blazer Peplum Botones Café Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Mujer"
+      ],
+      "observed_surfaces": [
+        "Mujer"
+      ],
+      "commercial_observed_categories": [],
+      "alignment_status": "UNRESOLVED",
+      "is_multi_category": false,
+      "alignment_reason": "EXPECTED_CATEGORY_NOT_AUDITED: product only observed on non-commercial surfaces (e.g. Brand Hub)",
+      "expected_category_coverage": true
+    }
+  ]
+}

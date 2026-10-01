@@ -1,0 +1,15 @@
+{
+  "forbidden_patterns_checked": [
+    "if marketplace == \"Ripley\"",
+    "if marketplace == 'Ripley'",
+    "if brand == \"Nicopoly\"",
+    "if brand == 'Nicopoly'",
+    "pub_ripley_72df33d13e81",
+    "N00001RP"
+  ],
+  "found_violations": [],
+  "result_hardcode": 0,
+  "brand_hardcode": 0,
+  "publication_hardcode": 0,
+  "pass": true
+}

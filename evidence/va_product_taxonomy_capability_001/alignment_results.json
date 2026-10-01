@@ -1,0 +1,43 @@
+{
+  "task_id": "VA-PRODUCT-TAXONOMY-CAPABILITY-001",
+  "total_publications": 2043,
+  "by_marketplace": {
+    "Falabella": {
+      "total": 858,
+      "ALIGNED": 590,
+      "MISALIGNED": 67,
+      "MULTI_CATEGORY": 0,
+      "UNRESOLVED": 201
+    },
+    "Mercado Libre": {
+      "total": 572,
+      "ALIGNED": 515,
+      "MISALIGNED": 28,
+      "MULTI_CATEGORY": 0,
+      "UNRESOLVED": 29
+    },
+    "Paris": {
+      "total": 561,
+      "ALIGNED": 475,
+      "MISALIGNED": 35,
+      "MULTI_CATEGORY": 0,
+      "UNRESOLVED": 51
+    },
+    "Ripley": {
+      "total": 52,
+      "ALIGNED": 1,
+      "MISALIGNED": 1,
+      "MULTI_CATEGORY": 0,
+      "UNRESOLVED": 50
+    }
+  },
+  "totals": {
+    "ALIGNED": 1581,
+    "MISALIGNED": 131,
+    "MULTI_CATEGORY": 0,
+    "UNRESOLVED": 331
+  },
+  "generated_from": "run_alignment_on_db() on data/sqlite/visibility.db",
+  "scraping_runs": 0,
+  "marketplace_requests": 0
+}

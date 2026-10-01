@@ -1,0 +1,17 @@
+{
+  "task_id": "VA-PRODUCT-TAXONOMY-CAPABILITY-001",
+  "test_file": "tests/test_va_taxonomy_capability_red.py",
+  "tests": [
+    "test_red_brand_hub_not_implies_correct_category",
+    "test_red_legacy_category_not_auto_truth",
+    "test_red_observed_in_expected_category_is_aligned",
+    "test_red_multi_category_includes_expected_is_aligned",
+    "test_red_expected_not_audited_is_unresolved_not_misaligned",
+    "test_red_coverage_plus_absent_in_expected_is_misaligned",
+    "test_red_unknown_product_type_is_unresolved",
+    "test_red_no_hardcode_brand_or_marketplace"
+  ],
+  "red_reproduced": true,
+  "red_count": 8,
+  "all_failed_before_implementation": true
+}

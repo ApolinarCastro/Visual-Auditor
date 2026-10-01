@@ -1,0 +1,40 @@
+{
+  "hierarchy": [
+    {
+      "rank": 1,
+      "source": "Observed Category Evidence (mri_publication_categories + mri_categories)",
+      "authority": "OBSERVED_COMMERCIAL_CATEGORY",
+      "use": "Determines where product was actually found. PRIMARY evidence.",
+      "limitation": "Depends on MRI coverage — does not cover categories not yet audited."
+    },
+    {
+      "rank": 2,
+      "source": "Canonical Product Type (title keyword regex)",
+      "authority": "TITLE_DERIVED",
+      "use": "Determines what the product IS. Required to establish expected category.",
+      "limitation": "Probabilistic. Ambiguous titles yield UNKNOWN product type → UNRESOLVED."
+    },
+    {
+      "rank": 3,
+      "source": "Marketplace Expected Category Map (_EXPECTED_CATEGORY_MAP)",
+      "authority": "TAXONOMY_MAPPING_DERIVED_FROM_OBSERVED_DATA",
+      "use": "Maps canonical product type to expected marketplace commercial category.",
+      "limitation": "Derived from real mri_categories names. Does not cover all product types per marketplace."
+    },
+    {
+      "rank": 4,
+      "source": "Sub-category Equivalence Map (_SUBCATEGORY_EQUIVALENCES)",
+      "authority": "TAXONOMY_HIERARCHY_RULE",
+      "use": "Maps sub-category names (e.g. 'Poleras') to parent corridor (e.g. 'Poleras y Blusas').",
+      "limitation": "Requires manual maintenance when marketplace adds new sub-categories."
+    },
+    {
+      "rank": 5,
+      "source": "Legacy Configured Category (mri_publications.category_relationship)",
+      "authority": "LEGACY_PROVENANCE_SIGNAL",
+      "use": "Can be used as a HINT only. Never as final truth.",
+      "limitation": "LEGACY_CONFIGURED_CATEGORY is provenance metadata, not a commercial taxonomy decision."
+    }
+  ],
+  "rule": "Legacy configured category is NEVER used automatically as expected category. It can only be used as supporting evidence."
+}

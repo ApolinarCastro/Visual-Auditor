@@ -1,0 +1,287 @@
+{
+  "note": "Derived from real mri_categories rows. Category names must match exactly.",
+  "mappings": {
+    "Mercado Libre": {
+      "Vestido": [
+        "Vestidos"
+      ],
+      "Calza": [
+        "Calzas"
+      ],
+      "Blusa": [
+        "Blusas"
+      ],
+      "Polera": [
+        "Poleras"
+      ],
+      "Falda": [
+        "Faldas"
+      ],
+      "Abrigo": [
+        "Abrigos",
+        "Chaquetas Parkas Blazers"
+      ],
+      "Parka": [
+        "Abrigos",
+        "Chaquetas Parkas Blazers"
+      ],
+      "Trench": [
+        "Abrigos",
+        "Chaquetas Parkas Blazers"
+      ],
+      "Bomber": [
+        "Abrigos",
+        "Chaquetas Parkas Blazers"
+      ],
+      "Chaqueta": [
+        "Abrigos",
+        "Chaquetas Parkas Blazers"
+      ],
+      "Blazer": [
+        "Abrigos",
+        "Chaquetas Parkas Blazers"
+      ],
+      "Shorts": [
+        "Bermudas y Shorts"
+      ],
+      "Pantalon": [
+        "Pantalones"
+      ],
+      "Jeans": [
+        "Pantalones"
+      ],
+      "Camisa": [
+        "Camisas"
+      ],
+      "Kimono": [
+        "Kimonos"
+      ],
+      "Body": [
+        "Body"
+      ],
+      "Top": [
+        "Blusas",
+        "Poleras"
+      ],
+      "Cardigan": [
+        "Abrigos"
+      ],
+      "Sweater": [
+        "Abrigos"
+      ],
+      "Gilet": [
+        "Abrigos"
+      ],
+      "Conjunto": [
+        "Blusas"
+      ]
+    },
+    "Paris": {
+      "Sweater": [
+        "Sweaters, Chalecos y Tejidos"
+      ],
+      "Cardigan": [
+        "Sweaters, Chalecos y Tejidos"
+      ],
+      "Gilet": [
+        "Sweaters, Chalecos y Tejidos"
+      ],
+      "Jeans": [
+        "Jeans y Pantalones"
+      ],
+      "Pantalon": [
+        "Jeans y Pantalones"
+      ],
+      "Blazer": [
+        "Blazers, Chaquetas y Abrigos"
+      ],
+      "Chaqueta": [
+        "Blazers, Chaquetas y Abrigos"
+      ],
+      "Abrigo": [
+        "Blazers, Chaquetas y Abrigos"
+      ],
+      "Parka": [
+        "Blazers, Chaquetas y Abrigos"
+      ],
+      "Trench": [
+        "Blazers, Chaquetas y Abrigos"
+      ],
+      "Bomber": [
+        "Blazers, Chaquetas y Abrigos"
+      ],
+      "Polera": [
+        "Poleras y Blusas"
+      ],
+      "Blusa": [
+        "Poleras y Blusas"
+      ],
+      "Top": [
+        "Poleras y Blusas"
+      ],
+      "Camisa": [
+        "Poleras y Blusas"
+      ],
+      "Body": [
+        "Poleras y Blusas"
+      ],
+      "Vestido": [
+        "Vestidos y Faldas"
+      ],
+      "Falda": [
+        "Vestidos y Faldas"
+      ],
+      "Shorts": [
+        "Shorts"
+      ],
+      "Calza": [
+        "Poleras y Blusas"
+      ],
+      "Conjunto": [
+        "Poleras y Blusas"
+      ]
+    },
+    "Falabella": {
+      "Abrigo": [
+        "Abrigos y Chaquetas"
+      ],
+      "Parka": [
+        "Abrigos y Chaquetas"
+      ],
+      "Trench": [
+        "Abrigos y Chaquetas"
+      ],
+      "Bomber": [
+        "Abrigos y Chaquetas"
+      ],
+      "Chaqueta": [
+        "Abrigos y Chaquetas"
+      ],
+      "Blazer": [
+        "Blazers"
+      ],
+      "Sweater": [
+        "Cardigans"
+      ],
+      "Cardigan": [
+        "Cardigans"
+      ],
+      "Gilet": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "Pantalon": [
+        "Pantalones"
+      ],
+      "Jeans": [
+        "Jeans"
+      ],
+      "Shorts": [
+        "Shorts"
+      ],
+      "Polera": [
+        "Poleras"
+      ],
+      "Blusa": [
+        "Blusas"
+      ],
+      "Top": [
+        "Blusas",
+        "Poleras"
+      ],
+      "Camisa": [
+        "Blusas"
+      ],
+      "Body": [
+        "Blusas"
+      ],
+      "Calza": [
+        "Poleras"
+      ],
+      "Vestido": [
+        "Vestido Casual"
+      ],
+      "Falda": [
+        "Vestido Casual"
+      ],
+      "Conjunto": [
+        "Blusas"
+      ],
+      "Vest": [
+        "Vest"
+      ]
+    },
+    "Ripley": {
+      "Vestido": [
+        "Vestidos"
+      ],
+      "Blusa": [
+        "Blusas y poleras"
+      ],
+      "Polera": [
+        "Blusas y poleras"
+      ],
+      "Top": [
+        "Blusas y poleras"
+      ],
+      "Camisa": [
+        "Blusas y poleras"
+      ],
+      "Body": [
+        "Blusas y poleras"
+      ],
+      "Calza": [
+        "Blusas y poleras"
+      ]
+    }
+  },
+  "sub_category_equivalences": {
+    "Poleras y Blusas": [
+      "Poleras",
+      "Blusas",
+      "Calzas",
+      "Polerones"
+    ],
+    "Blazers, Chaquetas y Abrigos": [
+      "Blazers",
+      "Chaquetas",
+      "Abrigos",
+      "Parkas",
+      "Chaquetas y Abrigos"
+    ],
+    "Sweaters, Chalecos y Tejidos": [
+      "Sweaters",
+      "Chalecos",
+      "Sweaters y chalecos"
+    ],
+    "Vestidos y Faldas": [
+      "Vestidos",
+      "Faldas",
+      "Vestidos De Fiesta",
+      "Enteritos"
+    ],
+    "Jeans y Pantalones": [
+      "Jeans",
+      "Pantalones"
+    ],
+    "Abrigos y Chaquetas": [
+      "Abrigos",
+      "Chaquetas",
+      "Parkas",
+      "Parkas Mujer"
+    ],
+    "Blusas": [
+      "Blusas Mujer",
+      "Camisas"
+    ],
+    "Cardigans": [
+      "Sweaters y chalecos",
+      "Sweaters"
+    ],
+    "Chaquetas Parkas Blazers": [
+      "Chaquetas",
+      "Parkas",
+      "Blazers",
+      "Abrigos"
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "task_id": "VA-PRODUCT-TAXONOMY-CAPABILITY-001",
+  "baseline_sha": "083345ba4c91baebed9f89e34a1e84456ed2bb22",
+  "local_sha": "083345ba4c91baebed9f89e34a1e84456ed2bb22",
+  "remote_sha": "083345ba4c91baebed9f89e34a1e84456ed2bb22",
+  "sha_match": true,
+  "certified_baseline_is_ancestor": true,
+  "scraping_runs": 0,
+  "marketplace_requests": 0,
+  "autoclaw_actions": 0,
+  "phase": "TAXONOMY_CAPABILITY_IMPLEMENTATION"
+}

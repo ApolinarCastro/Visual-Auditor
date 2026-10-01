@@ -1,0 +1,31 @@
+{
+  "total_canonical_types": 23,
+  "types": [
+    "Abrigo",
+    "Parka",
+    "Trench",
+    "Bomber",
+    "Blazer",
+    "Chaqueta",
+    "Cardigan",
+    "Sweater",
+    "Gilet",
+    "Jeans",
+    "Pantalon",
+    "Shorts",
+    "Falda",
+    "Polera",
+    "Blusa",
+    "Camisa",
+    "Kimono",
+    "Top",
+    "Body",
+    "Calza",
+    "Vestido",
+    "Conjunto",
+    "Vest"
+  ],
+  "resolution_method": "Ordered regex match on normalized title (greedy specificity)",
+  "unresolvable_result": "None (→ UNRESOLVED in alignment)",
+  "authority": "TITLE_KEYWORD_REGEX — not LLM inference"
+}

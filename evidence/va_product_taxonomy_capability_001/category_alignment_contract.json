@@ -1,0 +1,26 @@
+{
+  "contract_name": "CategoryAlignmentCapability",
+  "version": "1.0.0",
+  "task_id": "VA-PRODUCT-TAXONOMY-CAPABILITY-001",
+  "module": "app/mri_autonomous/category_alignment.py",
+  "production_file": true,
+  "public_api": {
+    "resolve_product_type": "str → Optional[str]. Returns canonical product type or None.",
+    "get_expected_categories": "(marketplace: str, canonical_product_type: Optional[str]) → List[str]",
+    "compute_alignment": "(publication_id, marketplace, title, observed_categories, observed_surfaces, expected_category_coverage, ...) → Dict",
+    "run_alignment_on_db": "(db_path=None) → Dict with total_publications, by_marketplace, totals, results"
+  },
+  "alignment_states": {
+    "ALIGNED": "Observed in at least one category that matches the expected commercial corridor.",
+    "MISALIGNED": "Expected category known + coverage confirmed + product absent from expected + present elsewhere.",
+    "MULTI_CATEGORY": "DEPRECATED as primary status — captured as is_multi_category=True when ALIGNED in multiple categories.",
+    "UNRESOLVED": "Insufficient evidence to determine alignment."
+  },
+  "principles_enforced": [
+    "Brand Hub is NOT a commercial category",
+    "Legacy configured category is NOT automatically expected category",
+    "Absence without coverage does NOT prove MISALIGNED",
+    "Many-to-many publication/category preserved",
+    "No brand/publication/marketplace result hardcode"
+  ]
+}

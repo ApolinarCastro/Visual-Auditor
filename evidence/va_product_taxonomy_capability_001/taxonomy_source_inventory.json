@@ -1,0 +1,74 @@
+{
+  "sources_found": 4,
+  "sources": [
+    {
+      "source": "mri_categories",
+      "authority": "OBSERVED_COMMERCIAL_EVIDENCE",
+      "scope": "Per-marketplace commercial category taxonomy observed by MRI",
+      "marketplace": [
+        "Mercado Libre",
+        "Paris",
+        "Ripley",
+        "Falabella"
+      ],
+      "brand_specific": false,
+      "product_specific": false,
+      "category_specific": true,
+      "freshness": "Last MRI run: 2026-09-22",
+      "deterministic": true,
+      "usable": true,
+      "limitations": "Does not contain canonical product type mapping. Category names per marketplace vary."
+    },
+    {
+      "source": "mri_variants.variant_title",
+      "authority": "TITLE_BASED_EXTRACTION",
+      "scope": "Product titles as captured from marketplace product pages",
+      "marketplace": [
+        "Mercado Libre",
+        "Paris",
+        "Ripley",
+        "Falabella"
+      ],
+      "brand_specific": true,
+      "product_specific": true,
+      "category_specific": false,
+      "freshness": "Last MRI run: 2026-09-22",
+      "deterministic": false,
+      "usable": true,
+      "limitations": "Title keyword extraction is probabilistic. Ambiguous titles cannot be resolved without external identity source."
+    },
+    {
+      "source": "mri_publication_categories",
+      "authority": "OBSERVED_CATEGORY_MEMBERSHIP",
+      "scope": "Junction table linking publications to observed categories",
+      "marketplace": [
+        "Mercado Libre",
+        "Paris",
+        "Ripley",
+        "Falabella"
+      ],
+      "brand_specific": false,
+      "product_specific": true,
+      "category_specific": true,
+      "freshness": "Last MRI run: 2026-09-22",
+      "deterministic": true,
+      "usable": true,
+      "limitations": "Only reflects categories MRI actively observed in — not guaranteed to be complete coverage."
+    },
+    {
+      "source": "SVMP.xlsx (untracked)",
+      "authority": "SELLER_MASTER_PRODUCT_CATALOG",
+      "scope": "Internal seller master product catalog with SKU_MASTER mapping",
+      "marketplace": [
+        "Multivende"
+      ],
+      "brand_specific": true,
+      "product_specific": true,
+      "category_specific": false,
+      "freshness": "UNKNOWN — file not under version control",
+      "deterministic": true,
+      "usable": "PARTIAL (MASTER_UNMAPPED entries in DB indicate significant unmapped SKUs)",
+      "limitations": "Cannot be read in CI/CD. 2043 MRI publications, 573 have MASTER_UNMAPPED seller_sku. Not all publications have SVMP entries."
+    }
+  ]
+}

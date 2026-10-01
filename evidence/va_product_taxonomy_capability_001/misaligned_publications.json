@@ -1,0 +1,2233 @@
+{
+  "total": 131,
+  "evidence_complete": true,
+  "publications": [
+    {
+      "publication_id": "pub_falabella_058c578e3b43",
+      "marketplace": "Falabella",
+      "title": "Jeans Rectos Tiro Alto Óxido Mujer",
+      "canonical_product_type": "Jeans",
+      "expected_categories": [
+        "Jeans"
+      ],
+      "observed_categories": [
+        "Pantalones"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Pantalones"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Pantalones'] but expected category ['Jeans'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_05ff2c1ee8be",
+      "marketplace": "Falabella",
+      "title": "Jeans Rectos Tiro Alto Óxido Mujer",
+      "canonical_product_type": "Jeans",
+      "expected_categories": [
+        "Jeans"
+      ],
+      "observed_categories": [
+        "Pantalones"
+      ],
+      "observed_surfaces": [
+        "Pantalones"
+      ],
+      "commercial_observed_categories": [
+        "Pantalones"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Pantalones'] but expected category ['Jeans'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_0732e7de5b59",
+      "marketplace": "Falabella",
+      "title": "Blazer Cruzado Rayas Diplomáticas Café Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_1049aecb9c3e",
+      "marketplace": "Falabella",
+      "title": "Blazer Rayas Diplomáticas Café Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_11ccad2e5656",
+      "marketplace": "Falabella",
+      "title": "Jeans Barrel Celeste Mujer",
+      "canonical_product_type": "Jeans",
+      "expected_categories": [
+        "Jeans"
+      ],
+      "observed_categories": [
+        "Pantalones"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Pantalones"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Pantalones'] but expected category ['Jeans'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_175d45caf3f3",
+      "marketplace": "Falabella",
+      "title": "Blazer Cruzado Rayas Diplomáticas Azul Marino Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_1ab5ee35efa5",
+      "marketplace": "Falabella",
+      "title": "Trench Clásico Doble Botonadura Café Mujer",
+      "canonical_product_type": "Trench",
+      "expected_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_categories": [
+        "Trench"
+      ],
+      "observed_surfaces": [
+        "Trench"
+      ],
+      "commercial_observed_categories": [
+        "Trench"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Trench'] but expected category ['Abrigos y Chaquetas'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_2324dd09d33c",
+      "marketplace": "Falabella",
+      "title": "Jeans Rectos Tiro Alto Café Mujer",
+      "canonical_product_type": "Jeans",
+      "expected_categories": [
+        "Jeans"
+      ],
+      "observed_categories": [
+        "Pantalones"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Pantalones"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Pantalones'] but expected category ['Jeans'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_23a9ce13d542",
+      "marketplace": "Falabella",
+      "title": "Blazer Básico Sastrero Blanco Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_2418c8cb6dd2",
+      "marketplace": "Falabella",
+      "title": "Blazer Cinturón Blanco Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_26a6567a297b",
+      "marketplace": "Falabella",
+      "title": "Blazer Dos Botones Café Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_29fed701bc11",
+      "marketplace": "Falabella",
+      "title": "Blazer Cinturón Café Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_2a4d2b603455",
+      "marketplace": "Falabella",
+      "title": "Jeans Corte Barrel Azul Marino Mujer",
+      "canonical_product_type": "Jeans",
+      "expected_categories": [
+        "Jeans"
+      ],
+      "observed_categories": [
+        "Pantalones"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Pantalones"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Pantalones'] but expected category ['Jeans'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_2c0f9cd14b40",
+      "marketplace": "Falabella",
+      "title": "Jeans Corte Recto Café Mujer",
+      "canonical_product_type": "Jeans",
+      "expected_categories": [
+        "Jeans"
+      ],
+      "observed_categories": [
+        "Brand Hub",
+        "Mujer",
+        "Pantalones"
+      ],
+      "observed_surfaces": [
+        "Brand Hub"
+      ],
+      "commercial_observed_categories": [
+        "Pantalones"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Pantalones'] but expected category ['Jeans'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_2c2963082ecd",
+      "marketplace": "Falabella",
+      "title": "Jeans Wide Leg Ancho Celeste Mujer",
+      "canonical_product_type": "Jeans",
+      "expected_categories": [
+        "Jeans"
+      ],
+      "observed_categories": [
+        "Pantalones"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Pantalones"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Pantalones'] but expected category ['Jeans'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_2c7c7e91cd18",
+      "marketplace": "Falabella",
+      "title": "Jeans Rectos Tiro Alto Negro\t Mujer",
+      "canonical_product_type": "Jeans",
+      "expected_categories": [
+        "Jeans"
+      ],
+      "observed_categories": [
+        "Pantalones"
+      ],
+      "observed_surfaces": [
+        "Pantalones"
+      ],
+      "commercial_observed_categories": [
+        "Pantalones"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Pantalones'] but expected category ['Jeans'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_300966fcb072",
+      "marketplace": "Falabella",
+      "title": "Blazer Básico de Tope Verde Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Sweaters",
+        "Brand Hub",
+        "Mujer"
+      ],
+      "observed_surfaces": [
+        "Brand Hub"
+      ],
+      "commercial_observed_categories": [
+        "Sweaters"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Sweaters'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_3dbf8627ec03",
+      "marketplace": "Falabella",
+      "title": "Jeans Barrel Azul Marino Mujer",
+      "canonical_product_type": "Jeans",
+      "expected_categories": [
+        "Jeans"
+      ],
+      "observed_categories": [
+        "Pantalones"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Pantalones"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Pantalones'] but expected category ['Jeans'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_3eb280417ea7",
+      "marketplace": "Falabella",
+      "title": "Jeans Corte Recto Café Mujer",
+      "canonical_product_type": "Jeans",
+      "expected_categories": [
+        "Jeans"
+      ],
+      "observed_categories": [
+        "Pantalones"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Pantalones"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Pantalones'] but expected category ['Jeans'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_42cc29238c3d",
+      "marketplace": "Falabella",
+      "title": "Trench Clásico Doble Botonadura Negro Mujer",
+      "canonical_product_type": "Trench",
+      "expected_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_categories": [
+        "Trench"
+      ],
+      "observed_surfaces": [
+        "Trench"
+      ],
+      "commercial_observed_categories": [
+        "Trench"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Trench'] but expected category ['Abrigos y Chaquetas'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_440236fb0146",
+      "marketplace": "Falabella",
+      "title": "Jeans Barrel Negro Mujer",
+      "canonical_product_type": "Jeans",
+      "expected_categories": [
+        "Jeans"
+      ],
+      "observed_categories": [
+        "Pantalones"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Pantalones"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Pantalones'] but expected category ['Jeans'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_47e69a6b32ad",
+      "marketplace": "Falabella",
+      "title": "Blazer Básico de Tope Beige Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Sweaters y chalecos"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Sweaters y chalecos"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Sweaters y chalecos'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_4e4003844d98",
+      "marketplace": "Falabella",
+      "title": "Blazer Básico de Tope Beige Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Sweaters"
+      ],
+      "observed_surfaces": [
+        "Sweaters"
+      ],
+      "commercial_observed_categories": [
+        "Sweaters"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Sweaters'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_56f017bed72e",
+      "marketplace": "Falabella",
+      "title": "Jeans Corte Recto Khaki Mujer",
+      "canonical_product_type": "Jeans",
+      "expected_categories": [
+        "Jeans"
+      ],
+      "observed_categories": [
+        "Mujer",
+        "Pantalones"
+      ],
+      "observed_surfaces": [
+        "Mujer"
+      ],
+      "commercial_observed_categories": [
+        "Pantalones"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Pantalones'] but expected category ['Jeans'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_59affed31388",
+      "marketplace": "Falabella",
+      "title": "Vest Tipo Gamuza Bordado Negro Mujer",
+      "canonical_product_type": "Vest",
+      "expected_categories": [
+        "Vest"
+      ],
+      "observed_categories": [
+        "Sweaters y chalecos"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Sweaters y chalecos"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Sweaters y chalecos'] but expected category ['Vest'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_5a371ee5db54",
+      "marketplace": "Falabella",
+      "title": "Blazer Básico Sastrero Negro Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_5f961bdf0f33",
+      "marketplace": "Falabella",
+      "title": "Blazer Básico de Tope Blanco Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_623fa2ac5b6e",
+      "marketplace": "Falabella",
+      "title": "Blazer Dos Botones Burdeo Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_6447fa41ef46",
+      "marketplace": "Falabella",
+      "title": "Trench Ecocuero Café Mujer",
+      "canonical_product_type": "Trench",
+      "expected_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_categories": [
+        "Mujer",
+        "Trench"
+      ],
+      "observed_surfaces": [
+        "Mujer"
+      ],
+      "commercial_observed_categories": [
+        "Trench"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Trench'] but expected category ['Abrigos y Chaquetas'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_6db066302feb",
+      "marketplace": "Falabella",
+      "title": "Trench Clásico Doble Botonadura Beige Mujer",
+      "canonical_product_type": "Trench",
+      "expected_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_categories": [
+        "Trench"
+      ],
+      "observed_surfaces": [
+        "Trench"
+      ],
+      "commercial_observed_categories": [
+        "Trench"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Trench'] but expected category ['Abrigos y Chaquetas'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_708fbb924e85",
+      "marketplace": "Falabella",
+      "title": "Jeans Rectos Tiro Alto Negro Mujer",
+      "canonical_product_type": "Jeans",
+      "expected_categories": [
+        "Jeans"
+      ],
+      "observed_categories": [
+        "Pantalones"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Pantalones"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Pantalones'] but expected category ['Jeans'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_734b5d258d36",
+      "marketplace": "Falabella",
+      "title": "Blazer Rayas Diplomáticas Gris Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_7c379a4843bf",
+      "marketplace": "Falabella",
+      "title": "Blazer Dos Botones Blanco Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_7fa5d23e7640",
+      "marketplace": "Falabella",
+      "title": "Blazer Básico Sastrero Café Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_8593995e5dbc",
+      "marketplace": "Falabella",
+      "title": "Blazer Manga 3/4 Ajustado con Solapas Amarillo Mantequilla Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_89707c3fb56b",
+      "marketplace": "Falabella",
+      "title": "Vest Tipo Gamuza Bordado Khaki Mujer",
+      "canonical_product_type": "Vest",
+      "expected_categories": [
+        "Vest"
+      ],
+      "observed_categories": [
+        "Sweaters y chalecos"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Sweaters y chalecos"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Sweaters y chalecos'] but expected category ['Vest'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_9a072ffde713",
+      "marketplace": "Falabella",
+      "title": "Blazer Rayas Diplomáticas Khaki Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_9fc8b1a380ad",
+      "marketplace": "Falabella",
+      "title": "Jeans Rectos Tiro Alto Negro\t Mujer",
+      "canonical_product_type": "Jeans",
+      "expected_categories": [
+        "Jeans"
+      ],
+      "observed_categories": [
+        "Pantalones"
+      ],
+      "observed_surfaces": [
+        "Pantalones"
+      ],
+      "commercial_observed_categories": [
+        "Pantalones"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Pantalones'] but expected category ['Jeans'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_acdc0e7e83d4",
+      "marketplace": "Falabella",
+      "title": "Jeans Corte Barrel Café Mujer",
+      "canonical_product_type": "Jeans",
+      "expected_categories": [
+        "Jeans"
+      ],
+      "observed_categories": [
+        "Pantalones"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Pantalones"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Pantalones'] but expected category ['Jeans'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_b04cd80fd997",
+      "marketplace": "Falabella",
+      "title": "Jeans Pierna Recta Celeste Mujer",
+      "canonical_product_type": "Jeans",
+      "expected_categories": [
+        "Jeans"
+      ],
+      "observed_categories": [
+        "Pantalones"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Pantalones"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Pantalones'] but expected category ['Jeans'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_b72b7971fe5f",
+      "marketplace": "Falabella",
+      "title": "Jeans Rectos Tiro Alto Óxido Mujer",
+      "canonical_product_type": "Jeans",
+      "expected_categories": [
+        "Jeans"
+      ],
+      "observed_categories": [
+        "Pantalones"
+      ],
+      "observed_surfaces": [
+        "Pantalones"
+      ],
+      "commercial_observed_categories": [
+        "Pantalones"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Pantalones'] but expected category ['Jeans'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_b8fca4417ec1",
+      "marketplace": "Falabella",
+      "title": "Blazer Cruzado Rayas Diplomáticas Khaki Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_ba87da50a64e",
+      "marketplace": "Falabella",
+      "title": "Trench Clásico Doble Botonadura Beige Mujer",
+      "canonical_product_type": "Trench",
+      "expected_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_categories": [
+        "Brand Hub",
+        "Mujer",
+        "Trench"
+      ],
+      "observed_surfaces": [
+        "Mujer"
+      ],
+      "commercial_observed_categories": [
+        "Trench"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Trench'] but expected category ['Abrigos y Chaquetas'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_be71bd433607",
+      "marketplace": "Falabella",
+      "title": "Trench Ecocuero Burdeo Mujer",
+      "canonical_product_type": "Trench",
+      "expected_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_categories": [
+        "Brand Hub",
+        "Mujer",
+        "Trench"
+      ],
+      "observed_surfaces": [
+        "Mujer"
+      ],
+      "commercial_observed_categories": [
+        "Trench"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Trench'] but expected category ['Abrigos y Chaquetas'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_c4dc5a70db4e",
+      "marketplace": "Falabella",
+      "title": "Blazer Básico de Tope Beige Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Sweaters"
+      ],
+      "observed_surfaces": [
+        "Sweaters"
+      ],
+      "commercial_observed_categories": [
+        "Sweaters"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Sweaters'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_c77d8b276658",
+      "marketplace": "Falabella",
+      "title": "Blazer Básico de Tope Rosado Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_c9354dc86ddb",
+      "marketplace": "Falabella",
+      "title": "Trench Clásico Doble Botonadura Café Mujer",
+      "canonical_product_type": "Trench",
+      "expected_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_categories": [
+        "Trench"
+      ],
+      "observed_surfaces": [
+        "Trench"
+      ],
+      "commercial_observed_categories": [
+        "Trench"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Trench'] but expected category ['Abrigos y Chaquetas'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_ca2beed61511",
+      "marketplace": "Falabella",
+      "title": "Jeans Corte Recto Café Mujer",
+      "canonical_product_type": "Jeans",
+      "expected_categories": [
+        "Jeans"
+      ],
+      "observed_categories": [
+        "Mujer",
+        "Pantalones"
+      ],
+      "observed_surfaces": [
+        "Mujer"
+      ],
+      "commercial_observed_categories": [
+        "Pantalones"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Pantalones'] but expected category ['Jeans'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_cc5590d00f18",
+      "marketplace": "Falabella",
+      "title": "Blazer Manga 3/4 Ajustado con Solapas Oliva Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_cdfbaa86a10e",
+      "marketplace": "Falabella",
+      "title": "Jeans Corte Recto Khaki Mujer",
+      "canonical_product_type": "Jeans",
+      "expected_categories": [
+        "Jeans"
+      ],
+      "observed_categories": [
+        "Pantalones"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Pantalones"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Pantalones'] but expected category ['Jeans'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_d678eeba9fbb",
+      "marketplace": "Falabella",
+      "title": "Blazer Manga 3/4 Ajustado con Solapas Mocca Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_d834e58b3e72",
+      "marketplace": "Falabella",
+      "title": "Blazer Básico de Tope Verde Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Sweaters",
+        "Brand Hub",
+        "Mujer"
+      ],
+      "observed_surfaces": [
+        "Brand Hub"
+      ],
+      "commercial_observed_categories": [
+        "Sweaters"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Sweaters'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_d98abbf77e6e",
+      "marketplace": "Falabella",
+      "title": "Blazer Dos Botones Negro Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_db2f6f917757",
+      "marketplace": "Falabella",
+      "title": "Jeans Corte Barrel Blanco Mujer",
+      "canonical_product_type": "Jeans",
+      "expected_categories": [
+        "Jeans"
+      ],
+      "observed_categories": [
+        "Pantalones"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Pantalones"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Pantalones'] but expected category ['Jeans'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_dc40e4f5478e",
+      "marketplace": "Falabella",
+      "title": "Vest Tipo Gamuza Bordado Burdeo Mujer",
+      "canonical_product_type": "Vest",
+      "expected_categories": [
+        "Vest"
+      ],
+      "observed_categories": [
+        "Sweaters y chalecos"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Sweaters y chalecos"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Sweaters y chalecos'] but expected category ['Vest'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_df6e0ce3e6b0",
+      "marketplace": "Falabella",
+      "title": "Blazer Oversize Tipo Gamuza Café Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_e7f8b612de97",
+      "marketplace": "Falabella",
+      "title": "Blazer Cinturón Burdeo Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_e85ddcb3b4a5",
+      "marketplace": "Falabella",
+      "title": "Blazer Manga 3/4 Ajustado con Solapas Blanco Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_e92fe41a1d85",
+      "marketplace": "Falabella",
+      "title": "Blazer Básico de Tope Óxido Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_ec22402da6f5",
+      "marketplace": "Falabella",
+      "title": "Blazer Básico de Tope Café Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_ec7ae79ec19f",
+      "marketplace": "Falabella",
+      "title": "Trench Clásico Doble Botonadura Negro Mujer",
+      "canonical_product_type": "Trench",
+      "expected_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_categories": [
+        "Trench"
+      ],
+      "observed_surfaces": [
+        "Trench"
+      ],
+      "commercial_observed_categories": [
+        "Trench"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Trench'] but expected category ['Abrigos y Chaquetas'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_ecd5fe4541ad",
+      "marketplace": "Falabella",
+      "title": "Jeans Wide Leg Ancho Azul Marino Mujer",
+      "canonical_product_type": "Jeans",
+      "expected_categories": [
+        "Jeans"
+      ],
+      "observed_categories": [
+        "Pantalones"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Pantalones"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Pantalones'] but expected category ['Jeans'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_ee17a303779c",
+      "marketplace": "Falabella",
+      "title": "Blazer Básico de Tope Verde Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Sweaters"
+      ],
+      "observed_surfaces": [
+        "Sweaters"
+      ],
+      "commercial_observed_categories": [
+        "Sweaters"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Sweaters'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_f50f322eed60",
+      "marketplace": "Falabella",
+      "title": "Jeans Rectos Tiro Alto Blanco Mujer",
+      "canonical_product_type": "Jeans",
+      "expected_categories": [
+        "Jeans"
+      ],
+      "observed_categories": [
+        "Pantalones"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Pantalones"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Pantalones'] but expected category ['Jeans'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_f51c403f0219",
+      "marketplace": "Falabella",
+      "title": "Blazer Cruzado sin Mangas Gris Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_f631f28d5d8e",
+      "marketplace": "Falabella",
+      "title": "Blazer Cinturón Negro Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_falabella_f78f37d5a116",
+      "marketplace": "Falabella",
+      "title": "Blazer Básico Sastrero Rosado Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_categories": [
+        "Blazers"
+      ],
+      "observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Abrigos y Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Abrigos y Chaquetas'] but expected category ['Blazers'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_0f763da7deda",
+      "marketplace": "Mercado Libre",
+      "title": "Polera Sin Mangas Animal Print",
+      "canonical_product_type": "Polera",
+      "expected_categories": [
+        "Poleras"
+      ],
+      "observed_categories": [
+        "Blusas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Blusas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Blusas'] but expected category ['Poleras'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_0f82c17f5412",
+      "marketplace": "Mercado Libre",
+      "title": "Gilet Básico Rosado Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Abrigos"
+      ],
+      "observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_surfaces": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas Parkas Blazers'] but expected category ['Abrigos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_17a9acdcede8",
+      "marketplace": "Mercado Libre",
+      "title": "Gilet 4 Botones Óxido Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Abrigos"
+      ],
+      "observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_surfaces": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas Parkas Blazers'] but expected category ['Abrigos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_20dd0b58931e",
+      "marketplace": "Mercado Libre",
+      "title": "Gilet Cuello Redondo Tipo Lino Oliva Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Abrigos"
+      ],
+      "observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_surfaces": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas Parkas Blazers'] but expected category ['Abrigos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_2735d3522a0a",
+      "marketplace": "Mercado Libre",
+      "title": "Gilet Básico Ajustable Celeste Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Abrigos"
+      ],
+      "observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_surfaces": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas Parkas Blazers'] but expected category ['Abrigos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_29627e9dd403",
+      "marketplace": "Mercado Libre",
+      "title": "Gilet Sastrero Rayas Diplomáticas Gris Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Abrigos"
+      ],
+      "observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_surfaces": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas Parkas Blazers'] but expected category ['Abrigos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_297c5d432668",
+      "marketplace": "Mercado Libre",
+      "title": "Gilet Sastre Entallado Negro Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Abrigos"
+      ],
+      "observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_surfaces": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas Parkas Blazers'] but expected category ['Abrigos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_3431499b31b7",
+      "marketplace": "Mercado Libre",
+      "title": "Gilet Burdeo Rayas Diplomáticas Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Abrigos"
+      ],
+      "observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_surfaces": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas Parkas Blazers'] but expected category ['Abrigos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_3fb14b519e51",
+      "marketplace": "Mercado Libre",
+      "title": "Falda Short Rayas Diplomáticas Azul Marino Nicopoly",
+      "canonical_product_type": "Shorts",
+      "expected_categories": [
+        "Bermudas y Shorts"
+      ],
+      "observed_categories": [
+        "Faldas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Faldas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Faldas'] but expected category ['Bermudas y Shorts'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_47a3d412425b",
+      "marketplace": "Mercado Libre",
+      "title": "Gilet Sastre Entallado Verde Oscuro Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Abrigos"
+      ],
+      "observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_surfaces": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas Parkas Blazers'] but expected category ['Abrigos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_5e02d127aa39",
+      "marketplace": "Mercado Libre",
+      "title": "Gilet Rayas Diplomáticas Blanco Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Abrigos"
+      ],
+      "observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_surfaces": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas Parkas Blazers'] but expected category ['Abrigos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_60bc7c49d4bf",
+      "marketplace": "Mercado Libre",
+      "title": "Gilet Cuello Redondo Tipo Lino Café Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Abrigos"
+      ],
+      "observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_surfaces": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas Parkas Blazers'] but expected category ['Abrigos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_6858639f0e51",
+      "marketplace": "Mercado Libre",
+      "title": "Polera Sin Mangas Leopardo Café Nicopoly",
+      "canonical_product_type": "Polera",
+      "expected_categories": [
+        "Poleras"
+      ],
+      "observed_categories": [
+        "Blusas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Blusas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Blusas'] but expected category ['Poleras'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_736cdcec3e61",
+      "marketplace": "Mercado Libre",
+      "title": "Gilet Sastrero Rayas Diplomáticas Khaki Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Abrigos"
+      ],
+      "observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_surfaces": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas Parkas Blazers'] but expected category ['Abrigos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_8531e86a742d",
+      "marketplace": "Mercado Libre",
+      "title": "Polera Sin Mangas Animal Print",
+      "canonical_product_type": "Polera",
+      "expected_categories": [
+        "Poleras"
+      ],
+      "observed_categories": [
+        "Blusas"
+      ],
+      "observed_surfaces": [
+        "Blusas"
+      ],
+      "commercial_observed_categories": [
+        "Blusas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Blusas'] but expected category ['Poleras'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_919d7b64b025",
+      "marketplace": "Mercado Libre",
+      "title": "Gilet Largo Con Botones Burdeo Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Abrigos"
+      ],
+      "observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_surfaces": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas Parkas Blazers'] but expected category ['Abrigos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_a065396a199d",
+      "marketplace": "Mercado Libre",
+      "title": "Gilet Rayas Diplomáticas Negro Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Abrigos"
+      ],
+      "observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_surfaces": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas Parkas Blazers'] but expected category ['Abrigos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_a1813fe07a44",
+      "marketplace": "Mercado Libre",
+      "title": "Pantalón Calzas Mujer Flare Pants Pata Elefante",
+      "canonical_product_type": "Pantalon",
+      "expected_categories": [
+        "Pantalones"
+      ],
+      "observed_categories": [
+        "Calzas"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Calzas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Calzas'] but expected category ['Pantalones'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_a692f63a83b8",
+      "marketplace": "Mercado Libre",
+      "title": "Gilet Sastre Entallado Burdeo Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Abrigos"
+      ],
+      "observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_surfaces": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas Parkas Blazers'] but expected category ['Abrigos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_a9b23431632d",
+      "marketplace": "Mercado Libre",
+      "title": "Gilet Básico Ajustable Beige Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Abrigos"
+      ],
+      "observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_surfaces": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas Parkas Blazers'] but expected category ['Abrigos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_ae87bf92fbce",
+      "marketplace": "Mercado Libre",
+      "title": "Gilet Básico Ajustable Negro Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Abrigos"
+      ],
+      "observed_categories": [
+        "Conjuntos"
+      ],
+      "observed_surfaces": [
+        "Conjuntos"
+      ],
+      "commercial_observed_categories": [
+        "Conjuntos"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Conjuntos'] but expected category ['Abrigos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_b9cb1350eec5",
+      "marketplace": "Mercado Libre",
+      "title": "Gilet Con Drapeado Lateral Negro",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Abrigos"
+      ],
+      "observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_surfaces": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas Parkas Blazers'] but expected category ['Abrigos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_bda929415868",
+      "marketplace": "Mercado Libre",
+      "title": "Gilet Vichy Negro Nicopoly Negro Xs Liso",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Abrigos"
+      ],
+      "observed_categories": [
+        "Chaquetas Parkas Blazers",
+        "Brand Hub"
+      ],
+      "observed_surfaces": [
+        "Brand Hub"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas Parkas Blazers'] but expected category ['Abrigos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_c51ed4b51320",
+      "marketplace": "Mercado Libre",
+      "title": "Gilet Sastrero Rayas Diplomáticas Café Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Abrigos"
+      ],
+      "observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_surfaces": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas Parkas Blazers'] but expected category ['Abrigos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_cb2082cde4f3",
+      "marketplace": "Mercado Libre",
+      "title": "Falda Short Rayas Diplomáticas Café Nicopoly Cafe Liso M",
+      "canonical_product_type": "Shorts",
+      "expected_categories": [
+        "Bermudas y Shorts"
+      ],
+      "observed_categories": [
+        "Faldas",
+        "Brand Hub"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Faldas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Faldas'] but expected category ['Bermudas y Shorts'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_d3055942df87",
+      "marketplace": "Mercado Libre",
+      "title": "Gilet Sastre Entallado Café Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Abrigos"
+      ],
+      "observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_surfaces": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas Parkas Blazers'] but expected category ['Abrigos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_f42ede8553bd",
+      "marketplace": "Mercado Libre",
+      "title": "Gilet Rayas Diplomáticas Rosado Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Abrigos"
+      ],
+      "observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_surfaces": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas Parkas Blazers'] but expected category ['Abrigos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_mercado libre_f5dc694f0e64",
+      "marketplace": "Mercado Libre",
+      "title": "Gilet Cuello Redondo Tipo Lino Beige Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Abrigos"
+      ],
+      "observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "observed_surfaces": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas Parkas Blazers"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas Parkas Blazers'] but expected category ['Abrigos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_paris_0ed638267aad",
+      "marketplace": "Paris",
+      "title": "Gilet Sastrero Rayas Diplomáticas Khaki Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Sweaters, Chalecos y Tejidos"
+      ],
+      "observed_categories": [
+        "Brand Hub",
+        "Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Brand Hub"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas'] but expected category ['Sweaters, Chalecos y Tejidos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_paris_1ad1dfc57744",
+      "marketplace": "Paris",
+      "title": "Gilet Sastrero Rayas Diplomáticas Gris Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Sweaters, Chalecos y Tejidos"
+      ],
+      "observed_categories": [
+        "Brand Hub",
+        "Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Brand Hub"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas'] but expected category ['Sweaters, Chalecos y Tejidos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_paris_1d41b9a37c82",
+      "marketplace": "Paris",
+      "title": "Gilet Sastrero Rayas Diplomáticas Khaki Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Sweaters, Chalecos y Tejidos"
+      ],
+      "observed_categories": [
+        "Brand Hub",
+        "Chaquetas"
+      ],
+      "observed_surfaces": [
+        "Brand Hub"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas'] but expected category ['Sweaters, Chalecos y Tejidos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_paris_22957ce2ab85",
+      "marketplace": "Paris",
+      "title": "Gilet 4 Botones Óxido Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Sweaters, Chalecos y Tejidos"
+      ],
+      "observed_categories": [
+        "Blazers",
+        "Chaquetas y Abrigos",
+        "Brand Hub",
+        "Chaquetas",
+        "Brand Store"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "commercial_observed_categories": [
+        "Blazers",
+        "Chaquetas y Abrigos",
+        "Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": true,
+      "alignment_reason": "MISALIGNED: observed in ['Blazers', 'Chaquetas y Abrigos', 'Chaquetas'] but expected category ['Sweaters, Chalecos y Tejidos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    },
+    {
+      "publication_id": "pub_paris_266e97308a9d",
+      "marketplace": "Paris",
+      "title": "Gilet Crop con Solapa Blanco Nicopoly",
+      "canonical_product_type": "Gilet",
+      "expected_categories": [
+        "Sweaters, Chalecos y Tejidos"
+      ],
+      "observed_categories": [
+        "Brand Hub",
+        "Chaquetas",
+        "Brand Store"
+      ],
+      "observed_surfaces": [
+        "Brand Hub"
+      ],
+      "commercial_observed_categories": [
+        "Chaquetas"
+      ],
+      "alignment_status": "MISALIGNED",
+      "is_multi_category": false,
+      "alignment_reason": "MISALIGNED: observed in ['Chaquetas'] but expected category ['Sweaters, Chalecos y Tejidos'] was audited and product was absent from it",
+      "expected_category_coverage": true
+    }
+  ],
+  "note": "Full 131 misaligned items in alignment_results_raw.json"
+}

@@ -1,0 +1,54 @@
+{
+  "task_id": "VA-PRODUCT-TAXONOMY-CAPABILITY-001",
+  "method": "Independent re-execution of compute_alignment() for each golden dataset case",
+  "verified_cases": 6,
+  "mismatches": 0,
+  "false_aligned": 0,
+  "false_misaligned": 0,
+  "false_resolved": 0,
+  "pass": true,
+  "details": [
+    {
+      "case_id": "golden-001",
+      "expected": "ALIGNED",
+      "engine": "ALIGNED",
+      "match": true,
+      "reason": "ALIGNED: observed in expected category 'Vestidos'"
+    },
+    {
+      "case_id": "golden-002",
+      "expected": "MISALIGNED",
+      "engine": "MISALIGNED",
+      "match": true,
+      "reason": "MISALIGNED: observed in ['Vestidos'] but expected category ['Blusas y poleras'] was audited and product was absent from it"
+    },
+    {
+      "case_id": "golden-003",
+      "expected": "UNRESOLVED",
+      "engine": "UNRESOLVED",
+      "match": true,
+      "reason": "NO_EXPECTED_CATEGORY_MAPPING: product type has no known expected category for this marketplace"
+    },
+    {
+      "case_id": "golden-004",
+      "expected": "UNRESOLVED",
+      "engine": "UNRESOLVED",
+      "match": true,
+      "reason": "EXPECTED_CATEGORY_NOT_AUDITED: product only observed on non-commercial surfaces (e.g. Brand Hub)"
+    },
+    {
+      "case_id": "golden-005",
+      "expected": "ALIGNED",
+      "engine": "ALIGNED",
+      "match": true,
+      "reason": "ALIGNED: observed in expected category 'Jeans y Pantalones'"
+    },
+    {
+      "case_id": "golden-006",
+      "expected": "UNRESOLVED",
+      "engine": "UNRESOLVED",
+      "match": true,
+      "reason": "UNKNOWN_PRODUCT_TYPE: title does not map to any canonical type"
+    }
+  ]
+}

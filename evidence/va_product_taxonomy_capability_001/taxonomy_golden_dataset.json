@@ -1,0 +1,159 @@
+{
+  "task_id": "VA-PRODUCT-TAXONOMY-CAPABILITY-001",
+  "total_cases": 8,
+  "note": "Cases derived exclusively from real evidence already persisted in DB and category_alignment_examples.json",
+  "cases": [
+    {
+      "case_id": "golden-001",
+      "publication_id": "pub_mercado libre_dd0e1da77d26",
+      "marketplace": "Mercado Libre",
+      "product_title": "Vestido Rayas Camisero Celeste Nicopoly",
+      "canonical_product_type": "Vestido",
+      "expected_category": "Vestidos",
+      "observed_categories": [
+        "Vestidos"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "expected_status": "ALIGNED",
+      "evidence_refs": [
+        "category_alignment_examples.json case 2"
+      ],
+      "why": "Vestido in Vestidos = canonical alignment"
+    },
+    {
+      "case_id": "golden-002",
+      "publication_id": "pub_ripley_72df33d13e81",
+      "marketplace": "Ripley",
+      "product_title": "Blusa Saten Cruzado Rojo Nicopoly",
+      "canonical_product_type": "Blusa",
+      "expected_category": "Blusas y poleras",
+      "observed_categories": [
+        "Vestidos"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "expected_status": "MISALIGNED",
+      "evidence_refs": [
+        "category_alignment_examples.json case 5"
+      ],
+      "why": "Blusa in Vestidos = clear mismatch with coverage confirmed"
+    },
+    {
+      "case_id": "golden-003",
+      "publication_id": "pub_ripley_b15be9ea5ac7",
+      "marketplace": "Ripley",
+      "product_title": "CHAQUETA BIKER NEGRO MUJER NICOPOLY",
+      "canonical_product_type": null,
+      "expected_category": null,
+      "observed_categories": [
+        "Brand Hub"
+      ],
+      "observed_surfaces": [
+        "Brand Hub"
+      ],
+      "expected_status": "UNRESOLVED",
+      "evidence_refs": [
+        "category_alignment_examples.json case 6"
+      ],
+      "why": "Brand Hub only — no commercial coverage evidence"
+    },
+    {
+      "case_id": "golden-004",
+      "publication_id": "pub_falabella_00d16640c923",
+      "marketplace": "Falabella",
+      "product_title": "Bomber Tipo Lanilla Negro Mujer",
+      "canonical_product_type": "Bomber",
+      "expected_category": "Abrigos y Chaquetas",
+      "observed_categories": [
+        "Brand Hub"
+      ],
+      "observed_surfaces": [
+        "Brand Hub"
+      ],
+      "expected_status": "UNRESOLVED",
+      "evidence_refs": [
+        "category_alignment_examples.json case 1"
+      ],
+      "why": "Brand Hub only — commercial category not audited"
+    },
+    {
+      "case_id": "golden-005",
+      "publication_id": "pub_paris_005e45afd4ca",
+      "marketplace": "Paris",
+      "product_title": "Pantalon Recto Con Pinza Mocca Nicopoly",
+      "canonical_product_type": "Pantalon",
+      "expected_category": "Jeans y Pantalones",
+      "observed_categories": [
+        "Jeans y Pantalones",
+        "Pantalones",
+        "Brand Hub",
+        "Brand Store"
+      ],
+      "observed_surfaces": [
+        "Brand Hub",
+        "Category Browse"
+      ],
+      "expected_status": "ALIGNED",
+      "evidence_refs": [
+        "category_alignment_examples.json case 3"
+      ],
+      "why": "Pantalon in Jeans y Pantalones = ALIGNED; multi-category flag=True"
+    },
+    {
+      "case_id": "golden-006",
+      "publication_id": "test-brand-hub-only",
+      "marketplace": "Ripley",
+      "product_title": "Blazer Basico Sastrero Negro Mujer",
+      "canonical_product_type": "Blazer",
+      "expected_category": null,
+      "observed_categories": [
+        "Brand Hub"
+      ],
+      "observed_surfaces": [
+        "Brand Hub"
+      ],
+      "expected_status": "UNRESOLVED",
+      "evidence_refs": [
+        "Ripley Blazer has no audited expected category — NO_EXPECTED_CATEGORY_MAPPING"
+      ],
+      "why": "Ripley Blazer type has no mapping in the engine"
+    },
+    {
+      "case_id": "golden-007",
+      "publication_id": "test-legacy-not-truth",
+      "marketplace": "UNKNOWN_MARKETPLACE",
+      "product_title": "Blazer Negro",
+      "canonical_product_type": "Blazer",
+      "expected_category": null,
+      "observed_categories": [],
+      "observed_surfaces": [],
+      "expected_status": "UNRESOLVED",
+      "evidence_refs": [
+        "test_red_legacy_category_not_auto_truth"
+      ],
+      "why": "Unknown marketplace returns empty expected categories — cannot use legacy as truth"
+    },
+    {
+      "case_id": "golden-008",
+      "publication_id": "test-unknown-type",
+      "marketplace": "Mercado Libre",
+      "product_title": "ZXQY-RANDOM-ITEM-NO-MATCH-9999 Nicopoly",
+      "canonical_product_type": null,
+      "expected_category": null,
+      "observed_categories": [
+        "Some Category"
+      ],
+      "observed_surfaces": [
+        "Category Browse"
+      ],
+      "expected_status": "UNRESOLVED",
+      "evidence_refs": [
+        "test_red_unknown_product_type_is_unresolved"
+      ],
+      "why": "Unknown product type → UNRESOLVED regardless of observed categories"
+    }
+  ]
+}
