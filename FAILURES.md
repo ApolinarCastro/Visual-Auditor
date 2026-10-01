@@ -151,3 +151,5 @@ Durante la auditoría semántica de seguridad en VA-EXECUTIVE-DASHBOARD-SEMANTIC
    - Suite de regresión pasando (13/13 guardrails, 2/2 materialización).
 Status: RESOLVED_AND_VERIFIED (PASS).
 
+F o r e n s i c   c e r t i f i c a t i o n   f a i l e d   d u e   t o   G I T _ S H A _ M I S M A T C H   ( l o c a l   a h e a d   o f   r e m o t e ) .   T h e   o r i g i n a l   i m p l e m e n t a t i o n   t a s k   V A - H I S T O R Y - R O U T E S - T A X O N O M Y - R E A D I N E S S - 0 0 1   d i d   n o t   p u s h   t o   o r i g i n .  
+ 
