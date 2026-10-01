@@ -1,0 +1,4 @@
+{
+  "status": "NOT_APPLICABLE",
+  "reason": "Sync capability is missing application layer logic, but infrastructure is ready."
+}

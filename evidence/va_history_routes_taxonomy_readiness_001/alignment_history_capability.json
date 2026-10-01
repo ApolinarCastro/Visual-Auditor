@@ -1,0 +1,4 @@
+{
+  "status": "MISSING",
+  "reason": "Alignment is computed on-the-fly or stored in a JSON artifact, not persisted historically."
+}

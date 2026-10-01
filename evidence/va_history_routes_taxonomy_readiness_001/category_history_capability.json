@@ -1,0 +1,8 @@
+{
+  "FIRST_SEEN": "YES (created_at exists)",
+  "LAST_SEEN": "YES (derived from mri_historical_categories observed_at)",
+  "OBSERVED_RUNS": "YES (mri_historical_categories run_id)",
+  "ROUTE_HISTORY": "YES (mri_historical_categories canonical_url)",
+  "NAME_HISTORY": "MISSING",
+  "PARENT_HISTORY": "MISSING"
+}

@@ -1,0 +1,10 @@
+{
+  "canonical_publication_key": "publication_id (derived from marketplace_product_id or seller_sku)",
+  "marketplace_id_available": "PARTIAL (depends on marketplace)",
+  "seller_sku_available": "PARTIAL (mostly from Multivende/Legacy matching)",
+  "url_available": "PARTIAL (Mostly missing except Falabella)",
+  "url_authority": "Scraped product href",
+  "historical_identity_preserved": "YES (publication_id is stable if base IDs remain stable)",
+  "deduplication_rule": "Prefer marketplace_product_id > seller_sku > title",
+  "limitations": "If a marketplace changes its internal ID format, it breaks identity."
+}

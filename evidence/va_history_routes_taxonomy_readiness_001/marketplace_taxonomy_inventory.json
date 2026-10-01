@@ -1,0 +1,486 @@
+{
+  "Falabella": [
+    {
+      "category_id": "cat_03672ae6",
+      "marketplace": "Falabella",
+      "category_name": "Abrigos",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.754662"
+    },
+    {
+      "category_id": "cat_7df552a8",
+      "marketplace": "Falabella",
+      "category_name": "Abrigos y Chaquetas",
+      "canonical_url": "",
+      "created_at": "2026-09-22T09:13:42.881339"
+    },
+    {
+      "category_id": "cat_29b9312c",
+      "marketplace": "Falabella",
+      "category_name": "Blazers",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.754662"
+    },
+    {
+      "category_id": "cat_80200888",
+      "marketplace": "Falabella",
+      "category_name": "Blusas",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.754662"
+    },
+    {
+      "category_id": "cat_42ab8be2",
+      "marketplace": "Falabella",
+      "category_name": "Blusas Mujer",
+      "canonical_url": "",
+      "created_at": "2026-09-22T09:19:18.046255"
+    },
+    {
+      "category_id": "cat_1370e53b",
+      "marketplace": "Falabella",
+      "category_name": "Brand Hub",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.754662"
+    },
+    {
+      "category_id": "cat_839e3bf5",
+      "marketplace": "Falabella",
+      "category_name": "Camisas",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.754662"
+    },
+    {
+      "category_id": "cat_cc4f8cb9",
+      "marketplace": "Falabella",
+      "category_name": "Cardigans",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.754662"
+    },
+    {
+      "category_id": "cat_5679e4f4",
+      "marketplace": "Falabella",
+      "category_name": "Chaquetas",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.754662"
+    },
+    {
+      "category_id": "cat_e832fe6c",
+      "marketplace": "Falabella",
+      "category_name": "Gillette",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.754662"
+    },
+    {
+      "category_id": "cat_5a8b13d1",
+      "marketplace": "Falabella",
+      "category_name": "Jeans",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.754662"
+    },
+    {
+      "category_id": "cat_2d669f2c",
+      "marketplace": "Falabella",
+      "category_name": "Mujer",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.754662"
+    },
+    {
+      "category_id": "cat_95e927be",
+      "marketplace": "Falabella",
+      "category_name": "Pantalones",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.754662"
+    },
+    {
+      "category_id": "cat_2c466793",
+      "marketplace": "Falabella",
+      "category_name": "Parkas",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.754662"
+    },
+    {
+      "category_id": "cat_4c62a213",
+      "marketplace": "Falabella",
+      "category_name": "Parkas Mujer",
+      "canonical_url": "",
+      "created_at": "2026-09-22T09:21:26.400710"
+    },
+    {
+      "category_id": "cat_b74228e1",
+      "marketplace": "Falabella",
+      "category_name": "Poleras",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.754662"
+    },
+    {
+      "category_id": "cat_f0d707a5",
+      "marketplace": "Falabella",
+      "category_name": "Shorts",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.754662"
+    },
+    {
+      "category_id": "cat_0a127a5c",
+      "marketplace": "Falabella",
+      "category_name": "Sweaters",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.754662"
+    },
+    {
+      "category_id": "cat_ceb9e9b0",
+      "marketplace": "Falabella",
+      "category_name": "Sweaters y chalecos",
+      "canonical_url": "",
+      "created_at": "2026-09-22T09:16:46.511426"
+    },
+    {
+      "category_id": "cat_bdef5bed",
+      "marketplace": "Falabella",
+      "category_name": "Trench",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.754662"
+    },
+    {
+      "category_id": "cat_8321f2f1",
+      "marketplace": "Falabella",
+      "category_name": "Vest",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.754662"
+    },
+    {
+      "category_id": "cat_9cdb9585",
+      "marketplace": "Falabella",
+      "category_name": "Vestido Casual",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.754662"
+    }
+  ],
+  "Mercado Libre": [
+    {
+      "category_id": "cat_5c5226dd",
+      "marketplace": "Mercado Libre",
+      "category_name": "Abrigos",
+      "canonical_url": "",
+      "created_at": "2026-09-22T09:10:44.070906"
+    },
+    {
+      "category_id": "cat_4ccab547",
+      "marketplace": "Mercado Libre",
+      "category_name": "Accesorios de moda",
+      "canonical_url": "",
+      "created_at": "2026-09-22T09:13:17.402840"
+    },
+    {
+      "category_id": "cat_de1d6512",
+      "marketplace": "Mercado Libre",
+      "category_name": "Bermudas y Shorts",
+      "canonical_url": "",
+      "created_at": "2026-09-22T09:11:53.054738"
+    },
+    {
+      "category_id": "cat_2b5492f6",
+      "marketplace": "Mercado Libre",
+      "category_name": "Blusas",
+      "canonical_url": "",
+      "created_at": "2026-09-22T09:05:43.937507"
+    },
+    {
+      "category_id": "cat_3bdd28a1",
+      "marketplace": "Mercado Libre",
+      "category_name": "Blusas",
+      "canonical_url": "",
+      "created_at": "2026-10-01T11:56:45.312926"
+    },
+    {
+      "category_id": "cat_ac101b32",
+      "marketplace": "Mercado Libre",
+      "category_name": "Body",
+      "canonical_url": "",
+      "created_at": "2026-09-22T09:14:49.626933"
+    },
+    {
+      "category_id": "cat_913ac545",
+      "marketplace": "Mercado Libre",
+      "category_name": "Brand Hub",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.702936"
+    },
+    {
+      "category_id": "cat_8088e8e9",
+      "marketplace": "Mercado Libre",
+      "category_name": "Calzas",
+      "canonical_url": "",
+      "created_at": "2026-09-22T09:04:24.790988"
+    },
+    {
+      "category_id": "cat_59146ccc",
+      "marketplace": "Mercado Libre",
+      "category_name": "Camisas",
+      "canonical_url": "",
+      "created_at": "2026-09-22T09:34:07.192081"
+    },
+    {
+      "category_id": "cat_1e56a73a",
+      "marketplace": "Mercado Libre",
+      "category_name": "Chaquetas Parkas Blazers",
+      "canonical_url": "",
+      "created_at": "2026-10-01T11:56:45.312926"
+    },
+    {
+      "category_id": "cat_7e38e265",
+      "marketplace": "Mercado Libre",
+      "category_name": "Conjuntos",
+      "canonical_url": "",
+      "created_at": "2026-10-01T11:56:45.312926"
+    },
+    {
+      "category_id": "cat_26f2f267",
+      "marketplace": "Mercado Libre",
+      "category_name": "Faldas",
+      "canonical_url": "",
+      "created_at": "2026-09-22T09:08:52.648356"
+    },
+    {
+      "category_id": "cat_14507fe5",
+      "marketplace": "Mercado Libre",
+      "category_name": "Kimonos",
+      "canonical_url": "",
+      "created_at": "2026-09-22T09:35:05.767079"
+    },
+    {
+      "category_id": "cat_4d4e158d",
+      "marketplace": "Mercado Libre",
+      "category_name": "New In",
+      "canonical_url": "",
+      "created_at": "2026-10-01T11:56:45.312926"
+    },
+    {
+      "category_id": "cat_d191ed32",
+      "marketplace": "Mercado Libre",
+      "category_name": "Pantalones",
+      "canonical_url": "",
+      "created_at": "2026-09-22T09:16:07.132543"
+    },
+    {
+      "category_id": "cat_8a4dabbc",
+      "marketplace": "Mercado Libre",
+      "category_name": "Pantalones",
+      "canonical_url": "",
+      "created_at": "2026-10-01T11:56:45.312926"
+    },
+    {
+      "category_id": "cat_631f4ca0",
+      "marketplace": "Mercado Libre",
+      "category_name": "Poleras",
+      "canonical_url": "",
+      "created_at": "2026-09-22T09:07:30.660464"
+    },
+    {
+      "category_id": "cat_984e40b4",
+      "marketplace": "Mercado Libre",
+      "category_name": "Vestidos",
+      "canonical_url": "",
+      "created_at": "2026-09-22T09:03:13.032105"
+    }
+  ],
+  "Paris": [
+    {
+      "category_id": "cat_49ee8b3e",
+      "marketplace": "Paris",
+      "category_name": "Abrigos",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.711609"
+    },
+    {
+      "category_id": "cat_4451e71a",
+      "marketplace": "Paris",
+      "category_name": "Blazers, Chaquetas y Abrigos",
+      "canonical_url": "",
+      "created_at": "2026-09-22T09:08:06.312278"
+    },
+    {
+      "category_id": "cat_4dab884f",
+      "marketplace": "Paris",
+      "category_name": "Blusas",
+      "canonical_url": "https://www.paris.cl/blusas",
+      "created_at": "2026-09-22T15:33:46.978870"
+    },
+    {
+      "category_id": "cat_4d5901df",
+      "marketplace": "Paris",
+      "category_name": "Brand Hub",
+      "canonical_url": "https://www.paris.cl/search?q=nicopoly",
+      "created_at": "2026-09-22T15:33:46.978870"
+    },
+    {
+      "category_id": "cat_868b85c8",
+      "marketplace": "Paris",
+      "category_name": "Brand Store",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.711609"
+    },
+    {
+      "category_id": "cat_684f1c73",
+      "marketplace": "Paris",
+      "category_name": "Calzas",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.711609"
+    },
+    {
+      "category_id": "cat_10f3f629",
+      "marketplace": "Paris",
+      "category_name": "Chalecos",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.711609"
+    },
+    {
+      "category_id": "cat_5c362350",
+      "marketplace": "Paris",
+      "category_name": "Chaquetas",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.711609"
+    },
+    {
+      "category_id": "cat_064f425d",
+      "marketplace": "Paris",
+      "category_name": "Enteritos",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.711609"
+    },
+    {
+      "category_id": "cat_8042745f",
+      "marketplace": "Paris",
+      "category_name": "Faldas",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.711609"
+    },
+    {
+      "category_id": "cat_f70570b5",
+      "marketplace": "Paris",
+      "category_name": "Jeans",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.711609"
+    },
+    {
+      "category_id": "cat_5333ae0e",
+      "marketplace": "Paris",
+      "category_name": "Jeans y Pantalones",
+      "canonical_url": "",
+      "created_at": "2026-09-22T09:06:00.414227"
+    },
+    {
+      "category_id": "cat_649d5388",
+      "marketplace": "Paris",
+      "category_name": "Pantalones",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.711609"
+    },
+    {
+      "category_id": "cat_0ca88092",
+      "marketplace": "Paris",
+      "category_name": "Parkas",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.711609"
+    },
+    {
+      "category_id": "cat_748ceafe",
+      "marketplace": "Paris",
+      "category_name": "Pañuelos y Bufandas",
+      "canonical_url": "",
+      "created_at": "2026-09-22T09:15:56.414349"
+    },
+    {
+      "category_id": "cat_39022588",
+      "marketplace": "Paris",
+      "category_name": "Poleras",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.711609"
+    },
+    {
+      "category_id": "cat_44a32221",
+      "marketplace": "Paris",
+      "category_name": "Poleras y Blusas",
+      "canonical_url": "",
+      "created_at": "2026-09-22T09:10:00.517055"
+    },
+    {
+      "category_id": "cat_ff14ebac",
+      "marketplace": "Paris",
+      "category_name": "Polerones",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.711609"
+    },
+    {
+      "category_id": "cat_7ac39575",
+      "marketplace": "Paris",
+      "category_name": "Shorts",
+      "canonical_url": "",
+      "created_at": "2026-09-22T09:14:17.639628"
+    },
+    {
+      "category_id": "cat_afeff7d1",
+      "marketplace": "Paris",
+      "category_name": "Shorts",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.711609"
+    },
+    {
+      "category_id": "cat_cd84af88",
+      "marketplace": "Paris",
+      "category_name": "Sweaters",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.711609"
+    },
+    {
+      "category_id": "cat_32c275a6",
+      "marketplace": "Paris",
+      "category_name": "Sweaters, Chalecos y Tejidos",
+      "canonical_url": "",
+      "created_at": "2026-09-22T09:04:03.037806"
+    },
+    {
+      "category_id": "cat_b12fbdaa",
+      "marketplace": "Paris",
+      "category_name": "Vestidos",
+      "canonical_url": "https://www.paris.cl/vestidos",
+      "created_at": "2026-09-22T15:33:46.978870"
+    },
+    {
+      "category_id": "cat_59ce39b2",
+      "marketplace": "Paris",
+      "category_name": "Vestidos De Fiesta",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.711609"
+    },
+    {
+      "category_id": "cat_80ae57b5",
+      "marketplace": "Paris",
+      "category_name": "Vestidos y Faldas",
+      "canonical_url": "",
+      "created_at": "2026-09-22T09:11:56.020092"
+    }
+  ],
+  "Ripley": [
+    {
+      "category_id": "cat_6cfb2aeb",
+      "marketplace": "Ripley",
+      "category_name": "Blusas y poleras",
+      "canonical_url": "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/blusas-y-poleras?Ntt=nicopoly",
+      "created_at": "2026-09-22T15:44:36.922282"
+    },
+    {
+      "category_id": "cat_d86e8757",
+      "marketplace": "Ripley",
+      "category_name": "Brand Hub",
+      "canonical_url": "",
+      "created_at": "2026-09-30T17:14:11.754662"
+    },
+    {
+      "category_id": "cat_160d8655",
+      "marketplace": "Ripley",
+      "category_name": "Vestidos",
+      "canonical_url": "https://simple.ripley.cl/search/nicopoly",
+      "created_at": "2026-09-22T15:44:36.922282"
+    }
+  ]
+}

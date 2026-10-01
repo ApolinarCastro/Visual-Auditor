@@ -1,0 +1,4 @@
+{
+  "status": "UNKNOWN",
+  "reason": "mri_categories lacks parent_id, depth, or path. No hierarchy exists in the schema."
+}

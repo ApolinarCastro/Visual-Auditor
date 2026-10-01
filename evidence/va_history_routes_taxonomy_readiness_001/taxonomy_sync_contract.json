@@ -1,0 +1,12 @@
+{
+  "states": [
+    "NEW_CATEGORY",
+    "EXISTING_CATEGORY",
+    "NOT_OBSERVED_CURRENTLY",
+    "RETURNED",
+    "RENAME_OR_MOVE_CANDIDATE",
+    "UNRESOLVED"
+  ],
+  "status": "IMPLEMENTED_INFRASTRUCTURE",
+  "reason": "Infrastructure added via mri_historical_categories. Sync logic can now query past runs."
+}

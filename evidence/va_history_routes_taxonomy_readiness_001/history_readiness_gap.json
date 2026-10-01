@@ -1,0 +1,18 @@
+{
+  "publication_identity": "EXISTS",
+  "publication_url": "PARTIAL",
+  "publication_url_history": "EXISTS",
+  "marketplace_category_identity": "PARTIAL",
+  "category_url": "PARTIAL",
+  "category_hierarchy": "MISSING",
+  "category_history": "EXISTS",
+  "taxonomy_sync": "IMPLEMENTED_INFRASTRUCTURE",
+  "new_category_detection": "IMPLEMENTED_INFRASTRUCTURE",
+  "not_observed_semantics": "IMPLEMENTED_INFRASTRUCTURE",
+  "returned_detection": "IMPLEMENTED_INFRASTRUCTURE",
+  "publication_history": "EXISTS",
+  "position_history": "EXISTS",
+  "price_history": "EXISTS",
+  "alignment_history": "MISSING",
+  "historical_events": "IMPLEMENTED_INFRASTRUCTURE"
+}

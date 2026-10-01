@@ -1,0 +1,26 @@
+{
+  "Falabella": {
+    "total": 22,
+    "with_route": 0,
+    "without_route": 22,
+    "coverage_percent": 0.0
+  },
+  "Mercado Libre": {
+    "total": 18,
+    "with_route": 0,
+    "without_route": 18,
+    "coverage_percent": 0.0
+  },
+  "Paris": {
+    "total": 25,
+    "with_route": 3,
+    "without_route": 22,
+    "coverage_percent": 12.0
+  },
+  "Ripley": {
+    "total": 3,
+    "with_route": 2,
+    "without_route": 1,
+    "coverage_percent": 66.67
+  }
+}

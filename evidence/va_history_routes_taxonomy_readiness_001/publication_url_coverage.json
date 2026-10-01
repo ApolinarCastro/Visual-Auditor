@@ -1,0 +1,29 @@
+{
+  "coverage": {
+    "Falabella": {
+      "total": 858,
+      "with_url": 644,
+      "without_url": 214,
+      "coverage_percent": 75.06
+    },
+    "Mercado Libre": {
+      "total": 572,
+      "with_url": 0,
+      "without_url": 572,
+      "coverage_percent": 0.0
+    },
+    "Paris": {
+      "total": 561,
+      "with_url": 0,
+      "without_url": 561,
+      "coverage_percent": 0.0
+    },
+    "Ripley": {
+      "total": 52,
+      "with_url": 0,
+      "without_url": 52,
+      "coverage_percent": 0.0
+    }
+  },
+  "note": "Most URLs are missing or were not collected/persisted in the legacy snapshot pipeline."
+}

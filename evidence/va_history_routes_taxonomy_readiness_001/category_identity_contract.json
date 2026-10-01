@@ -1,0 +1,7 @@
+{
+  "CATEGORY_IDENTITY_KEY": "category_id (UUID or hash of marketplace+name)",
+  "FALLBACK_IDENTITY": "category_name + marketplace",
+  "RENAME_HANDLING": "Currently treated as new category if name changes",
+  "ROUTE_CHANGE_HANDLING": "Route changes are tracked in mri_historical_categories",
+  "AMBIGUITY_HANDLING": "Categories with same name but different parents not supported in schema (no parent_id)"
+}

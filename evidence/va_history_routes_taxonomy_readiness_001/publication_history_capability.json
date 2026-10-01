@@ -1,0 +1,12 @@
+{
+  "publication existence": "YES (mri_historical_publications)",
+  "URL": "YES",
+  "price": "YES (mri_prices)",
+  "availability": "MISSING",
+  "observed categories": "YES (mri_publication_categories)",
+  "observed surfaces": "YES",
+  "position": "YES",
+  "TopN": "PARTIAL",
+  "CATEGORY_ALIGNMENT": "MISSING (no historical alignment table)",
+  "verification timestamp": "YES"
+}
