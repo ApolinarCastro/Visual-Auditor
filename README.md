@@ -106,9 +106,19 @@ Current focus: MRI autonomous marketplace intelligence across four marketplaces:
   - Independent verification: PASS (`reconciled = true`, `false_pass = 0`, `unsupported_fail = 0`).
   - Final verdict: `MRI_FULL_AUTONOMOUS_AUDIT_PASS`.
 
+- MRI-DASHBOARD-LIVE-MATERIALIZATION-001: Live dashboard materialization resolution certified PASS:
+  - Forensic causal isolation demonstrated root cause was `DASHBOARD_CAUSE_READ_MODEL_GAP`: `MRIReadModel.get_categories()` and `MRIReadModel.get_legacy_comparison()` bypassed SQLite database and returned static in-memory stubs from 2026-09-21 with `RESEARCH_SUMMARY_NOT_MATERIALIZED` and TopN = `N/A`.
+  - Surgical minimal fix: Connected `get_categories()` and `get_legacy_comparison()` in `app/dashboard/mri_read_model.py` to live dynamic queries over `mri_categories`, `mri_publication_categories`, and `mri_publications`.
+  - Red tests reproduced failure; green tests confirmed passing (2/2); regression suite confirmed 13/13 passing.
+  - Category views now project live commercial records (62 categories) with real evidence dates (2026-09-30) and dynamic TopN counts (Top30, Top60, Top90, Top120, Top240).
+  - Legacy comparison preserves historical legacy observations while dynamically populating current MRI observed counts and timestamps.
+  - Resource discipline: Exactly 1 production file modified (`app/dashboard/mri_read_model.py`), 0 new production files, 0 new dependencies, 1 fix cycle, scraper_runs=0, marketplace_requests=0, autoclaw_actions=0, manual_marketplace_actions=0.
+  - Independent reconciliation PASS (`reconciled = YES`, `mismatch_count = 0`, `stale_value_count = 0`, `false_materialized_count = 0`, `unsupported_topn_count = 0`).
+  - Final verdict: `MRI_DASHBOARD_LIVE_MATERIALIZATION_PASS`.
+
 ## Current operating decision
 
-The MRI autonomous pipeline has achieved full autonomous traversal and materialization across all four marketplaces (Mercado Libre, Paris, Ripley, Falabella) with zero manual intervention and zero code changes during production audit. All results are officially materialized to SQLite and reconciled with the MRI V2 dashboard.
+The MRI autonomous pipeline has achieved full autonomous traversal and materialization across all four marketplaces (Mercado Libre, Paris, Ripley, Falabella) with zero manual intervention and zero code changes during production audit. All results are officially materialized to SQLite and dynamically projected in all views of the MRI V2 dashboard (Categories, Publications, Summary, Evidence, Legacy Comparison).
 
 ## Core principles
 
@@ -128,6 +138,7 @@ This GitHub repository stores the persistent project state and verified forensic
 ## Next task
 
 Production maintenance and scheduled periodic execution of full autonomous audit runs.
+
 
 
 

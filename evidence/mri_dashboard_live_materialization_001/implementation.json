@@ -1,0 +1,12 @@
+{
+  "task_id": "MRI-DASHBOARD-LIVE-MATERIALIZATION-001",
+  "timestamp": "2026-10-01T08:52:00",
+  "production_files_changed": [
+    "app/dashboard/mri_read_model.py"
+  ],
+  "production_files_changed_count": 1,
+  "new_production_files": 0,
+  "new_dependencies": 0,
+  "fix_cycles": 1,
+  "changes_summary": "Connected get_categories() and get_legacy_comparison() in MRIReadModel to live SQLite queries over mri_categories, mri_publication_categories, and mri_publications."
+}

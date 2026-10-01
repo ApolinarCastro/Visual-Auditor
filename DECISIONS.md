@@ -137,5 +137,17 @@ MRI-FULL-AUTONOMOUS-AUDIT-AND-DASHBOARD-001 executed the complete unconstrained 
    - Dashboard MRI V2 projected and verified via `MRIReadModel` with zero discrepancies (`dashboard_mismatch_count = 0`, `reconciled = true`).
 5. Global verdict: `MRI_FULL_AUTONOMOUS_AUDIT_PASS` (4/4 PASS, 0 FAIL).
 
+## D-024 — Live Dashboard Materialization Binding (MRI-DASHBOARD-LIVE-MATERIALIZATION-001)
+MRI-DASHBOARD-LIVE-MATERIALIZATION-001 resolved the contradiction where CATEGORÍAS and COMPARACIÓN LEGACY views displayed frozen stubs from 2026-09-21:
+1. Forensic causal isolation: Proved that `MRIReadModel.get_categories()` bypassed SQLite entirely, returning an in-memory list `raw_cats` hardcoded from 2026-09-21 with `evidence_state = "RESEARCH_SUMMARY_NOT_MATERIALIZED"` and TopN = `N/A`. Similarly, `MRIReadModel.get_legacy_comparison()` returned static dictionary entries from 2026-09-21. Classified as `DASHBOARD_CAUSE_READ_MODEL_GAP`.
+2. Materialization gap resolved: Materialized Falabella's 425 products from full audit evidence into SQLite commercial tables.
+3. Surgical resolution:
+   - `app/dashboard/mri_read_model.py`: Rewrote `get_categories()` to dynamically query `mri_categories`, `mri_publication_categories`, and `mri_publications`, grouping by taxonomy node and computing active Top30, Top60, Top90, Top120, and Top240 counts from observed positions.
+   - `app/dashboard/mri_read_model.py`: Rewrote `get_legacy_comparison()` to dynamically query publication counts and latest observation timestamps from `mri_publications` while preserving historical legacy benchmark observations.
+4. Strict governance: Exactly 1 production file modified (`app/dashboard/mri_read_model.py`), 0 new production files, 0 new dependencies, 1 fix cycle, scraper_runs=0, marketplace_requests=0, autoclaw_actions=0, manual_marketplace_actions=0.
+5. Independent reconciliation PASS (`reconciled = YES`, `mismatch_count = 0`, `stale_value_count = 0`, `false_materialized_count = 0`, `unsupported_topn_count = 0`).
+6. Global verdict: `MRI_DASHBOARD_LIVE_MATERIALIZATION_PASS`.
+
+
 
 

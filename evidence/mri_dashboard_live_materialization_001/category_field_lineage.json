@@ -1,0 +1,127 @@
+{
+  "task_id": "MRI-DASHBOARD-LIVE-MATERIALIZATION-001",
+  "view": "CATEGORÍAS",
+  "provenance_before": "HARDCODED_STATIC_LIST_IN_MEMORY",
+  "fields": [
+    {
+      "ui_field": "c.marketplace",
+      "display_name": "Marketplace",
+      "read_model_method": "MRIReadModel.get_categories()",
+      "query": null,
+      "source_table_or_file": "app/dashboard/mri_read_model.py:379-590",
+      "run_id_filter": null,
+      "timestamp_source": null,
+      "current_value_source": "Hardcoded literal in raw_cats list ('Paris', 'Ripley', 'Falabella', 'Mercado Libre')"
+    },
+    {
+      "ui_field": "c.taxonomy_node",
+      "display_name": "Nodo Taxonómico",
+      "read_model_method": "MRIReadModel.get_categories()",
+      "query": null,
+      "source_table_or_file": "app/dashboard/mri_read_model.py:379-590",
+      "run_id_filter": null,
+      "timestamp_source": null,
+      "current_value_source": "Hardcoded literal in raw_cats list ('Vestidos', 'Blusas y Poleras', etc.)"
+    },
+    {
+      "ui_field": "c.publications_classified",
+      "display_name": "Clasificadas",
+      "read_model_method": "MRIReadModel.get_categories()",
+      "query": null,
+      "source_table_or_file": "app/dashboard/mri_read_model.py:379-590",
+      "run_id_filter": null,
+      "timestamp_source": null,
+      "current_value_source": "Hardcoded integer in raw_cats list (150, 186, 140, 120, 52, 422)"
+    },
+    {
+      "ui_field": "c.publications_observed",
+      "display_name": "Observadas",
+      "read_model_method": "MRIReadModel.get_categories()",
+      "query": null,
+      "source_table_or_file": "app/dashboard/mri_read_model.py:379-590",
+      "run_id_filter": null,
+      "timestamp_source": null,
+      "current_value_source": "Hardcoded integer in raw_cats list (150, 186, 140, 120, 52, 422)"
+    },
+    {
+      "ui_field": "c.browse_surface",
+      "display_name": "Superficie de Navegación",
+      "read_model_method": "MRIReadModel.get_categories()",
+      "query": null,
+      "source_table_or_file": "app/dashboard/mri_read_model.py:379-590",
+      "run_id_filter": null,
+      "timestamp_source": null,
+      "current_value_source": "Hardcoded string in raw_cats list ('Brand Catalog + Category Browse', etc.)"
+    },
+    {
+      "ui_field": "c.top30_count",
+      "display_name": "Top30",
+      "read_model_method": "MRIReadModel.get_categories()",
+      "query": null,
+      "source_table_or_file": "app/dashboard/mri_read_model.py:379-590",
+      "run_id_filter": null,
+      "timestamp_source": null,
+      "current_value_source": "Hardcoded string 'N/A (NOT MATERIALIZED)' in raw_cats list"
+    },
+    {
+      "ui_field": "c.top60_count",
+      "display_name": "Top60",
+      "read_model_method": "MRIReadModel.get_categories()",
+      "query": null,
+      "source_table_or_file": "app/dashboard/mri_read_model.py:379-590",
+      "run_id_filter": null,
+      "timestamp_source": null,
+      "current_value_source": "Hardcoded string 'N/A (NOT MATERIALIZED)' in raw_cats list"
+    },
+    {
+      "ui_field": "c.top90_count",
+      "display_name": "Top90",
+      "read_model_method": "MRIReadModel.get_categories()",
+      "query": null,
+      "source_table_or_file": "app/dashboard/mri_read_model.py:379-590",
+      "run_id_filter": null,
+      "timestamp_source": null,
+      "current_value_source": "Hardcoded string 'N/A (NOT MATERIALIZED)' in raw_cats list"
+    },
+    {
+      "ui_field": "c.top120_count",
+      "display_name": "Top120",
+      "read_model_method": "MRIReadModel.get_categories()",
+      "query": null,
+      "source_table_or_file": "app/dashboard/mri_read_model.py:379-590",
+      "run_id_filter": null,
+      "timestamp_source": null,
+      "current_value_source": "Hardcoded string 'N/A (NOT MATERIALIZED)' in raw_cats list"
+    },
+    {
+      "ui_field": "c.top240_count",
+      "display_name": "Top240",
+      "read_model_method": "MRIReadModel.get_categories()",
+      "query": null,
+      "source_table_or_file": "app/dashboard/mri_read_model.py:379-590",
+      "run_id_filter": null,
+      "timestamp_source": null,
+      "current_value_source": "Hardcoded string 'N/A (NOT MATERIALIZED)' in raw_cats list"
+    },
+    {
+      "ui_field": "c.evidence_state",
+      "display_name": "Estado Evidencia",
+      "read_model_method": "MRIReadModel.get_categories()",
+      "query": null,
+      "source_table_or_file": "app/dashboard/mri_read_model.py:379-590",
+      "run_id_filter": null,
+      "timestamp_source": null,
+      "current_value_source": "Hardcoded string 'RESEARCH_SUMMARY_NOT_MATERIALIZED' in raw_cats list"
+    },
+    {
+      "ui_field": "c.last_verified",
+      "display_name": "Última Verificación",
+      "read_model_method": "MRIReadModel.get_categories()",
+      "query": null,
+      "source_table_or_file": "app/dashboard/mri_read_model.py:379-590",
+      "run_id_filter": null,
+      "timestamp_source": null,
+      "current_value_source": "Hardcoded string '2026-09-21T09:12:30' / '2026-09-21T16:50:00' in raw_cats list"
+    }
+  ]
+}

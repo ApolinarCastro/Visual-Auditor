@@ -1,0 +1,13 @@
+{
+  "task_id": "MRI-DASHBOARD-LIVE-MATERIALIZATION-001",
+  "timestamp": "2026-10-01T08:52:00",
+  "reconciled": true,
+  "mismatch_count": 0,
+  "stale_value_count": 0,
+  "false_materialized_count": 0,
+  "unsupported_topn_count": 0,
+  "details": {
+    "categories_checked": 62,
+    "legacy_comparisons_checked": 4
+  }
+}

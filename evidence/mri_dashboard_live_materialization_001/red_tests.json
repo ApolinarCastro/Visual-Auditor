@@ -1,0 +1,18 @@
+{
+  "task_id": "MRI-DASHBOARD-LIVE-MATERIALIZATION-001",
+  "red_test": "tests/test_dashboard_live_materialization.py",
+  "red_reproduced": true,
+  "failures": [
+    {
+      "test_name": "test_categories_read_model_uses_materialized_db_records",
+      "error_type": "AssertionError",
+      "message": "Found stale RESEARCH_SUMMARY_NOT_MATERIALIZED in categories view: ['RESEARCH_SUMMARY_NOT_MATERIALIZED', 'RESEARCH_SUMMARY_NOT_MATERIALIZED', 'RESEARCH_SUMMARY_NOT_MATERIALIZED']"
+    },
+    {
+      "test_name": "test_legacy_comparison_uses_dynamic_mri_evidence",
+      "error_type": "AssertionError",
+      "message": "Expected legacy comparison to reflect latest observation date 2026-09-30, but got ['2026-09-21', '2026-09-21', '2026-09-21', '2026-09-21']"
+    }
+  ],
+  "first_failure": "AssertionError: Found stale RESEARCH_SUMMARY_NOT_MATERIALIZED in categories view"
+}

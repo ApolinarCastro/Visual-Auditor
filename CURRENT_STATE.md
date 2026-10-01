@@ -4,25 +4,25 @@
 Visual Auditor / MRI
 
 ## Status
-FULL_AUTONOMOUS_AUDIT_CERTIFIED_PASS
+DASHBOARD_LIVE_MATERIALIZATION_PASS
 
 ## Last completed task
-MRI-FULL-AUTONOMOUS-AUDIT-AND-DASHBOARD-001
+MRI-DASHBOARD-LIVE-MATERIALIZATION-001
 
 ## Last reported verdict
-MRI_FULL_AUTONOMOUS_AUDIT_PASS
+MRI_DASHBOARD_LIVE_MATERIALIZATION_PASS
 
 ## Evidence status
-Physical certified evidence persisted in `outputs/mri_full_autonomous_audit_and_dashboard_001/` and `evidence/mri_full_autonomous_audit_and_dashboard_001/`:
-- Full autonomous audit executed across 4 marketplaces (Mercado Libre, Paris, Ripley, Falabella) with brand runtime `Nicopoly`.
-- 4/4 Marketplaces PASS (1098 unique products observed, 1050 direct brand evidence items, 2061 category memberships, 1098 positions materialized).
-- SQLite database (`data/sqlite/visibility.db`) updated: 250 records written, 374 updated across publication, product, variant, price, category, and evidence ledger tables.
-- Dashboard MRI V2 reconciled with 0 mismatches (`dashboard_mismatch_count = 0`, `reconciled = true`).
-- Code discipline: `production_files_changed = 0`, `new_production_files = 0`, `new_dependencies = 0`, `fix_cycles = 0`.
-- Autonomy discipline: `autoclaw_actions = 0`, `manual_actions = 0`, `synthetic_contribution = 0`, `hardcoded_result_contribution = 0`.
-- Independent verification: PASS (`reconciled = true`, `false_pass = 0`, `unsupported_fail = 0`).
+Physical certified evidence persisted in `outputs/mri_dashboard_live_materialization_001/` and `evidence/mri_dashboard_live_materialization_001/`:
+- Forensic investigation identified `DASHBOARD_CAUSE_READ_MODEL_GAP`: `get_categories()` and `get_legacy_comparison()` returned static in-memory stubs from 2026-09-21 instead of querying SQLite.
+- Surgical minimal fix applied to `app/dashboard/mri_read_model.py`: dynamic SQL queries now compute live category records (62 categories) with active timestamps (2026-09-30) and dynamic TopN rankings (Top30, Top60, Top90, Top120, Top240).
+- Red tests reproduced failure; green tests confirmed passing (2/2); regression suite confirmed 13/13 passing.
+- Falabella 425 products from full audit evidence materialized into SQLite.
+- Reconciled with zero mismatches (`mismatch_count = 0`, `stale_value_count = 0`, `false_materialized_count = 0`, `unsupported_topn_count = 0`, `reconciled = true`).
+- Discipline: `scraper_runs = 0`, `marketplace_requests = 0`, `autoclaw_actions = 0`, `manual_marketplace_actions = 0`, `production_files_changed = 1`, `new_production_files = 0`, `new_dependencies = 0`.
 
 Previous milestone evidence remains intact:
+- `evidence/mri_full_autonomous_audit_and_dashboard_001/` (Full autonomous audit across 4 marketplaces)
 - `evidence/mri_ml_pagination_block_001/` (Mercado Libre autonomous acquisition restored)
 - `evidence/mri_4mp_e2e_cert_002/` (Second transversal 4MP certification diagnostic run)
 - `evidence/mri_ripley_rate_limit_and_brand_filter_001/` (Ripley brand filter certified PASS)

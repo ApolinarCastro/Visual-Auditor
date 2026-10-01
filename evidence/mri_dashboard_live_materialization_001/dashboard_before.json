@@ -1,0 +1,682 @@
+{
+  "task_id": "MRI-DASHBOARD-LIVE-MATERIALIZATION-001",
+  "timestamp": "2026-10-01T08:38:28.344017",
+  "views": {
+    "RESUMEN": {
+      "source": "mri_read_model.get_summary()",
+      "run_id": "mixed (mri_publications counts + frozen research census)",
+      "timestamp": "2026-10-01T08:38:28.110259",
+      "record_count": 4,
+      "marketplace_counts": {
+        "Paris": {
+          "materialized": 561,
+          "census": 486
+        },
+        "Ripley": {
+          "materialized": 50,
+          "census": 382
+        },
+        "Falabella": {
+          "materialized": 214,
+          "census": 192
+        },
+        "Mercado Libre": {
+          "materialized": 453,
+          "census": 430
+        }
+      },
+      "data": {
+        "mri_label": "MRI V2 — READ ONLY / SHADOW",
+        "active_truth_model": "LEGACY_VA",
+        "marketplaces": [
+          {
+            "marketplace": "Paris",
+            "brand": "Nicopoly",
+            "research_census_total": 486,
+            "materialized_real_publications": 561,
+            "completeness_state": "RESEARCH_CENSUS_ONLY (NOT_MATERIALIZED)",
+            "unknown_remainder": "UNKNOWN",
+            "unknown_remainder_display": "UNKNOWN (Censo de investigación congelado; materialización parcial en curso)",
+            "surfaces_observed": 8,
+            "surfaces_observed_list": [
+              "Category Browse",
+              "Brand Catalog",
+              "Subcategory Listing",
+              "Product Detail"
+            ],
+            "last_verified": "2026-09-21T16:27:40",
+            "blocked_surfaces": 0,
+            "unresolved_identities": 0,
+            "contradictions": 0,
+            "evidence_health": "RESEARCH_BASELINE_FROZEN",
+            "reference_universe": "486 registros en censo de investigación (No materializados en publicaciones MRI)",
+            "provenance": "commercial_reconciliation/v001/09_CENSUS_RECONCILIATION.csv",
+            "commercial_authority": "MRI_PRIMARY",
+            "note": "Paris: Censo de investigación: 486. Publicaciones reales materializadas: 561."
+          },
+          {
+            "marketplace": "Ripley",
+            "brand": "Nicopoly",
+            "research_census_total": 382,
+            "materialized_real_publications": 50,
+            "completeness_state": "IDENTITY_UNRESOLVED",
+            "unknown_remainder": "UNKNOWN",
+            "unknown_remainder_display": "IDENTITY_UNRESOLVED",
+            "surfaces_observed": 6,
+            "surfaces_observed_list": [
+              "Brand Catalog",
+              "Category Listing",
+              "Product Detail"
+            ],
+            "last_verified": "2026-09-21T16:27:40",
+            "blocked_surfaces": 0,
+            "unresolved_identities": 5343,
+            "contradictions": 0,
+            "evidence_health": "RESEARCH_BASELINE_FROZEN",
+            "reference_universe": "5343 observaciones en run certificado (identidad nativa no capturada)",
+            "provenance": "product_snapshots",
+            "commercial_authority": "UNRESOLVED_IDENTITY",
+            "note": "Ripley: 5343 observations IDENTITY_UNRESOLVED."
+          },
+          {
+            "marketplace": "Falabella",
+            "brand": "Nicopoly",
+            "research_census_total": 192,
+            "materialized_real_publications": 214,
+            "completeness_state": "RESEARCH_CENSUS_ONLY (NOT_MATERIALIZED)",
+            "unknown_remainder": "UNKNOWN",
+            "unknown_remainder_display": "UNKNOWN (Censo de investigación de 6 facetas; materialización en curso)",
+            "surfaces_observed": 6,
+            "surfaces_observed_list": [
+              "Search Grid",
+              "Department Facet: Vestidos",
+              "Department Facet: Blusas",
+              "Department Facet: Pantalones",
+              "Department Facet: Chaquetas",
+              "Department Facet: Sweaters"
+            ],
+            "last_verified": "2026-09-21T16:50:00",
+            "blocked_surfaces": 0,
+            "unresolved_identities": 0,
+            "contradictions": 0,
+            "evidence_health": "RESEARCH_BASELINE_FROZEN",
+            "reference_universe": "192 registros en censo de investigación (No materializados en publicaciones MRI)",
+            "provenance": "census_capability_revalidation/v001/06_FALABELLA_CENSUS.json",
+            "commercial_authority": "MRI_PRIMARY",
+            "note": "Falabella: Censo de investigación: 192. Publicaciones reales materializadas: 214."
+          },
+          {
+            "marketplace": "Mercado Libre",
+            "brand": "Nicopoly",
+            "research_census_total": 430,
+            "materialized_real_publications": 453,
+            "completeness_state": "RESEARCH_CENSUS_ONLY (NOT_MATERIALIZED)",
+            "unknown_remainder": "UNKNOWN",
+            "unknown_remainder_display": "UNKNOWN (Censo de investigación; materialización en curso)",
+            "surfaces_observed": 4,
+            "surfaces_observed_list": [
+              "Brand Store (422 items)",
+              "Search Grid (8 reseller items)",
+              "Offers",
+              "Category Browse"
+            ],
+            "last_verified": "2026-09-21T16:50:00",
+            "blocked_surfaces": 0,
+            "unresolved_identities": 0,
+            "contradictions": 0,
+            "evidence_health": "RESEARCH_BASELINE_FROZEN",
+            "reference_universe": "430 registros en censo de investigación (No materializados en publicaciones MRI)",
+            "provenance": "census_capability_revalidation/v001/11_ML_CENSUS.json",
+            "commercial_authority": "MRI_PRIMARY",
+            "note": "Mercado Libre: Censo de investigación: 430. Publicaciones reales materializadas: 453."
+          }
+        ],
+        "total_materialized_real_publications": 1278,
+        "total_research_census_publications": 1490,
+        "as_of": "2026-10-01T08:38:28.110259",
+        "phase": "PHASE_C_PRODUCTION_ACTIVATION"
+      }
+    },
+    "PUBLICACIONES": {
+      "source": "mri_read_model.get_publications() -> mri_publications / mri_prices / mri_categories",
+      "run_id": "all active non-test runs in mri_publications",
+      "timestamp": "2026-10-01T08:38:28.344034",
+      "record_count": 3854,
+      "marketplace_counts": {
+        "Ripley": 51,
+        "Paris": 3073,
+        "Mercado libre": 513,
+        "Falabella": 217
+      },
+      "category_counts": {
+        "null": 3854
+      },
+      "position_counts": 3854,
+      "sample": [
+        {
+          "publication_id": "pub_ripley_05ba05142218",
+          "marketplace": "Ripley",
+          "marketplace_product_id": "10002627269",
+          "product_id": "prod_unmapped_pub_ripley_05ba05142218",
+          "title": "VESTIDO PLIEGUES EN CINTURA ROJO MUJER NICOPOLY",
+          "seller_sku": "MASTER_UNMAPPED",
+          "sale_price": 45990.0,
+          "regular_price": null,
+          "availability": {
+            "display": "UNKNOWN"
+          },
+          "taxonomy_classified_as": "LEGACY_CONFIGURED_CATEGORY",
+          "observed_in": "Brand Hub",
+          "surface": "Brand Hub",
+          "position": 37,
+          "top_n": "N/A",
+          "evidence_state": "OBSERVED",
+          "last_verified": "2026-09-30T17:14:11.754662",
+          "canonical_url": "",
+          "evidence_id": "ev_ripley_pub_pub_ripley_05ba05142218"
+        },
+        {
+          "publication_id": "pub_ripley_0b79085abbc9",
+          "marketplace": "Ripley",
+          "marketplace_product_id": "10002951146",
+          "product_id": "prod_unmapped_pub_ripley_0b79085abbc9",
+          "title": "POLERA ENCAJE MANGA LARGA NEGRO MUJER NICOPOLY",
+          "seller_sku": "MASTER_UNMAPPED",
+          "sale_price": 25990.0,
+          "regular_price": null,
+          "availability": {
+            "display": "UNKNOWN"
+          },
+          "taxonomy_classified_as": "LEGACY_CONFIGURED_CATEGORY",
+          "observed_in": "Brand Hub",
+          "surface": "Brand Hub",
+          "position": 2,
+          "top_n": "N/A",
+          "evidence_state": "OBSERVED",
+          "last_verified": "2026-09-30T17:14:11.754662",
+          "canonical_url": "",
+          "evidence_id": "ev_ripley_pub_pub_ripley_0b79085abbc9"
+        },
+        {
+          "publication_id": "pub_ripley_1bad7454bbcf",
+          "marketplace": "Ripley",
+          "marketplace_product_id": "10002627259",
+          "product_id": "prod_unmapped_pub_ripley_1bad7454bbcf",
+          "title": "BLAZER FLOREADO CELESTE MUJER NICOPOLY",
+          "seller_sku": "MASTER_UNMAPPED",
+          "sale_price": 47990.0,
+          "regular_price": null,
+          "availability": {
+            "display": "UNKNOWN"
+          },
+          "taxonomy_classified_as": "LEGACY_CONFIGURED_CATEGORY",
+          "observed_in": "Brand Hub",
+          "surface": "Brand Hub",
+          "position": 44,
+          "top_n": "N/A",
+          "evidence_state": "OBSERVED",
+          "last_verified": "2026-09-30T17:14:11.754662",
+          "canonical_url": "",
+          "evidence_id": "ev_ripley_pub_pub_ripley_1bad7454bbcf"
+        },
+        {
+          "publication_id": "pub_ripley_26361caeb3c5",
+          "marketplace": "Ripley",
+          "marketplace_product_id": "10002646333",
+          "product_id": "prod_unmapped_pub_ripley_26361caeb3c5",
+          "title": "CHAQUETA REVERSIBLE NEGRO MUJER NICOPOLY",
+          "seller_sku": "MASTER_UNMAPPED",
+          "sale_price": 64990.0,
+          "regular_price": null,
+          "availability": {
+            "display": "UNKNOWN"
+          },
+          "taxonomy_classified_as": "LEGACY_CONFIGURED_CATEGORY",
+          "observed_in": "Brand Hub",
+          "surface": "Brand Hub",
+          "position": 30,
+          "top_n": "N/A",
+          "evidence_state": "OBSERVED",
+          "last_verified": "2026-09-30T17:14:11.754662",
+          "canonical_url": "",
+          "evidence_id": "ev_ripley_pub_pub_ripley_26361caeb3c5"
+        },
+        {
+          "publication_id": "pub_ripley_2c2a840f8f31",
+          "marketplace": "Ripley",
+          "marketplace_product_id": "10003543799",
+          "product_id": "prod_unmapped_pub_ripley_2c2a840f8f31",
+          "title": "GILET ECO CUERO CAFE MUJER NICOPOLY",
+          "seller_sku": "MASTER_UNMAPPED",
+          "sale_price": 29990.0,
+          "regular_price": null,
+          "availability": {
+            "display": "UNKNOWN"
+          },
+          "taxonomy_classified_as": "LEGACY_CONFIGURED_CATEGORY",
+          "observed_in": "Brand Hub",
+          "surface": "Brand Hub",
+          "position": 22,
+          "top_n": "N/A",
+          "evidence_state": "OBSERVED",
+          "last_verified": "2026-09-30T17:14:11.754662",
+          "canonical_url": "",
+          "evidence_id": "ev_ripley_pub_pub_ripley_2c2a840f8f31"
+        }
+      ]
+    },
+    "CATEGORÍAS": {
+      "source": "mri_read_model.get_categories() -> hardcoded raw_cats list",
+      "run_id": "HISTORICAL_FROZEN_CENSUS_2026-09-21 (hardcoded)",
+      "timestamp": "2026-09-21T16:50:00",
+      "record_count": 14,
+      "marketplace_counts": {
+        "Paris": 3,
+        "Ripley": 3,
+        "Falabella": 5,
+        "Mercado Libre": 3
+      },
+      "category_counts": {
+        "Vestidos": 3,
+        "Blusas y Poleras": 2,
+        "Pantalones y Jeans": 2,
+        "Vestidos y Enteritos": 1,
+        "Blusas": 2,
+        "Sweaters y Tejidos": 1,
+        "Chaquetas y Abrigos": 1,
+        "Sweaters y Cardigans": 1,
+        "Pantalones": 1
+      },
+      "position_counts": 0,
+      "provenance_notice": "RESEARCH SUMMARY / NOT MATERIALIZED. Cero posiciones TopN materializadas.",
+      "items": [
+        {
+          "marketplace": "Paris",
+          "taxonomy_node": "Vestidos",
+          "publications_classified": 150,
+          "publications_observed": 150,
+          "browse_surface": "Brand Catalog + Category Browse",
+          "top30_count": "N/A (NOT MATERIALIZED)",
+          "top60_count": "N/A (NOT MATERIALIZED)",
+          "top90_count": "N/A (NOT MATERIALIZED)",
+          "top120_count": "N/A (NOT MATERIALIZED)",
+          "top240_count": "N/A (NOT MATERIALIZED)",
+          "evidence_state": "RESEARCH_SUMMARY_NOT_MATERIALIZED",
+          "last_verified": "2026-09-21T09:12:30",
+          "provenance": "Research Census Aggregate"
+        },
+        {
+          "marketplace": "Paris",
+          "taxonomy_node": "Blusas y Poleras",
+          "publications_classified": 150,
+          "publications_observed": 150,
+          "browse_surface": "Brand Catalog + Category Browse",
+          "top30_count": "N/A (NOT MATERIALIZED)",
+          "top60_count": "N/A (NOT MATERIALIZED)",
+          "top90_count": "N/A (NOT MATERIALIZED)",
+          "top120_count": "N/A (NOT MATERIALIZED)",
+          "top240_count": "N/A (NOT MATERIALIZED)",
+          "evidence_state": "RESEARCH_SUMMARY_NOT_MATERIALIZED",
+          "last_verified": "2026-09-21T09:12:30",
+          "provenance": "Research Census Aggregate"
+        },
+        {
+          "marketplace": "Paris",
+          "taxonomy_node": "Pantalones y Jeans",
+          "publications_classified": 186,
+          "publications_observed": 186,
+          "browse_surface": "Brand Catalog + Subcategory Listing",
+          "top30_count": "N/A (NOT MATERIALIZED)",
+          "top60_count": "N/A (NOT MATERIALIZED)",
+          "top90_count": "N/A (NOT MATERIALIZED)",
+          "top120_count": "N/A (NOT MATERIALIZED)",
+          "top240_count": "N/A (NOT MATERIALIZED)",
+          "evidence_state": "RESEARCH_SUMMARY_NOT_MATERIALIZED",
+          "last_verified": "2026-09-21T09:12:30",
+          "provenance": "Research Census Aggregate"
+        },
+        {
+          "marketplace": "Ripley",
+          "taxonomy_node": "Vestidos y Enteritos",
+          "publications_classified": 140,
+          "publications_observed": 140,
+          "browse_surface": "Brand Catalog",
+          "top30_count": "N/A (NOT MATERIALIZED)",
+          "top60_count": "N/A (NOT MATERIALIZED)",
+          "top90_count": "N/A (NOT MATERIALIZED)",
+          "top120_count": "N/A (NOT MATERIALIZED)",
+          "top240_count": "N/A (NOT MATERIALIZED)",
+          "evidence_state": "RESEARCH_SUMMARY_NOT_MATERIALIZED",
+          "last_verified": "2026-09-21T09:28:45",
+          "provenance": "Research Census Aggregate"
+        },
+        {
+          "marketplace": "Ripley",
+          "taxonomy_node": "Blusas",
+          "publications_classified": 120,
+          "publications_observed": 120,
+          "browse_surface": "Brand Catalog",
+          "top30_count": "N/A (NOT MATERIALIZED)",
+          "top60_count": "N/A (NOT MATERIALIZED)",
+          "top90_count": "N/A (NOT MATERIALIZED)",
+          "top120_count": "N/A (NOT MATERIALIZED)",
+          "top240_count": "N/A (NOT MATERIALIZED)",
+          "evidence_state": "RESEARCH_SUMMARY_NOT_MATERIALIZED",
+          "last_verified": "2026-09-21T09:28:45",
+          "provenance": "Research Census Aggregate"
+        },
+        {
+          "marketplace": "Ripley",
+          "taxonomy_node": "Sweaters y Tejidos",
+          "publications_classified": 122,
+          "publications_observed": 122,
+          "browse_surface": "Brand Catalog",
+          "top30_count": "N/A (NOT MATERIALIZED)",
+          "top60_count": "N/A (NOT MATERIALIZED)",
+          "top90_count": "N/A (NOT MATERIALIZED)",
+          "top120_count": "N/A (NOT MATERIALIZED)",
+          "top240_count": "N/A (NOT MATERIALIZED)",
+          "evidence_state": "RESEARCH_SUMMARY_NOT_MATERIALIZED",
+          "last_verified": "2026-09-21T09:28:45",
+          "provenance": "Research Census Aggregate"
+        },
+        {
+          "marketplace": "Falabella",
+          "taxonomy_node": "Vestidos",
+          "publications_classified": 48,
+          "publications_observed": 48,
+          "browse_surface": "Brand Facet: Vestidos",
+          "top30_count": "N/A (NOT MATERIALIZED)",
+          "top60_count": "N/A (NOT MATERIALIZED)",
+          "top90_count": "N/A (NOT MATERIALIZED)",
+          "top120_count": "N/A (NOT MATERIALIZED)",
+          "top240_count": "N/A (NOT MATERIALIZED)",
+          "evidence_state": "RESEARCH_SUMMARY_NOT_MATERIALIZED",
+          "last_verified": "2026-09-21T16:50:00",
+          "provenance": "Research Census Aggregate"
+        },
+        {
+          "marketplace": "Falabella",
+          "taxonomy_node": "Blusas y Poleras",
+          "publications_classified": 36,
+          "publications_observed": 36,
+          "browse_surface": "Department Facet: Blusas",
+          "top30_count": "N/A (NOT MATERIALIZED)",
+          "top60_count": "N/A (NOT MATERIALIZED)",
+          "top90_count": "N/A (NOT MATERIALIZED)",
+          "top120_count": "N/A (NOT MATERIALIZED)",
+          "top240_count": "N/A (NOT MATERIALIZED)",
+          "evidence_state": "RESEARCH_SUMMARY_NOT_MATERIALIZED",
+          "last_verified": "2026-09-21T16:50:00",
+          "provenance": "Research Census Aggregate"
+        },
+        {
+          "marketplace": "Falabella",
+          "taxonomy_node": "Pantalones y Jeans",
+          "publications_classified": 42,
+          "publications_observed": 42,
+          "browse_surface": "Department Facet: Pantalones",
+          "top30_count": "N/A (NOT MATERIALIZED)",
+          "top60_count": "N/A (NOT MATERIALIZED)",
+          "top90_count": "N/A (NOT MATERIALIZED)",
+          "top120_count": "N/A (NOT MATERIALIZED)",
+          "top240_count": "N/A (NOT MATERIALIZED)",
+          "evidence_state": "RESEARCH_SUMMARY_NOT_MATERIALIZED",
+          "last_verified": "2026-09-21T16:50:00",
+          "provenance": "Research Census Aggregate"
+        },
+        {
+          "marketplace": "Falabella",
+          "taxonomy_node": "Chaquetas y Abrigos",
+          "publications_classified": 32,
+          "publications_observed": 32,
+          "browse_surface": "Department Facet: Chaquetas",
+          "top30_count": "N/A (NOT MATERIALIZED)",
+          "top60_count": "N/A (NOT MATERIALIZED)",
+          "top90_count": "N/A (NOT MATERIALIZED)",
+          "top120_count": "N/A (NOT MATERIALIZED)",
+          "top240_count": "N/A (NOT MATERIALIZED)",
+          "evidence_state": "RESEARCH_SUMMARY_NOT_MATERIALIZED",
+          "last_verified": "2026-09-21T16:50:00",
+          "provenance": "Research Census Aggregate"
+        },
+        {
+          "marketplace": "Falabella",
+          "taxonomy_node": "Sweaters y Cardigans",
+          "publications_classified": 20,
+          "publications_observed": 20,
+          "browse_surface": "Department Facet: Sweaters",
+          "top30_count": "N/A (NOT MATERIALIZED)",
+          "top60_count": "N/A (NOT MATERIALIZED)",
+          "top90_count": "N/A (NOT MATERIALIZED)",
+          "top120_count": "N/A (NOT MATERIALIZED)",
+          "top240_count": "N/A (NOT MATERIALIZED)",
+          "evidence_state": "RESEARCH_SUMMARY_NOT_MATERIALIZED",
+          "last_verified": "2026-09-21T16:50:00",
+          "provenance": "Research Census Aggregate"
+        },
+        {
+          "marketplace": "Mercado Libre",
+          "taxonomy_node": "Vestidos",
+          "publications_classified": 144,
+          "publications_observed": 144,
+          "browse_surface": "Brand Store + Search Grid",
+          "top30_count": "N/A (NOT MATERIALIZED)",
+          "top60_count": "N/A (NOT MATERIALIZED)",
+          "top90_count": "N/A (NOT MATERIALIZED)",
+          "top120_count": "N/A (NOT MATERIALIZED)",
+          "top240_count": "N/A (NOT MATERIALIZED)",
+          "evidence_state": "RESEARCH_SUMMARY_NOT_MATERIALIZED",
+          "last_verified": "2026-09-21T16:50:00",
+          "provenance": "Research Census Aggregate"
+        },
+        {
+          "marketplace": "Mercado Libre",
+          "taxonomy_node": "Blusas",
+          "publications_classified": 143,
+          "publications_observed": 143,
+          "browse_surface": "Brand Store + Search Grid",
+          "top30_count": "N/A (NOT MATERIALIZED)",
+          "top60_count": "N/A (NOT MATERIALIZED)",
+          "top90_count": "N/A (NOT MATERIALIZED)",
+          "top120_count": "N/A (NOT MATERIALIZED)",
+          "top240_count": "N/A (NOT MATERIALIZED)",
+          "evidence_state": "RESEARCH_SUMMARY_NOT_MATERIALIZED",
+          "last_verified": "2026-09-21T16:50:00",
+          "provenance": "Research Census Aggregate"
+        },
+        {
+          "marketplace": "Mercado Libre",
+          "taxonomy_node": "Pantalones",
+          "publications_classified": 143,
+          "publications_observed": 143,
+          "browse_surface": "Brand Store + Search Grid",
+          "top30_count": "N/A (NOT MATERIALIZED)",
+          "top60_count": "N/A (NOT MATERIALIZED)",
+          "top90_count": "N/A (NOT MATERIALIZED)",
+          "top120_count": "N/A (NOT MATERIALIZED)",
+          "top240_count": "N/A (NOT MATERIALIZED)",
+          "evidence_state": "RESEARCH_SUMMARY_NOT_MATERIALIZED",
+          "last_verified": "2026-09-21T16:50:00",
+          "provenance": "Research Census Aggregate"
+        }
+      ]
+    },
+    "EVIDENCIA": {
+      "source": "mri_read_model.get_evidence() -> mri_evidence_ledger",
+      "run_id": "mri_evidence_ledger rows",
+      "timestamp": "2026-10-01T08:38:28.344037",
+      "record_count": 4419,
+      "sample": [
+        {
+          "evidence_id": "ev_ripley_snap_9500203",
+          "marketplace": "Ripley",
+          "publication_id": "N/A",
+          "claim_type": "PRODUCT_OBSERVATION",
+          "claim_value": "OBSERVED",
+          "surface": "Brand Hub",
+          "method": "LEGACY_DOM_OBSERVED",
+          "observed_at": "2026-09-30T17:14:11.754662",
+          "confidence": 1.0,
+          "status": "OBSERVED",
+          "is_foundation_test": false,
+          "raw_reference": "data/sqlite/visibility.db:product_snapshots?id=9500203",
+          "content_hash": "bc3210b47fa3c12f",
+          "truth_model_version": "v1"
+        },
+        {
+          "evidence_id": "ev_ripley_snap_9500204",
+          "marketplace": "Ripley",
+          "publication_id": "N/A",
+          "claim_type": "PRODUCT_OBSERVATION",
+          "claim_value": "OBSERVED",
+          "surface": "Brand Hub",
+          "method": "LEGACY_DOM_OBSERVED",
+          "observed_at": "2026-09-30T17:14:11.754662",
+          "confidence": 1.0,
+          "status": "OBSERVED",
+          "is_foundation_test": false,
+          "raw_reference": "data/sqlite/visibility.db:product_snapshots?id=9500204",
+          "content_hash": "8c8ef0211b5e2c30",
+          "truth_model_version": "v1"
+        },
+        {
+          "evidence_id": "ev_ripley_snap_9500205",
+          "marketplace": "Ripley",
+          "publication_id": "N/A",
+          "claim_type": "PRODUCT_OBSERVATION",
+          "claim_value": "OBSERVED",
+          "surface": "Brand Hub",
+          "method": "LEGACY_DOM_OBSERVED",
+          "observed_at": "2026-09-30T17:14:11.754662",
+          "confidence": 1.0,
+          "status": "OBSERVED",
+          "is_foundation_test": false,
+          "raw_reference": "data/sqlite/visibility.db:product_snapshots?id=9500205",
+          "content_hash": "ed9569525e2f32bc",
+          "truth_model_version": "v1"
+        },
+        {
+          "evidence_id": "ev_ripley_snap_9500206",
+          "marketplace": "Ripley",
+          "publication_id": "N/A",
+          "claim_type": "PRODUCT_OBSERVATION",
+          "claim_value": "OBSERVED",
+          "surface": "Brand Hub",
+          "method": "LEGACY_DOM_OBSERVED",
+          "observed_at": "2026-09-30T17:14:11.754662",
+          "confidence": 1.0,
+          "status": "OBSERVED",
+          "is_foundation_test": false,
+          "raw_reference": "data/sqlite/visibility.db:product_snapshots?id=9500206",
+          "content_hash": "65fc5348aa6dccb0",
+          "truth_model_version": "v1"
+        },
+        {
+          "evidence_id": "ev_ripley_snap_9500207",
+          "marketplace": "Ripley",
+          "publication_id": "N/A",
+          "claim_type": "PRODUCT_OBSERVATION",
+          "claim_value": "OBSERVED",
+          "surface": "Brand Hub",
+          "method": "LEGACY_DOM_OBSERVED",
+          "observed_at": "2026-09-30T17:14:11.754662",
+          "confidence": 1.0,
+          "status": "OBSERVED",
+          "is_foundation_test": false,
+          "raw_reference": "data/sqlite/visibility.db:product_snapshots?id=9500207",
+          "content_hash": "0cdee46924d2e3b5",
+          "truth_model_version": "v1"
+        }
+      ]
+    },
+    "SALUD_DE_FUENTES": {
+      "source": "mri_read_model.get_source_health() -> hardcoded sources list",
+      "run_id": "HISTORICAL_FROZEN_CENSUS_2026-09-21",
+      "timestamp": "2026-09-21T16:50:00",
+      "record_count": 4,
+      "sources": [
+        {
+          "marketplace": "Paris",
+          "status": "HEALTHY",
+          "status_label": "● HEALTHY (RESEARCH OBSERVATION)",
+          "last_verified": "2026-09-21T09:12:30",
+          "details": "Catálogo accesible en censo de investigación (486 productos en censo)",
+          "provenance": "RESEARCH OBSERVATION",
+          "blocked": false
+        },
+        {
+          "marketplace": "Ripley",
+          "status": "HEALTHY",
+          "status_label": "● HEALTHY (RESEARCH OBSERVATION)",
+          "last_verified": "2026-09-21T09:28:45",
+          "details": "Portal accesible en censo de investigación (382 productos en censo)",
+          "provenance": "RESEARCH OBSERVATION",
+          "blocked": false
+        },
+        {
+          "marketplace": "Falabella",
+          "status": "PARTIAL",
+          "status_label": "▲ PARTIAL (RESEARCH OBSERVATION)",
+          "last_verified": "2026-09-21T16:50:00",
+          "details": "Búsqueda limitada a 52; superada a 192 en recorrido de investigación de facetas",
+          "provenance": "RESEARCH OBSERVATION",
+          "blocked": false
+        },
+        {
+          "marketplace": "Mercado Libre",
+          "status": "PARTIAL",
+          "status_label": "▲ PARTIAL (RESEARCH OBSERVATION)",
+          "last_verified": "2026-09-21T16:50:00",
+          "details": "Tienda oficial cubre 422; búsqueda orgánica 8 adicionales en investigación",
+          "provenance": "RESEARCH OBSERVATION",
+          "blocked": false
+        }
+      ]
+    },
+    "COMPARACIÓN_LEGACY": {
+      "source": "mri_read_model.get_legacy_comparison() -> hardcoded comparisons list",
+      "run_id": "HISTORICAL_FROZEN_CENSUS_2026-09-21",
+      "timestamp": "2026-09-21T16:50:00",
+      "record_count": 4,
+      "comparisons": [
+        {
+          "marketplace": "Paris",
+          "legacy_observation": "335 productos (Configurado en 2 categorías)",
+          "mri_observation": "486 productos (Censo de investigación multi-categoría)",
+          "semantic_comparability": "COMPARABLE_SUPERSET",
+          "difference_classification": "MRI_DISCOVERED_EXPANDED_SCOPE",
+          "last_observed": "2026-09-21T09:12:30",
+          "note": "Comparación de agregados de censo. No implica publicaciones materializadas."
+        },
+        {
+          "marketplace": "Ripley",
+          "legacy_observation": "238 productos (Colapso por título en scraper)",
+          "mri_observation": "382 productos (Censo de investigación por item)",
+          "semantic_comparability": "COMPARABLE_SUPERSET",
+          "difference_classification": "LEGACY_TITLE_COLLAPSE_DEFECT",
+          "last_observed": "2026-09-21T09:28:45",
+          "note": "Legacy colapsó variantes con idéntico título. Censo de investigación identificó 382 items."
+        },
+        {
+          "marketplace": "Falabella",
+          "legacy_observation": "198 productos (Rastreo histórico por catálogo)",
+          "mri_observation": "192 productos (Censo de investigación de 6 facetas)",
+          "semantic_comparability": "HIGH_CONFIDENCE_PARTIAL_UNION",
+          "difference_classification": "COLD_SEARCH_LIMITATION_RESOLVED",
+          "last_observed": "2026-09-21T16:50:00",
+          "note": "6 ausentes en censo correspondían a deslistados estacionales. Remanente UNKNOWN."
+        },
+        {
+          "marketplace": "Mercado Libre",
+          "legacy_observation": "422 productos (Tienda Oficial scrapeada)",
+          "mri_observation": "430 productos (422 Tienda Oficial + 8 Resellers)",
+          "semantic_comparability": "HIGH_CONFIDENCE_PARTIAL_UNION",
+          "difference_classification": "MULTI_SURFACE_UNION",
+          "last_observed": "2026-09-21T16:50:00",
+          "note": "Censo distinguió Tienda Oficial de Búsqueda Orgánica con 8 items de terceros."
+        }
+      ]
+    }
+  }
+}

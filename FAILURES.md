@@ -102,3 +102,18 @@ During MRI-4MP-E2E-CERT-002 transversal certification, Mercado Libre execution f
 During MRI-FULL-AUTONOMOUS-AUDIT-AND-DASHBOARD-001, full autonomous audit executed across all four marketplaces (Mercado Libre, Paris, Ripley, Falabella).
 Outcome: 0 failures, 0 fatal blockers. 4/4 marketplaces completed with E2E PASS, yielding 1098 unique products, 1050 direct brand evidence items, 2061 category memberships, and 1098 positions materialized.
 Status: FULL_AUDIT_PASS (4/4 PASS).
+
+## F-017 — Read model categories and legacy comparison unlinked from SQLite commercial tables
+During post-audit validation, CATEGORÍAS and COMPARACIÓN LEGACY views continued to show frozen stubs from 2026-09-21 with `RESEARCH_SUMMARY_NOT_MATERIALIZED` and TopN = `N/A`:
+1. Forensic causal isolation:
+   - Root cause identified as `DASHBOARD_CAUSE_READ_MODEL_GAP`.
+   - `MRIReadModel.get_categories()` bypassed SQLite database completely, returning an in-memory list `raw_cats = [...]` hardcoded from 2026-09-21.
+   - `MRIReadModel.get_legacy_comparison()` similarly returned a static dictionary with hardcoded text and timestamps from 2026-09-21.
+   - Materialization gap: Falabella's 425 products had been skipped by `GenericCommercialMaterializer` due to a strict `"NICOPOLY" in title` filter, leaving Falabella categories unmaterialized in DB.
+2. Resolution in MRI-DASHBOARD-LIVE-MATERIALIZATION-001:
+   - Materialized Falabella 425 products, categories, variants, prices, and memberships from evidence into SQLite.
+   - Rewrote `get_categories()` in `app/dashboard/mri_read_model.py` to query `mri_categories`, `mri_publication_categories`, and `mri_publications`, grouping by taxonomy node and computing active Top30..Top240 counts.
+   - Rewrote `get_legacy_comparison()` in `app/dashboard/mri_read_model.py` to query active publication counts and timestamps from `mri_publications`.
+3. Verification: Red tests reproduced failure; green tests confirmed 2/2 passing; regression suite confirmed 13/13 passing; independent verification confirmed 0 mismatches.
+Status: RESOLVED_AND_CERTIFIED (PASS).
+

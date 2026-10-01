@@ -1,0 +1,156 @@
+{
+  "task_id": "MRI-DASHBOARD-LIVE-MATERIALIZATION-001",
+  "timestamp": "2026-10-01T08:43:36.721757",
+  "reconstruction": [
+    {
+      "view": "CATEGORÍAS",
+      "field": "Clasificadas",
+      "dashboard_value": "150 (Paris sample)",
+      "read_model_value": 150,
+      "db_value": "Dynamic per category (e.g. Paris Chaquetas: 132, Poleras: 118)",
+      "latest_evidence_value": "540 (Paris total unique)",
+      "source_timestamp": "2026-09-21T09:12:30 (stale)",
+      "match": false
+    },
+    {
+      "view": "CATEGORÍAS",
+      "field": "Observadas",
+      "dashboard_value": "150 (Paris sample)",
+      "read_model_value": 150,
+      "db_value": "Dynamic per category (e.g. Paris Chaquetas: 132)",
+      "latest_evidence_value": "540 (Paris total unique)",
+      "source_timestamp": "2026-09-21T09:12:30 (stale)",
+      "match": false
+    },
+    {
+      "view": "CATEGORÍAS",
+      "field": "Superficie de Navegación",
+      "dashboard_value": "Brand Catalog + Category Browse",
+      "read_model_value": "Brand Catalog + Category Browse",
+      "db_value": "Category Browse / Brand Hub",
+      "latest_evidence_value": "Category Browse / Brand Hub",
+      "source_timestamp": "2026-09-21T09:12:30 (stale)",
+      "match": false
+    },
+    {
+      "view": "CATEGORÍAS",
+      "field": "Top30",
+      "dashboard_value": "N/A (NOT MATERIALIZED)",
+      "read_model_value": "N/A (NOT MATERIALIZED)",
+      "db_value": "Calculable from mri_publications.position <= 30",
+      "latest_evidence_value": "ML: 10, Paris: 31, Ripley: 60, Falabella: 252",
+      "source_timestamp": "2026-09-21T09:12:30 (stale)",
+      "match": false
+    },
+    {
+      "view": "CATEGORÍAS",
+      "field": "Top60",
+      "dashboard_value": "N/A (NOT MATERIALIZED)",
+      "read_model_value": "N/A (NOT MATERIALIZED)",
+      "db_value": "Calculable from mri_publications.position <= 60",
+      "latest_evidence_value": "ML: 20, Paris: 61, Ripley: 96, Falabella: 357",
+      "source_timestamp": "2026-09-21T09:12:30 (stale)",
+      "match": false
+    },
+    {
+      "view": "CATEGORÍAS",
+      "field": "Top90",
+      "dashboard_value": "N/A (NOT MATERIALIZED)",
+      "read_model_value": "N/A (NOT MATERIALIZED)",
+      "db_value": "Calculable from mri_publications.position <= 90",
+      "latest_evidence_value": "ML: 28, Paris: 91, Ripley: 96, Falabella: 407",
+      "source_timestamp": "2026-09-21T09:12:30 (stale)",
+      "match": false
+    },
+    {
+      "view": "CATEGORÍAS",
+      "field": "Top120",
+      "dashboard_value": "N/A (NOT MATERIALIZED)",
+      "read_model_value": "N/A (NOT MATERIALIZED)",
+      "db_value": "Calculable from mri_publications.position <= 120",
+      "latest_evidence_value": "ML: 37, Paris: 121, Ripley: 96, Falabella: 425",
+      "source_timestamp": "2026-09-21T09:12:30 (stale)",
+      "match": false
+    },
+    {
+      "view": "CATEGORÍAS",
+      "field": "Top240",
+      "dashboard_value": "N/A (NOT MATERIALIZED)",
+      "read_model_value": "N/A (NOT MATERIALIZED)",
+      "db_value": "Calculable from mri_publications.position <= 240",
+      "latest_evidence_value": "ML: 37, Paris: 241, Ripley: 96, Falabella: 425",
+      "source_timestamp": "2026-09-21T09:12:30 (stale)",
+      "match": false
+    },
+    {
+      "view": "CATEGORÍAS",
+      "field": "Estado Evidencia",
+      "dashboard_value": "RESEARCH_SUMMARY_NOT_MATERIALIZED",
+      "read_model_value": "RESEARCH_SUMMARY_NOT_MATERIALIZED",
+      "db_value": "OBSERVED (from mri_publication_categories / mri_publications)",
+      "latest_evidence_value": "PASS / VERIFIED",
+      "source_timestamp": "2026-09-21T09:12:30 (stale)",
+      "match": false
+    },
+    {
+      "view": "CATEGORÍAS",
+      "field": "Última Verificación",
+      "dashboard_value": "2026-09-21 09:12:30",
+      "read_model_value": "2026-09-21T09:12:30",
+      "db_value": "2026-09-30T17:14:11 (latest audit run)",
+      "latest_evidence_value": "2026-09-30T17:14:11",
+      "source_timestamp": "2026-09-21T09:12:30 (stale)",
+      "match": false
+    },
+    {
+      "view": "COMPARACIÓN LEGACY",
+      "field": "Observación MRI V2",
+      "dashboard_value": "486 productos (Paris sample)",
+      "read_model_value": "486 productos (Censo de investigación multi-categoría)",
+      "db_value": "561 total pubs in DB (539 from run_mri_full_audit_20260930_171411)",
+      "latest_evidence_value": "540 unique products observed in full audit",
+      "source_timestamp": "2026-09-21T09:12:30 (stale)",
+      "match": false
+    },
+    {
+      "view": "COMPARACIÓN LEGACY",
+      "field": "Comparabilidad",
+      "dashboard_value": "COMPARABLE_SUPERSET",
+      "read_model_value": "COMPARABLE_SUPERSET",
+      "db_value": "COMPARABLE_SUPERSET",
+      "latest_evidence_value": "COMPARABLE_SUPERSET",
+      "source_timestamp": "2026-09-21T09:12:30 (stale)",
+      "match": false
+    },
+    {
+      "view": "COMPARACIÓN LEGACY",
+      "field": "Discrepancia",
+      "dashboard_value": "MRI_DISCOVERED_EXPANDED_SCOPE",
+      "read_model_value": "MRI_DISCOVERED_EXPANDED_SCOPE",
+      "db_value": "DYNAMIC_RECONCILED",
+      "latest_evidence_value": "DYNAMIC_RECONCILED",
+      "source_timestamp": "2026-09-21T09:12:30 (stale)",
+      "match": false
+    },
+    {
+      "view": "COMPARACIÓN LEGACY",
+      "field": "Fecha Observación",
+      "dashboard_value": "2026-09-21 09:12:30",
+      "read_model_value": "2026-09-21T09:12:30",
+      "db_value": "2026-09-30T17:14:11 (latest audit run)",
+      "latest_evidence_value": "2026-09-30T17:14:11",
+      "source_timestamp": "2026-09-21T09:12:30 (stale)",
+      "match": false
+    },
+    {
+      "view": "COMPARACIÓN LEGACY",
+      "field": "Detalle Técnico",
+      "dashboard_value": "Comparación de agregados de censo. No implica publicaciones materializadas.",
+      "read_model_value": "Comparación de agregados de censo. No implica publicaciones materializadas.",
+      "db_value": "Publicaciones materializadas en SQLite mri_publications.",
+      "latest_evidence_value": "Full autonomous traversal and live product materialization.",
+      "source_timestamp": "2026-09-21T09:12:30 (stale)",
+      "match": false
+    }
+  ]
+}

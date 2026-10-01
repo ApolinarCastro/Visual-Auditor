@@ -1,0 +1,158 @@
+{
+  "task_id": "MRI-DASHBOARD-LIVE-MATERIALIZATION-001",
+  "positions_in_evidence": {
+    "task_id": "MRI-FULL-AUTONOMOUS-AUDIT-AND-DASHBOARD-001",
+    "total_positions_recorded": 1098,
+    "marketplaces": {
+      "Mercado Libre": {
+        "positions_materialized": 37,
+        "distribution": {
+          "top30": 10,
+          "top60": 20,
+          "top90": 28,
+          "top120": 37
+        }
+      },
+      "Paris": {
+        "positions_materialized": 540,
+        "distribution": {
+          "top30": 31,
+          "top60": 61,
+          "top90": 91,
+          "top120": 121
+        }
+      },
+      "Ripley": {
+        "positions_materialized": 96,
+        "distribution": {
+          "top30": 60,
+          "top60": 96,
+          "top90": 96,
+          "top120": 96
+        }
+      },
+      "Falabella": {
+        "positions_materialized": 425,
+        "distribution": {
+          "top30": 252,
+          "top60": 357,
+          "top90": 407,
+          "top120": 425
+        }
+      }
+    }
+  },
+  "positions_in_db": [
+    {
+      "marketplace": "Falabella",
+      "run_id": "run_rebuild_nicopoly_fix_20260922_140027",
+      "total_pubs": 214,
+      "pubs_with_position": 214,
+      "min_pos": 1,
+      "max_pos": 165,
+      "top30": 77,
+      "top60": 137,
+      "top90": 171,
+      "top120": 193,
+      "top240": 214
+    },
+    {
+      "marketplace": "Mercado Libre",
+      "run_id": "run_mri_full_audit_20260930_171411",
+      "total_pubs": 37,
+      "pubs_with_position": 37,
+      "min_pos": 1,
+      "max_pos": 115,
+      "top30": 10,
+      "top60": 20,
+      "top90": 28,
+      "top120": 37,
+      "top240": 37
+    },
+    {
+      "marketplace": "Mercado Libre",
+      "run_id": "run_rebuild_nicopoly_fix_20260922_140027",
+      "total_pubs": 416,
+      "pubs_with_position": 416,
+      "min_pos": 1,
+      "max_pos": 185,
+      "top30": 163,
+      "top60": 245,
+      "top90": 304,
+      "top120": 345,
+      "top240": 416
+    },
+    {
+      "marketplace": "Paris",
+      "run_id": "run_autonomous_paris_20260922_153346",
+      "total_pubs": 20,
+      "pubs_with_position": 20,
+      "min_pos": 1,
+      "max_pos": 20,
+      "top30": 20,
+      "top60": 20,
+      "top90": 20,
+      "top120": 20,
+      "top240": 20
+    },
+    {
+      "marketplace": "Paris",
+      "run_id": "run_mri_full_audit_20260930_171411",
+      "total_pubs": 539,
+      "pubs_with_position": 539,
+      "min_pos": 2,
+      "max_pos": 539,
+      "top30": 31,
+      "top60": 61,
+      "top90": 91,
+      "top120": 121,
+      "top240": 241
+    },
+    {
+      "marketplace": "Paris",
+      "run_id": "run_rebuild_nicopoly_fix_20260922_140027",
+      "total_pubs": 2,
+      "pubs_with_position": 2,
+      "min_pos": 86,
+      "max_pos": 162,
+      "top30": 0,
+      "top60": 0,
+      "top90": 1,
+      "top120": 1,
+      "top240": 2
+    },
+    {
+      "marketplace": "Ripley",
+      "run_id": "run_autonomous_ripley_20260922_154436",
+      "total_pubs": 2,
+      "pubs_with_position": 2,
+      "min_pos": 1,
+      "max_pos": 2,
+      "top30": 2,
+      "top60": 2,
+      "top90": 2,
+      "top120": 2,
+      "top240": 2
+    },
+    {
+      "marketplace": "Ripley",
+      "run_id": "run_mri_full_audit_20260930_171411",
+      "total_pubs": 48,
+      "pubs_with_position": 48,
+      "min_pos": 1,
+      "max_pos": 48,
+      "top30": 30,
+      "top60": 48,
+      "top90": 48,
+      "top120": 48,
+      "top240": 48
+    }
+  ],
+  "db_table": "mri_publications",
+  "position_fields": [
+    "position (INTEGER - absolute position observed in surface traversal)",
+    "position_state (TEXT - e.g. OBSERVED_POSITION)",
+    "surface (TEXT - e.g. Brand Hub, Category Browse)"
+  ],
+  "why_view_returns_na": "MRIReadModel.get_categories() never queries mri_publications or mri_publication_categories. It returned a hardcoded stub where top30_count through top240_count were statically set to 'N/A (NOT MATERIALIZED)'."
+}

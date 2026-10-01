@@ -1,0 +1,25 @@
+{
+  "task_id": "MRI-DASHBOARD-LIVE-MATERIALIZATION-001",
+  "timestamp": "2026-10-01T08:52:00",
+  "verdict": "MRI_DASHBOARD_LIVE_MATERIALIZATION_PASS",
+  "summary": {
+    "scraper_runs": 0,
+    "marketplace_requests": 0,
+    "autoclaw_actions": 0,
+    "manual_marketplace_actions": 0,
+    "field_lineage_demonstrated": true,
+    "causal_classification": "DASHBOARD_CAUSE_READ_MODEL_GAP",
+    "red_reproduced": true,
+    "green_pass": true,
+    "regression_pass": true,
+    "production_files_changed": 1,
+    "reconciled": true,
+    "mismatch_count": 0,
+    "stale_value_count": 0,
+    "false_materialized_count": 0,
+    "unsupported_topn_count": 0,
+    "hardcoded_result_contribution": 0,
+    "manual_dashboard_contribution": 0,
+    "synthetic_contribution": 0
+  }
+}

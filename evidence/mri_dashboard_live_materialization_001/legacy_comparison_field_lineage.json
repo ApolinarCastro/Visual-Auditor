@@ -1,0 +1,58 @@
+{
+  "task_id": "MRI-DASHBOARD-LIVE-MATERIALIZATION-001",
+  "view": "COMPARACIÓN LEGACY",
+  "current_source_type": "HARDCODED_STATIC_DICTIONARY_IN_CODE",
+  "read_model_method": "MRIReadModel.get_legacy_comparison()",
+  "source_file": "app/dashboard/mri_read_model.py:724-771",
+  "fields": [
+    {
+      "ui_field": "c.marketplace",
+      "display_name": "Marketplace",
+      "source_type": "HARDCODED_LITERAL",
+      "current_value_source": "Hardcoded literal in comparisons list ('Paris', 'Ripley', 'Falabella', 'Mercado Libre')",
+      "timestamp_source": null
+    },
+    {
+      "ui_field": "c.legacy_observation",
+      "display_name": "Observación Legacy VA",
+      "source_type": "HARDCODED_LITERAL",
+      "current_value_source": "Hardcoded literal text ('335 productos (Configurado en 2 categorías)', '238 productos...', etc.)",
+      "timestamp_source": null
+    },
+    {
+      "ui_field": "c.mri_observation",
+      "display_name": "Observación MRI V2",
+      "source_type": "HARDCODED_LITERAL",
+      "current_value_source": "Hardcoded literal text ('486 productos (Censo de investigación multi-categoría)', etc.)",
+      "timestamp_source": null
+    },
+    {
+      "ui_field": "c.semantic_comparability",
+      "display_name": "Comparabilidad Semántica",
+      "source_type": "HARDCODED_LITERAL",
+      "current_value_source": "Hardcoded literal text ('COMPARABLE_SUPERSET', 'HIGH_CONFIDENCE_PARTIAL_UNION')",
+      "timestamp_source": null
+    },
+    {
+      "ui_field": "c.difference_classification",
+      "display_name": "Clasificación de Discrepancia",
+      "source_type": "HARDCODED_LITERAL",
+      "current_value_source": "Hardcoded literal text ('MRI_DISCOVERED_EXPANDED_SCOPE', 'LEGACY_TITLE_COLLAPSE_DEFECT', etc.)",
+      "timestamp_source": null
+    },
+    {
+      "ui_field": "c.last_observed",
+      "display_name": "Fecha Observación",
+      "source_type": "HARDCODED_LITERAL",
+      "current_value_source": "Hardcoded literal timestamp ('2026-09-21T09:12:30', '2026-09-21T16:50:00')",
+      "timestamp_source": null
+    },
+    {
+      "ui_field": "c.note",
+      "display_name": "Detalle Técnico",
+      "source_type": "HARDCODED_LITERAL",
+      "current_value_source": "Hardcoded literal note text from 2026-09-21 research session",
+      "timestamp_source": null
+    }
+  ]
+}

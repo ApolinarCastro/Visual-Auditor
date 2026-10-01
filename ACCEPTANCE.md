@@ -327,7 +327,40 @@ A full autonomous audit and commercial dashboard materialization PASS requires:
 - reconciled = true
 - false_pass = 0
 - unsupported_fail = 0
-- final_verdict = MRI_FULL_AUTONOMOUS_AUDIT_PASS
+## Live dashboard materialization gate (MRI-DASHBOARD-LIVE-MATERIALIZATION-001)
+
+A live dashboard materialization PASS requires:
+- scraper_runs = 0
+- marketplace_requests = 0
+- autoclaw_actions = 0
+- manual_marketplace_actions = 0
+- field lineage demonstrated for CATEGORÍAS and COMPARACIÓN LEGACY
+- run selection demonstrated
+- research summary origin demonstrated
+- position materialization demonstrated
+- first_divergence_stage identified (`READ_MODEL`)
+- causal_classification != DASHBOARD_CAUSE_UNKNOWN (`DASHBOARD_CAUSE_READ_MODEL_GAP`)
+- red_tests_reproduced = YES (2/2 failed initially)
+- green_tests = PASS (2/2 passed)
+- regression = PASS (13/13 passed)
+- production_files_changed <= 3 (exact: 1, `app/dashboard/mri_read_model.py`)
+- new_production_files = 0
+- new_dependencies = 0
+- fix_cycles = 1
+- dashboard regenerates dynamically from SQLite commercial tables
+- CATEGORÍAS consumes live active materialization (62 categories) with active timestamps
+- COMPARACIÓN LEGACY differentiates legacy baseline vs active MRI observations
+- timestamps correspond to real evidence dates
+- TopN materialized from valid observed positions
+- reconciled = YES
+- mismatch_count = 0
+- stale_value_count = 0
+- false_materialized_count = 0
+- unsupported_topn_count = 0
+- synthetic_contribution = 0
+- hardcoded_result_contribution = 0
+- manual_dashboard_contribution = 0
+- final_verdict = MRI_DASHBOARD_LIVE_MATERIALIZATION_PASS
 
 ## Global completion
 
@@ -335,6 +368,7 @@ A full autonomous audit and commercial dashboard materialization PASS requires:
 - no unresolved required discovery/acquisition blocker
 - no unprocessed viable frontier required by the declared coverage contract
 - final evidence is reproducible from persisted artifacts
+
 
 
 

@@ -1,0 +1,13 @@
+{
+  "task_id": "MRI-DASHBOARD-LIVE-MATERIALIZATION-001",
+  "first_divergence_stage": "READ_MODEL",
+  "causal_classification": "DASHBOARD_CAUSE_READ_MODEL_GAP",
+  "alternative_classification_considered": "DASHBOARD_CAUSE_STATIC_RESEARCH_SUMMARY",
+  "first_causal_break": "MRIReadModel.get_categories() and MRIReadModel.get_legacy_comparison() in app/dashboard/mri_read_model.py unconditionally return frozen in-memory static dictionaries dating from 2026-09-21 instead of executing dynamic SQL queries against mri_categories, mri_publication_categories, and mri_publications in data/sqlite/visibility.db.",
+  "evidence": [
+    "app/dashboard/mri_read_model.py lines 379-590: raw_cats contains 14 hardcoded category entries with 'evidence_state': 'RESEARCH_SUMMARY_NOT_MATERIALIZED', 'top30_count': 'N/A (NOT MATERIALIZED)', and 'last_verified': '2026-09-21T...'.",
+    "app/dashboard/mri_read_model.py lines 733-770: comparisons contains 4 hardcoded entries referencing 2026-09-21 census aggregates.",
+    "data/sqlite/visibility.db contains active materialized commercial categories (45 rows in mri_categories, 2530 in mri_publication_categories, 1278 in mri_publications with valid positions and timestamps from 2026-09-30T17:14:11).",
+    "Because the read model never queries these tables for categories or comparison, the UI remains pinned to the 2026-09-21 research stubs regardless of audit runs."
+  ]
+}

@@ -1,0 +1,127 @@
+{
+  "task_id": "MRI-DASHBOARD-LIVE-MATERIALIZATION-001",
+  "timestamp": "2026-10-01T08:52:00",
+  "categories": {
+    "total": 62,
+    "items_count": 62,
+    "sample_items": [
+      {
+        "marketplace": "Falabella",
+        "taxonomy_node": "Mujer",
+        "publications_classified": 102,
+        "publications_observed": 102,
+        "browse_surface": "Brand Hub",
+        "top30_count": 30,
+        "top60_count": 64,
+        "top90_count": 90,
+        "top120_count": 102,
+        "top240_count": 102,
+        "evidence_state": "OBSERVED",
+        "last_verified": "2026-09-30T17:14:11.754662",
+        "provenance": "Materialized Commercial Records (mri_categories)"
+      },
+      {
+        "marketplace": "Falabella",
+        "taxonomy_node": "Brand Hub",
+        "publications_classified": 96,
+        "publications_observed": 96,
+        "browse_surface": "Brand Hub",
+        "top30_count": 30,
+        "top60_count": 60,
+        "top90_count": 90,
+        "top120_count": 96,
+        "top240_count": 96,
+        "evidence_state": "OBSERVED",
+        "last_verified": "2026-09-30T17:14:11.754662",
+        "provenance": "Materialized Commercial Records (mri_categories)"
+      },
+      {
+        "marketplace": "Falabella",
+        "taxonomy_node": "Abrigos y Chaquetas",
+        "publications_classified": 94,
+        "publications_observed": 94,
+        "browse_surface": "Category Browse",
+        "top30_count": 16,
+        "top60_count": 32,
+        "top90_count": 51,
+        "top120_count": 73,
+        "top240_count": 94,
+        "evidence_state": "OBSERVED",
+        "last_verified": "2026-09-22T09:16:46.511426",
+        "provenance": "Materialized Commercial Records (mri_categories)"
+      },
+      {
+        "marketplace": "Falabella",
+        "taxonomy_node": "Pantalones",
+        "publications_classified": 55,
+        "publications_observed": 55,
+        "browse_surface": "Brand Hub",
+        "top30_count": 25,
+        "top60_count": 52,
+        "top90_count": 55,
+        "top120_count": 55,
+        "top240_count": 55,
+        "evidence_state": "OBSERVED",
+        "last_verified": "2026-09-30T17:14:11.754662",
+        "provenance": "Materialized Commercial Records (mri_categories)"
+      },
+      {
+        "marketplace": "Falabella",
+        "taxonomy_node": "Blazers",
+        "publications_classified": 47,
+        "publications_observed": 47,
+        "browse_surface": "Brand Hub",
+        "top30_count": 21,
+        "top60_count": 42,
+        "top90_count": 44,
+        "top120_count": 47,
+        "top240_count": 47,
+        "evidence_state": "OBSERVED",
+        "last_verified": "2026-09-30T17:14:11.754662",
+        "provenance": "Materialized Commercial Records (mri_categories)"
+      }
+    ]
+  },
+  "legacy_comparison": {
+    "scope": "HISTORICAL_LEGACY_VS_CURRENT_MRI_MATERIALIZATION",
+    "materialized": true,
+    "comparisons": [
+      {
+        "marketplace": "Paris",
+        "legacy_observation": "335 productos (Configurado en 2 categor\u00edas)",
+        "mri_observation": "561 publicaciones materializadas en SQLite",
+        "semantic_comparability": "COMPARABLE_SUPERSET",
+        "difference_classification": "MRI_DISCOVERED_EXPANDED_SCOPE",
+        "last_observed": "2026-09-30T17:14:11.711609",
+        "note": "Legacy configur\u00f3 2 categor\u00edas (335). MRI materializ\u00f3 561 publicaciones activas."
+      },
+      {
+        "marketplace": "Ripley",
+        "legacy_observation": "238 productos (Colapso por t\u00edtulo en scraper)",
+        "mri_observation": "50 publicaciones materializadas en SQLite",
+        "semantic_comparability": "COMPARABLE_SUPERSET",
+        "difference_classification": "DYNAMIC_OBSERVED_COVERAGE",
+        "last_observed": "2026-09-30T17:14:11.754662",
+        "note": "Legacy colaps\u00f3 t\u00edtulos duplicados. MRI observ\u00f3 y materializ\u00f3 50 publicaciones activas."
+      },
+      {
+        "marketplace": "Falabella",
+        "legacy_observation": "198 productos (Rastreo hist\u00f3rico por cat\u00e1logo)",
+        "mri_observation": "639 publicaciones materializadas en SQLite",
+        "semantic_comparability": "HIGH_CONFIDENCE_PARTIAL_UNION",
+        "difference_classification": "COLD_SEARCH_LIMITATION_RESOLVED",
+        "last_observed": "2026-09-30T17:14:11.754662",
+        "note": "Legacy limit\u00f3 b\u00fasqueda fr\u00eda. MRI materializ\u00f3 639 publicaciones activas."
+      },
+      {
+        "marketplace": "Mercado Libre",
+        "legacy_observation": "422 productos (Tienda Oficial scrapeada)",
+        "mri_observation": "453 publicaciones materializadas en SQLite",
+        "semantic_comparability": "HIGH_CONFIDENCE_PARTIAL_UNION",
+        "difference_classification": "DYNAMIC_OBSERVED_COVERAGE",
+        "last_observed": "2026-09-30T17:14:11.702936",
+        "note": "Legacy midi\u00f3 cat\u00e1logo total. MRI materializ\u00f3 453 publicaciones activas observadas."
+      }
+    ]
+  }
+}

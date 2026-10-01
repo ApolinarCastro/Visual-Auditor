@@ -1,0 +1,16 @@
+{
+  "task_id": "MRI-DASHBOARD-LIVE-MATERIALIZATION-001",
+  "available_run_ids": [
+    "run_mri_full_audit_20260930_171411",
+    "run_autonomous_paris_20260922_153346",
+    "run_autonomous_ripley_20260922_154436",
+    "run_rebuild_nicopoly_fix_20260922_140027"
+  ],
+  "latest_run_id": "run_mri_full_audit_20260930_171411",
+  "selected_run_id_by_summary": "ALL_ACTIVE_NON_TEST (WHERE run_id != 'run_golden_shadow_001' AND run_id NOT LIKE '%test%')",
+  "selected_run_id_by_publications": "ALL_ACTIVE_NON_TEST (WHERE run_id != 'run_golden_shadow_001' AND run_id NOT LIKE '%test%')",
+  "selected_run_id_by_categories": "NONE (Hardcoded in-memory stub from 2026-09-21)",
+  "selected_run_id_by_positions": "NONE (Statically set to 'N/A (NOT MATERIALIZED)' in categories view)",
+  "selected_run_id_by_legacy_comparison": "NONE (Hardcoded in-memory stub from 2026-09-21)",
+  "diagnosis": "The discrepancy across views is caused by an architectural gap: while get_summary() and get_publications() query SQLite (filtering out test/golden shadow runs), get_categories() and get_legacy_comparison() were never wired to the database and remained hardcoded to 2026-09-21 research census stubs."
+}

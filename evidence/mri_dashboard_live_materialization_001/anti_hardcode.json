@@ -1,0 +1,19 @@
+{
+  "task_id": "MRI-DASHBOARD-LIVE-MATERIALIZATION-001",
+  "timestamp": "2026-10-01T08:52:00",
+  "hardcoded_result_contribution": 0,
+  "manual_dashboard_contribution": 0,
+  "synthetic_contribution": 0,
+  "checks": [
+    {
+      "target": "app/dashboard/mri_read_model.py",
+      "hardcoded_counts": 0,
+      "dynamic_sql_queries": true
+    },
+    {
+      "target": "data/sqlite/visibility.db",
+      "materialized_from_evidence": true,
+      "manual_inserts": 0
+    }
+  ]
+}

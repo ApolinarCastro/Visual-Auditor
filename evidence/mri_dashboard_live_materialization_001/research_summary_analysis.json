@@ -1,0 +1,18 @@
+{
+  "task_id": "MRI-DASHBOARD-LIVE-MATERIALIZATION-001",
+  "investigation": "RESEARCH_SUMMARY_NOT_MATERIALIZED",
+  "research_summary_origin": "app/dashboard/mri_read_model.py:379-590 (raw_cats in get_categories)",
+  "research_summary_run_id": "NONE (Static in-memory data from frozen 2026-09-21 research session)",
+  "research_summary_timestamp": "2026-09-21T09:12:30 to 2026-09-21T16:50:00",
+  "selection_rule": "Unconditional return of raw_cats list in MRIReadModel.get_categories()",
+  "why_selected_currently": "get_categories() contained no database query or evidence inspection; it unconditionally returned a frozen stub created during Phase A/B before commercial materialization was active.",
+  "is_hardcoded": true,
+  "is_stored_in_db": false,
+  "fallback_mechanism": "None. It was the sole implementation in get_categories().",
+  "findings": [
+    "RESEARCH_SUMMARY_NOT_MATERIALIZED is a hardcoded literal assigned to each entry in raw_cats.",
+    "TopN values ('top30_count', etc.) are similarly hardcoded as 'N/A (NOT MATERIALIZED)'.",
+    "Even after MRI materializes live categories and publications into SQLite (mri_categories, mri_publication_categories, mri_publications), get_categories() bypassed SQLite entirely.",
+    "The read model needs to dynamically query SQLite tables (mri_categories, mri_publication_categories, mri_publications) for the active/latest commercial run."
+  ]
+}
