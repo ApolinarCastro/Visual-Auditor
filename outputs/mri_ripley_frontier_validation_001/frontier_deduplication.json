@@ -1,0 +1,12 @@
+{
+  "task_id": "MRI-RIPLEY-FRONTIER-VALIDATION-001",
+  "raw_pending": 1259,
+  "deterministic_duplicates": 0,
+  "unique_pending_after_dedupe": 1259,
+  "duplicate_details": [],
+  "deduplication_rules": [
+    "exact_node_id_match",
+    "exact_normalized_url_match",
+    "exact_canonical_path_match"
+  ]
+}

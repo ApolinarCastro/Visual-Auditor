@@ -1,0 +1,32 @@
+{
+  "task_id": "MRI-RIPLEY-FRONTIER-VALIDATION-001",
+  "inspection_scope": "app/mri_autonomous/",
+  "checks": [
+    {
+      "pattern": "1259",
+      "matches": 0,
+      "passed": true
+    },
+    {
+      "pattern": "1269",
+      "matches": 0,
+      "passed": true
+    },
+    {
+      "pattern": "hardcoded_ripley_category_lists",
+      "matches": 0,
+      "passed": true
+    },
+    {
+      "pattern": "hardcoded_result_urls",
+      "matches": 0,
+      "passed": true
+    }
+  ],
+  "metrics": {
+    "hardcoded_result_contribution": 0,
+    "synthetic_contribution": 0,
+    "manual_classification_contribution": 0
+  },
+  "verdict": "PASS"
+}

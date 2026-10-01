@@ -1,0 +1,71 @@
+{
+  "task_id": "MRI-RIPLEY-FRONTIER-VALIDATION-001",
+  "scope": "PENDING_FRONTIER_NODES",
+  "total_nodes": 1259,
+  "unique_node_ids": 1259,
+  "unique_urls": 1259,
+  "unique_normalized_urls": 1259,
+  "duplicate_urls": 0,
+  "duplicate_normalized_urls": 0,
+  "nodes_by_depth": {
+    "2": 182,
+    "1": 16,
+    "3": 1061
+  },
+  "nodes_by_parent_top15": {
+    "null": 16,
+    "/otras-categorias/libros": 14,
+    "/repuestos-automotriz": 12,
+    "/ferreteria": 12,
+    "/belleza/marcas-destacadas": 12,
+    "/tecno/computacion": 12,
+    "/zapatos-y-zapatillas/zapatillas": 12,
+    "/accesorios-y-complementos/marcas-destacadas": 12,
+    "/deporte-y-aventura/zapatillas": 12,
+    "/electro/comercial-e-industrial": 12,
+    "/electro/electrodomesticos": 12,
+    "/jugueteria-y-ninos/imperdibles": 12,
+    "/moda-hombre/marcas-destacadas": 12,
+    "/moda-infantil/ropa-de-nina": 12,
+    "/moda-infantil/marcas-destacadas": 12
+  },
+  "nodes_by_url_pattern_department": {
+    "zapatos-y-zapatillas": 69,
+    "accesorios-y-complementos": 61,
+    "decoracion": 58,
+    "deporte-y-aventura": 100,
+    "dormitorio": 59,
+    "jugueteria-y-ninos": 82,
+    "moda-hombre": 87,
+    "moda-mujer": 84,
+    "moda-infantil": 93,
+    "muebles": 40,
+    "otras-categorias": 50,
+    "automotriz": 58,
+    "repuestos-automotriz": 91,
+    "ferreteria": 24,
+    "mascotas": 6,
+    "supermercado": 6,
+    "salud-y-bienestar": 8,
+    "belleza": 84,
+    "tecno": 81,
+    "electro": 88,
+    "outlet": 30
+  },
+  "nodes_by_source": {
+    "BRAND_SEARCH_RIPLEY": 1,
+    "menu_api_source": 1258
+  },
+  "nodes_by_children": {
+    "has_children": 198,
+    "leaf": 1061
+  },
+  "nodes_with_previous_evidence": 0,
+  "nodes_never_attempted": 1259,
+  "primary_structural_finding": "C. Árbol completo del marketplace no relevante a la marca (GLOBAL_MENU_OVERDISCOVERY)",
+  "structural_breakdown": {
+    "non_apparel_irrelevant_departments": 905,
+    "brand_navigation_competitors": 220,
+    "potential_commercial_fashion_surfaces": 134
+  }
+}

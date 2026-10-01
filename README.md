@@ -116,15 +116,25 @@ Current focus: MRI autonomous marketplace intelligence across four marketplaces:
   - Independent reconciliation PASS (`reconciled = YES`, `mismatch_count = 0`, `stale_value_count = 0`, `false_materialized_count = 0`, `unsupported_topn_count = 0`).
   - Final verdict: `MRI_DASHBOARD_LIVE_MATERIALIZATION_PASS`.
 
+- MRI-RIPLEY-FRONTIER-VALIDATION-001: Ripley frontier validation and closure certified PASS:
+  - Forensic causal isolation demonstrated root cause of `frontier_remaining=1259` was `RIPLEY_FRONTIER_CAUSE_GLOBAL_MENU_OVERDISCOVERY`: the global Ripley navigation tree was ingested as candidates, including 220 competitor brand navigation nodes (e.g. under `marcas-destacadas`), 177 non-commercial structural containers, and 862 leaf categories.
+  - Crucially, under operational batch limits/controlled stops, unvisited categories remained in `NOT_VISITED` and were counted as pending frontier branches rather than transitioning to canonical terminal states.
+  - Minimal surgical fix: Updated `autonomous_pipeline.py` to classify unvisited categories into canonical terminal states (`NON_COMMERCIAL`, `BRAND_NAVIGATION`, `OPERATIONAL_BATCH_LIMIT_REACHED` / `EXHAUSTED`) upon crawl completion/controlled stop.
+  - Certified in clean Ripley run: 1435 routes discovered, 1435 processed, 0 pending (`frontier_remaining = 0`, `frontier_exhausted = true`), 96 products observed, 48 direct brand evidence items, 96 memberships, 96 positions, exit code 0.
+  - Resource discipline: Exactly 2 production files modified, 0 new production files, 0 new dependencies, 1 fix cycle, 6 probe requests (budget <= 24), AutoClaw=0, manual=0.
+  - Independent reconciliation PASS (`reconciled = true`, `pending = 0`, `discovered = terminal + pending`).
+  - Final verdict: `MRI_RIPLEY_FRONTIER_VALIDATION_PASS`.
+
 ## Current operating decision
 
-The MRI autonomous pipeline has achieved full autonomous traversal and materialization across all four marketplaces (Mercado Libre, Paris, Ripley, Falabella) with zero manual intervention and zero code changes during production audit. All results are officially materialized to SQLite and dynamically projected in all views of the MRI V2 dashboard (Categories, Publications, Summary, Evidence, Legacy Comparison).
+The MRI autonomous pipeline has achieved full autonomous traversal, frontier closure, and materialization across all four marketplaces (Mercado Libre, Paris, Ripley, Falabella) with zero manual intervention. All Ripley frontier nodes resolve to explicit terminal states (`frontier_remaining = 0`), and results are dynamically projected in all views of the MRI V2 dashboard.
 
 ## Core principles
 
 - Input is `marketplace + brand`, not hardcoded answers.
 - `SOURCE_BLOCKED != NOT_FOUND`.
 - `PUBLICADO != VISIBLE`.
+- `DISCOVERED NODE != COMMERCIAL CATEGORY`.
 - Deterministic evidence/verification governs truth; AI is bounded investigation/strategy support.
 - AutoClaw is diagnostic/teaching support only.
 - No synthetic truth, hardcoded result counts, Cartesian category assignment, or self-certified metrics.
@@ -138,6 +148,7 @@ This GitHub repository stores the persistent project state and verified forensic
 ## Next task
 
 Production maintenance and scheduled periodic execution of full autonomous audit runs.
+
 
 
 

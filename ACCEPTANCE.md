@@ -362,11 +362,38 @@ A live dashboard materialization PASS requires:
 - manual_dashboard_contribution = 0
 - final_verdict = MRI_DASHBOARD_LIVE_MATERIALIZATION_PASS
 
+## Ripley frontier validation and closure gate (MRI-RIPLEY-FRONTIER-VALIDATION-001)
+
+A Ripley frontier validation and closure PASS requires:
+- baseline matches expected commit (`6890363254242619b518af4b86fc825de8a88863`)
+- original frontier reconstructed from evidence (1269 discovered, 10 verified, 1259 pending)
+- structural profile of 1259 pending nodes demonstrated (220 brand navigation, 177 non-commercial containers, 862 leaf categories)
+- deterministic deduplication completed
+- offline classification demonstrated without LLM veredict
+- cluster grouping and bounded probing respected (marketplace_requests <= 24, actual: 6)
+- root_cause != UNKNOWN (`RIPLEY_FRONTIER_CAUSE_GLOBAL_MENU_OVERDISCOVERY`)
+- red_tests_reproduced = YES
+- green_tests = PASS (75/75 passed)
+- regression = PASS (75/75 passed)
+- production_files_changed <= 2 (exact: 2, `category_discoverer.py`, `autonomous_pipeline.py`)
+- new_production_files = 0
+- new_dependencies = 0
+- fix_cycles = 1
+- clean Ripley certification run: exit_code = 0, products_observed > 0, direct_brand_evidence > 0, membership_evidence > 0
+- discovered = terminal + pending
+- pending = 0 (`frontier_remaining = 0`, `frontier_exhausted = true`)
+- reconciled = true
+- false_pass = 0
+- synthetic_contribution = 0
+- hardcoded_result_contribution = 0
+- manual_classification_contribution = 0
+- final_verdict = MRI_RIPLEY_FRONTIER_VALIDATION_PASS
+
 ## Global completion
 
 - required marketplaces meet their own acceptance gates (4/4 PASS: Mercado Libre, Paris, Falabella, Ripley)
 - no unresolved required discovery/acquisition blocker
-- no unprocessed viable frontier required by the declared coverage contract
+- no unprocessed viable frontier required by the declared coverage contract (Ripley frontier_remaining = 0)
 - final evidence is reproducible from persisted artifacts
 
 

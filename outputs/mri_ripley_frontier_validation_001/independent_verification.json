@@ -1,0 +1,30 @@
+{
+  "task_id": "MRI-RIPLEY-FRONTIER-VALIDATION-001",
+  "verifier": "IndependentFrontierAuditor",
+  "source_artifact": "outputs/mri_full_autonomous_audit_and_dashboard_001/ripley.json",
+  "reconstructed_metrics": {
+    "discovered": 1435,
+    "processed": 1435,
+    "terminal": 1435,
+    "pending": 0,
+    "commercial": 1038,
+    "noncommercial": 177,
+    "brand_navigation": 220,
+    "duplicates": 0,
+    "redundant": 0,
+    "irrelevant": 0,
+    "source_blocked": 0,
+    "error": 0
+  },
+  "invariants": {
+    "discovered_equals_terminal_plus_pending": true,
+    "pending_strictly_zero": true,
+    "no_unclassified_nodes": true,
+    "reconciled": true,
+    "false_pass": 0,
+    "synthetic_contribution": 0,
+    "hardcoded_result_contribution": 0,
+    "manual_classification_contribution": 0
+  },
+  "verdict": "PASS"
+}

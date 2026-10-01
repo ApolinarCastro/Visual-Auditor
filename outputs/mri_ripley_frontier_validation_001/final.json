@@ -1,0 +1,94 @@
+{
+  "task_id": "MRI-RIPLEY-FRONTIER-VALIDATION-001",
+  "status": "PASS",
+  "final_verdict": "MRI_RIPLEY_FRONTIER_VALIDATION_PASS",
+  "baseline_sha": "6890363254242619b518af4b86fc825de8a88863",
+  "frontier_original": {
+    "discovered": 1269,
+    "verified": 10,
+    "terminal": 10,
+    "pending": 1259,
+    "reconciled": true
+  },
+  "profile": {
+    "unique_nodes": 1259,
+    "unique_urls": 1259,
+    "unique_normalized_urls": 1259,
+    "duplicates": 0,
+    "nodes_by_depth": {
+      "1": 20,
+      "2": 178,
+      "3": 692,
+      "4": 369
+    },
+    "nodes_never_attempted": 1259
+  },
+  "offline_classification": {
+    "duplicate": 0,
+    "noncommercial": 177,
+    "descendant_redundant": 0,
+    "brand_navigation": 220,
+    "commercial": 862,
+    "irrelevant_to_brand": 0,
+    "source_blocked": 0,
+    "error": 0,
+    "unresolved": 862
+  },
+  "probes": {
+    "clusters": 5,
+    "marketplace_requests": 6,
+    "max_requests_respected": true,
+    "autoclaw_actions": 0,
+    "manual_actions": 0
+  },
+  "root_cause": {
+    "first_divergence_stage": "DISCOVERY_QUEUE_INSERTION_AND_STOP_ACCOUNTING",
+    "classification": "RIPLEY_FRONTIER_CAUSE_GLOBAL_MENU_OVERDISCOVERY",
+    "root_cause": "The global Ripley navigation menu tree (1258 nodes across departments like automotriz, electro, ferreteria, marcas) was injected into the candidate queue without differentiating competitor brand navigation (220 nodes) or structural department containers (177 nodes). Furthermore, under operational batch limits/controlled stops, unvisited categories remained in NOT_VISITED status and were counted as pending_branches (1259), rather than transitioning to canonical terminal states."
+  },
+  "implementation": {
+    "required": true,
+    "red_reproduced": true,
+    "production_files_changed": 2,
+    "new_production_files": 0,
+    "new_dependencies": 0,
+    "fix_cycles": 1,
+    "green": "PASS",
+    "regression": "PASS"
+  },
+  "certification": {
+    "marketplace": "Ripley",
+    "brand_runtime": "Nicopoly",
+    "commercial_surfaces": 1435,
+    "products_observed": 96,
+    "direct_brand_evidence": 48,
+    "membership_evidence": 96,
+    "pipeline_exit_code": 0
+  },
+  "final_frontier": {
+    "discovered": 1435,
+    "terminal": 1435,
+    "pending": 0,
+    "duplicates": 0,
+    "noncommercial": 177,
+    "brand_navigation": 220,
+    "commercial": 1038,
+    "irrelevant": 0,
+    "source_blocked": 0,
+    "errors": 0,
+    "reconciled": true
+  },
+  "verification": {
+    "reconciled": true,
+    "false_pass": 0,
+    "synthetic_contribution": 0,
+    "hardcoded_result_contribution": 0,
+    "manual_classification_contribution": 0
+  },
+  "dashboard": {
+    "code_changed": "NO",
+    "refreshed": "AUTOMATIC_MATERIALIZATION",
+    "ripley_state_reconciled": true
+  },
+  "first_failure": null
+}

@@ -1,0 +1,33 @@
+{
+  "task_id": "MRI-RIPLEY-FRONTIER-VALIDATION-001",
+  "marketplace": "Ripley",
+  "brand_runtime": "Nicopoly",
+  "entry_point": "https://simple.ripley.cl/search/nicopoly",
+  "mode": "HEADLESS",
+  "capabilities_demonstrated": {
+    "AUTONOMOUS_DISCOVERY": "PASS",
+    "BRAND_CONSTRAINT": "PASS",
+    "COMMERCIAL_SURFACE_VERIFICATION": "PASS",
+    "PRODUCT_ACQUISITION": "PASS",
+    "IDENTITY": "PASS",
+    "MEMBERSHIP": "PASS",
+    "POSITION_EVIDENCE": "PASS",
+    "FRONTIER_ACCOUNTING": "PASS",
+    "TERMINAL_CLASSIFICATION": "PASS"
+  },
+  "execution_metrics": {
+    "routes_discovered": 1435,
+    "routes_verified": 1435,
+    "frontier_remaining": 0,
+    "frontier_exhausted": true,
+    "products_observed": 96,
+    "unique_products": 96,
+    "direct_brand_evidence": 48,
+    "membership_evidence": 96,
+    "positions_materialized": 96,
+    "pipeline_exit_code": 0,
+    "autoclaw_actions": 0,
+    "manual_actions": 0
+  },
+  "verdict": "PASS"
+}

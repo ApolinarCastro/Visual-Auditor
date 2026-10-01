@@ -1,0 +1,17 @@
+{
+  "task_id": "MRI-RIPLEY-FRONTIER-VALIDATION-001",
+  "status": "PASS",
+  "test_count": 75,
+  "passed": 75,
+  "failed": 0,
+  "test_suites": [
+    "tests/test_regression_guardrails.py",
+    "tests/test_mri_autonomy_transfer.py",
+    "tests/test_mri_ripley_brand_constraint.py",
+    "tests/test_mri_ripley_frontier_accounting.py",
+    "tests/test_va_svmp_category_sync.py",
+    "tests/test_dashboard_live_materialization.py"
+  ],
+  "runtime_seconds": 22.09,
+  "verified_at": "2026-10-01T10:11:57Z"
+}

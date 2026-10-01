@@ -1,0 +1,40 @@
+{
+  "task_id": "MRI-RIPLEY-FRONTIER-VALIDATION-001",
+  "total_pending_nodes": 1259,
+  "offline_classified_count": 397,
+  "unresolved_after_offline_count": 862,
+  "classifications": {
+    "BRAND_NAVIGATION": {
+      "count": 220,
+      "rule": "menu_parent_or_path_contains_brand_navigation_container",
+      "evidence": "Nodes located under /marcas-destacadas/, /marcas-internacionales/, /marcas-casuales/, etc. in Ripley menucomponent JSON, representing third-party brand landing showcases (e.g., Chanel, Dior, Adidas, Clinique). Strictly non-commercial categories per D-007 / Section 13 (BRAND_NAVIGATION != COMMERCIAL_CATEGORY).",
+      "confidence_basis": 1.0,
+      "sample_nodes": [
+        "https://simple.ripley.cl/belleza/marcas-belleza",
+        "https://simple.ripley.cl/zapatos-y-zapatillas/marcas-internacionales",
+        "https://simple.ripley.cl/zapatos-y-zapatillas/nuestras-marcas",
+        "https://simple.ripley.cl/moda-hombre/marcas-nuevas",
+        "https://simple.ripley.cl/moda-mujer/marcas-casuales"
+      ]
+    },
+    "NON_COMMERCIAL": {
+      "count": 177,
+      "rule": "structural_department_or_parent_container_node_with_children",
+      "evidence": "Depth 1 department hub landings (e.g. /automotriz, /decoracion) and intermediate subdepartment aggregator containers that serve solely as navigational grouping containers in the menu hierarchy with children_count > 0, rather than discrete product catalog leaves.",
+      "confidence_basis": 0.95,
+      "sample_nodes": [
+        "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-infantiles",
+        "https://simple.ripley.cl/accesorios-y-complementos",
+        "https://simple.ripley.cl/decoracion",
+        "https://simple.ripley.cl/deporte-y-aventura",
+        "https://simple.ripley.cl/dormitorio"
+      ]
+    },
+    "UNRESOLVED_LEAF_CANDIDATES": {
+      "count": 862,
+      "rule": "discrete_catalog_leaves_awaiting_probe_or_cluster_resolution",
+      "evidence": "Catalog leaves across 18 marketplace departments requiring deterministic probe and cluster generalization.",
+      "confidence_basis": 0.5
+    }
+  }
+}

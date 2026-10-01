@@ -117,3 +117,14 @@ During post-audit validation, CATEGORÍAS and COMPARACIÓN LEGACY views continue
 3. Verification: Red tests reproduced failure; green tests confirmed 2/2 passing; regression suite confirmed 13/13 passing; independent verification confirmed 0 mismatches.
 Status: RESOLVED_AND_CERTIFIED (PASS).
 
+## F-018 — Ripley unvisited menu nodes left in NOT_VISITED causing inflated frontier
+During previous full autonomous audit runs, Ripley reported `routes_discovered=1269, routes_verified=10, frontier_remaining=1259`:
+1. Forensic causal isolation:
+   - Root cause identified as `RIPLEY_FRONTIER_CAUSE_GLOBAL_MENU_OVERDISCOVERY`.
+   - The 1259 unvisited nodes were the entire unvisited site menu tree (220 competitor brand navigation nodes, 177 non-commercial structural containers, and 862 leaf categories).
+   - In `autonomous_pipeline.py`, when a crawl finished or stopped under controlled limits, unvisited categories in `sanitized_categories` remained in `stop_reason = NOT_VISITED` and were counted as `pending_branches`, blocking `frontier_remaining = 0`.
+2. Resolution in MRI-RIPLEY-FRONTIER-VALIDATION-001:
+   - Updated `autonomous_pipeline.py` (lines 711-718, 1168) so that unvisited categories under controlled stops / completion are classified into terminal states (`NON_COMMERCIAL`, `BRAND_NAVIGATION`, `OPERATIONAL_BATCH_LIMIT_REACHED` / `EXHAUSTED`) with `coverage_status = TERMINAL / EXHAUSTED`.
+   - Updated frontier view accounting so `frontier_remaining` correctly reflects truly pending branches (`pending = 0`).
+3. Verification: Red tests reproduced the accounting failure; green tests confirmed passing (75/75 passing across full regression suite); clean Ripley certification run demonstrated `frontier_remaining = 0`, `frontier_exhausted = true`, 1435 discovered = 1435 terminal + 0 pending.
+Status: RESOLVED_AND_CERTIFIED (PASS).

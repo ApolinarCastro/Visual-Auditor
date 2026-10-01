@@ -1,0 +1,36 @@
+{
+  "task_id": "MRI-RIPLEY-FRONTIER-VALIDATION-001",
+  "marketplace": "Ripley",
+  "historical_frontier": {
+    "discovered_recount": 1269,
+    "verified_recount": 10,
+    "terminal_recount": 10,
+    "pending_recount": 1259,
+    "reconciled": true,
+    "offline_breakdown_of_1259": {
+      "duplicate_nodes": 0,
+      "brand_navigation": 220,
+      "non_commercial_containers": 177,
+      "commercial_leaf_surfaces_unvisited": 862
+    }
+  },
+  "certified_frontier": {
+    "discovered": 1435,
+    "processed": 1435,
+    "terminal": 1435,
+    "pending": 0,
+    "breakdown": {
+      "commercial_surfaces": 1038,
+      "non_commercial": 177,
+      "brand_navigation": 220,
+      "duplicates": 0,
+      "redundant": 0,
+      "irrelevant": 0,
+      "source_blocked": 0,
+      "errors": 0
+    },
+    "equation_check": "DISCOVERED (1435) == TERMINAL (1435) + PENDING (0)",
+    "reconciled": true,
+    "pending_zero": true
+  }
+}

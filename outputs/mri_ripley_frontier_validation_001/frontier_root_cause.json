@@ -1,0 +1,19 @@
+{
+  "task_id": "MRI-RIPLEY-FRONTIER-VALIDATION-001",
+  "first_divergence_stage": "NAVIGATION_DISCOVERY",
+  "classification": "RIPLEY_FRONTIER_CAUSE_GLOBAL_MENU_OVERDISCOVERY",
+  "root_cause": "Ripley navigation capture discovers the entire site-wide mega-menu (menucomponent/api/menu?displayable_only=true) covering 1258 nodes across 21 non-fashion departments (automotive, electronics, hardware, supermarket, sports, etc.) plus 220 competitor brand showcases. In autonomous_pipeline.py, parse_navigation_source and _nav_records inserted all 1258 nodes indiscriminately into the audit category queue without filtering non-commercial structural containers or brand navigation. When the operational batch limit (max_batches) halted scraping after 10 batches, all 1259 remaining nodes were tagged with stop_reason='NOT_VISITED' and counted as pending frontier (frontier_remaining=1259), falsely presenting global department store navigation as unverified commercial categories of brand Nicopoly.",
+  "evidence": {
+    "source_file": "outputs/mri_full_autonomous_audit_and_dashboard_001/ripley.json",
+    "checkpoint_file": "outputs/mri_full_autonomous_audit_and_dashboard_001/ripley_checkpoint.json",
+    "probe_results_file": "outputs/mri_ripley_frontier_validation_001/probe_results.json",
+    "structural_breakdown": {
+      "total_discovered": 1269,
+      "total_pending": 1259,
+      "brand_navigation": 220,
+      "non_commercial_structural_containers": 177,
+      "irrelevant_non_apparel_leaves": 755,
+      "apparel_commercial_leaves": 107
+    }
+  }
+}

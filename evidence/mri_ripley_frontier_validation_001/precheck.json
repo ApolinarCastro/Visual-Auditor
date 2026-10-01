@@ -1,0 +1,42 @@
+{
+  "task_id": "MRI-RIPLEY-FRONTIER-VALIDATION-001",
+  "timestamp": "2026-10-01T09:48:40.000000",
+  "baseline": {
+    "expected_sha": "6890363254242619b518af4b86fc825de8a88863",
+    "local_sha": "6890363254242619b518af4b86fc825de8a88863",
+    "remote_sha": "6890363254242619b518af4b86fc825de8a88863",
+    "sha_match": true,
+    "branch": "main",
+    "status": "PASS"
+  },
+  "facts_reconstruction": {
+    "evidence_file": "outputs/mri_full_autonomous_audit_and_dashboard_001/ripley.json",
+    "checkpoint_file": "outputs/mri_full_autonomous_audit_and_dashboard_001/ripley_checkpoint.json",
+    "frontier_file": "outputs/mri_full_autonomous_audit_and_dashboard_001/frontier.json",
+    "menu_source_file": "outputs/mri_autonomy_003/h4_source_body_pid18840.json",
+    "discovered_recount": 1269,
+    "verified_recount": 10,
+    "terminal_recount": 10,
+    "pending_recount": 1259,
+    "duplicate_recount": 0,
+    "reconciled": true,
+    "breakdown": {
+      "discovery_methods": {
+        "menu_api_source": 1258,
+        "BRAND_SEARCH_RIPLEY": 11
+      },
+      "coverage_statuses": {
+        "NOT_VISITED": 1259,
+        "PARTIAL": 9,
+        "CONFIRMED": 1
+      },
+      "stop_reasons": {
+        "NOT_VISITED": 1259,
+        "EXHAUSTION": 8,
+        "PAGINATION_PARAM_NOT_FOUND": 2
+      }
+    }
+  },
+  "first_failure": null,
+  "verdict": "PRECHECK_PASS"
+}

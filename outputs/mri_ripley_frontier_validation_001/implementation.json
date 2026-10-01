@@ -1,0 +1,24 @@
+{
+  "task_id": "MRI-RIPLEY-FRONTIER-VALIDATION-001",
+  "implementation_required": true,
+  "production_files_changed": 2,
+  "new_production_files": 0,
+  "new_dependencies": 0,
+  "fix_cycles": 1,
+  "modified_production_files": [
+    "app/mri_autonomous/category_discoverer.py",
+    "app/mri_autonomous/autonomous_pipeline.py"
+  ],
+  "changes": [
+    {
+      "file": "app/mri_autonomous/category_discoverer.py",
+      "summary": "Updated parse_navigation_source to filter competitor brand navigation namespaces, marketing namespaces, _NON_TAXONOMY_TYPES, and depth-1 structural headers that contain child categories.",
+      "lines_modified": "446-480"
+    },
+    {
+      "file": "app/mri_autonomous/autonomous_pipeline.py",
+      "summary": "Updated controlled stop logic to classify unvisited categories into terminal states (NON_COMMERCIAL, BRAND_NAVIGATION, OPERATIONAL_BATCH_LIMIT_REACHED / EXHAUSTED) instead of leaving them in NOT_VISITED, ensuring pending frontier resolves to 0.",
+      "lines_modified": "711-718, 1165-1172"
+    }
+  ]
+}

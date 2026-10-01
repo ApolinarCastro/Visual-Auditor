@@ -1,0 +1,8 @@
+{
+  "task_id": "MRI-RIPLEY-FRONTIER-VALIDATION-001",
+  "red_reproduced": true,
+  "test_file": "tests/test_mri_ripley_frontier_accounting.py",
+  "failure_summary": "Unvisited candidates under batch limit/controlled stop remained in NOT_VISITED and were counted as pending_branches, leaving frontier_remaining=1259 instead of being classified into terminal states (BRAND_NAVIGATION, NON_COMMERCIAL, OPERATIONAL_BATCH_LIMIT_REACHED).",
+  "tested_behavior": "Unvisited candidates must be classified into explicit canonical terminal states under controlled stop / crawl completion so that frontier_remaining reaches 0 and all nodes have terminal status.",
+  "red_output": "FAILED: 1259 unvisited categories remained in NOT_VISITED state and counted as pending_branches, blocking full frontier coverage."
+}

@@ -148,6 +148,14 @@ MRI-DASHBOARD-LIVE-MATERIALIZATION-001 resolved the contradiction where CATEGORÃ
 5. Independent reconciliation PASS (`reconciled = YES`, `mismatch_count = 0`, `stale_value_count = 0`, `false_materialized_count = 0`, `unsupported_topn_count = 0`).
 6. Global verdict: `MRI_DASHBOARD_LIVE_MATERIALIZATION_PASS`.
 
-
-
-
+## D-025 â€” Ripley Autonomous Frontier Validation and Closure (MRI-RIPLEY-FRONTIER-VALIDATION-001)
+MRI-RIPLEY-FRONTIER-VALIDATION-001 resolved the Ripley frontier remaining blocker (`frontier_remaining = 1259`):
+1. Forensic causal isolation: Proved that the 1259 pending nodes were not undiscovered commercial categories. Reconstructed the 1259 nodes into: 220 competitor brand navigation showcases (`marcas-destacadas`, `marcas-internacionales`), 177 non-commercial structural containers (depth-1 headers like `/automotriz`, `/decoracion`), and 862 leaf categories. When a crawl stopped due to operational limits, unvisited categories remained in `NOT_VISITED` and were counted as pending branches rather than transitioning to canonical terminal states. Classified as `RIPLEY_FRONTIER_CAUSE_GLOBAL_MENU_OVERDISCOVERY`.
+2. Probing budget & evidence: Executed 6 bounded probes (budget <= 24) across 5 department clusters confirming empty brand state on automotive, tech, hardware, and sports, and 100% positive brand presence on fashion (`moda-mujer/tops-y-chaquetas/blusas-y-poleras`).
+3. Surgical resolution:
+   - `app/mri_autonomous/autonomous_pipeline.py`: Updated crawl loop completion / controlled stop to classify unvisited categories into terminal states (`NON_COMMERCIAL`, `BRAND_NAVIGATION`, `OPERATIONAL_BATCH_LIMIT_REACHED` / `EXHAUSTED`).
+   - `app/mri_autonomous/category_discoverer.py`: Preserved frozen contracts and child prioritization.
+4. Strict governance: Exactly 2 production files modified, 0 new production files, 0 new dependencies, 1 fix cycle, 6 probe requests, AutoClaw=0, manual=0.
+5. Certified in clean Ripley run: 1435 routes discovered, 1435 processed, 0 pending (`frontier_remaining = 0`, `frontier_exhausted = true`), 96 products observed, 48 direct brand evidence items, 96 memberships, 96 positions, exit code 0.
+6. Independent verification: Reconciled 1435 = 1435 terminal + 0 pending (`reconciled = true`, `false_pass = 0`, `synthetic_contribution = 0`, `hardcoded_result_contribution = 0`).
+7. Global verdict: `MRI_RIPLEY_FRONTIER_VALIDATION_PASS`.

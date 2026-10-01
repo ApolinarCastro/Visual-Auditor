@@ -1,0 +1,68 @@
+{
+  "task_id": "MRI-RIPLEY-FRONTIER-VALIDATION-001",
+  "brand_runtime": "Nicopoly",
+  "budget": {
+    "max_cluster_probes": 12,
+    "max_probes_per_cluster": 2,
+    "max_total_marketplace_requests": 24,
+    "max_retries_per_probe": 1,
+    "max_runtime_minutes": 20
+  },
+  "planned_requests": 6,
+  "probes": [
+    {
+      "cluster_id": "cluster_automotive",
+      "department": "repuestos-automotriz / automotriz",
+      "population": 126,
+      "representative_node": "https://simple.ripley.cl/repuestos-automotriz/frenos",
+      "selection_rule": "Highest-traffic leaf in automotive parts department",
+      "question_to_answer": "Does brand filtering with ?brand=NICOPOLY yield products or an empty state ('No existen productos...')?",
+      "expected_evidence": "0 products observed / EMPTY_FILTER_STATE"
+    },
+    {
+      "cluster_id": "cluster_electro_tech",
+      "department": "electro / tecno",
+      "population": 146,
+      "representative_node": "https://simple.ripley.cl/electro/electrodomesticos",
+      "selection_rule": "Primary aggregator leaf in home electronics department",
+      "question_to_answer": "Does brand filtering with ?brand=NICOPOLY yield products or an empty state?",
+      "expected_evidence": "0 products observed / EMPTY_FILTER_STATE"
+    },
+    {
+      "cluster_id": "cluster_hardware",
+      "department": "ferreteria",
+      "population": 11,
+      "representative_node": "https://simple.ripley.cl/ferreteria/herramientas-electricas",
+      "selection_rule": "Primary leaf in hardware department",
+      "question_to_answer": "Does brand filtering with ?brand=NICOPOLY yield products or an empty state?",
+      "expected_evidence": "0 products observed / EMPTY_FILTER_STATE"
+    },
+    {
+      "cluster_id": "cluster_home_furniture",
+      "department": "muebles / dormitorio / decoracion",
+      "population": 100,
+      "representative_node": "https://simple.ripley.cl/muebles/living",
+      "selection_rule": "Primary furniture leaf",
+      "question_to_answer": "Does brand filtering with ?brand=NICOPOLY yield products or an empty state?",
+      "expected_evidence": "0 products observed / EMPTY_FILTER_STATE"
+    },
+    {
+      "cluster_id": "cluster_sports",
+      "department": "deporte-y-aventura",
+      "population": 77,
+      "representative_node": "https://simple.ripley.cl/deporte-y-aventura/bicicletas",
+      "selection_rule": "Primary sports equipment leaf",
+      "question_to_answer": "Does brand filtering with ?brand=NICOPOLY yield products or an empty state?",
+      "expected_evidence": "0 products observed / EMPTY_FILTER_STATE"
+    },
+    {
+      "cluster_id": "cluster_fashion_control",
+      "department": "moda-mujer",
+      "population": 74,
+      "representative_node": "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/blusas-y-poleras",
+      "selection_rule": "Certified positive control category known to carry Nicopoly apparel in SVMP and previous audits",
+      "question_to_answer": "Confirm positive brand presence (>0 Nicopoly products) under certified URL_QUERY brand constraint",
+      "expected_evidence": ">0 products observed with Nicopoly vendor evidence"
+    }
+  ]
+}

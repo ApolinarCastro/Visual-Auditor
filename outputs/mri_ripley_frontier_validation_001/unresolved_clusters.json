@@ -1,0 +1,259 @@
+{
+  "task_id": "MRI-RIPLEY-FRONTIER-VALIDATION-001",
+  "unresolved_after_offline": 862,
+  "cluster_count": 18,
+  "clusters": {
+    "electro": {
+      "population": 78,
+      "department": "electro",
+      "sample_urls": [
+        "https://simple.ripley.cl/electro/lavanderia/lavadoras",
+        "https://simple.ripley.cl/electro/lavanderia/lavadora-secadora",
+        "https://simple.ripley.cl/electro/lavanderia/planchas-y-vaporizadores"
+      ],
+      "url_template": "https://simple.ripley.cl/electro/*",
+      "depth": {
+        "3": 78
+      },
+      "hypothesized_commercial_relevance": "IRRELEVANT_DEPARTMENT"
+    },
+    "repuestos-automotriz": {
+      "population": 78,
+      "department": "repuestos-automotriz",
+      "sample_urls": [
+        "https://simple.ripley.cl/repuestos-automotriz/suspension-y-direccion/amortiguadores",
+        "https://simple.ripley.cl/repuestos-automotriz/suspension-y-direccion/bieletas",
+        "https://simple.ripley.cl/repuestos-automotriz/suspension-y-direccion/axiales"
+      ],
+      "url_template": "https://simple.ripley.cl/repuestos-automotriz/*",
+      "depth": {
+        "3": 78
+      },
+      "hypothesized_commercial_relevance": "IRRELEVANT_DEPARTMENT"
+    },
+    "deporte-y-aventura": {
+      "population": 77,
+      "department": "deporte-y-aventura",
+      "sample_urls": [
+        "https://simple.ripley.cl/deporte-y-aventura/zapatillas/zapatillas-deportivas-hombre",
+        "https://simple.ripley.cl/deporte-y-aventura/zapatillas/zapatillas-deportivas-mujer",
+        "https://simple.ripley.cl/deporte-y-aventura/zapatillas/zapatillas-urbanas-mujer"
+      ],
+      "url_template": "https://simple.ripley.cl/deporte-y-aventura/*",
+      "depth": {
+        "3": 77
+      },
+      "hypothesized_commercial_relevance": "IRRELEVANT_DEPARTMENT"
+    },
+    "jugueteria-y-ninos": {
+      "population": 71,
+      "department": "jugueteria-y-ninos",
+      "sample_urls": [
+        "https://simple.ripley.cl/jugueteria-y-ninos/juguetes/munecas-y-accesorios",
+        "https://simple.ripley.cl/jugueteria-y-ninos/juguetes/juegos-didacticos",
+        "https://simple.ripley.cl/jugueteria-y-ninos/juguetes/arte-y-manualidades"
+      ],
+      "url_template": "https://simple.ripley.cl/jugueteria-y-ninos/*",
+      "depth": {
+        "3": 71
+      },
+      "hypothesized_commercial_relevance": "IRRELEVANT_DEPARTMENT"
+    },
+    "moda-infantil": {
+      "population": 70,
+      "department": "moda-infantil",
+      "sample_urls": [
+        "https://simple.ripley.cl/moda-infantil/ropa-de-nina/chalecos-y-polerones",
+        "https://simple.ripley.cl/moda-infantil/ropa-de-nina/poleras-y-blusas",
+        "https://simple.ripley.cl/moda-infantil/ropa-de-nina/buzos"
+      ],
+      "url_template": "https://simple.ripley.cl/moda-infantil/*",
+      "depth": {
+        "3": 70
+      },
+      "hypothesized_commercial_relevance": "IRRELEVANT_DEPARTMENT"
+    },
+    "tecno": {
+      "population": 68,
+      "department": "tecno",
+      "sample_urls": [
+        "https://simple.ripley.cl/tecno/celulares/motorola",
+        "https://simple.ripley.cl/tecno/celulares/vivo",
+        "https://simple.ripley.cl/tecno/celulares/oppo"
+      ],
+      "url_template": "https://simple.ripley.cl/tecno/*",
+      "depth": {
+        "3": 68
+      },
+      "hypothesized_commercial_relevance": "IRRELEVANT_DEPARTMENT"
+    },
+    "belleza": {
+      "population": 50,
+      "department": "belleza",
+      "sample_urls": [
+        "https://simple.ripley.cl/belleza/perfumeria/hombre",
+        "https://simple.ripley.cl/belleza/perfumeria/mujer",
+        "https://simple.ripley.cl/belleza/perfumeria/juvenil-e-infantil"
+      ],
+      "url_template": "https://simple.ripley.cl/belleza/*",
+      "depth": {
+        "3": 50
+      },
+      "hypothesized_commercial_relevance": "IRRELEVANT_DEPARTMENT"
+    },
+    "automotriz": {
+      "population": 48,
+      "department": "automotriz",
+      "sample_urls": [
+        "https://simple.ripley.cl/automotriz/neumaticos-y-llantas/neumaticos-autos",
+        "https://simple.ripley.cl/automotriz/neumaticos-y-llantas/llantas",
+        "https://simple.ripley.cl/automotriz/neumaticos-y-llantas/accesorios-de-neumaticos"
+      ],
+      "url_template": "https://simple.ripley.cl/automotriz/*",
+      "depth": {
+        "3": 48
+      },
+      "hypothesized_commercial_relevance": "IRRELEVANT_DEPARTMENT"
+    },
+    "otras-categorias": {
+      "population": 42,
+      "department": "otras-categorias",
+      "sample_urls": [
+        "https://simple.ripley.cl/otras-categorias/servicios-y-gift-card/gift-card",
+        "https://simple.ripley.cl/otras-categorias/maleteria/maletas-de-cabina",
+        "https://simple.ripley.cl/otras-categorias/maleteria/mochilas-y-bolsos"
+      ],
+      "url_template": "https://simple.ripley.cl/otras-categorias/*",
+      "depth": {
+        "3": 42
+      },
+      "hypothesized_commercial_relevance": "IRRELEVANT_DEPARTMENT"
+    },
+    "zapatos-y-zapatillas": {
+      "population": 39,
+      "department": "zapatos-y-zapatillas",
+      "sample_urls": [
+        "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-mujer/botas",
+        "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-mujer/mocasines-y-ballerinas",
+        "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-hombre/nuevos-modelos"
+      ],
+      "url_template": "https://simple.ripley.cl/zapatos-y-zapatillas/*",
+      "depth": {
+        "3": 39
+      },
+      "hypothesized_commercial_relevance": "POTENTIAL_COMMERCIAL_FASHION"
+    },
+    "accesorios-y-complementos": {
+      "population": 39,
+      "department": "accesorios-y-complementos",
+      "sample_urls": [
+        "https://simple.ripley.cl/accesorios-y-complementos/carteras-y-bolsos/carteras-y-carteras-de-mano",
+        "https://simple.ripley.cl/accesorios-y-complementos/carteras-y-bolsos/mochilas",
+        "https://simple.ripley.cl/accesorios-y-complementos/carteras-y-bolsos/bananos"
+      ],
+      "url_template": "https://simple.ripley.cl/accesorios-y-complementos/*",
+      "depth": {
+        "3": 39
+      },
+      "hypothesized_commercial_relevance": "POTENTIAL_COMMERCIAL_FASHION"
+    },
+    "decoracion": {
+      "population": 39,
+      "department": "decoracion",
+      "sample_urls": [
+        "https://simple.ripley.cl/decoracion/cocina/baterias-de-cocina",
+        "https://simple.ripley.cl/decoracion/cocina/parrillas",
+        "https://simple.ripley.cl/decoracion/cocina/botellas-de-agua"
+      ],
+      "url_template": "https://simple.ripley.cl/decoracion/*",
+      "depth": {
+        "3": 39
+      },
+      "hypothesized_commercial_relevance": "IRRELEVANT_DEPARTMENT"
+    },
+    "dormitorio": {
+      "population": 39,
+      "department": "dormitorio",
+      "sample_urls": [
+        "https://simple.ripley.cl/dormitorio/camas/15-plazas",
+        "https://simple.ripley.cl/dormitorio/camas/2-plazas-y-full",
+        "https://simple.ripley.cl/dormitorio/camas/1-plaza"
+      ],
+      "url_template": "https://simple.ripley.cl/dormitorio/*",
+      "depth": {
+        "3": 39
+      },
+      "hypothesized_commercial_relevance": "IRRELEVANT_DEPARTMENT"
+    },
+    "moda-mujer": {
+      "population": 35,
+      "department": "moda-mujer",
+      "sample_urls": [
+        "https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/jeans",
+        "https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/pantalones",
+        "https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/buzos"
+      ],
+      "url_template": "https://simple.ripley.cl/moda-mujer/*",
+      "depth": {
+        "3": 35
+      },
+      "hypothesized_commercial_relevance": "POTENTIAL_COMMERCIAL_FASHION"
+    },
+    "moda-hombre": {
+      "population": 34,
+      "department": "moda-hombre",
+      "sample_urls": [
+        "https://simple.ripley.cl/moda-hombre/jeans-y-pantalones/jeans",
+        "https://simple.ripley.cl/moda-hombre/jeans-y-pantalones/pantalones",
+        "https://simple.ripley.cl/moda-hombre/jeans-y-pantalones/bermudas-y-shorts"
+      ],
+      "url_template": "https://simple.ripley.cl/moda-hombre/*",
+      "depth": {
+        "3": 34
+      },
+      "hypothesized_commercial_relevance": "IRRELEVANT_DEPARTMENT"
+    },
+    "muebles": {
+      "population": 22,
+      "department": "muebles",
+      "sample_urls": [
+        "https://simple.ripley.cl/muebles/living-y-sala-de-estar/sofas-y-seccionales",
+        "https://simple.ripley.cl/muebles/living-y-sala-de-estar/juegos-de-living",
+        "https://simple.ripley.cl/muebles/living-y-sala-de-estar/banquetas-y-pouf"
+      ],
+      "url_template": "https://simple.ripley.cl/muebles/*",
+      "depth": {
+        "3": 22
+      },
+      "hypothesized_commercial_relevance": "IRRELEVANT_DEPARTMENT"
+    },
+    "outlet": {
+      "population": 22,
+      "department": "outlet",
+      "sample_urls": [
+        "https://simple.ripley.cl/outlet/belleza/capilar",
+        "https://simple.ripley.cl/outlet/belleza/dermocosmetica",
+        "https://simple.ripley.cl/outlet/belleza/maquillaje"
+      ],
+      "url_template": "https://simple.ripley.cl/outlet/*",
+      "depth": {
+        "3": 22
+      },
+      "hypothesized_commercial_relevance": "IRRELEVANT_DEPARTMENT"
+    },
+    "ferreteria": {
+      "population": 11,
+      "department": "ferreteria",
+      "sample_urls": [
+        "https://simple.ripley.cl/ferreteria/herramientas-y-maquinas/herramientas-electricas",
+        "https://simple.ripley.cl/ferreteria/herramientas-y-maquinas/generadores-y-baterias",
+        "https://simple.ripley.cl/ferreteria/herramientas-y-maquinas/accesorios-herramientas"
+      ],
+      "url_template": "https://simple.ripley.cl/ferreteria/*",
+      "depth": {
+        "3": 11
+      },
+      "hypothesized_commercial_relevance": "IRRELEVANT_DEPARTMENT"
+    }
+  }
+}

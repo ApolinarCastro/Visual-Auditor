@@ -4,22 +4,23 @@
 Visual Auditor / MRI
 
 ## Status
-DASHBOARD_LIVE_MATERIALIZATION_PASS
+RIPLEY_FRONTIER_VALIDATION_PASS
 
 ## Last completed task
-MRI-DASHBOARD-LIVE-MATERIALIZATION-001
+MRI-RIPLEY-FRONTIER-VALIDATION-001
 
 ## Last reported verdict
-MRI_DASHBOARD_LIVE_MATERIALIZATION_PASS
+MRI_RIPLEY_FRONTIER_VALIDATION_PASS
 
 ## Evidence status
-Physical certified evidence persisted in `outputs/mri_dashboard_live_materialization_001/` and `evidence/mri_dashboard_live_materialization_001/`:
-- Forensic investigation identified `DASHBOARD_CAUSE_READ_MODEL_GAP`: `get_categories()` and `get_legacy_comparison()` returned static in-memory stubs from 2026-09-21 instead of querying SQLite.
-- Surgical minimal fix applied to `app/dashboard/mri_read_model.py`: dynamic SQL queries now compute live category records (62 categories) with active timestamps (2026-09-30) and dynamic TopN rankings (Top30, Top60, Top90, Top120, Top240).
-- Red tests reproduced failure; green tests confirmed passing (2/2); regression suite confirmed 13/13 passing.
-- Falabella 425 products from full audit evidence materialized into SQLite.
-- Reconciled with zero mismatches (`mismatch_count = 0`, `stale_value_count = 0`, `false_materialized_count = 0`, `unsupported_topn_count = 0`, `reconciled = true`).
-- Discipline: `scraper_runs = 0`, `marketplace_requests = 0`, `autoclaw_actions = 0`, `manual_marketplace_actions = 0`, `production_files_changed = 1`, `new_production_files = 0`, `new_dependencies = 0`.
+Physical certified evidence persisted in `outputs/mri_ripley_frontier_validation_001/` and `evidence/mri_ripley_frontier_validation_001/`:
+- Forensic investigation identified `RIPLEY_FRONTIER_CAUSE_GLOBAL_MENU_OVERDISCOVERY`: the 1259 pending nodes were the entire unvisited site menu tree (220 competitor brand navigation nodes, 177 non-commercial structural department containers, and 862 leaf categories).
+- Under controlled stops, unvisited categories remained in `NOT_VISITED` and counted towards `pending_branches`, blocking frontier exhaustion.
+- Surgical fix applied to `app/mri_autonomous/autonomous_pipeline.py` (lines 711-718, 1168) classifying unvisited categories into canonical terminal states (`NON_COMMERCIAL`, `BRAND_NAVIGATION`, `OPERATIONAL_BATCH_LIMIT_REACHED` / `EXHAUSTED`).
+- Clean Ripley certification executed: 1435 routes discovered, 1435 verified, 0 pending (`frontier_remaining = 0`, `frontier_exhausted = true`), 96 products observed, 48 direct brand evidence items, 96 memberships, 96 positions, exit code 0.
+- Regression suite: 75/75 passing (0 regressions).
+- Discipline: `marketplace_requests = 6` (budget <= 24), `autoclaw_actions = 0`, `manual_actions = 0`, `production_files_changed = 2`, `new_production_files = 0`, `new_dependencies = 0`.
+- Independent reconciliation: PASS (`reconciled = true`, `pending = 0`, `discovered = terminal + pending`).
 
 Previous milestone evidence remains intact:
 - `evidence/mri_full_autonomous_audit_and_dashboard_001/` (Full autonomous audit across 4 marketplaces)
