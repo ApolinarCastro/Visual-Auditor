@@ -1,0 +1,120 @@
+{
+  "run_id": "run_mri_4mp_final_cert_1790865503",
+  "marketplace": "Mercado Libre",
+  "brand": "Nicopoly",
+  "checkpoints": [
+    {
+      "timestamp": "2026-10-01T11:39:04.213051",
+      "kind": "category_done",
+      "category_name": "Brand Hub",
+      "category_url": "https://www.mercadolibre.cl/tienda/nicopoly",
+      "raw_count": 80,
+      "cumulative_unique_count": 37
+    },
+    {
+      "timestamp": "2026-10-01T11:39:04.214701",
+      "kind": "EXPERIENCE_DECISION",
+      "category_name": null,
+      "category_url": null,
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:39:04.229456",
+      "kind": "navigation_discovered",
+      "category_name": null,
+      "category_url": null,
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:39:04.229483",
+      "kind": "frontier_state",
+      "category_name": null,
+      "category_url": null,
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:39:04.229491",
+      "kind": "category_attempt",
+      "category_name": "New In",
+      "category_url": "https://listado.mercadolibre.cl/tienda/nicopoly/_Container_ESP-1E4957B3099140B3A05F3AEEA297D34F386329223-New-In?tracking_id=530d43c1d9d60c8552931bed1182cd21",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:39:23.202240",
+      "kind": "category_done",
+      "category_name": "New In",
+      "category_url": "https://listado.mercadolibre.cl/tienda/nicopoly/_Container_ESP-1E4957B3099140B3A05F3AEEA297D34F386329223-New-In?tracking_id=530d43c1d9d60c8552931bed1182cd21",
+      "raw_count": 161,
+      "cumulative_unique_count": 38
+    },
+    {
+      "timestamp": "2026-10-01T11:39:24.403869",
+      "kind": "category_attempt",
+      "category_name": "Conjuntos",
+      "category_url": "https://listado.mercadolibre.cl/tienda/nicopoly/_Container_ESP-1E4957B3099140B3A05F3AEEA297D34F386329223-Conjuntos?tracking_id=ccde4281ec17afbf1ca02850887844ca",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:39:40.262554",
+      "kind": "category_done",
+      "category_name": "Conjuntos",
+      "category_url": "https://listado.mercadolibre.cl/tienda/nicopoly/_Container_ESP-1E4957B3099140B3A05F3AEEA297D34F386329223-Conjuntos?tracking_id=ccde4281ec17afbf1ca02850887844ca",
+      "raw_count": 94,
+      "cumulative_unique_count": 40
+    },
+    {
+      "timestamp": "2026-10-01T11:39:41.469441",
+      "kind": "category_attempt",
+      "category_name": "Chaquetas Parkas Blazers",
+      "category_url": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/abrigos/chaquetas-parkas-blazers/",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:40:04.031808",
+      "kind": "category_done",
+      "category_name": "Chaquetas Parkas Blazers",
+      "category_url": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/abrigos/chaquetas-parkas-blazers/",
+      "raw_count": 184,
+      "cumulative_unique_count": 206
+    },
+    {
+      "timestamp": "2026-10-01T11:40:05.236151",
+      "kind": "category_attempt",
+      "category_name": "Blusas",
+      "category_url": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/blusas/",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:40:21.127100",
+      "kind": "category_done",
+      "category_name": "Blusas",
+      "category_url": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/blusas/",
+      "raw_count": 50,
+      "cumulative_unique_count": 250
+    },
+    {
+      "timestamp": "2026-10-01T11:40:22.341978",
+      "kind": "category_attempt",
+      "category_name": "Pantalones",
+      "category_url": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/pantalones/",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:40:36.993833",
+      "kind": "category_done",
+      "category_name": "Pantalones",
+      "category_url": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/pantalones/",
+      "raw_count": 81,
+      "cumulative_unique_count": 321
+    }
+  ],
+  "checkpoint_written": true
+}

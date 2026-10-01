@@ -389,12 +389,40 @@ A Ripley frontier validation and closure PASS requires:
 - manual_classification_contribution = 0
 - final_verdict = MRI_RIPLEY_FRONTIER_VALIDATION_PASS
 
+## Autonomous Four-Marketplace Final Certification Gate (MRI-4MP-FINAL-E2E-CERT-001)
+
+A final 4-marketplace certification PASS requires:
+- baseline matches active baseline (`cd2c8fc9e2e640d69935ffae3853807e07853a1e`)
+- execution sequence respected: Mercado Libre → Paris → Ripley → Falabella
+- brand_runtime = Nicopoly passed dynamically without hardcoding
+- single certified run ID: `run_mri_4mp_final_cert_1790865503`
+- production code changes during certification = 0
+- new production files = 0
+- new dependencies = 0
+- fix cycles = 0
+- autoclaw actions = 0
+- manual actions = 0
+- 4/4 marketplaces exit_code = 0
+- 4/4 marketplaces unique_products > 0 (ML: 321, Paris: 538, Ripley: 96, Falabella: 407)
+- 4/4 marketplaces direct_brand_evidence > 0 (ML: 321, Paris: 538, Ripley: 48, Falabella: 407)
+- 4/4 marketplaces membership_evidence > 0 (ML: 348, Paris: 1407, Ripley: 96, Falabella: 500)
+- 4/4 marketplaces positions_materialized > 0 (ML: 321, Paris: 538, Ripley: 96, Falabella: 407)
+- 4/4 marketplaces frontier reconciled = YES, pending = 0
+- Ripley terminal accounting preserved: raw_discovered = 1435 = terminal (1435) + pending (0)
+- official SQLite materialization completed: 1314 products materialized, 2303 categories, 2303 memberships, 1314 positions, 1314 evidence ledger records
+- dashboard read model projection reconciled: mismatch_count = 0, stale RESEARCH_SUMMARY_NOT_MATERIALIZED recurrence = 0, stale 2026-09-21 dates = 0
+- regression suite: 94/94 passing (0 failures)
+- independent verification = PASS (0 false passes)
+- final_verdict = MRI_4MP_FINAL_E2E_CERT_PASS
+
 ## Global completion
 
 - required marketplaces meet their own acceptance gates (4/4 PASS: Mercado Libre, Paris, Falabella, Ripley)
 - no unresolved required discovery/acquisition blocker
 - no unprocessed viable frontier required by the declared coverage contract (Ripley frontier_remaining = 0)
 - final evidence is reproducible from persisted artifacts
+- system enters controlled production maintenance
+
 
 
 

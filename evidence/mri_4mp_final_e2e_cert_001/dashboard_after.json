@@ -1,0 +1,156 @@
+{
+  "task_id": "MRI-4MP-FINAL-E2E-CERT-001",
+  "cert_run_id": "run_mri_4mp_final_cert_1790865503",
+  "timestamp": "2026-10-01T12:02:17.692675",
+  "summary": {
+    "mri_label": "MRI V2 — READ ONLY / SHADOW",
+    "active_truth_model": "LEGACY_VA",
+    "marketplaces": [
+      {
+        "marketplace": "Paris",
+        "brand": "Nicopoly",
+        "research_census_total": 486,
+        "materialized_real_publications": 561,
+        "completeness_state": "RESEARCH_CENSUS_ONLY (NOT_MATERIALIZED)",
+        "unknown_remainder": "UNKNOWN",
+        "unknown_remainder_display": "UNKNOWN (Censo de investigación congelado; materialización parcial en curso)",
+        "surfaces_observed": 8,
+        "surfaces_observed_list": [
+          "Category Browse",
+          "Brand Catalog",
+          "Subcategory Listing",
+          "Product Detail"
+        ],
+        "last_verified": "2026-09-21T16:27:40",
+        "blocked_surfaces": 0,
+        "unresolved_identities": 0,
+        "contradictions": 0,
+        "evidence_health": "RESEARCH_BASELINE_FROZEN",
+        "reference_universe": "486 registros en censo de investigación (No materializados en publicaciones MRI)",
+        "provenance": "commercial_reconciliation/v001/09_CENSUS_RECONCILIATION.csv",
+        "commercial_authority": "MRI_PRIMARY",
+        "note": "Paris: Censo de investigación: 486. Publicaciones reales materializadas: 561."
+      },
+      {
+        "marketplace": "Ripley",
+        "brand": "Nicopoly",
+        "research_census_total": 382,
+        "materialized_real_publications": 52,
+        "completeness_state": "IDENTITY_UNRESOLVED",
+        "unknown_remainder": "UNKNOWN",
+        "unknown_remainder_display": "IDENTITY_UNRESOLVED",
+        "surfaces_observed": 6,
+        "surfaces_observed_list": [
+          "Brand Catalog",
+          "Category Listing",
+          "Product Detail"
+        ],
+        "last_verified": "2026-09-21T16:27:40",
+        "blocked_surfaces": 0,
+        "unresolved_identities": 6218,
+        "contradictions": 0,
+        "evidence_health": "RESEARCH_BASELINE_FROZEN",
+        "reference_universe": "6218 observaciones en run certificado (identidad nativa no capturada)",
+        "provenance": "product_snapshots",
+        "commercial_authority": "UNRESOLVED_IDENTITY",
+        "note": "Ripley: 6218 observations IDENTITY_UNRESOLVED."
+      },
+      {
+        "marketplace": "Falabella",
+        "brand": "Nicopoly",
+        "research_census_total": 192,
+        "materialized_real_publications": 858,
+        "completeness_state": "RESEARCH_CENSUS_ONLY (NOT_MATERIALIZED)",
+        "unknown_remainder": "UNKNOWN",
+        "unknown_remainder_display": "UNKNOWN (Censo de investigación de 6 facetas; materialización en curso)",
+        "surfaces_observed": 6,
+        "surfaces_observed_list": [
+          "Search Grid",
+          "Department Facet: Vestidos",
+          "Department Facet: Blusas",
+          "Department Facet: Pantalones",
+          "Department Facet: Chaquetas",
+          "Department Facet: Sweaters"
+        ],
+        "last_verified": "2026-09-21T16:50:00",
+        "blocked_surfaces": 0,
+        "unresolved_identities": 0,
+        "contradictions": 0,
+        "evidence_health": "RESEARCH_BASELINE_FROZEN",
+        "reference_universe": "192 registros en censo de investigación (No materializados en publicaciones MRI)",
+        "provenance": "census_capability_revalidation/v001/06_FALABELLA_CENSUS.json",
+        "commercial_authority": "MRI_PRIMARY",
+        "note": "Falabella: Censo de investigación: 192. Publicaciones reales materializadas: 858."
+      },
+      {
+        "marketplace": "Mercado Libre",
+        "brand": "Nicopoly",
+        "research_census_total": 430,
+        "materialized_real_publications": 572,
+        "completeness_state": "RESEARCH_CENSUS_ONLY (NOT_MATERIALIZED)",
+        "unknown_remainder": "UNKNOWN",
+        "unknown_remainder_display": "UNKNOWN (Censo de investigación; materialización en curso)",
+        "surfaces_observed": 4,
+        "surfaces_observed_list": [
+          "Brand Store (422 items)",
+          "Search Grid (8 reseller items)",
+          "Offers",
+          "Category Browse"
+        ],
+        "last_verified": "2026-09-21T16:50:00",
+        "blocked_surfaces": 0,
+        "unresolved_identities": 0,
+        "contradictions": 0,
+        "evidence_health": "RESEARCH_BASELINE_FROZEN",
+        "reference_universe": "430 registros en censo de investigación (No materializados en publicaciones MRI)",
+        "provenance": "census_capability_revalidation/v001/11_ML_CENSUS.json",
+        "commercial_authority": "MRI_PRIMARY",
+        "note": "Mercado Libre: Censo de investigación: 430. Publicaciones reales materializadas: 572."
+      }
+    ],
+    "total_materialized_real_publications": 2043,
+    "total_research_census_publications": 1490,
+    "as_of": "2026-10-01T12:02:17.219912",
+    "phase": "PHASE_C_PRODUCTION_ACTIVATION"
+  },
+  "status_view": {
+    "feature_flag": "COMMERCIAL_READ_MODE",
+    "commercial_read_mode": "MRI_PRIMARY",
+    "feature_enabled": true,
+    "active_truth_model": "LEGACY_VA",
+    "authority_registry": {
+      "COMMERCIAL_PUBLICATIONS": {
+        "paris": "MRI_PRIMARY",
+        "falabella": "MRI_PRIMARY",
+        "mercadolibre": "MRI_PRIMARY",
+        "ripley": "UNRESOLVED_IDENTITY"
+      },
+      "VISIBILITY_KPI": "LEGACY_VA",
+      "AUDIT_EXECUTION": "LEGACY_VA",
+      "RESEARCH_CENSUS": "MRI_RESEARCH",
+      "EVIDENCE": "MRI_PRIMARY"
+    },
+    "mri_label": "MRI V2 — COMMERCIAL READ (PRIMARY)",
+    "read_only": true,
+    "phase": "PHASE_C_PRODUCTION_ACTIVATION",
+    "synthetic_authority": "ZERO",
+    "server_time": "2026-10-01T12:02:17.692667"
+  },
+  "views_verified": {
+    "RESUMEN": true,
+    "PUBLICACIONES": true,
+    "PRECIOS": true,
+    "VISIBILIDAD": true,
+    "CATEGORIAS": true,
+    "ALERTAS": true,
+    "EVIDENCIA": true,
+    "SALUD_DE_FUENTES": true,
+    "COMPARACION_LEGACY": true
+  },
+  "marketplaces_summary": {
+    "Paris": 561,
+    "Ripley": 52,
+    "Falabella": 858,
+    "Mercado Libre": 572
+  }
+}

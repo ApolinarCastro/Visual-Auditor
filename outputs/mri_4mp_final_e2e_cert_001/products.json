@@ -1,0 +1,521 @@
+{
+  "task_id": "MRI-4MP-FINAL-E2E-CERT-001",
+  "cert_run_id": "run_mri_4mp_final_cert_1790865503",
+  "totals": {
+    "observations_raw": 1362,
+    "unique_products": 1362,
+    "direct_brand_evidence": 1314,
+    "duplicates_removed": 0
+  },
+  "marketplaces": {
+    "Mercado Libre": {
+      "observations_raw": 321,
+      "unique_products": 321,
+      "duplicates_removed": 0,
+      "direct_brand_evidence": 321,
+      "indirect_brand_evidence": 0,
+      "without_brand_evidence": 0,
+      "catalog_sample": [
+        {
+          "title": "Blusa Drapeada Tipo Satín Cuello Alto Blanco Nicopoly Blanco Liso M",
+          "vendor": "Nicopoly",
+          "marketplace_sku": "MLC2250582941",
+          "price": 26990.0,
+          "position_absolute": 1,
+          "categories": [
+            "Brand Hub",
+            "Blusas"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Top / Blusa Lunares Con Botones Café Nicopoly Café Liso L",
+          "vendor": "Nicopoly",
+          "marketplace_sku": "MLC4485751658",
+          "price": 21990.0,
+          "position_absolute": 4,
+          "categories": [
+            "Brand Hub",
+            "Blusas"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Falda Tipo Satín Oliva Nicopoly Oliva Liso M",
+          "vendor": "Nicopoly",
+          "marketplace_sku": "MLC4452210104",
+          "price": 28990.0,
+          "position_absolute": 7,
+          "categories": [
+            "Brand Hub"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Blazer Manga 3/4 Ajustado Con Solapas Amarillo Mantequilla Nicopoly Amarillo S Liso",
+          "vendor": "Nicopoly",
+          "marketplace_sku": "MLC2181838969",
+          "price": 53990.0,
+          "position_absolute": 10,
+          "categories": [
+            "Brand Hub"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Pantalón Rayas Verticales Azul Marino Nicopoly Azul Marino Liso M",
+          "vendor": "Nicopoly",
+          "marketplace_sku": "MLC2250985925",
+          "price": 35990.0,
+          "position_absolute": 13,
+          "categories": [
+            "Brand Hub",
+            "Pantalones"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Falda Midi Tipo Satín Y Encaje Café Nicopoly Café Liso M",
+          "vendor": "Nicopoly",
+          "marketplace_sku": "MLC4487811548",
+          "price": 27990.0,
+          "position_absolute": 16,
+          "categories": [
+            "Brand Hub"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Blusa Halter Lunares Rojo Nicopoly Rojo Liso M",
+          "vendor": "Nicopoly",
+          "marketplace_sku": "MLC2237926845",
+          "price": 24990.0,
+          "position_absolute": 19,
+          "categories": [
+            "Brand Hub"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Blusa Drapeada Tipo Satín Con Corbatín Rosado Nicopoly Rosado Liso S",
+          "vendor": "Nicopoly",
+          "marketplace_sku": "MLC4471871566",
+          "price": 35990.0,
+          "position_absolute": 22,
+          "categories": [
+            "Brand Hub",
+            "Blusas"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Falda Short Rayas Diplomáticas Café Nicopoly Cafe Liso M",
+          "vendor": "Nicopoly",
+          "marketplace_sku": "MLC2193316021",
+          "price": 29990.0,
+          "position_absolute": 25,
+          "categories": [
+            "Brand Hub"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Blusa Puntos Corbatín Negro Nicopoly Negro Liso M",
+          "vendor": "Nicopoly",
+          "marketplace_sku": "MLC4471879330",
+          "price": 25990.0,
+          "position_absolute": 28,
+          "categories": [
+            "Brand Hub",
+            "Blusas"
+          ],
+          "is_direct_brand": true
+        }
+      ]
+    },
+    "Paris": {
+      "observations_raw": 538,
+      "unique_products": 538,
+      "duplicates_removed": 0,
+      "direct_brand_evidence": 538,
+      "indirect_brand_evidence": 0,
+      "without_brand_evidence": 0,
+      "catalog_sample": [
+        {
+          "title": "Chaqueta Corta Tipo Gamuza Negro Nicopoly",
+          "vendor": "Nicopoly",
+          "marketplace_sku": "chaqueta-corta-tipo-gamuza-negro-nicopoly-MKZZ6TNAKM",
+          "price": 32990.0,
+          "position_absolute": 2,
+          "categories": [
+            "Brand Hub",
+            "Chaquetas",
+            "Brand Store"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Polera Manga 3/4 Cuello Bote Burdeo Nicopoly",
+          "vendor": "Nicopoly",
+          "marketplace_sku": "polera-manga-34-cuello-bote-burdeo-nicopoly-MKR0DY2RRE",
+          "price": 11990.0,
+          "position_absolute": 3,
+          "categories": [
+            "Brand Hub",
+            "Poleras",
+            "Brand Store"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Polera Manga Corta Cuello Tipo U Blanco Nicopoly",
+          "vendor": "Nicopoly",
+          "marketplace_sku": "polera-manga-corta-cuello-tipo-u-blanco-nicopoly-MK6BZCE0PH",
+          "price": 11990.0,
+          "position_absolute": 4,
+          "categories": [
+            "Brand Hub",
+            "Poleras",
+            "Brand Store"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Blusa Vuelos Manga Larga Blanco Nicopoly",
+          "vendor": "Nicopoly",
+          "marketplace_sku": "blusa-vuelos-manga-larga-blanco-nicopoly-MKIGM6GF66",
+          "price": 17390.0,
+          "position_absolute": 5,
+          "categories": [
+            "Brand Hub",
+            "Blusas",
+            "Brand Store"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Blusa Vuelos Manga Larga Negro Nicopoly",
+          "vendor": "Nicopoly",
+          "marketplace_sku": "blusa-vuelos-manga-larga-negro-nicopoly-MK7AVWGAN5",
+          "price": 17390.0,
+          "position_absolute": 6,
+          "categories": [
+            "Brand Hub",
+            "Blusas",
+            "Brand Store"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Chaqueta Tipo Barbour Mocca Nicopoly",
+          "vendor": "Nicopoly",
+          "marketplace_sku": "chaqueta-tipo-barbour-mocca-nicopoly-MKTIALXZ3E",
+          "price": 34990.0,
+          "position_absolute": 7,
+          "categories": [
+            "Brand Hub",
+            "Chaquetas",
+            "Brand Store"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Blazer Manga Detalle Drapeado Celeste Nicopoly",
+          "vendor": "Nicopoly",
+          "marketplace_sku": "blazer-manga-detalle-drapeado-celeste-nicopoly-MK8VIMFS48",
+          "price": 22990.0,
+          "position_absolute": 8,
+          "categories": [
+            "Brand Hub",
+            "Chaquetas",
+            "Brand Store"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Blazer Básico De Tope Morado Nicopoly",
+          "vendor": "Nicopoly",
+          "marketplace_sku": "blazer-basico-de-tope-morado-nicopoly-MKDDB5YG89",
+          "price": 33990.0,
+          "position_absolute": 9,
+          "categories": [
+            "Brand Hub",
+            "Chaquetas",
+            "Brand Store"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Camisa Básica Algodón Blanco Nicopoly",
+          "vendor": "Nicopoly",
+          "marketplace_sku": "camisa-basica-algodon-blanco-nicopoly-MKFZXIV8ZT",
+          "price": 15990.0,
+          "position_absolute": 10,
+          "categories": [
+            "Brand Hub",
+            "Blusas",
+            "Brand Store"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Polera Manga Corta Básica Café Nicopoly",
+          "vendor": "Nicopoly",
+          "marketplace_sku": "polera-manga-corta-basica-cafe-nicopoly-MK2VIO7OE4",
+          "price": 9990.0,
+          "position_absolute": 11,
+          "categories": [
+            "Brand Hub",
+            "Poleras",
+            "Brand Store"
+          ],
+          "is_direct_brand": true
+        }
+      ]
+    },
+    "Ripley": {
+      "observations_raw": 96,
+      "unique_products": 96,
+      "duplicates_removed": 0,
+      "direct_brand_evidence": 48,
+      "indirect_brand_evidence": 48,
+      "without_brand_evidence": 0,
+      "catalog_sample": [
+        {
+          "title": "CHAQUETA BIKER NEGRO MUJER NICOPOLY",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "10002617343",
+          "price": 54990.0,
+          "position_absolute": 1,
+          "categories": [
+            "Brand Hub"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "POLERA ENCAJE MANGA LARGA NEGRO MUJER NICOPOLY",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "10002951146",
+          "price": 25990.0,
+          "position_absolute": 2,
+          "categories": [
+            "Brand Hub"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "VESTIDO TIPO CAMISERO MUJER NICOPOLY",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "10002967232",
+          "price": 32990.0,
+          "position_absolute": 3,
+          "categories": [
+            "Brand Hub"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "CARDIGAN BASICO ROSADO MUJER NICOPOLY",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "10002924256",
+          "price": 21990.0,
+          "position_absolute": 4,
+          "categories": [
+            "Brand Hub"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "BLAZER 4 BOTONES DECORATIVOS NEGRO MUJER NICOPOLY",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "10001713165",
+          "price": 39990.0,
+          "position_absolute": 5,
+          "categories": [
+            "Brand Hub"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "CHAQUETA TIPO BARBOUR MOCCA MUJER NICOPOLY",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "10003221538",
+          "price": 69990.0,
+          "position_absolute": 6,
+          "categories": [
+            "Brand Hub"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "BLAZER MUJER NICOPOLY NEGRO LAZO DELANTERO",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "10002128962",
+          "price": 49990.0,
+          "position_absolute": 7,
+          "categories": [
+            "Brand Hub"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "BLAZER CRUZADO RAYAS DIPLOMATICAS CAFE MUJER NICOPOLY",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "10003543814",
+          "price": 54990.0,
+          "position_absolute": 8,
+          "categories": [
+            "Brand Hub"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "CHAQUETA BOUCLE BLANCO INVIERNO INVIERNO MUJER NICOPOLY",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "10002646323",
+          "price": 56990.0,
+          "position_absolute": 9,
+          "categories": [
+            "Brand Hub"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "BLAZER ENTALLADO CLASICO AMARILLO NICOPOLY",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "00014509502",
+          "price": 38990.0,
+          "position_absolute": 10,
+          "categories": [
+            "Brand Hub"
+          ],
+          "is_direct_brand": true
+        }
+      ]
+    },
+    "Falabella": {
+      "observations_raw": 407,
+      "unique_products": 407,
+      "duplicates_removed": 0,
+      "direct_brand_evidence": 407,
+      "indirect_brand_evidence": 0,
+      "without_brand_evidence": 0,
+      "catalog_sample": [
+        {
+          "title": "Blazer Dos Botones Burdeo Mujer",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "152147935",
+          "price": 32490.0,
+          "position_absolute": 1,
+          "categories": [
+            "Brand Hub"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Blazer Manga 3/4 Ajustado con Solapas Amarillo Mantequilla Mujer",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "156820390",
+          "price": 53990.0,
+          "position_absolute": 2,
+          "categories": [
+            "Brand Hub"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Chaqueta Tipo Barbour Mocca Mujer",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "152209128",
+          "price": 34990.0,
+          "position_absolute": 3,
+          "categories": [
+            "Brand Hub"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Pantalón Básico Café Mujer",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "152153569",
+          "price": 39990.0,
+          "position_absolute": 4,
+          "categories": [
+            "Brand Hub",
+            "Mujer"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Blazer Oversize Tipo Gamuza Café Mujer",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "152209095",
+          "price": 34990.0,
+          "position_absolute": 5,
+          "categories": [
+            "Brand Hub"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Gilet Básico Ajustable Amarillo Mantequilla Mujer",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "156825472",
+          "price": 29990.0,
+          "position_absolute": 6,
+          "categories": [
+            "Brand Hub"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Pantalón Corte Barrel Beige Mujer",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "157356203",
+          "price": 33590.0,
+          "position_absolute": 7,
+          "categories": [
+            "Brand Hub",
+            "Mujer"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Pantalón Recto Raya Diplomática Café Mujer",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "157297409",
+          "price": 37990.0,
+          "position_absolute": 8,
+          "categories": [
+            "Brand Hub",
+            "Mujer",
+            "Pantalones"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Gilet Vichy Negro Mujer",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "157282157",
+          "price": 22390.0,
+          "position_absolute": 9,
+          "categories": [
+            "Brand Hub"
+          ],
+          "is_direct_brand": true
+        },
+        {
+          "title": "Blazer Peplum Botones Blanco Mujer",
+          "vendor": "NICOPOLY",
+          "marketplace_sku": "157338276",
+          "price": 47990.0,
+          "position_absolute": 10,
+          "categories": [
+            "Brand Hub"
+          ],
+          "is_direct_brand": true
+        }
+      ]
+    }
+  }
+}

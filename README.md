@@ -12,9 +12,9 @@ Current focus: MRI autonomous marketplace intelligence across four marketplaces:
 
 ### Latest milestones
 
-- MRI-AUTONOMY-006: Ripley facet application reported PASS in a fresh MRI-only run after the `page_signature` fix.
-- MRI-AUTONOMY-007: controlled propagation reported PASS across 3 direct Ripley children, with no code changes and no AutoClaw/manual actions.
-- MRI-4MARKETPLACES-BASELINE-001: bounded cross-marketplace baseline completed. First blockers identified across all marketplaces.
+- MRI-4MP-FINAL-E2E-CERT-001: End-to-End Autonomous 4-Marketplace Final Certification certified PASS. Executed sequentially across Mercado Libre, Paris, Ripley, and Falabella with strictly `PRODUCTION_CODE_CHANGES=0` during certification. 1362 unique products observed, 1314 direct brand evidence items, 2351 memberships, 1362 positions. Frontier 100% reconciled across all 4 marketplaces (pending = 0). Official DB materialization (1314 products) and dynamic dashboard read model reconciled with 0 mismatches. Regression suite 94/94 passing.
+- MRI-RIPLEY-FRONTIER-VALIDATION-001: Ripley frontier exhaustion certified PASS (1435 discovered = 1435 terminal + 0 pending).
+- MRI-DASHBOARD-LIVE-MATERIALIZATION-001: Live dashboard materialization certified PASS (CATEGORÍAS and COMPARACIÓN LEGACY dynamically projected from SQLite).
 - MRI-CROSSMARKET-BLOCKERS-001: forensic root cause resolution completed across all blockers:
   - Mercado Libre: root cause evidenced (evaluator missing key `brand_evidence_count_text` + address URL false capture + store sidebar facet adapter gap).
   - Paris: root cause evidenced (Next.js App Router streaming RSC `self.__next_f` state vs null `__NEXT_DATA__` + DOM Mega-Menu noise pollution).

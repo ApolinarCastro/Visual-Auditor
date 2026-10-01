@@ -1,0 +1,43 @@
+{
+  "task_id": "MRI-4MP-FINAL-E2E-CERT-001",
+  "cert_run_id": "run_mri_4mp_final_cert_1790865503",
+  "total_positions_recorded": 1362,
+  "marketplaces": {
+    "Mercado Libre": {
+      "positions_materialized": 321,
+      "distribution": {
+        "top30": 96,
+        "top60": 177,
+        "top90": 234,
+        "top120": 270
+      }
+    },
+    "Paris": {
+      "positions_materialized": 538,
+      "distribution": {
+        "top30": 30,
+        "top60": 60,
+        "top90": 90,
+        "top120": 120
+      }
+    },
+    "Ripley": {
+      "positions_materialized": 96,
+      "distribution": {
+        "top30": 60,
+        "top60": 96,
+        "top90": 96,
+        "top120": 96
+      }
+    },
+    "Falabella": {
+      "positions_materialized": 407,
+      "distribution": {
+        "top30": 245,
+        "top60": 346,
+        "top90": 395,
+        "top120": 407
+      }
+    }
+  }
+}

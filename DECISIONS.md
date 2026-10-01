@@ -159,3 +159,17 @@ MRI-RIPLEY-FRONTIER-VALIDATION-001 resolved the Ripley frontier remaining blocke
 5. Certified in clean Ripley run: 1435 routes discovered, 1435 processed, 0 pending (`frontier_remaining = 0`, `frontier_exhausted = true`), 96 products observed, 48 direct brand evidence items, 96 memberships, 96 positions, exit code 0.
 6. Independent verification: Reconciled 1435 = 1435 terminal + 0 pending (`reconciled = true`, `false_pass = 0`, `synthetic_contribution = 0`, `hardcoded_result_contribution = 0`).
 7. Global verdict: `MRI_RIPLEY_FRONTIER_VALIDATION_PASS`.
+
+## D-026 — Autonomous Four-Marketplace Final Certification (MRI-4MP-FINAL-E2E-CERT-001)
+MRI-4MP-FINAL-E2E-CERT-001 executed and passed the final End-to-End Autonomous Certification across all four marketplaces:
+1. Operational discipline: Strictly executed over a clean repository with `PRODUCTION_CODE_CHANGES=0`, `NEW_PRODUCTION_FILES=0`, `NEW_DEPENDENCIES=0`, `FIX_CYCLES=0`, `AUTOCLAW_ACTIONS=0`, `MANUAL_MARKETPLACE_ACTIONS=0`, `SYNTHETIC_RESULTS=0`.
+2. Sequential autonomous execution:
+   - Mercado Libre: PASS (321 unique products, 321 direct brand evidence, 348 memberships, 321 positions, 0 frontier remaining, exit code 0).
+   - Paris: PASS (538 unique products, 538 direct brand evidence, 1407 memberships, 538 positions, 0 frontier remaining, exit code 0).
+   - Ripley: PASS (96 products observed, 48 direct brand evidence, 96 memberships, 96 positions, 0 frontier remaining; 1435 discovered = 1435 terminal + 0 pending, exit code 0).
+   - Falabella: PASS (407 unique products, 407 direct brand evidence, 500 memberships, 407 positions, 0 frontier remaining, exit code 0).
+3. Official SQLite materialization: 1314 products materialized, 2303 categories, 2303 memberships, 1314 positions, 1314 evidence ledger items.
+4. Live dashboard read model: Complete dynamic alignment across all 9 views (`dashboard_mismatch_count = 0`, `stale_research_recurrence = 0`, `stale_dates_count = 0`).
+5. Regression suite: 94/94 passing (0 failures).
+6. Global verdict: `MRI_4MP_FINAL_E2E_CERT_PASS`. Enter controlled production maintenance.
+

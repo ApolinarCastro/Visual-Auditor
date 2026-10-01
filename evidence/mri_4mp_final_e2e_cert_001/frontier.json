@@ -1,0 +1,59 @@
+{
+  "task_id": "MRI-4MP-FINAL-E2E-CERT-001",
+  "cert_run_id": "run_mri_4mp_final_cert_1790865503",
+  "marketplaces": {
+    "Mercado Libre": {
+      "created": 6,
+      "processed": 6,
+      "verified": 6,
+      "rejected": 0,
+      "unresolved": 0,
+      "blocked": 0,
+      "remaining": 0,
+      "reconciled": true
+    },
+    "Paris": {
+      "created": 19,
+      "processed": 19,
+      "verified": 19,
+      "rejected": 0,
+      "unresolved": 0,
+      "blocked": 0,
+      "remaining": 0,
+      "reconciled": true
+    },
+    "Ripley": {
+      "created": 1435,
+      "processed": 1435,
+      "verified": 1435,
+      "rejected": 0,
+      "unresolved": 0,
+      "blocked": 0,
+      "remaining": 0,
+      "reconciled": true,
+      "ripley_accounting": {
+        "raw_discovered": 1435,
+        "terminal": 1435,
+        "commercial": 1253,
+        "noncommercial": 0,
+        "brand_navigation": 182,
+        "duplicate": 0,
+        "source_blocked": 0,
+        "error": 0,
+        "pending": 0,
+        "raw_equals_terminal_plus_pending": true,
+        "pending_zero": true
+      }
+    },
+    "Falabella": {
+      "created": 19,
+      "processed": 18,
+      "verified": 18,
+      "rejected": 0,
+      "unresolved": 1,
+      "blocked": 0,
+      "remaining": 0,
+      "reconciled": true
+    }
+  }
+}

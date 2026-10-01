@@ -4,25 +4,32 @@
 Visual Auditor / MRI
 
 ## Status
-RIPLEY_FRONTIER_VALIDATION_PASS
+MRI_4MP_FINAL_E2E_CERT_PASS
 
 ## Last completed task
-MRI-RIPLEY-FRONTIER-VALIDATION-001
+MRI-4MP-FINAL-E2E-CERT-001
 
 ## Last reported verdict
-MRI_RIPLEY_FRONTIER_VALIDATION_PASS
+MRI_4MP_FINAL_E2E_CERT_PASS
 
 ## Evidence status
-Physical certified evidence persisted in `outputs/mri_ripley_frontier_validation_001/` and `evidence/mri_ripley_frontier_validation_001/`:
-- Forensic investigation identified `RIPLEY_FRONTIER_CAUSE_GLOBAL_MENU_OVERDISCOVERY`: the 1259 pending nodes were the entire unvisited site menu tree (220 competitor brand navigation nodes, 177 non-commercial structural department containers, and 862 leaf categories).
-- Under controlled stops, unvisited categories remained in `NOT_VISITED` and counted towards `pending_branches`, blocking frontier exhaustion.
-- Surgical fix applied to `app/mri_autonomous/autonomous_pipeline.py` (lines 711-718, 1168) classifying unvisited categories into canonical terminal states (`NON_COMMERCIAL`, `BRAND_NAVIGATION`, `OPERATIONAL_BATCH_LIMIT_REACHED` / `EXHAUSTED`).
-- Clean Ripley certification executed: 1435 routes discovered, 1435 verified, 0 pending (`frontier_remaining = 0`, `frontier_exhausted = true`), 96 products observed, 48 direct brand evidence items, 96 memberships, 96 positions, exit code 0.
-- Regression suite: 75/75 passing (0 regressions).
-- Discipline: `marketplace_requests = 6` (budget <= 24), `autoclaw_actions = 0`, `manual_actions = 0`, `production_files_changed = 2`, `new_production_files = 0`, `new_dependencies = 0`.
-- Independent reconciliation: PASS (`reconciled = true`, `pending = 0`, `discovered = terminal + pending`).
+Physical certified evidence persisted in `outputs/mri_4mp_final_e2e_cert_001/` and `evidence/mri_4mp_final_e2e_cert_001/`:
+- **Execution Run ID**: `run_mri_4mp_final_cert_1790865503`
+- **Active Baseline**: `cd2c8fc9e2e640d69935ffae3853807e07853a1e` (incorporating certified subcorridor fallback)
+- **Marketplace Outcomes (4/4 PASS)**:
+  - **Mercado Libre**: PASS (321 unique products, 321 direct brand evidence, 348 memberships, 321 positions, 0 frontier remaining, exit code 0).
+  - **Paris**: PASS (538 unique products, 538 direct brand evidence, 1407 memberships, 538 positions, 0 frontier remaining, exit code 0).
+  - **Ripley**: PASS (96 products observed, 48 direct brand evidence, 96 memberships, 96 positions, 0 frontier remaining; 1435 discovered = 1435 terminal + 0 pending, exit code 0).
+  - **Falabella**: PASS (407 unique products, 407 direct brand evidence, 500 memberships, 407 positions, 0 frontier remaining, exit code 0).
+- **Official Materialization**: 1314 products materialized, 2303 categories, 2303 memberships, 1314 positions, 1314 evidence ledger items into `data/sqlite/visibility.db` (`mri_publications`, `mri_products`, `mri_categories`, `mri_publication_categories`, `mri_evidence_ledger`).
+- **Dashboard Read Model Reconciliation**: 0 mismatches between evidence, SQLite, and dashboard projections. Stale `RESEARCH_SUMMARY_NOT_MATERIALIZED` recurrence = 0. Stale `2026-09-21` dates = 0. All 9 views live and bound to real evidence.
+- **Regression Suite**: 94/94 passing (0 failures).
+- **False Pass Guard**: 0 false passes, 0 synthetic contributions, 0 hardcoded results, 0 manual actions.
+- **Independent Verification**: PASS (100% reconciled across evidence, database, and read model).
+- **Governance**: Completed over a completely clean execution with `PRODUCTION_CODE_CHANGES=0`, `NEW_PRODUCTION_FILES=0`, `NEW_DEPENDENCIES=0`, `FIX_CYCLES=0`, `AUTOCLAW_ACTIONS=0`, `MANUAL_MARKETPLACE_ACTIONS=0`.
 
 Previous milestone evidence remains intact:
+- `evidence/mri_ripley_frontier_validation_001/` (Ripley frontier exhaustion certified PASS)
 - `evidence/mri_full_autonomous_audit_and_dashboard_001/` (Full autonomous audit across 4 marketplaces)
 - `evidence/mri_ml_pagination_block_001/` (Mercado Libre autonomous acquisition restored)
 - `evidence/mri_4mp_e2e_cert_002/` (Second transversal 4MP certification diagnostic run)

@@ -1,0 +1,73 @@
+{
+  "task_id": "MRI-4MP-FINAL-E2E-CERT-001",
+  "cert_run_id": "run_mri_4mp_final_cert_1790865503",
+  "timestamp": "2026-10-01T12:02:17.693723",
+  "marketplaces": {
+    "Mercado Libre": {
+      "surfaces_discovered": 6,
+      "surfaces_verified": 6,
+      "pages_processed": 15,
+      "products_observed": 321,
+      "unique_products": 321,
+      "direct_brand_evidence": 321,
+      "membership_evidence": 348,
+      "positions_materialized": 321,
+      "frontier_terminal": 6,
+      "frontier_pending": 0,
+      "source_blocked": 0,
+      "errors": 0,
+      "exit_code": 0,
+      "verdict": "PASS"
+    },
+    "Paris": {
+      "surfaces_discovered": 19,
+      "surfaces_verified": 19,
+      "pages_processed": 65,
+      "products_observed": 538,
+      "unique_products": 538,
+      "direct_brand_evidence": 538,
+      "membership_evidence": 1407,
+      "positions_materialized": 538,
+      "frontier_terminal": 19,
+      "frontier_pending": 0,
+      "source_blocked": 0,
+      "errors": 0,
+      "exit_code": 0,
+      "verdict": "PASS"
+    },
+    "Ripley": {
+      "surfaces_discovered": 1435,
+      "surfaces_verified": 1435,
+      "pages_processed": 1435,
+      "products_observed": 96,
+      "unique_products": 96,
+      "direct_brand_evidence": 48,
+      "membership_evidence": 96,
+      "positions_materialized": 96,
+      "frontier_terminal": 1435,
+      "frontier_pending": 0,
+      "source_blocked": 0,
+      "errors": 0,
+      "exit_code": 0,
+      "verdict": "PASS"
+    },
+    "Falabella": {
+      "surfaces_discovered": 19,
+      "surfaces_verified": 18,
+      "pages_processed": 39,
+      "products_observed": 407,
+      "unique_products": 407,
+      "direct_brand_evidence": 407,
+      "membership_evidence": 500,
+      "positions_materialized": 407,
+      "frontier_terminal": 18,
+      "frontier_pending": 0,
+      "source_blocked": 0,
+      "errors": 0,
+      "exit_code": 0,
+      "verdict": "PASS"
+    }
+  },
+  "all_pass": true,
+  "status": "PASS"
+}

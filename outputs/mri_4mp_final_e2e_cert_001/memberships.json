@@ -1,0 +1,70 @@
+{
+  "task_id": "MRI-4MP-FINAL-E2E-CERT-001",
+  "cert_run_id": "run_mri_4mp_final_cert_1790865503",
+  "total_membership_edges": 2351,
+  "marketplaces": {
+    "Mercado Libre": {
+      "membership_evidence": 348,
+      "categories_with_products": [
+        "Brand Hub",
+        "New In",
+        "Conjuntos",
+        "Chaquetas Parkas Blazers",
+        "Blusas",
+        "Pantalones"
+      ]
+    },
+    "Paris": {
+      "membership_evidence": 1407,
+      "categories_with_products": [
+        "Brand Hub",
+        "Abrigos",
+        "Blusas",
+        "Calzas",
+        "Chalecos",
+        "Chaquetas",
+        "Faldas",
+        "Jeans",
+        "Pantalones",
+        "Parkas",
+        "Poleras",
+        "Polerones",
+        "Shorts",
+        "Sweaters",
+        "Vestidos",
+        "Vestidos De Fiesta",
+        "Brand Store"
+      ]
+    },
+    "Ripley": {
+      "membership_evidence": 96,
+      "categories_with_products": [
+        "Brand Hub",
+        "Zapatos Outdoor"
+      ]
+    },
+    "Falabella": {
+      "membership_evidence": 500,
+      "categories_with_products": [
+        "Brand Hub",
+        "Mujer",
+        "Pantalones",
+        "Blazers",
+        "Chaquetas",
+        "Poleras",
+        "Gillette",
+        "Sweaters",
+        "Blusas",
+        "Camisas",
+        "Abrigos",
+        "Jeans",
+        "Shorts",
+        "Cardigans",
+        "Vestido Casual",
+        "Trench",
+        "Parkas",
+        "Vest"
+      ]
+    }
+  }
+}

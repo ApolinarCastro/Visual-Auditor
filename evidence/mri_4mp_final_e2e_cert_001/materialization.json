@@ -1,0 +1,45 @@
+{
+  "task_id": "MRI-4MP-FINAL-E2E-CERT-001",
+  "cert_run_id": "run_mri_4mp_final_cert_1790865503",
+  "timestamp": "2026-10-01T12:02:17.153360",
+  "status": "PASS",
+  "records_before": 1821,
+  "records_written": 222,
+  "records_updated": 1092,
+  "records_rejected": 48,
+  "records_after": 2043,
+  "products_materialized": 1314,
+  "categories_materialized": 2303,
+  "memberships_materialized": 2303,
+  "positions_materialized": 1314,
+  "evidence_materialized": 1314,
+  "materialization_errors": 0,
+  "materialized_by_marketplace": {
+    "Mercado Libre": {
+      "written": 3,
+      "updated": 318,
+      "rejected": 0
+    },
+    "Paris": {
+      "written": 0,
+      "updated": 538,
+      "rejected": 0
+    },
+    "Ripley": {
+      "written": 0,
+      "updated": 48,
+      "rejected": 48
+    },
+    "Falabella": {
+      "written": 219,
+      "updated": 188,
+      "rejected": 0
+    }
+  },
+  "db_totals_by_marketplace": {
+    "falabella": 858,
+    "mercadolibre": 572,
+    "paris": 561,
+    "ripley": 52
+  }
+}

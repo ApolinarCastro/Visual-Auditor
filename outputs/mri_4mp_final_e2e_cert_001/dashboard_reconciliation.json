@@ -1,0 +1,41 @@
+{
+  "task_id": "MRI-4MP-FINAL-E2E-CERT-001",
+  "cert_run_id": "run_mri_4mp_final_cert_1790865503",
+  "timestamp": "2026-10-01T12:02:17.693244",
+  "publications_reconciliation": [
+    {
+      "marketplace": "Mercado Libre",
+      "evidence_unique_products": 321,
+      "db_publications": 572,
+      "dashboard_publications": 572,
+      "db_dashboard_match": true
+    },
+    {
+      "marketplace": "Paris",
+      "evidence_unique_products": 538,
+      "db_publications": 561,
+      "dashboard_publications": 561,
+      "db_dashboard_match": true
+    },
+    {
+      "marketplace": "Ripley",
+      "evidence_unique_products": 96,
+      "db_publications": 52,
+      "dashboard_publications": 52,
+      "db_dashboard_match": true
+    },
+    {
+      "marketplace": "Falabella",
+      "evidence_unique_products": 407,
+      "db_publications": 858,
+      "dashboard_publications": 858,
+      "db_dashboard_match": true
+    }
+  ],
+  "dashboard_updated": true,
+  "dashboard_mismatch_count": 0,
+  "research_summary_not_materialized_recurrence": 0,
+  "stale_2026_09_21_dates_count": 0,
+  "dashboard_reconciled": true,
+  "status": "PASS"
+}

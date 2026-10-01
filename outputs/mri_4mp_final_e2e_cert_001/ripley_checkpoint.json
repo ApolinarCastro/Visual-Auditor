@@ -1,0 +1,272 @@
+{
+  "run_id": "run_mri_4mp_final_cert_1790865503",
+  "marketplace": "Ripley",
+  "brand": "Nicopoly",
+  "checkpoints": [
+    {
+      "timestamp": "2026-10-01T11:48:55.199650",
+      "kind": "category_done",
+      "category_name": "Brand Hub",
+      "category_url": "https://simple.ripley.cl/search/nicopoly",
+      "raw_count": 48,
+      "cumulative_unique_count": 48
+    },
+    {
+      "timestamp": "2026-10-01T11:49:15.261485",
+      "kind": "EXPERIENCE_DECISION",
+      "category_name": null,
+      "category_url": null,
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:49:15.261498",
+      "kind": "navigation_source_found",
+      "category_name": null,
+      "category_url": null,
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:49:15.264263",
+      "kind": "frontier_state",
+      "category_name": null,
+      "category_url": null,
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:49:15.264275",
+      "kind": "category_attempt",
+      "category_name": "Zapatos Y Zapatillas",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:49:29.841329",
+      "kind": "facet_application",
+      "category_name": "Zapatos Y Zapatillas",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:49:29.841915",
+      "kind": "EXPERIENCE_DECISION",
+      "category_name": null,
+      "category_url": null,
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:49:37.280782",
+      "kind": "facet_application",
+      "category_name": "Zapatos Y Zapatillas",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:49:44.692586",
+      "kind": "category_done",
+      "category_name": "Zapatos Y Zapatillas",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas",
+      "raw_count": 0,
+      "cumulative_unique_count": 48
+    },
+    {
+      "timestamp": "2026-10-01T11:49:45.893922",
+      "kind": "category_attempt",
+      "category_name": "Zapatos Outdoor",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-hombre/zapatos-outdoor",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:50:12.202181",
+      "kind": "facet_application",
+      "category_name": "Zapatos Outdoor",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-hombre/zapatos-outdoor",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:50:47.104138",
+      "kind": "category_done",
+      "category_name": "Zapatos Outdoor",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-hombre/zapatos-outdoor",
+      "raw_count": 48,
+      "cumulative_unique_count": 96
+    },
+    {
+      "timestamp": "2026-10-01T11:50:48.306445",
+      "kind": "category_attempt",
+      "category_name": "Zapatos Ninas Y Ninos",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-infantiles/zapatos-ninas-y-ninos",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:51:01.873578",
+      "kind": "facet_application",
+      "category_name": "Zapatos Ninas Y Ninos",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-infantiles/zapatos-ninas-y-ninos",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:51:21.569085",
+      "kind": "category_done",
+      "category_name": "Zapatos Ninas Y Ninos",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-infantiles/zapatos-ninas-y-ninos",
+      "raw_count": 0,
+      "cumulative_unique_count": 96
+    },
+    {
+      "timestamp": "2026-10-01T11:51:22.776463",
+      "kind": "category_attempt",
+      "category_name": "Zapatos Mujer",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-mujer",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:51:33.390655",
+      "kind": "facet_application",
+      "category_name": "Zapatos Mujer",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-mujer",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:51:39.337404",
+      "kind": "category_done",
+      "category_name": "Zapatos Mujer",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-mujer",
+      "raw_count": 0,
+      "cumulative_unique_count": 96
+    },
+    {
+      "timestamp": "2026-10-01T11:51:40.544435",
+      "kind": "category_attempt",
+      "category_name": "Zapatos Infantiles",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-infantiles",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:51:52.555407",
+      "kind": "facet_application",
+      "category_name": "Zapatos Infantiles",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-infantiles",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:52:11.486006",
+      "kind": "category_done",
+      "category_name": "Zapatos Infantiles",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-infantiles",
+      "raw_count": 0,
+      "cumulative_unique_count": 96
+    },
+    {
+      "timestamp": "2026-10-01T11:52:12.699457",
+      "kind": "category_attempt",
+      "category_name": "Zapatos Hombre",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-hombre",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:52:24.253339",
+      "kind": "facet_application",
+      "category_name": "Zapatos Hombre",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-hombre",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:52:44.093854",
+      "kind": "category_done",
+      "category_name": "Zapatos Hombre",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-hombre",
+      "raw_count": 0,
+      "cumulative_unique_count": 96
+    },
+    {
+      "timestamp": "2026-10-01T11:52:45.301297",
+      "kind": "category_attempt",
+      "category_name": "Zapatos De Vestir",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-hombre/zapatos-de-vestir",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:53:09.698549",
+      "kind": "facet_application",
+      "category_name": "Zapatos De Vestir",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-hombre/zapatos-de-vestir",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:53:28.812541",
+      "kind": "category_done",
+      "category_name": "Zapatos De Vestir",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-hombre/zapatos-de-vestir",
+      "raw_count": 0,
+      "cumulative_unique_count": 96
+    },
+    {
+      "timestamp": "2026-10-01T11:53:30.016423",
+      "kind": "category_attempt",
+      "category_name": "Zapatos De Fiesta",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-mujer/zapatos-de-fiesta",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:53:54.338710",
+      "kind": "facet_application",
+      "category_name": "Zapatos De Fiesta",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-mujer/zapatos-de-fiesta",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:54:14.955261",
+      "kind": "category_done",
+      "category_name": "Zapatos De Fiesta",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-mujer/zapatos-de-fiesta",
+      "raw_count": 0,
+      "cumulative_unique_count": 96
+    },
+    {
+      "timestamp": "2026-10-01T11:54:16.160370",
+      "kind": "category_attempt",
+      "category_name": "Zapatos Con Taco",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-mujer/zapatos-con-taco",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:54:40.872263",
+      "kind": "facet_application",
+      "category_name": "Zapatos Con Taco",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-mujer/zapatos-con-taco",
+      "raw_count": 0,
+      "cumulative_unique_count": 0
+    },
+    {
+      "timestamp": "2026-10-01T11:54:47.802506",
+      "kind": "category_done",
+      "category_name": "Zapatos Con Taco",
+      "category_url": "https://simple.ripley.cl/zapatos-y-zapatillas/zapatos-mujer/zapatos-con-taco",
+      "raw_count": 0,
+      "cumulative_unique_count": 96
+    }
+  ],
+  "checkpoint_written": true
+}

@@ -1,0 +1,14 @@
+{
+  "task_id": "MRI-4MP-FINAL-E2E-CERT-001",
+  "cert_run_id": "run_mri_4mp_final_cert_1790865503",
+  "timestamp": "2026-10-01T12:02:17.154413",
+  "db_path": "C:\\Users\\ASUS Zenbook\\Documents\\Visibility Auditor\\data\\sqlite\\visibility.db",
+  "records_before": 1821,
+  "records_after": 2043,
+  "net_growth": 222,
+  "records_written": 222,
+  "records_updated": 1092,
+  "records_rejected": 48,
+  "reconciled": true,
+  "status": "PASS"
+}

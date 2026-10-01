@@ -1,0 +1,11 @@
+{
+  "task_id": "MRI-4MP-FINAL-E2E-CERT-001",
+  "cert_run_id": "run_mri_4mp_final_cert_1790865503",
+  "timestamp": "2026-10-01T12:02:56.936760",
+  "exit_code": 0,
+  "tests_run": 94,
+  "tests_passed": 94,
+  "tests_failed": 0,
+  "regression_status": "PASS",
+  "raw_output": "n a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).\n    now = datetime.utcnow().isoformat()\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n94 passed, 5 warnings in 37.47s\nException ignored in atexit callback <function cleanup_numbered_dir at 0x000002380FDAA400>:\nTraceback (most recent call last):\n  File \"C:\\Users\\ASUS Zenbook\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\site-packages\\_pytest\\pathlib.py\", line 374, in cleanup_numbered_dir\n    cleanup_dead_symlinks(root)\n  File \"C:\\Users\\ASUS Zenbook\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\site-packages\\_pytest\\pathlib.py\", line 360, in cleanup_dead_symlinks\n    left_dir.unlink()\n  File \"C:\\Users\\ASUS Zenbook\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\pathlib\\__init__.py\", line 1047, in unlink\n    os.unlink(self)\nPermissionError: [WinError 5] Acceso denegado: 'C:\\\\Users\\\\ASUS Zenbook\\\\AppData\\\\Local\\\\Temp\\\\pytest-of-ASUS Zenbook\\\\pytest-current'\n"
+}

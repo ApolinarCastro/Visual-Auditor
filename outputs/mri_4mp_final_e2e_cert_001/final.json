@@ -1,0 +1,287 @@
+{
+  "task_id": "MRI-4MP-FINAL-E2E-CERT-001",
+  "cert_run_id": "run_mri_4mp_final_cert_1790865503",
+  "baseline_sha": "cd2c8fc9e2e640d69935ffae3853807e07853a1e",
+  "brand_runtime": "Nicopoly",
+  "timestamp_start": "2026-10-01T12:02:17.038102",
+  "timestamp_end": "2026-10-01T12:02:17.050821",
+  "duration_seconds": 0.01,
+  "final_verdict": "MRI_4MP_FINAL_E2E_CERT_PASS",
+  "first_failure": null,
+  "first_divergence": null,
+  "affected_marketplace": null,
+  "marketplaces": {
+    "Mercado Libre": {
+      "pid": 12864,
+      "run_id": "run_mri_4mp_final_cert_1790865503",
+      "start_time": "2026-10-01T11:38:24.120384",
+      "end_time": "2026-10-01T11:40:38.492568",
+      "duration": 134.37,
+      "exit_code": 0,
+      "verdict": "PASS",
+      "evidence_path": "C:\\Users\\ASUS Zenbook\\Documents\\Visibility Auditor\\outputs\\mri_4mp_final_e2e_cert_001\\mercadolibre.json",
+      "surfaces_discovered": 6,
+      "surfaces_verified": 6,
+      "pages_processed": 15,
+      "products_observed": 321,
+      "unique_products": 321,
+      "direct_brand_evidence": 321,
+      "membership_evidence": 348,
+      "positions_materialized": 321,
+      "frontier_remaining": 0,
+      "source_blocked": 0,
+      "ripley_stats": {},
+      "first_failure": null
+    },
+    "Paris": {
+      "pid": 26824,
+      "run_id": "run_mri_4mp_final_cert_1790865503",
+      "start_time": "2026-10-01T11:40:39.261631",
+      "end_time": "2026-10-01T11:48:03.307594",
+      "duration": 444.05,
+      "exit_code": 0,
+      "verdict": "PASS",
+      "evidence_path": "C:\\Users\\ASUS Zenbook\\Documents\\Visibility Auditor\\outputs\\mri_4mp_final_e2e_cert_001\\paris.json",
+      "surfaces_discovered": 19,
+      "surfaces_verified": 19,
+      "pages_processed": 65,
+      "products_observed": 538,
+      "unique_products": 538,
+      "direct_brand_evidence": 538,
+      "membership_evidence": 1407,
+      "positions_materialized": 538,
+      "frontier_remaining": 0,
+      "source_blocked": 0,
+      "ripley_stats": {},
+      "first_failure": null
+    },
+    "Ripley": {
+      "pid": 25256,
+      "run_id": "run_mri_4mp_final_cert_1790865503",
+      "start_time": "2026-10-01T11:48:04.211376",
+      "end_time": "2026-10-01T11:54:49.181148",
+      "duration": 404.97,
+      "exit_code": 0,
+      "verdict": "PASS",
+      "evidence_path": "C:\\Users\\ASUS Zenbook\\Documents\\Visibility Auditor\\outputs\\mri_4mp_final_e2e_cert_001\\ripley.json",
+      "surfaces_discovered": 1435,
+      "surfaces_verified": 1435,
+      "pages_processed": 1435,
+      "products_observed": 96,
+      "unique_products": 96,
+      "direct_brand_evidence": 48,
+      "membership_evidence": 96,
+      "positions_materialized": 96,
+      "frontier_remaining": 0,
+      "source_blocked": 0,
+      "ripley_stats": {
+        "raw_discovered": 1435,
+        "terminal": 1435,
+        "commercial": 1253,
+        "noncommercial": 0,
+        "brand_navigation": 182,
+        "duplicate": 0,
+        "source_blocked": 0,
+        "error": 0,
+        "pending": 0,
+        "raw_equals_terminal_plus_pending": true,
+        "pending_zero": true
+      },
+      "first_failure": null
+    },
+    "Falabella": {
+      "pid": 3280,
+      "run_id": "run_mri_4mp_final_cert_1790865503",
+      "start_time": "2026-10-01T11:54:49.443460",
+      "end_time": "2026-10-01T11:56:45.157782",
+      "duration": 115.71,
+      "exit_code": 0,
+      "verdict": "PASS",
+      "evidence_path": "C:\\Users\\ASUS Zenbook\\Documents\\Visibility Auditor\\outputs\\mri_4mp_final_e2e_cert_001\\falabella.json",
+      "surfaces_discovered": 19,
+      "surfaces_verified": 18,
+      "pages_processed": 39,
+      "products_observed": 407,
+      "unique_products": 407,
+      "direct_brand_evidence": 407,
+      "membership_evidence": 500,
+      "positions_materialized": 407,
+      "frontier_remaining": 0,
+      "source_blocked": 0,
+      "ripley_stats": {},
+      "first_failure": null
+    }
+  },
+  "materialization": {
+    "task_id": "MRI-4MP-FINAL-E2E-CERT-001",
+    "cert_run_id": "run_mri_4mp_final_cert_1790865503",
+    "timestamp": "2026-10-01T12:02:17.153360",
+    "status": "PASS",
+    "records_before": 1821,
+    "records_written": 222,
+    "records_updated": 1092,
+    "records_rejected": 48,
+    "records_after": 2043,
+    "products_materialized": 1314,
+    "categories_materialized": 2303,
+    "memberships_materialized": 2303,
+    "positions_materialized": 1314,
+    "evidence_materialized": 1314,
+    "materialization_errors": 0,
+    "materialized_by_marketplace": {
+      "Mercado Libre": {
+        "written": 3,
+        "updated": 318,
+        "rejected": 0
+      },
+      "Paris": {
+        "written": 0,
+        "updated": 538,
+        "rejected": 0
+      },
+      "Ripley": {
+        "written": 0,
+        "updated": 48,
+        "rejected": 48
+      },
+      "Falabella": {
+        "written": 219,
+        "updated": 188,
+        "rejected": 0
+      }
+    },
+    "db_totals_by_marketplace": {
+      "falabella": 858,
+      "mercadolibre": 572,
+      "paris": 561,
+      "ripley": 52
+    }
+  },
+  "dashboard_reconciliation": {
+    "task_id": "MRI-4MP-FINAL-E2E-CERT-001",
+    "cert_run_id": "run_mri_4mp_final_cert_1790865503",
+    "timestamp": "2026-10-01T12:02:17.693244",
+    "publications_reconciliation": [
+      {
+        "marketplace": "Mercado Libre",
+        "evidence_unique_products": 321,
+        "db_publications": 572,
+        "dashboard_publications": 572,
+        "db_dashboard_match": true
+      },
+      {
+        "marketplace": "Paris",
+        "evidence_unique_products": 538,
+        "db_publications": 561,
+        "dashboard_publications": 561,
+        "db_dashboard_match": true
+      },
+      {
+        "marketplace": "Ripley",
+        "evidence_unique_products": 96,
+        "db_publications": 52,
+        "dashboard_publications": 52,
+        "db_dashboard_match": true
+      },
+      {
+        "marketplace": "Falabella",
+        "evidence_unique_products": 407,
+        "db_publications": 858,
+        "dashboard_publications": 858,
+        "db_dashboard_match": true
+      }
+    ],
+    "dashboard_updated": true,
+    "dashboard_mismatch_count": 0,
+    "research_summary_not_materialized_recurrence": 0,
+    "stale_2026_09_21_dates_count": 0,
+    "dashboard_reconciled": true,
+    "status": "PASS"
+  },
+  "false_pass_guard": {
+    "task_id": "MRI-4MP-FINAL-E2E-CERT-001",
+    "cert_run_id": "run_mri_4mp_final_cert_1790865503",
+    "timestamp": "2026-10-01T12:02:17.694166",
+    "checks": {
+      "false_pass": 0,
+      "synthetic_contribution": 0,
+      "hardcoded_result_contribution": 0,
+      "manual_result_contribution": 0,
+      "fixture_leakage": 0,
+      "future_timestamp_count": 0,
+      "unsupported_timestamp_count": 0,
+      "stale_value_count": 0
+    },
+    "verdict": "PASS"
+  },
+  "regression": {
+    "task_id": "MRI-4MP-FINAL-E2E-CERT-001",
+    "cert_run_id": "run_mri_4mp_final_cert_1790865503",
+    "timestamp": "2026-10-01T12:02:56.936760",
+    "exit_code": 0,
+    "tests_run": 94,
+    "tests_passed": 94,
+    "tests_failed": 0,
+    "regression_status": "PASS",
+    "raw_output": "n a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).\n    now = datetime.utcnow().isoformat()\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n94 passed, 5 warnings in 37.47s\nException ignored in atexit callback <function cleanup_numbered_dir at 0x000002380FDAA400>:\nTraceback (most recent call last):\n  File \"C:\\Users\\ASUS Zenbook\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\site-packages\\_pytest\\pathlib.py\", line 374, in cleanup_numbered_dir\n    cleanup_dead_symlinks(root)\n  File \"C:\\Users\\ASUS Zenbook\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\site-packages\\_pytest\\pathlib.py\", line 360, in cleanup_dead_symlinks\n    left_dir.unlink()\n  File \"C:\\Users\\ASUS Zenbook\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\pathlib\\__init__.py\", line 1047, in unlink\n    os.unlink(self)\nPermissionError: [WinError 5] Acceso denegado: 'C:\\\\Users\\\\ASUS Zenbook\\\\AppData\\\\Local\\\\Temp\\\\pytest-of-ASUS Zenbook\\\\pytest-current'\n"
+  },
+  "independent_verification": {
+    "task_id": "MRI-4MP-FINAL-E2E-CERT-001",
+    "cert_run_id": "run_mri_4mp_final_cert_1790865503",
+    "timestamp": "2026-10-01T12:02:56.937941",
+    "marketplaces": {
+      "Mercado Libre": {
+        "reported_verdict": "PASS",
+        "calculated_verdict": "PASS",
+        "reconciled": true,
+        "products_observed": 321,
+        "unique_products": 321,
+        "direct_brand_evidence": 321,
+        "membership_evidence": 348,
+        "positions_materialized": 321,
+        "frontier_remaining": 0,
+        "exit_code": 0
+      },
+      "Paris": {
+        "reported_verdict": "PASS",
+        "calculated_verdict": "PASS",
+        "reconciled": true,
+        "products_observed": 538,
+        "unique_products": 538,
+        "direct_brand_evidence": 538,
+        "membership_evidence": 1407,
+        "positions_materialized": 538,
+        "frontier_remaining": 0,
+        "exit_code": 0
+      },
+      "Ripley": {
+        "reported_verdict": "PASS",
+        "calculated_verdict": "PASS",
+        "reconciled": true,
+        "products_observed": 96,
+        "unique_products": 96,
+        "direct_brand_evidence": 48,
+        "membership_evidence": 96,
+        "positions_materialized": 96,
+        "frontier_remaining": 0,
+        "exit_code": 0
+      },
+      "Falabella": {
+        "reported_verdict": "PASS",
+        "calculated_verdict": "PASS",
+        "reconciled": true,
+        "products_observed": 407,
+        "unique_products": 407,
+        "direct_brand_evidence": 407,
+        "membership_evidence": 500,
+        "positions_materialized": 407,
+        "frontier_remaining": 0,
+        "exit_code": 0
+      }
+    },
+    "false_pass_count": 0,
+    "db_dashboard_reconciled": true,
+    "all_reconciled": true,
+    "verdict": "PASS"
+  }
+}
