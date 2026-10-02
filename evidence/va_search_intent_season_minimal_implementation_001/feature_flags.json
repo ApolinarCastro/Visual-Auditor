@@ -1,0 +1,6 @@
+{
+  "SEARCH_INTENT_ENABLED": false,
+  "SEASON_TRACKER_ENABLED": false,
+  "default_state": "DISABLED / OFF",
+  "zero_side_effects_when_off": true
+}

@@ -1,0 +1,13 @@
+{
+  "source": "Busquedas_Concretas_Visual_Auditor.csv",
+  "columns_mapping": {
+    "BUSQUEDA": "intent",
+    "PRIORIDAD": "priority",
+    "TIPO": "product_type",
+    "NIVEL": "level",
+    "PRODUCTOS_COMPATIBLES": "compatible_products"
+  },
+  "search_set_version": "SS2026_V1",
+  "product_type_reused_from": "app.mri_autonomous.category_alignment.resolve_product_type",
+  "new_identity_resolver_created": false
+}

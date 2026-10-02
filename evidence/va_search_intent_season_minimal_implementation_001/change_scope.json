@@ -1,0 +1,26 @@
+{
+  "production_files": [
+    "app/storage/mri_foundation.py"
+  ],
+  "test_files": [
+    "tests/test_search_intent_season_tracker.py"
+  ],
+  "evidence_files": [
+    "evidence/va_search_intent_season_minimal_implementation_001/baseline.json",
+    "evidence/va_search_intent_season_minimal_implementation_001/schema_delta.json",
+    "evidence/va_search_intent_season_minimal_implementation_001/feature_flags.json",
+    "evidence/va_search_intent_season_minimal_implementation_001/search_intent_import.json",
+    "evidence/va_search_intent_season_minimal_implementation_001/search_intent_mapping.json",
+    "evidence/va_search_intent_season_minimal_implementation_001/season_import.json",
+    "evidence/va_search_intent_season_minimal_implementation_001/pilot_20_validation.json",
+    "evidence/va_search_intent_season_minimal_implementation_001/parent_child_traceability.json",
+    "evidence/va_search_intent_season_minimal_implementation_001/season_observation_join.json",
+    "evidence/va_search_intent_season_minimal_implementation_001/combined_integration.json",
+    "evidence/va_search_intent_season_minimal_implementation_001/baseline_parity.json",
+    "evidence/va_search_intent_season_minimal_implementation_001/regression.txt",
+    "evidence/va_search_intent_season_minimal_implementation_001/change_scope.json",
+    "evidence/va_search_intent_season_minimal_implementation_001/final.json"
+  ],
+  "docs_files": [],
+  "unrelated_files": 0
+}

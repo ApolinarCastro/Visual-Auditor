@@ -1,0 +1,27 @@
+{
+  "executive_unit": "SKU_PARENT / PRODUCT (20 parents)",
+  "traceability_unit": "SKU_CHILD / VARIANT (73 children)",
+  "variants_per_parent": {
+    "N03049A": 4,
+    "N04116A": 4,
+    "N04273A-5": 4,
+    "N04277A-5": 4,
+    "N05260A": 3,
+    "N05291A-7": 3,
+    "N05298A": 4,
+    "N05301A": 4,
+    "N05325B36": 4,
+    "N06037B": 4,
+    "N06040A": 4,
+    "N06041A": 4,
+    "N06088B": 3,
+    "N06155B": 3,
+    "N06182A": 4,
+    "N06308A": 4,
+    "N07008B": 3,
+    "N07009B": 3,
+    "N07013A": 4,
+    "N07030E": 3
+  },
+  "children_collapsed_or_lost": 0
+}

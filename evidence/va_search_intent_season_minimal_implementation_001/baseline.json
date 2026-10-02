@@ -1,0 +1,6 @@
+{
+  "baseline_sha": "7448d2b3a42333aa1ad5c3d2abb9e7110a00b3ac",
+  "branch": "main",
+  "initial_regression": "27/27 PASS",
+  "working_tree_clean_before_changes": true
+}

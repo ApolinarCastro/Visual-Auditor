@@ -1,0 +1,97 @@
+[
+  {
+    "sku_parent": "N03049A",
+    "product_name": "Blazer Manga 3/4 Ajustado con Solapas Blanco Nicopoly",
+    "resolved_type": "Blazer",
+    "expected_intents": [
+      {
+        "intent": "Blazer Mujer",
+        "priority": "ALTA",
+        "level": "PRINCIPAL"
+      },
+      {
+        "intent": "Blazer Largo Mujer",
+        "priority": "ALTA",
+        "level": "SECUNDARIA"
+      },
+      {
+        "intent": "Blazer Manga Larga Mujer",
+        "priority": "MEDIA",
+        "level": "SECUNDARIA"
+      }
+    ]
+  },
+  {
+    "sku_parent": "N04273A-5",
+    "product_name": "Gilet Básico Ajustable Blanco Nicopoly",
+    "resolved_type": "Gilet",
+    "expected_intents": [
+      {
+        "intent": "Gilet Mujer",
+        "priority": "ALTA",
+        "level": "PRINCIPAL"
+      },
+      {
+        "intent": "Gilet Cuello V Mujer",
+        "priority": "ALTA",
+        "level": "SECUNDARIA"
+      }
+    ]
+  },
+  {
+    "sku_parent": "N04277A-5",
+    "product_name": "Pantalón Recto Con Pinza Blanco Nicopoly",
+    "resolved_type": "Pantalon",
+    "expected_intents": [
+      {
+        "intent": "Pantalón Mujer",
+        "priority": "ALTA",
+        "level": "PRINCIPAL"
+      },
+      {
+        "intent": "Pantalón de Vestir Mujer",
+        "priority": "ALTA",
+        "level": "SECUNDARIA"
+      },
+      {
+        "intent": "Pantalón a Rayas Mujer",
+        "priority": "MEDIA",
+        "level": "SECUNDARIA"
+      }
+    ]
+  },
+  {
+    "sku_parent": "N06182A",
+    "product_name": "Jeans Corte Barrel Blanco Nicopoly",
+    "resolved_type": "Jeans",
+    "expected_intents": [
+      {
+        "intent": "Jeans Mujer",
+        "priority": "ALTA",
+        "level": "PRINCIPAL"
+      }
+    ]
+  },
+  {
+    "sku_parent": "N06308A",
+    "product_name": "Polera Manga Larga Cuello Bote Blanco Nicopoly",
+    "resolved_type": "Polera",
+    "expected_intents": [
+      {
+        "intent": "Polera Mujer",
+        "priority": "ALTA",
+        "level": "PRINCIPAL"
+      },
+      {
+        "intent": "Polera Manga Corta Mujer",
+        "priority": "ALTA",
+        "level": "SECUNDARIA"
+      },
+      {
+        "intent": "Polera Cuello Redondo Mujer",
+        "priority": "ALTA",
+        "level": "SECUNDARIA"
+      }
+    ]
+  }
+]

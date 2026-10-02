@@ -19,6 +19,8 @@ from typing import Dict, Any, List, Optional
 
 # Feature Flags
 MRI_SHADOW_ENABLED: bool = False
+SEARCH_INTENT_ENABLED: bool = False
+SEASON_TRACKER_ENABLED: bool = False
 
 # Truth Model Versions (Section 6: LEGACY_VA, MRI_V2_SHADOW)
 TRUTH_MODEL_LEGACY_VA: str = "LEGACY_VA"
@@ -203,6 +205,36 @@ CREATE TABLE IF NOT EXISTS mri_historical_publication_categories (
     observed_at TEXT NOT NULL,
     FOREIGN KEY (publication_id) REFERENCES mri_publications(publication_id),
     FOREIGN KEY (category_id) REFERENCES mri_categories(category_id)
+);
+
+CREATE TABLE IF NOT EXISTS mri_expected_search_intents (
+    intent_id TEXT PRIMARY KEY,
+    search_set_version TEXT NOT NULL,
+    product_type TEXT NOT NULL,
+    intent TEXT NOT NULL,
+    priority TEXT NOT NULL,
+    level TEXT NOT NULL,
+    compatible_products INTEGER NOT NULL DEFAULT 0,
+    marketplace TEXT,
+    active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS mri_season_registry (
+    season_entry_id TEXT PRIMARY KEY,
+    season_code TEXT NOT NULL,
+    group_id TEXT NOT NULL,
+    sku_parent TEXT NOT NULL,
+    sku_child TEXT NOT NULL,
+    product_name TEXT NOT NULL,
+    marketplace TEXT NOT NULL,
+    expected_listing_id TEXT,
+    expected_url TEXT,
+    launch_status TEXT NOT NULL DEFAULT 'EXPECTED',
+    active INTEGER NOT NULL DEFAULT 1,
+    notes TEXT,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (sku_parent) REFERENCES mri_products(product_id)
 );
 """
 
@@ -456,3 +488,219 @@ def assign_categories(
             (j_history_id, publication_id, cat_id, run_id, observed_at)
         )
     conn.commit()
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Search Intent & Season Tracker Additive Functions
+# ──────────────────────────────────────────────────────────────────────────────
+
+def import_expected_search_intents(
+    conn: sqlite3.Connection,
+    csv_path: str,
+    search_set_version: str = "SS2026_V1",
+) -> Dict[str, Any]:
+    """
+    Imports search intents from validated CSV into mri_expected_search_intents.
+    No scraping, no new crawlers, no AI-generated keywords.
+    """
+    import csv
+    cursor = conn.cursor()
+    imported_count = 0
+    unique_intents = set()
+    principal_count = 0
+    secondary_count = 0
+    
+    with open(csv_path, "r", encoding="utf-8-sig") as f:
+        reader = csv.DictReader(f, delimiter=";")
+        for row in reader:
+            busqueda = row["BUSQUEDA"].strip()
+            prioridad = row["PRIORIDAD"].strip()
+            tipo = row["TIPO"].strip()
+            nivel = row["NIVEL"].strip()
+            compat = int(row.get("PRODUCTOS_COMPATIBLES", 0))
+            
+            raw_key = f"{search_set_version}|{tipo}|{busqueda}"
+            intent_id = f"intent_{hashlib.sha256(raw_key.encode('utf-8')).hexdigest()[:16]}"
+            
+            cursor.execute(
+                """
+                INSERT OR REPLACE INTO mri_expected_search_intents (
+                    intent_id, search_set_version, product_type, intent,
+                    priority, level, compatible_products, marketplace,
+                    active, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    intent_id, search_set_version, tipo, busqueda,
+                    prioridad, nivel, compat, None, 1, datetime.now().isoformat()
+                )
+            )
+            imported_count += 1
+            unique_intents.add(busqueda)
+            if nivel == "PRINCIPAL":
+                principal_count += 1
+            elif nivel == "SECUNDARIA":
+                secondary_count += 1
+                
+    conn.commit()
+    return {
+        "search_set_version": search_set_version,
+        "imported": imported_count,
+        "unique": len(unique_intents),
+        "principal": principal_count,
+        "secondary": secondary_count,
+    }
+
+
+def import_pilot_season_products(
+    conn: sqlite3.Connection,
+    pilot_csv_path: str,
+    season_code: str = "2026_SS",
+) -> Dict[str, Any]:
+    """
+    Imports pilot products from validated pilot_20_products.csv into mri_season_registry.
+    Preserves SKU parent -> SKU child hierarchy, listing IDs, and URLs without acquisition.
+    """
+    import csv
+    cursor = conn.cursor()
+    parents_by_group: Dict[str, set] = {"GRUPO 1": set(), "GRUPO 2": set(), "GRUPO 3": set(), "GRUPO 4": set()}
+    total_children = 0
+    created_at = datetime.now().isoformat()
+    
+    with open(pilot_csv_path, "r", encoding="utf-8-sig") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            group = row["group"].strip()
+            if group not in parents_by_group:
+                # Exclude any group not in 1-4
+                continue
+                
+            sku_parent = row["sku_parent"].strip()
+            product_name = row["product_name"].strip()
+            parents_by_group[group].add(sku_parent)
+            
+            # Ensure product exists in mri_products to satisfy foreign key
+            cursor.execute(
+                """
+                INSERT OR IGNORE INTO mri_products (product_id, canonical_brand, product_status, created_at)
+                VALUES (?, ?, ?, ?)
+                """,
+                (sku_parent, "Nicopoly", "PUBLISHED", created_at)
+            )
+            
+            children = [c.strip() for c in row["variants_sku_children"].split(";") if c.strip()]
+            marketplaces = [
+                ("Ripley", row.get("ripley_id", ""), row.get("ripley_link", "")),
+                ("Paris", row.get("paris_id", ""), row.get("paris_link", "")),
+                ("Mercado Libre", row.get("meli_id", ""), row.get("meli_link", "")),
+                ("Falabella", row.get("falabella_id", ""), row.get("falabella_link", "")),
+                ("Nicopoly", row.get("sitio_propio_sku", ""), row.get("sitio_propio_link", "")),
+            ]
+            
+            for child in children:
+                total_children += 1
+                for mp_name, exp_id, exp_url in marketplaces:
+                    if not exp_id and not exp_url:
+                        continue
+                    entry_raw = f"{season_code}|{group}|{sku_parent}|{child}|{mp_name}"
+                    season_entry_id = f"sea_{hashlib.sha256(entry_raw.encode('utf-8')).hexdigest()[:16]}"
+                    cursor.execute(
+                        """
+                        INSERT OR REPLACE INTO mri_season_registry (
+                            season_entry_id, season_code, group_id, sku_parent,
+                            sku_child, product_name, marketplace, expected_listing_id,
+                            expected_url, launch_status, active, notes, created_at
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            season_entry_id, season_code, group, sku_parent,
+                            child, product_name, mp_name, exp_id, exp_url,
+                            "PUBLISHED", 1, None, created_at
+                        )
+                    )
+                    
+    conn.commit()
+    return {
+        "season_code": season_code,
+        "pilot_parents": sum(len(p) for p in parents_by_group.values()),
+        "pilot_children": total_children,
+        "group_1_parents": len(parents_by_group["GRUPO 1"]),
+        "group_2_parents": len(parents_by_group["GRUPO 2"]),
+        "group_3_parents": len(parents_by_group["GRUPO 3"]),
+        "group_4_parents": len(parents_by_group["GRUPO 4"]),
+        "group_5_processed": 0,
+        "group_6_processed": 0,
+    }
+
+
+def get_season_product_observations(
+    conn: sqlite3.Connection,
+    sku_parent: str,
+) -> List[Dict[str, Any]]:
+    """
+    Retrieves latest observations for a season product using verified joins.
+    Explicitly preserves publication_id != evidence_id relationship.
+    If no observation exists, marks status as NO_OBSERVATION without converting to NOT_FOUND.
+    """
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT 
+            sr.season_code,
+            sr.group_id,
+            sr.sku_parent,
+            sr.sku_child,
+            sr.product_name,
+            sr.marketplace,
+            sr.expected_listing_id,
+            sr.expected_url,
+            pub.publication_id,
+            pub.marketplace_product_id,
+            pub.canonical_url,
+            hist.position,
+            hist.surface,
+            hist.run_id,
+            hist.observed_at,
+            el.evidence_id,
+            el.confidence,
+            el.status AS evidence_status
+        FROM mri_season_registry sr
+        LEFT JOIN mri_publications pub 
+            ON sr.sku_parent = pub.product_id AND sr.marketplace = pub.marketplace
+        LEFT JOIN mri_historical_publications hist 
+            ON pub.publication_id = hist.publication_id
+        LEFT JOIN mri_shadow_snapshots ss 
+            ON pub.publication_id = ss.publication_id AND hist.run_id = ss.run_id
+        LEFT JOIN mri_evidence_ledger el 
+            ON ss.evidence_id = el.evidence_id
+        WHERE sr.sku_parent = ?
+        ORDER BY hist.observed_at DESC
+        """,
+        (sku_parent,)
+    )
+    
+    rows = cursor.fetchall()
+    results = []
+    for r in rows:
+        results.append({
+            "season_code": r[0],
+            "group_id": r[1],
+            "sku_parent": r[2],
+            "sku_child": r[3],
+            "product_name": r[4],
+            "marketplace": r[5],
+            "expected_listing_id": r[6],
+            "expected_url": r[7],
+            "publication_id": r[8],
+            "marketplace_product_id": r[9],
+            "canonical_url": r[10],
+            "position": r[11],
+            "surface": r[12],
+            "run_id": r[13],
+            "observed_at": r[14],
+            "evidence_id": r[15],
+            "confidence": r[16],
+            "evidence_status": r[17] if r[17] is not None else "NO_OBSERVATION"
+        })
+    return results
+

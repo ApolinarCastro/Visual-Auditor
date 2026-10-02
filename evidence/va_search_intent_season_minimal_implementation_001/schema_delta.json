@@ -1,0 +1,17 @@
+{
+  "type": "STRICTLY_ADDITIVE",
+  "modified_existing_tables": [],
+  "new_tables": [
+    "mri_expected_search_intents",
+    "mri_season_registry"
+  ],
+  "core_tables_unaltered": [
+    "mri_products",
+    "mri_publications",
+    "mri_variants",
+    "mri_evidence_ledger",
+    "mri_historical_publications",
+    "mri_historical_categories",
+    "mri_historical_publication_categories"
+  ]
+}
