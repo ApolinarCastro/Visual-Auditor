@@ -324,6 +324,22 @@ def build_navigation_candidates(nodes, hub_url: str, brand: str):
         st = cls["surface_type"]
         if st in _NON_TAXONOMY_TYPES:
             continue
+            
+        low_path = path.lower()
+        brand_slug = brand.lower().replace(" ", "-") if brand else ""
+        
+        # RED-1: Prune competitor brand hubs. If it looks like a brand route but doesn't match our brand.
+        is_brand_route = any(kw in low_path for kw in ["/marcas-destacadas/", "/marcas/", "/tienda/", "/_tienda_"])
+        if is_brand_route and brand_slug and brand_slug not in low_path:
+            continue
+            
+        # RED-2 / RED-4: Bounded Fallback. If discovered from raw generic DOM (not the structured menu api/dialog),
+        # it must contain the brand explicitly, otherwise we're just harvesting the global site header.
+        if container != "menu_dialog" and brand_slug and brand_slug not in low_path:
+            # Only exception: search pages, but those are pruned by _NON_TAXONOMY_TYPES usually
+            # We strictly drop generic DOM links that don't have the brand slug.
+            continue
+            
         if st == "UNKNOWN":
             # only navigation-container, single-segment, non-search shapes
             if container != "menu_dialog" or len(segs) != 1:
