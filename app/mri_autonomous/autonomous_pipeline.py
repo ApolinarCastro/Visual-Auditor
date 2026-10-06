@@ -18,6 +18,7 @@ from app.mri_autonomous.brand_hubs import brand_hub_for
 from app.mri_autonomous.category_discoverer import discover_categories_from_page, category_name_from_url
 from app.mri_autonomous.pagination import build_pagination_plan
 from app.mri_autonomous.brand_norm import brand_match
+from app.mri_autonomous.skill_policy import require_mri_skills
 
 VA_ROOT = Path(__file__).resolve().parents[2]
 from app.mri_autonomous.category_discoverer import (
@@ -256,6 +257,9 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
         payloads (batch evidence) as they occur. Used for live event/row/
         checkpoint persistence. None preserves legacy in-memory behavior.
     """
+    # Fail closed before any browser/network action if mandatory operational knowledge is unavailable.
+    require_mri_skills()
+
     hub = brand_hub_for(marketplace, brand)
     hub_url = hub.canonical_reference
     discovered_categories: List[Dict[str, Any]] = []
