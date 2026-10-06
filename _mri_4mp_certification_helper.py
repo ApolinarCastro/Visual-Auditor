@@ -34,22 +34,64 @@ def run_cmd(cmd: list) -> str:
     res = subprocess.run(cmd, capture_output=True, text=True, check=True)
     return res.stdout.strip()
 
+def check_cmd(cmd: list) -> int:
+    res = subprocess.run(cmd, capture_output=True, text=True)
+    return res.returncode
+
+
 def run_precheck():
     print("[PRECHECK] Checking Git state...")
     try:
         branch = run_cmd(["git", "branch", "--show-current"])
         head = run_cmd(["git", "rev-parse", "HEAD"])
-        status = run_cmd(["git", "status", "--short"])
+        status = run_cmd(["git", "status", "--porcelain"])
+        diff_head = run_cmd(["git", "diff", "--name-only", EXPECTED_HEAD, "HEAD"])
     except subprocess.CalledProcessError as e:
         print(f"[PRECHECK] Git command failed: {e}")
         sys.exit(EXIT_PRECHECK_BLOCKED)
 
     print(f"  Branch: {branch}")
     print(f"  HEAD: {head}")
-    if head != EXPECTED_HEAD:
-        print(f"[PRECHECK] FAIL: HEAD is {head}, expected {EXPECTED_HEAD}.")
+    
+    # 1. Baseline is ancestor
+    if check_cmd(["git", "merge-base", "--is-ancestor", EXPECTED_HEAD, "HEAD"]) != 0:
+        print(f"[PRECHECK] FAIL: {EXPECTED_HEAD} is not an ancestor of HEAD.")
         print("[PRECHECK] STATUS = BLOCKED")
         sys.exit(EXIT_PRECHECK_BLOCKED)
+
+    # 2. Critical files are not modified in git history since baseline (except runner)
+    CRITICAL_PATHS = ["app/mri_autonomous", "app/scrapers", "run_mri_4mp_certification.bat"]
+    RUNNER_FILES = ["_mri_4mp_certification_helper.py", "run_mri_4mp_certification.bat"]
+
+    for changed_file in diff_head.splitlines():
+        if not changed_file:
+            continue
+        if changed_file in RUNNER_FILES:
+            continue
+        for cp in CRITICAL_PATHS:
+            if changed_file.startswith(cp):
+                print(f"[PRECHECK] FAIL: Critical file modified in history since baseline: {changed_file}")
+                sys.exit(EXIT_PRECHECK_BLOCKED)
+
+    # 3. Critical files and runner files are not modified locally (uncommitted changes)
+    for line in status.splitlines():
+        if not line:
+            continue
+        # ignore untracked files for critical file check
+        is_untracked = line.startswith("?? ")
+        
+        filepath = line[3:].split(" -> ")[-1].strip()
+        
+        # We don't want the runner files modified locally AT ALL (even untracked? well, they are tracked now)
+        if filepath in RUNNER_FILES and not is_untracked:
+            print(f"[PRECHECK] FAIL: Runner file modified locally: {filepath}")
+            sys.exit(EXIT_PRECHECK_BLOCKED)
+            
+        if not is_untracked:
+            for cp in CRITICAL_PATHS:
+                if filepath.startswith(cp):
+                    print(f"[PRECHECK] FAIL: Critical MRI file modified locally: {filepath}")
+                    sys.exit(EXIT_PRECHECK_BLOCKED)
 
     print(f"  Preexisting Changes:\n{status}")
     print("[PRECHECK] Git OK.")
