@@ -1,0 +1,11 @@
+{
+  "policy_version": "1.0",
+  "mandatory_for": "MRI autonomous execution",
+  "required": [
+    "FDE_RUNTIME_ROOT_CAUSE.md",
+    "AGENT_RUNTIME_EFFICIENCY.md",
+    "MARKETPLACE_EXPERIENCE_REUSE.md",
+    "KNOWLEDGE_TO_SKILL_DISTILLATION.md"
+  ],
+  "fail_closed": true
+}
