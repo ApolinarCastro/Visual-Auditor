@@ -1,0 +1,46 @@
+{
+  "TASK": "VA-MRI-BRAND-FIRST-CLOSE-001",
+  "STATE": "READY",
+  "HEAD_BEFORE": "835f771ad626f2eba67c4a63f9b7322b474e0c33",
+  "BF_TESTS": {
+    "passed": 44,
+    "failed": 0,
+    "seconds": 1.07,
+    "exit": 0
+  },
+  "FULL_SUITE": {
+    "passed": 276,
+    "failed": 0,
+    "skipped_preexisting": 3,
+    "seconds": 38.22,
+    "exit": 0
+  },
+  "ROOT_CAUSE_BF29": "Cross-check used permissive brand_match/title hint as verified identity; counts and facet evidence had equivalent relevance promotion.",
+  "FIX_BF29": "Explicit product vendor/brand exact casefold match required for cross-check, target counts, unresolved target membership and confirmed products. Facet application evidence retained as brand_context_hint. Broad search matcher unchanged.",
+  "MEMBERSHIP_PRESERVATION": "PASS BF18/BF19",
+  "EXPERIENCE_FIRST": "YES BF16/BF17 plus prior_experiences lookup before discovery",
+  "GAP_REQUIRED": "YES BF16/BF17 physical navigation source and menu guards",
+  "GLOBAL_DISCOVERY_FALLBACK_ONLY": "YES same explicit GAP guards",
+  "CROSS_CHECK": "YES BF18/BF19 positive plus BF29 absent/conflicting negative",
+  "FUTURE_NODE_IDENTITY_PERSISTENCE": "PASS BF20/BF21",
+  "BRAND_AGNOSTIC": "YES BF22/BF23/BF24-BF29 and classified scan",
+  "BRAND_FIRST_PIPELINE": "YES production-coroutine and materializer offline tests",
+  "HISTORICAL_510": "NOT_RECONSTRUCTABLE_FROM_EXISTING_EVIDENCE",
+  "DEPENDENCIES_ADDED": 0,
+  "E2E_4MP_EXECUTED": "NO",
+  "UNRELATED_DELTA_PROVENANCE": "UNKNOWN; Dashboard/Search/Season untouched",
+  "AUDIT": "Prior escalated npm audit exit0/0 vulnerabilities. Redundant sandbox audit failed DNS; no dependency changes since successful audit. pip_audit unavailable, no installation.",
+  "REVIEW": "git diff --check passed; only task-required production/test files plus evidence selected; no manifest or dependency changes. Three adapters, runner and BF test were preexisting untracked files and must be added whole to version their fixes. Other preexisting untracked files remain untouched. Staged check exposed inherited trailing whitespace in formerly untracked files; removed trailing whitespace only, with no control-flow changes.",
+  "REMOTE_VERIFIED": "PENDING",
+  "FIRST_UNRESOLVED_BLOCKER": null,
+  "source_sha256": {
+    "app/mri_autonomous/autonomous_pipeline.py": "c7a9aa01f86b401f92987b9a0ec704a11141a448cf546c748439be35b417f1c0",
+    "app/scrapers/mercadolibre_scraper.py": "6f51295a4268cd8384a4934a3b493d3b65ad10dec147f98e56b4543079c265bd",
+    "mri_commercial_materialization_golden_slice/v001/materializer_engine.py": "fc7a34ec600a82130c3f4171c561d3c2efdf1bfb5574e8282d53c5dda6f6dc16",
+    "_mri_autonomous_run.py": "f60fac340a45306fc82c35aa404fca7492eb6a53b5305878b5db3e805ef52ef7",
+    "app/scrapers/paris_scraper.py": "f2909b4e804d24aa3987fbb7dca051e19b74f98017d358a95ebd19ec17b4ec0a",
+    "app/scrapers/falabella_scraper.py": "00433bc8a55335f2373aa93c49455eac6a0060b7ec8c61cac5c8324d30048c2b",
+    "app/scrapers/ripley_scraper.py": "b315f187427f0d01acbba8ff701e33d119ac9b31d2932e2d3dfabc57d2955626",
+    "tests/test_mri_brand_first.py": "09c55066b9b7c6a51508b37d3ce989226fafac5c4ac2b71803cd0712edcdbaf9"
+  }
+}

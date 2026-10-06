@@ -530,28 +530,22 @@ class MercadoLibreScraper(BaseScraper):
             title = title_el.get_text(strip=True) if title_el else ""
             vendor = vendor_el.get_text(strip=True) if vendor_el else ""
             
-            # If scraping official store catalog and vendor selector was missed, default vendor dynamically from URL
-            if not vendor and self.page and "tienda/" in self.page.url.lower():
-                tienda_m = re.search(r"tienda/([a-zA-Z0-9_-]+)", self.page.url.lower())
-                if tienda_m:
-                    vendor = tienda_m.group(1).capitalize()
+            # Store context is surface evidence, not a product brand assertion.
+            surface_url = self.page.url if self.page else ""
+            brand_surface = surface_url if re.search(r"/tienda/[^/?#]+", surface_url) else None
             
             # --- CAPA DE RESCATE ANANSI ---
             if (not title or not vendor) and anansi_parser is not None:
                 item_html = str(item)
                 try:
                     rescate = await anansi_parser.extract(item_html, {
-                        "rescued_title": SelectorConfig(".title", expected_pattern=r"\w+"),
-                        "rescued_vendor": SelectorConfig(".vendor", expected_pattern=r"\w+")
+                        "rescued_title": SelectorConfig(".title", expected_pattern=r"\w+")
                     }, url="https://www.mercadolibre.cl")
                     
                     if not title and rescate.get("rescued_title"):
                         title = rescate.get("rescued_title")
                         logger.debug(f"[Anansi MeLi] Título rescatado: {title}")
                         
-                    if not vendor and rescate.get("rescued_vendor"):
-                        vendor = rescate.get("rescued_vendor")
-                        logger.debug(f"[Anansi MeLi] Vendor rescatado: {vendor}")
                 except Exception as e:
                     logger.warning(f"Fallo en Anansi fallback MeLi: {e}")
             # --- FIN CAPA DE RESCATE ---
@@ -581,6 +575,7 @@ class MercadoLibreScraper(BaseScraper):
                 extracted.append({
                     "title": title,
                     "vendor": vendor,
+                    "brand_surface_url": brand_surface,
                     "price": price,
                     "marketplace_sku": marketplace_sku,
                     "page": page,

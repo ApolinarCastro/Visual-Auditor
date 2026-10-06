@@ -1,0 +1,35 @@
+{
+  "TASK": "VA-MRI-BRAND-FIRST-CLOSE-001",
+  "STATUS": "BLOCKED",
+  "BF28": "GREEN: store URL preserved as brand_surface_url; absent/conflicting product vendor rejected; explicit matching vendor verified",
+  "BF_TESTS": "42 passed, exit 0, 0.70s before BF29 addition",
+  "FULL_SUITE": "274 passed, 3 preexisting skipped, 35 warnings, exit 0, 45.34s before BF29 addition",
+  "FIRST_UNRESOLVED_BLOCKER": "BF29: autonomous_pipeline._cross_check_memberships treats brand_match title hint as verified target membership despite explicit conflicting vendor",
+  "CROSS_CHECK": "FAIL",
+  "BF29_RED": {
+    "command": "python -m pytest tests/test_mri_brand_first.py -k BF_29 -v",
+    "result": "1 failed, 42 deselected, exit 1, 0.46s",
+    "target": "BrandA",
+    "product_vendor": "BrandB",
+    "title": "Compatible con BrandA",
+    "sku": "10003569409",
+    "category": "Vestidos",
+    "actual_brand_evidence_found": true,
+    "actual_target_membership_product_ids": [
+      "10003569409"
+    ],
+    "expected": "No TARGET_PRODUCT_MEMBERSHIP evidence from conflicting vendor title hint"
+  },
+  "adapter_scan": "Four adapters reviewed for title/text/URL/surface promotion into brand/vendor. No remaining equivalent assignment found after fixes. Legitimate text-search routing unchanged.",
+  "DEPENDENCIES_ADDED": 0,
+  "E2E_4MP_EXECUTED": "NO",
+  "COMMIT": null,
+  "REMOTE_VERIFIED": "NO",
+  "HEAD_BEFORE": "835f771ad626f2eba67c4a63f9b7322b474e0c33",
+  "HEAD_AFTER": "835f771ad626f2eba67c4a63f9b7322b474e0c33",
+  "READY_FOR_FINAL_4MP_CERTIFICATION": "NO",
+  "HISTORICAL_510": "NOT_RECONSTRUCTABLE_FROM_EXISTING_EVIDENCE",
+  "UNRELATED_DELTA_PROVENANCE": "UNKNOWN; untouched",
+  "npm_audit": "exit 0, zero vulnerabilities",
+  "pip_audit": "not installed; no installation attempted"
+}

@@ -1,0 +1,10 @@
+{
+  "check": "BF27",
+  "expected_accepted": 0,
+  "actual_accepted": 1,
+  "explicit_brand_element": null,
+  "extracted_brand": "Nicopoly",
+  "classification": "TARGET_IDENTITY_VERIFIED",
+  "root_cause": "app/scrapers/ripley_scraper.py:1246-1250; allText.includes literal brand promotes title mention into vendor",
+  "execution": "Actual production extraction JS evaluated in existing Node with fixture DOM; no browser or navigation"
+}

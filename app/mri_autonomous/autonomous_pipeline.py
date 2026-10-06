@@ -17,7 +17,12 @@ from typing import Dict, List, Any
 from app.mri_autonomous.brand_hubs import brand_hub_for
 from app.mri_autonomous.category_discoverer import discover_categories_from_page, category_name_from_url
 from app.mri_autonomous.pagination import build_pagination_plan
-from app.mri_autonomous.brand_norm import brand_match
+def _explicit_target_identity(product, brand):
+    """Relevance requires an explicit product field, never search/context hints."""
+    target = str(brand or "").strip().casefold()
+    observed = str(product.get("vendor") or product.get("brand") or "").strip().casefold()
+    return bool(target and observed == target)
+
 
 VA_ROOT = Path(__file__).resolve().parents[2]
 from app.mri_autonomous.category_discoverer import (
@@ -244,6 +249,68 @@ def sanitize_surfaces(categories, marketplace: str, hub_url: str):
     return sanitized, invalid_edges, notes
 
 
+def pending_node_record(category, marketplace, brand_first_gap):
+    """Describe known node evidence; never synthesize missing identity fields."""
+    from app.mri_autonomous.category_discoverer import _verifiably_irrelevant
+    try:
+        direct_count = int(category.get("target_brand_present") or 0)
+    except (TypeError, ValueError):
+        direct_count = 0
+    witnesses = category.get("target_membership_product_ids") or []
+    evidence_type = None
+    state = "UNRESOLVED"
+    if witnesses or direct_count > 0 or category.get("brand_evidence_found") is True:
+        state = "REQUIRED"
+        evidence_type = "target_product_membership" if witnesses else "direct_target_brand_evidence"
+    elif _verifiably_irrelevant(category):
+        state = "REJECTED_AS_UNPROVEN"
+        evidence_type = "non_commercial_classification"
+    return {
+        "marketplace": marketplace,
+        "node_id": category.get("surface_id") or category.get("category_id") or category.get("candidate_id"),
+        "surface_url": category.get("category_url") or category.get("surface_url"),
+        "surface_name": category.get("category_name") or category.get("surface_name"),
+        "discovery_method": category.get("discovery_method") or category.get("provenance"),
+        "relevance_state": state,
+        "relevance_evidence_type": evidence_type,
+        "relevance_evidence": {
+            "target_membership_product_ids": witnesses,
+            "target_brand_present": category.get("target_brand_present"),
+            "brand_evidence_found": category.get("brand_evidence_found"),
+            "classification_evidence": category.get("classification_evidence"),
+        },
+        "stop_reason": category.get("stop_reason"),
+        "block_reason": category.get("failure_type"),
+        "brand_first_gap": brand_first_gap,
+    }
+
+
+def merge_observed_memberships(existing, incoming, surface_name, surface_url):
+    """Union observed edges without replacing commercial membership with a seed.
+
+    A name without a URL is retained as unresolved metadata, never used to
+    invent a route. Names and URLs remain aligned; exact edges are unique.
+    """
+    edges = []
+    for record in (existing, incoming):
+        names = record.get("_discovered_categories") or []
+        urls = record.get("_discovered_category_urls") or []
+        if not isinstance(names, list) or not isinstance(urls, list):
+            continue
+        for index, name in enumerate(names):
+            if not isinstance(name, str) or not name.strip():
+                continue
+            url = urls[index] if index < len(urls) else None
+            url = url if isinstance(url, str) and url else None
+            edge = (name, url)
+            if edge not in edges:
+                edges.append(edge)
+    if (surface_name, surface_url) not in edges:
+        edges.append((surface_name, surface_url))
+    existing["_discovered_categories"] = [name for name, _ in edges]
+    existing["_discovered_category_urls"] = [url for _, url in edges]
+
+
 async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopoly", max_categories: int = 12, headless: bool = True, category_budget_seconds: int = 300, progress_sink=None, max_batches: int = None, resume_state: Dict[str, Any] = None, no_progress_limit: int = 12) -> Dict[str, Any]:
     """
     Real autonomous discovery for a single marketplace.
@@ -268,6 +335,8 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
     sanitized_categories: List[Dict[str, Any]] = []
     invalid_edges: int = 0
     _facet_remainder_accounting: Dict[str, int] = {"raw": 0, "relevant": 0, "pruned": 0}
+    _remainder_nodes = []
+    brand_first_gap = None
 
 
     # Lazy imports to avoid hard dependency at import time
@@ -279,6 +348,7 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
     except Exception as e:
         return {
             "marketplace": marketplace,
+            "target_brand": brand,
             "hub_url": hub_url,
             "discovered_categories": [],
             "products": [],
@@ -298,7 +368,7 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
     elif mkt_low == "ripley":
         scraper = RipleyScraper(headless=headless)
     else:
-        return {"marketplace": marketplace, "hub_url": hub_url, "discovered_categories": [], "products": [], "coverage_status": "BLOCKED", "evidence": f"Unknown marketplace {marketplace}", "discovery_method": hub.discovery_method}
+        return {"marketplace": marketplace, "target_brand": brand, "hub_url": hub_url, "discovered_categories": [], "products": [], "coverage_status": "BLOCKED", "evidence": f"Unknown marketplace {marketplace}", "discovery_method": hub.discovery_method}
 
     # Experience Store integration
     from app.mri_autonomous.experience_store import ExperienceStore
@@ -460,6 +530,40 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
 
         global_product_map = {} # marketplace_sku -> product dict
 
+        def _cross_check_memberships(product):
+            """Only observed target-product edges may expand required work."""
+            if not _explicit_target_identity(product, brand):
+                return
+            from urllib.parse import urlparse
+            for name, url in zip(product.get("_discovered_categories", []),
+                                 product.get("_discovered_category_urls", [])):
+                if not url or url == hub_url:
+                    continue
+                parsed = urlparse(url)
+                if parsed.scheme not in ("http", "https") or parsed.netloc != urlparse(hub_url).netloc:
+                    continue
+                cls = classify_surface(url, {"brand": brand})
+                if cls["surface_type"] != "COMMERCIAL_CATEGORY":
+                    continue
+                category = next((c for c in sanitized_categories
+                                 if c["category_url"] == url), None)
+                if category is None:
+                    category = {
+                        "marketplace": marketplace, "category_name": name,
+                        "category_url": url, "is_seed_surface": False,
+                        "surface_classification": "COMMERCIAL_CATEGORY",
+                        "discovery_method": "TARGET_PRODUCT_MEMBERSHIP",
+                        "classification_evidence": cls.get("evidence", []),
+                        "stop_reason": "QUEUED", "coverage_status": "UNVERIFIED",
+                        "products_found": 0,
+                    }
+                    sanitized_categories.append(category)
+                witnesses = category.setdefault("target_membership_product_ids", [])
+                identity = product.get("marketplace_sku") or product.get("url")
+                if identity and identity not in witnesses:
+                    witnesses.append(identity)
+                category["brand_evidence_found"] = bool(witnesses)
+
         async def _emit_progress(payload: dict):
             if progress_sink is None:
                 return
@@ -478,6 +582,13 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
                 except Exception:
                     _rc = {}
                 _rcls = (_rc or {}).get("surface_type")
+                _remainder_nodes.append({
+                    "category_url": _ru,
+                    "discovery_method": hub.discovery_method,
+                    "surface_classification": _rcls,
+                    "classification_evidence": (_rc or {}).get("evidence"),
+                    "stop_reason": "CATEGORY_BUDGET_EXHAUSTED",
+                })
                 if (_rcls in ("NON_COMMERCIAL", "BRAND_NAVIGATION",
                               "GENERAL_NAVIGATION", "CORPORATE_NAVIGATION")
                         and (_rc or {}).get("evidence")):
@@ -612,20 +723,15 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
             for p in hub_prods0:
                 sku = p.get("marketplace_sku") or p.get("title", "")
                 if sku not in global_product_map:
-                    p["_discovered_categories"] = []
-                    p["_discovered_category_urls"] = []
-                    p["_discovery_method"] = hub.discovery_method
-                    global_product_map[sku] = p
-                    all_products.append(p)
-                if "Brand Hub" not in global_product_map[sku]["_discovered_categories"]:
-                    global_product_map[sku]["_discovered_categories"].append("Brand Hub")
-                    global_product_map[sku]["_discovered_category_urls"].append(hub_url)
+                    global_product_map[sku] = dict(p, _discovery_method=hub.discovery_method)
+                    all_products.append(global_product_map[sku])
+                merge_observed_memberships(global_product_map[sku], p, "Brand Hub", hub_url)
+                _cross_check_memberships(global_product_map[sku])
             if hub_prods0:
                 from app.mri_autonomous.surface_classifier import certify_node as _hcert
                 _hnico = sum(
                     1 for p in hub_prods0
-                    if brand.lower() in str(p.get("vendor", "") or p.get("brand", "")).lower()
-                    or brand.lower() in str(p.get("title", "")).lower())
+                    if _explicit_target_identity(p, brand))
                 _hcert_res = _hcert({"surface_type": "BRAND_SURFACE",
                                      "evidence": ["seed-surface:hub_url==brand terminal"]},
                                     len(hub_prods0), _hnico)
@@ -713,7 +819,10 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
         if not hub_prods0 and not _hub_skipped:
             brand_first_gap = "BRAND_ENTRY_BLOCKED" if hub_stop_meta == "BLOCKED" else "BRAND_ENTRY_EMPTY"
         elif hub_prods0:
-            unresolved = sum(1 for p in hub_prods0 if not p.get("_discovered_categories") or p.get("_discovered_categories") == ["Brand Hub"])
+            unresolved = sum(1 for p in global_product_map.values()
+                             if _explicit_target_identity(p, brand) and not any(
+                                 (p.get("marketplace_sku") or p.get("url")) in c.get("target_membership_product_ids", [])
+                                 for c in sanitized_categories if not c.get("is_seed_surface")))
             if unresolved > 0:
                 brand_first_gap = "UNRESOLVED_PRODUCT_MEMBERSHIP"
                 
@@ -735,7 +844,7 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
                 evidence_notes.append(f"BRAND_FIRST_GAP identified: {brand_first_gap}. Enabling GLOBAL_DISCOVERY fallback.")
                 logger.info(f"[{marketplace}] BRAND_FIRST_GAP: {brand_first_gap}")
                 _nav_source = None
-            if hasattr(scraper, "discover_navigation_source"):
+            if brand_first_gap is not None and hasattr(scraper, "discover_navigation_source"):
                 try:
                     await _emit_progress({"kind": "navigation_source_attempt", "marketplace": marketplace,
                                           "target_url": hub_url})
@@ -773,7 +882,7 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
                                       "candidates": len(nav_candidates)})
                 nav_opened = None
                 nav_anchors_total = None
-            if not nav_candidates:
+            if brand_first_gap is not None and not nav_candidates:
                 _prior_failed = []
                 try:
                     _all_nav = exp_store.get_strategies(marketplace, brand) or []
@@ -914,7 +1023,7 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
                                 if _verified:
                                     facet_applied_count += 1
                                     cat["facet_applied_url"] = scraper.page.url
-                                    cat["brand_evidence_found"] = True
+                                    cat["brand_context_hint"] = True
                                 await _emit_progress({"kind": "facet_application", "marketplace": marketplace,
                                                       "batch_number": batch_number,
                                                       "category_name": cat["category_name"],
@@ -1060,16 +1169,11 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
                 for p in prods:
                     sku = p.get("marketplace_sku") or p.get("title", "")
                     if sku not in global_product_map:
-                        p["_discovered_categories"] = []
-                        p["_discovered_category_urls"] = []
-                        p["_discovery_method"] = hub.discovery_method
-                        global_product_map[sku] = p
-                        all_products.append(p)
-                        
-                    # Add category edge based on DIRECT observation
-                    if cat["category_name"] not in global_product_map[sku]["_discovered_categories"]:
-                        global_product_map[sku]["_discovered_categories"].append(cat["category_name"])
-                        global_product_map[sku]["_discovered_category_urls"].append(url)
+                        global_product_map[sku] = dict(p, _discovery_method=hub.discovery_method)
+                        all_products.append(global_product_map[sku])
+                    # Union incoming and directly observed edges for this identity.
+                    merge_observed_memberships(global_product_map[sku], p, cat["category_name"], url)
+                    _cross_check_memberships(global_product_map[sku])
                         
                 products_by_category[cat["category_name"]] = prods
                 cat["products_found"] = len(prods)
@@ -1081,8 +1185,7 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
                 from app.mri_autonomous.surface_classifier import certify_node as _certify
                 _nico_here = sum(
                     1 for p in prods
-                    if brand.lower() in str(p.get("vendor", "") or p.get("brand", "")).lower()
-                    or brand.lower() in str(p.get("title", "")).lower())
+                    if _explicit_target_identity(p, brand))
                 _cert = _certify(
                     {"surface_type": cat.get("surface_classification", "COMMERCIAL_CATEGORY"),
                      "evidence": cat.get("classification_evidence", [])},
@@ -1285,7 +1388,7 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
     except Exception as _se:
         evidence_notes.append(f"strategy persistence failed (non-fatal): {_se}")
 
-    brand_confirmed = [p for p in all_products if brand_match(p, brand)]
+    brand_confirmed = [p for p in all_products if _explicit_target_identity(p, brand)]
     
     try:
         _fc = _final_cats
@@ -1336,8 +1439,28 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
         node_types[_c["category_name"]] = _c.get("node_type") or (
             "SURFACE" if _c["category_name"] == "Brand Hub" else "UNCERTIFIED")
 
+    # The budget remainder used to survive only as counters. Retain actual
+    # identities plus unfinished traversal states for deterministic offline replay.
+    pending_nodes = []
+    current_by_url = {c.get("category_url"): c for c in _fc if c.get("category_url")}
+    pending_states = {None, "QUEUED", "NOT_VISITED", "BLOCKED", "SOURCE_BLOCKED",
+                      "CATEGORY_BUDGET_EXCEEDED", "CATEGORY_BUDGET_EXHAUSTED",
+                      "EXTRACTOR_FAILURE", "OPERATIONAL_BATCH_LIMIT_REACHED"}
+    pending_urls = set()
+    for candidate in _remainder_nodes + list(_fc):
+        url = candidate.get("category_url")
+        category = current_by_url.get(url, candidate)
+        if category.get("stop_reason") not in pending_states and category.get("coverage_status") != "BLOCKED":
+            continue
+        if url and url in pending_urls:
+            continue
+        if url:
+            pending_urls.add(url)
+        pending_nodes.append(pending_node_record(category, marketplace, brand_first_gap))
+
     return {
         "marketplace": marketplace,
+        "target_brand": brand,
         "hub_url": hub_url,
         "discovered_categories": sanitized_categories if sanitized_categories else discovered_categories,
         "products_by_category": products_by_category,
@@ -1348,6 +1471,8 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
         "discovered_at": datetime.now().isoformat(),
         "diagnostic": diagnostic,
         "frontier": _frontier_view,
+        "pending_nodes": pending_nodes,
+        "brand_first_gap": brand_first_gap,
         "navigation": _nav_summary,
         "facets": _facets_summary,
         "multi_membership_products": _multi_count,
@@ -1370,16 +1495,12 @@ def materialize_discovered_products(discovery_result: Dict[str, Any], run_id: st
     marketplace = discovery_result.get("marketplace", "")
     # Build synthetic snapshots from discovered products for materializer
     # Need fields expected by materializer: marketplace, marketplace_sku, sku_master, product_title, brand, price, position_absolute, created_at, is_nicopoly, category
-    # is_nicopoly will be inferred by materializer via G16, but we provide brand/title hints
     snapshots = []
     now = datetime.now().isoformat()
     for idx, p in enumerate(products):
         title = p.get("title", p.get("product_title", "")) or ""
         brand = p.get("vendor", p.get("brand", "")) or ""
         sku = p.get("marketplace_sku", "") or ""
-        # sku_master heuristic: if brand Nicopoly, try to synthesize N-master from sku? No - leave empty, membership validation will need it
-        # For autonomous, we rely on brand+title+is_nicopoly. We'll set is_nicopoly based on brand/title containing Nicopoly for G16 to pass when master sku missing but brand/title present + flag
-        is_nico = 1 if ("nicopoly" in brand.lower() or "nicopoly" in title.lower()) else 0
         snapshots.append({
             "id": 9000000 + idx,  # synthetic id for evidence ledger
             "marketplace": marketplace,
@@ -1393,10 +1514,10 @@ def materialize_discovered_products(discovery_result: Dict[str, Any], run_id: st
             "audit_date": now,
             "category": p.get("_discovered_categories", ["Brand Hub"])[0],
             "_categories_list": p.get("_discovered_categories", ["Brand Hub"]),
-            "is_nicopoly": is_nico
+            "is_nicopoly": p.get("is_nicopoly", 0)
         })
     # Use materializer directly to classify
-    mat = GenericCommercialMaterializer(run_id)
+    mat = GenericCommercialMaterializer(run_id, target_brand=discovery_result.get("target_brand"))
     accepted = []
     rejected = []
     edges = []  # publication_category edges: (pub_id, category, snap_id, membership_type)
@@ -1404,6 +1525,8 @@ def materialize_discovered_products(discovery_result: Dict[str, Any], run_id: st
     _pub_cats = {}  # pub_id -> set of category names (multi-membership proof)
     
     terminal_states = {
+        "TARGET_IDENTITY_VERIFIED": 0,
+        "NON_TARGET_BRAND_CONFIRMED": 0,
         "NICOPOLY_CONFIRMED": 0,
         "NON_NICOPOLY_CONFIRMED": 0,
         "INSUFFICIENT_EVIDENCE": 0,
@@ -1419,15 +1542,9 @@ def materialize_discovered_products(discovery_result: Dict[str, Any], run_id: st
         else:
             membership = res.get("membership", {})
             classification = membership.get("classification", "UNKNOWN")
-            if classification == "NICOPOLY_CONFIRMED":
-                terminal_states["NICOPOLY_CONFIRMED"] += 1
-            elif classification == "NON_NICOPOLY_CONFIRMED":
-                terminal_states["NON_NICOPOLY_CONFIRMED"] += 1
-            elif classification == "INSUFFICIENT_EVIDENCE":
-                terminal_states["INSUFFICIENT_EVIDENCE"] += 1
-            else:
-                terminal_states["INSUFFICIENT_EVIDENCE"] += 1 # fallback
-                
+            key = classification if classification in terminal_states else "INSUFFICIENT_EVIDENCE"
+            terminal_states[key] += 1
+
         if res["status"] == "ACCEPTED":
             pub_id = res["identity"]["publication_id"]
             categories = snap["_categories_list"]

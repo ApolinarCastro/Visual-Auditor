@@ -33,8 +33,25 @@ class GenericCommercialMaterializer:
     Observations rejected from commercial catalog are preserved in Evidence Ledger.
     """
 
-    def __init__(self, run_id: str):
+    def __init__(self, run_id: str, target_brand=None):
         self.run_id = run_id
+        self.target_brand = target_brand
+
+    def validate_target_membership(self, norm: dict, identity: dict) -> dict:
+        """Explicit marketplace brand evidence; titles and legacy flags cannot override it."""
+        target = (self.target_brand or "").strip().casefold()
+        observed = norm["brand"].strip().casefold()
+        verified = bool(target and observed == target and identity["status"] == "RESOLVED")
+        classification = ("TARGET_IDENTITY_VERIFIED" if verified else
+                          "NON_TARGET_BRAND_CONFIRMED" if target and observed else
+                          "INSUFFICIENT_EVIDENCE")
+        return {"classification": classification, "target_brand": self.target_brand,
+                "evidence": [f"Marketplace brand field: {norm['brand']}"] if observed else [],
+                "reason": "Explicit marketplace brand compared with requested target"}
+
+    def membership_verified(self, membership):
+        expected = "TARGET_IDENTITY_VERIFIED" if self.target_brand is not None else "NICOPOLY_CONFIRMED"
+        return membership is not None and membership["classification"] == expected
 
     def normalize_observation(self, snap: dict) -> dict:
         """Stage 2: Normalized observation struct."""
@@ -279,7 +296,9 @@ class GenericCommercialMaterializer:
         
         # Determine provenance classification based on membership
         if membership:
-            if membership["classification"] == "NICOPOLY_CONFIRMED":
+            if self.target_brand is not None:
+                provenance = membership["classification"]
+            elif membership["classification"] == "NICOPOLY_CONFIRMED":
                 provenance = "NICOPOLY_COMMERCIAL_OBSERVATION"
             elif membership["classification"] == "NON_NICOPOLY_CONFIRMED":
                 provenance = "NON_NICOPOLY_OBSERVATION"
@@ -354,7 +373,7 @@ class GenericCommercialMaterializer:
             "G14": regular_price is None and sale_price is None, # no fabricated regular/sale
             "G15": True, # reproducible on restart
             # G16: Nicopoly Membership Validation - MUST PASS for commercial admission
-            "G16": membership is not None and membership["classification"] == "NICOPOLY_CONFIRMED"
+            "G16": self.membership_verified(membership)
         }
 
         all_passed = all(g_results.values())
@@ -387,15 +406,16 @@ class GenericCommercialMaterializer:
         pub_id = ident["publication_id"]
         
         # Stage 3c: Nicopoly Membership Validation - THE CRITICAL ADMISSION GATE
-        membership = self.validate_nicopoly_membership(norm, ident)
+        membership = (self.validate_target_membership(norm, ident) if self.target_brand is not None
+                      else self.validate_nicopoly_membership(norm, ident))
         
         # If not NICOPOLY_CONFIRMED, write to evidence ledger only, NOT commercial tables
-        if membership["classification"] != "NICOPOLY_CONFIRMED":
+        if not self.membership_verified(membership):
             ev_info = self.link_evidence(norm, pub_id, membership)
             grader = self.evaluate_grader(norm, ident, {}, {}, {}, ev_info, membership)
             return {
                 "status": "REJECTED_COMMERCIAL",
-                "rejection_reason": f"Nicopoly membership: {membership['classification']} - {membership['reason']}",
+                "rejection_reason": f"Brand membership: {membership['classification']} - {membership['reason']}",
                 "normalized": norm,
                 "identity": ident,
                 "membership": membership,

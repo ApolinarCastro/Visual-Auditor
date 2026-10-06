@@ -1,0 +1,8 @@
+{
+  "scope": "Four production marketplace adapters; vendor/brand assignments, text/URL and adaptive fallbacks",
+  "Paris": "Explicit brand DOM selector; title/positional-span/adaptive brand promotion removed previously.",
+  "Falabella": "Explicit DOM or structured brand fields; pod-text promotion removed previously. Text search pagination untouched.",
+  "Ripley": "Removed literal and dynamic JS text-to-brand promotions, Python title-to-brand promotion and adaptive brand rescues. Preserved structured product data and explicit brand DOM.",
+  "Mercado Libre": "No target-title literal promotion found. Distinct URL slug-to-vendor inference demonstrated BF28 RED; adaptive vendor rescue remains unverified. No production changes made to this adapter.",
+  "result": "BLOCKED BF28; no final PASS or blanket claim of verified provenance"
+}

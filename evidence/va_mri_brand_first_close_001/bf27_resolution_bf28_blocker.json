@@ -1,0 +1,32 @@
+{
+  "TASK": "VA-MRI-BRAND-FIRST-CLOSE-001",
+  "STATUS": "BLOCKED",
+  "BF27": "GREEN: 6 production-JS controls, both extraction routes; no explicit brand / conflicting brand rejected, matching brand accepted",
+  "FIX": "Removed text-to-brand assignments from Ripley fallback JS, primary JS and primary Python postprocessing; adaptive brand rescues removed. Explicit DOM and structured product brand fields preserved. Search text rules unchanged.",
+  "BF_TESTS": "39 passed, 1 failed (BF28), exit 1, 0.92s",
+  "FULL_SUITE": "274 collected, exit 0 before BF28 addition and final primary-Python cleanup; not final-state regression evidence",
+  "FIRST_UNRESOLVED_BLOCKER": "BF28: MercadoLibreScraper._extract_products_from_html assigns vendor from page URL store slug, lines 533-537",
+  "RED_EVIDENCE": {
+    "page_url": "https://www.mercadolibre.cl/tienda/branda",
+    "product_title": "Unbranded accessory",
+    "explicit_vendor": null,
+    "native_id": "MLC123456789",
+    "extracted_vendor": "Branda",
+    "classification": "TARGET_IDENTITY_VERIFIED",
+    "evidence": [
+      "Marketplace brand field: Branda"
+    ],
+    "expected_accepted": 0,
+    "actual_accepted": 1
+  },
+  "BRAND_FIRST_PIPELINE": "NO",
+  "DEPENDENCIES_ADDED": 0,
+  "E2E_4MP_EXECUTED": "NO",
+  "COMMIT": null,
+  "REMOTE_VERIFIED": "NO",
+  "READY_FOR_FINAL_4MP_CERTIFICATION": "NO",
+  "HEAD_BEFORE": "835f771ad626f2eba67c4a63f9b7322b474e0c33",
+  "HEAD_AFTER": "835f771ad626f2eba67c4a63f9b7322b474e0c33",
+  "HISTORICAL_510": "NOT_RECONSTRUCTABLE_FROM_EXISTING_EVIDENCE",
+  "UNRELATED_DELTA_PROVENANCE": "UNKNOWN; untouched"
+}

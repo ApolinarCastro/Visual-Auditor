@@ -1,0 +1,12 @@
+{
+  "task_id": "VA-MRI-BRAND-FIRST-CLOSE-001",
+  "run_id": "20261006_134523",
+  "status": "NOT_RECONSTRUCTABLE_FROM_EXISTING_EVIDENCE",
+  "unresolved": {"Mercado Libre": 0, "Paris": 20, "Falabella": 11, "Ripley": 479},
+  "total": 510,
+  "accepted_by_user": true,
+  "blocks_current_acceptance": false,
+  "synthetic_node_ids_created": 0,
+  "marketplace_navigation_calls": 0,
+  "supersedes_blocker_status_in": "offline_reclassification.json"
+}

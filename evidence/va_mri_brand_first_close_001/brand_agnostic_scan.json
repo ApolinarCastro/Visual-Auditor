@@ -1,0 +1,977 @@
+{
+  "scope": [
+    "app/mri_autonomous/__init__.py",
+    "app/mri_autonomous/autonomous_pipeline.py",
+    "app/mri_autonomous/brand_hubs.py",
+    "app/mri_autonomous/brand_norm.py",
+    "app/mri_autonomous/category_alignment.py",
+    "app/mri_autonomous/category_discoverer.py",
+    "app/mri_autonomous/contradiction.py",
+    "app/mri_autonomous/experience_store.py",
+    "app/mri_autonomous/inspect_paris.py",
+    "app/mri_autonomous/pagination.py",
+    "app/mri_autonomous/simulation_guard.py",
+    "app/mri_autonomous/surface_classifier.py",
+    "app/scrapers/__init__.py",
+    "app/scrapers/base_scraper.py",
+    "app/scrapers/base_scraper_backup.py",
+    "app/scrapers/falabella_scraper.py",
+    "app/scrapers/mercadolibre_scraper.py",
+    "app/scrapers/paris_scraper.py",
+    "app/scrapers/ripley_scraper.py",
+    "_mri_autonomous_run.py",
+    "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+    "tests/test_mri_brand_first.py"
+  ],
+  "pattern": "nicopoly (case-insensitive, includes all requested status patterns)",
+  "matches": [
+    {
+      "path": "app/mri_autonomous/autonomous_pipeline.py",
+      "line": 3,
+      "text": "MARKETPLACE + NICOPOLY -> discover categories -> observe publications -> materialize MRI",
+      "classification": "A",
+      "reason": "Legacy compatibility naming/status or configurable default; no requested-target comparison."
+    },
+    {
+      "path": "app/mri_autonomous/autonomous_pipeline.py",
+      "line": 36,
+      "text": "# \"blazer-nicopoly#D[R:nicopoly,P:1,Q:5]\" (hash-encoded search state).",
+      "classification": "B",
+      "reason": "Historical example/comment; not executable brand comparison."
+    },
+    {
+      "path": "app/mri_autonomous/autonomous_pipeline.py",
+      "line": 309,
+      "text": "async def autonomous_discover_marketplace(marketplace: str, brand: str = \"Nicopoly\", max_categories: int = 12, headless: bool = True, category_budget_seconds: int = 300, progress_sink=None, max_batches: int = None, resume_state: Dict[str, Any] = None, no_progress_limit: int = 12) -> Dict[str, Any]:",
+      "classification": "A",
+      "reason": "Legacy compatibility naming/status or configurable default; no requested-target comparison."
+    },
+    {
+      "path": "app/mri_autonomous/autonomous_pipeline.py",
+      "line": 605,
+      "text": "        # (e.g. Paris `?q=nicopoly` electro links), so the hub is always",
+      "classification": "B",
+      "reason": "Historical example/comment; not executable brand comparison."
+    },
+    {
+      "path": "app/mri_autonomous/autonomous_pipeline.py",
+      "line": 1179,
+      "text": "                # Nicopoly products observed on it. EXHAUSTION of a noise",
+      "classification": "B",
+      "reason": "Historical example/comment; not executable brand comparison."
+    },
+    {
+      "path": "app/mri_autonomous/autonomous_pipeline.py",
+      "line": 1494,
+      "text": "    # Need fields expected by materializer: marketplace, marketplace_sku, sku_master, product_title, brand, price, position_absolute, created_at, is_nicopoly, category",
+      "classification": "B",
+      "reason": "Historical example/comment; not executable brand comparison."
+    },
+    {
+      "path": "app/mri_autonomous/autonomous_pipeline.py",
+      "line": 1514,
+      "text": "            \"is_nicopoly\": p.get(\"is_nicopoly\", 0)",
+      "classification": "A",
+      "reason": "Legacy compatibility naming/status or configurable default; no requested-target comparison."
+    },
+    {
+      "path": "app/mri_autonomous/autonomous_pipeline.py",
+      "line": 1527,
+      "text": "        \"NICOPOLY_CONFIRMED\": 0,",
+      "classification": "A",
+      "reason": "Legacy compatibility naming/status or configurable default; no requested-target comparison."
+    },
+    {
+      "path": "app/mri_autonomous/autonomous_pipeline.py",
+      "line": 1528,
+      "text": "        \"NON_NICOPOLY_CONFIRMED\": 0,",
+      "classification": "A",
+      "reason": "Legacy compatibility naming/status or configurable default; no requested-target comparison."
+    },
+    {
+      "path": "app/mri_autonomous/brand_hubs.py",
+      "line": 17,
+      "text": "def brand_hub_for(marketplace: str, brand: str = \"Nicopoly\") -> BrandHub:",
+      "classification": "A",
+      "reason": "Legacy compatibility naming/status or configurable default; no requested-target comparison."
+    },
+    {
+      "path": "app/mri_autonomous/brand_hubs.py",
+      "line": 26,
+      "text": "        # Paris brand search - returns all Nicopoly products with category facets",
+      "classification": "B",
+      "reason": "Historical example/comment; not executable brand comparison."
+    },
+    {
+      "path": "app/mri_autonomous/category_discoverer.py",
+      "line": 32,
+      "text": "        \"[class*='filter'] a\", \"a[href*='Nicopoly']\"",
+      "classification": "A",
+      "reason": "Unused FACET_SELECTORS constant; discovery function uses runtime brand."
+    },
+    {
+      "path": "app/mri_autonomous/category_discoverer.py",
+      "line": 252,
+      "text": "        # Paris: /search?q=nicopoly&tipoProductoAll=... or /search?q=nicopoly&facet...",
+      "classification": "B",
+      "reason": "Historical example/comment; not executable brand comparison."
+    },
+    {
+      "path": "app/mri_autonomous/experience_store.py",
+      "line": 308,
+      "text": "    def get_strategies(self, marketplace: str, brand: str = \"Nicopoly\",",
+      "classification": "A",
+      "reason": "Legacy compatibility naming/status or configurable default; no requested-target comparison."
+    },
+    {
+      "path": "app/mri_autonomous/experience_store.py",
+      "line": 399,
+      "text": "    def get_strategy_decisions(self, marketplace: str, brand: str = \"Nicopoly\",",
+      "classification": "A",
+      "reason": "Legacy compatibility naming/status or configurable default; no requested-target comparison."
+    },
+    {
+      "path": "app/mri_autonomous/experience_store.py",
+      "line": 456,
+      "text": "    def get_stale_strategies(self, marketplace: str, brand: str = \"Nicopoly\",",
+      "classification": "A",
+      "reason": "Legacy compatibility naming/status or configurable default; no requested-target comparison."
+    },
+    {
+      "path": "app/mri_autonomous/experience_store.py",
+      "line": 470,
+      "text": "    def get_failed_strategies(self, marketplace: str, brand: str = \"Nicopoly\",",
+      "classification": "A",
+      "reason": "Legacy compatibility naming/status or configurable default; no requested-target comparison."
+    },
+    {
+      "path": "app/mri_autonomous/inspect_paris.py",
+      "line": 7,
+      "text": "    await p.navigate('https://www.paris.cl/search?q=nicopoly')",
+      "classification": "D",
+      "reason": "Test fixture or standalone diagnostic, not production admission."
+    },
+    {
+      "path": "app/mri_autonomous/inspect_paris.py",
+      "line": 12,
+      "text": "                      .filter(x => x.href.includes('nicopoly') || x.href.includes('facet') || x.href.includes('cat') || x.href.includes('mujer'));",
+      "classification": "D",
+      "reason": "Test fixture or standalone diagnostic, not production admission."
+    },
+    {
+      "path": "app/mri_autonomous/surface_classifier.py",
+      "line": 8,
+      "text": "direct commercial evidence (Nicopoly products observed on that surface).",
+      "classification": "A",
+      "reason": "Legacy parameter/evidence wording; count supplied from requested target, no literal-brand identity comparison."
+    },
+    {
+      "path": "app/mri_autonomous/surface_classifier.py",
+      "line": 142,
+      "text": "                 nicopoly_present: int) -> Dict[str, Any]:",
+      "classification": "A",
+      "reason": "Legacy parameter/evidence wording; count supplied from requested target, no literal-brand identity comparison."
+    },
+    {
+      "path": "app/mri_autonomous/surface_classifier.py",
+      "line": 145,
+      "text": "    Certified  <=>  products observed AND Nicopoly products among them.",
+      "classification": "A",
+      "reason": "Legacy parameter/evidence wording; count supplied from requested target, no literal-brand identity comparison."
+    },
+    {
+      "path": "app/mri_autonomous/surface_classifier.py",
+      "line": 149,
+      "text": "    if products_observed > 0 and nicopoly_present > 0:",
+      "classification": "A",
+      "reason": "Legacy parameter/evidence wording; count supplied from requested target, no literal-brand identity comparison."
+    },
+    {
+      "path": "app/mri_autonomous/surface_classifier.py",
+      "line": 159,
+      "text": "                + [f\"direct-commercial-evidence:{nicopoly_present}/\"",
+      "classification": "A",
+      "reason": "Legacy parameter/evidence wording; count supplied from requested target, no literal-brand identity comparison."
+    },
+    {
+      "path": "app/mri_autonomous/surface_classifier.py",
+      "line": 160,
+      "text": "                   f\"{products_observed} nicopoly products observed\"]}",
+      "classification": "A",
+      "reason": "Legacy parameter/evidence wording; count supplied from requested target, no literal-brand identity comparison."
+    },
+    {
+      "path": "app/mri_autonomous/surface_classifier.py",
+      "line": 164,
+      "text": "                          \"Nicopoly evidence — navigation, not taxonomy\"}",
+      "classification": "A",
+      "reason": "Legacy parameter/evidence wording; count supplied from requested target, no literal-brand identity comparison."
+    },
+    {
+      "path": "app/scrapers/falabella_scraper.py",
+      "line": 288,
+      "text": "        is_brand_search = \"brandname=\" in url.lower() or \"brand=\" in url.lower() or \"nicopoly\" in url.lower()",
+      "classification": "C",
+      "reason": "Reachable scraper brand-specific inference or routing; scan finding, only Paris identity fabrication reproduced by BF24."
+    },
+    {
+      "path": "app/scrapers/falabella_scraper.py",
+      "line": 334,
+      "text": "                                if not brand and \"nicopoly\" in pod_text.lower():",
+      "classification": "C",
+      "reason": "Reachable scraper brand-specific inference or routing; scan finding, only Paris identity fabrication reproduced by BF24."
+    },
+    {
+      "path": "app/scrapers/falabella_scraper.py",
+      "line": 335,
+      "text": "                                    brand = \"Nicopoly\"",
+      "classification": "C",
+      "reason": "Reachable scraper brand-specific inference or routing; scan finding, only Paris identity fabrication reproduced by BF24."
+    },
+    {
+      "path": "app/scrapers/mercadolibre_scraper.py",
+      "line": 81,
+      "text": "        if \"tienda/nicopoly\" in clean.lower():",
+      "classification": "C",
+      "reason": "Reachable scraper brand-specific inference or routing; scan finding, only Paris identity fabrication reproduced by BF24."
+    },
+    {
+      "path": "app/scrapers/mercadolibre_scraper.py",
+      "line": 82,
+      "text": "            parts = clean.split(\"tienda/nicopoly\")",
+      "classification": "C",
+      "reason": "Reachable scraper brand-specific inference or routing; scan finding, only Paris identity fabrication reproduced by BF24."
+    },
+    {
+      "path": "app/scrapers/mercadolibre_scraper.py",
+      "line": 88,
+      "text": "                return f\"https://listado.mercadolibre.cl/{subpath}/{last_seg}_Tienda_nicopoly\"",
+      "classification": "C",
+      "reason": "Reachable scraper brand-specific inference or routing; scan finding, only Paris identity fabrication reproduced by BF24."
+    },
+    {
+      "path": "app/scrapers/mercadolibre_scraper.py",
+      "line": 89,
+      "text": "            return \"https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly\"",
+      "classification": "C",
+      "reason": "Reachable scraper brand-specific inference or routing; scan finding, only Paris identity fabrication reproduced by BF24."
+    },
+    {
+      "path": "app/scrapers/paris_scraper.py",
+      "line": 258,
+      "text": "            if not brand and \"nicopoly\" in all_text:",
+      "classification": "C",
+      "reason": "Reachable scraper brand-specific inference or routing; scan finding, only Paris identity fabrication reproduced by BF24."
+    },
+    {
+      "path": "app/scrapers/paris_scraper.py",
+      "line": 259,
+      "text": "                brand = \"Nicopoly\"",
+      "classification": "C",
+      "reason": "Reachable scraper brand-specific inference or routing; scan finding, only Paris identity fabrication reproduced by BF24."
+    },
+    {
+      "path": "app/scrapers/ripley_scraper.py",
+      "line": 138,
+      "text": "        # Search URL: /search/Nicopoly?facet%3DTipo%20de%20Prenda=Jeans",
+      "classification": "B",
+      "reason": "Historical example/comment; not executable brand comparison."
+    },
+    {
+      "path": "app/scrapers/ripley_scraper.py",
+      "line": 749,
+      "text": "                # Pattern: \"1424 Resultados en Jeans mujer\" or \"5 Resultados en Enteritos Mujer NICOPOLY\"",
+      "classification": "B",
+      "reason": "Historical example/comment; not executable brand comparison."
+    },
+    {
+      "path": "app/scrapers/ripley_scraper.py",
+      "line": 1248,
+      "text": "                            if (allText.includes(\"nicopoly\")) {{",
+      "classification": "C",
+      "reason": "Reachable scraper brand-specific inference or routing; scan finding, only Paris identity fabrication reproduced by BF24."
+    },
+    {
+      "path": "app/scrapers/ripley_scraper.py",
+      "line": 1249,
+      "text": "                                brand = \"Nicopoly\";",
+      "classification": "C",
+      "reason": "Reachable scraper brand-specific inference or routing; scan finding, only Paris identity fabrication reproduced by BF24."
+    },
+    {
+      "path": "_mri_autonomous_run.py",
+      "line": 42,
+      "text": "        discovery = await autonomous_discover_marketplace(mkt, \"Nicopoly\", headless=True)",
+      "classification": "A",
+      "reason": "Legacy compatibility naming/status or configurable default; no requested-target comparison."
+    },
+    {
+      "path": "_mri_autonomous_run.py",
+      "line": 168,
+      "text": "        \"NICOPOLY_CONFIRMED\": sum(1 for n in norm if n.get(\"membership\") == \"NICOPOLY_CONFIRMED\"),",
+      "classification": "A",
+      "reason": "Legacy compatibility naming/status or configurable default; no requested-target comparison."
+    },
+    {
+      "path": "_mri_autonomous_run.py",
+      "line": 177,
+      "text": "async def run_marketplace_e2e(marketplace=\"Paris\", brand=\"Nicopoly\", max_batches=None,",
+      "classification": "A",
+      "reason": "Legacy compatibility naming/status or configurable default; no requested-target comparison."
+    },
+    {
+      "path": "_mri_autonomous_run.py",
+      "line": 521,
+      "text": "        \"NICOPOLY_CONFIRMED\": sum(1 for n in norm_rows if n[\"membership\"] == \"NICOPOLY_CONFIRMED\"),",
+      "classification": "A",
+      "reason": "Legacy compatibility naming/status or configurable default; no requested-target comparison."
+    },
+    {
+      "path": "_mri_autonomous_run.py",
+      "line": 536,
+      "text": "            \"NICOPOLY_CONFIRMED\": \"COUNT normalized WHERE membership=NICOPOLY_CONFIRMED\",",
+      "classification": "A",
+      "reason": "Legacy compatibility naming/status or configurable default; no requested-target comparison."
+    },
+    {
+      "path": "_mri_autonomous_run.py",
+      "line": 630,
+      "text": "            {\"iteration\": 3, \"blocker\": \"0 publications: hub never scraped when facets exist; Paris ?q=nicopoly nav links are unfiltered electro noise, G16 rejected 102/102\",",
+      "classification": "B",
+      "reason": "Historical example/comment; not executable brand comparison."
+    },
+    {
+      "path": "_mri_autonomous_run.py",
+      "line": 659,
+      "text": "        f\"NICOPOLY_CONFIRMED: {recount['NICOPOLY_CONFIRMED']}\\n\"",
+      "classification": "A",
+      "reason": "Legacy compatibility naming/status or configurable default; no requested-target comparison."
+    },
+    {
+      "path": "_mri_autonomous_run.py",
+      "line": 704,
+      "text": "         \"result\": \"PASS\" if pubs and all(p[\"membership\"] in (\"TARGET_IDENTITY_VERIFIED\", \"NICOPOLY_CONFIRMED\") and p[\"marketplace_product_id\"] for p in pubs) else (\"SKIP_EMPTY\" if not pubs else \"FAIL\")},",
+      "classification": "A",
+      "reason": "Legacy compatibility naming/status or configurable default; no requested-target comparison."
+    },
+    {
+      "path": "_mri_autonomous_run.py",
+      "line": 732,
+      "text": "            res = await run_marketplace_e2e(mkt, \"Nicopoly\", outroot=root)",
+      "classification": "A",
+      "reason": "Legacy compatibility naming/status or configurable default; no requested-target comparison."
+    },
+    {
+      "path": "_mri_autonomous_run.py",
+      "line": 749,
+      "text": "    return await run_marketplace_e2e(\"Paris\", \"Nicopoly\")",
+      "classification": "A",
+      "reason": "Legacy compatibility naming/status or configurable default; no requested-target comparison."
+    },
+    {
+      "path": "_mri_autonomous_run.py",
+      "line": 772,
+      "text": "                a.mkt, \"Nicopoly\", max_batches=a.max_batches,",
+      "classification": "A",
+      "reason": "Legacy compatibility naming/status or configurable default; no requested-target comparison."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 30,
+      "text": "    Evidence → Identity Resolution → Nicopoly Membership Validation → Commercial Admission",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 53,
+      "text": "        expected = \"TARGET_IDENTITY_VERIFIED\" if self.target_brand is not None else \"NICOPOLY_CONFIRMED\"",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 70,
+      "text": "            \"is_nicopoly\": int(snap.get(\"is_nicopoly\") or 0)",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 108,
+      "text": "    def validate_nicopoly_membership(self, norm: dict, identity: dict) -> dict:",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 110,
+      "text": "        Stage 3c: Nicopoly Membership Validation.",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 112,
+      "text": "        Determines if an observation has sufficient evidence to be admitted as a Nicopoly commercial publication.",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 115,
+      "text": "        A. master SKU linked unequivocally to Nicopoly catalog (Nxxxxxx pattern with verified Nicopoly observations)",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 117,
+      "text": "        C. marketplace publication ID previously verified as Nicopoly",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 118,
+      "text": "        D. seller/brand explicitly Nicopoly (brand == \"NICOPOLY\" or \"Nicopoly\" AND title contains \"Nicopoly\")",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 122,
+      "text": "        - NICOPOLY_CONFIRMED: Sufficient evidence exists",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 124,
+      "text": "        - NON_NICOPOLY_CONFIRMED: Explicit evidence it is NOT Nicopoly (different brand, no Nicopoly markers)",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 127,
+      "text": "        INSUFFICIENT_EVIDENCE never converts to NICOPOLY_CONFIRMED.",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 133,
+      "text": "        is_nicopoly_flag = norm[\"is_nicopoly\"]",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 135,
+      "text": "        # Evidence A: Master SKU in Nicopoly format (Nxxxxxx) AND has verified Nicopoly observations",
+      "classification": "B",
+      "reason": "Historical example/comment; not executable brand comparison."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 136,
+      "text": "        # The Nxxxxxx pattern with 6-7 chars after N is the Nicopoly master SKU format",
+      "classification": "B",
+      "reason": "Historical example/comment; not executable brand comparison."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 137,
+      "text": "        has_nicopoly_master_sku = False",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 139,
+      "text": "            # Check if it matches Nicopoly pattern: N followed by 6+ alphanumeric",
+      "classification": "B",
+      "reason": "Historical example/comment; not executable brand comparison."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 142,
+      "text": "                has_nicopoly_master_sku = True",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 144,
+      "text": "        # Evidence D: Explicit Nicopoly brand AND title",
+      "classification": "B",
+      "reason": "Historical example/comment; not executable brand comparison."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 145,
+      "text": "        has_nicopoly_brand = brand.upper() == \"NICOPOLY\"",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 146,
+      "text": "        has_nicopoly_title = \"NICOPOLY\" in raw_title.upper()",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 147,
+      "text": "        has_explicit_nicopoly = has_nicopoly_brand and has_nicopoly_title",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 149,
+      "text": "        # Evidence from is_nicopoly flag (Legacy classification)",
+      "classification": "B",
+      "reason": "Historical example/comment; not executable brand comparison."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 150,
+      "text": "        legacy_flag = bool(is_nicopoly_flag)",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 152,
+      "text": "        # Evidence of NON-Nicopoly: Different brand, no Nicopoly in title, Legacy flag = 0",
+      "classification": "B",
+      "reason": "Historical example/comment; not executable brand comparison."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 153,
+      "text": "        has_other_brand = brand and brand.upper() != \"NICOPOLY\" and brand.strip() != \"\"",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 154,
+      "text": "        has_no_nicopoly_title = \"NICOPOLY\" not in raw_title.upper()",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 158,
+      "text": "        if has_nicopoly_master_sku and has_explicit_nicopoly:",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 161,
+      "text": "                \"classification\": \"NICOPOLY_CONFIRMED\",",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 162,
+      "text": "                \"evidence\": [\"A: Master SKU pattern (Nxxxxxx)\", \"D: Explicit Nicopoly brand + title\"],",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 163,
+      "text": "                \"reason\": \"Master SKU in Nicopoly catalog format with explicit Nicopoly brand and title\"",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 165,
+      "text": "        elif has_nicopoly_master_sku and legacy_flag:",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 168,
+      "text": "                \"classification\": \"NICOPOLY_CONFIRMED\",",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 169,
+      "text": "                \"evidence\": [\"A: Master SKU pattern (Nxxxxxx)\", \"Legacy is_nicopoly flag\"],",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 170,
+      "text": "                \"reason\": \"Master SKU in Nicopoly catalog format with Legacy Nicopoly classification\"",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 172,
+      "text": "        elif has_explicit_nicopoly and legacy_flag:",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 175,
+      "text": "                \"classification\": \"NICOPOLY_CONFIRMED\",",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 176,
+      "text": "                \"evidence\": [\"D: Explicit Nicopoly brand + title\", \"Legacy is_nicopoly flag\"],",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 177,
+      "text": "                \"reason\": \"Explicit Nicopoly brand and title with Legacy Nicopoly classification\"",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 179,
+      "text": "        elif has_nicopoly_master_sku and has_nicopoly_brand:",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 180,
+      "text": "            # Master SKU pattern AND Nicopoly brand (even without title) = CONFIRMED",
+      "classification": "B",
+      "reason": "Historical example/comment; not executable brand comparison."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 182,
+      "text": "                \"classification\": \"NICOPOLY_CONFIRMED\",",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 183,
+      "text": "                \"evidence\": [\"A: Master SKU pattern (Nxxxxxx)\", \"D: Nicopoly brand\"],",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 184,
+      "text": "                \"reason\": \"Master SKU in Nicopoly catalog format with Nicopoly brand\"",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 186,
+      "text": "        elif has_nicopoly_brand:",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 193,
+      "text": "                \"classification\": \"NICOPOLY_CONFIRMED\",",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 194,
+      "text": "                \"evidence\": [\"D: Explicit Nicopoly brand field (marketplace vendor/brand)\"],",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 195,
+      "text": "                \"reason\": \"Explicit Nicopoly brand from marketplace vendor field\"",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 197,
+      "text": "        elif has_other_brand and has_no_nicopoly_title and legacy_says_no:",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 198,
+      "text": "            # Explicit other brand, no Nicopoly in title, Legacy says no = NON_NICOPOLY",
+      "classification": "B",
+      "reason": "Historical example/comment; not executable brand comparison."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 200,
+      "text": "                \"classification\": \"NON_NICOPOLY_CONFIRMED\",",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 201,
+      "text": "                \"evidence\": [\"Other brand\", \"No Nicopoly in title\", \"Legacy is_nicopoly=0\"],",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 202,
+      "text": "                \"reason\": \"Explicit non-Nicopoly brand with no Nicopoly markers\"",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 204,
+      "text": "        elif has_nicopoly_master_sku:",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 209,
+      "text": "                \"reason\": \"Master SKU pattern suggests Nicopoly but lacks corroborating brand/title/Legacy evidence\"",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 211,
+      "text": "        elif has_explicit_nicopoly:",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 215,
+      "text": "                \"evidence\": [\"D: Explicit Nicopoly brand + title\"],",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 216,
+      "text": "                \"reason\": \"Explicit Nicopoly brand/title but lacks master SKU or Legacy corroboration\"",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 222,
+      "text": "                \"evidence\": [\"Legacy is_nicopoly flag\"],",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 226,
+      "text": "            # No positive evidence of Nicopoly membership",
+      "classification": "B",
+      "reason": "Historical example/comment; not executable brand comparison."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 230,
+      "text": "                \"reason\": \"No deterministic evidence of Nicopoly membership\"",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 301,
+      "text": "            elif membership[\"classification\"] == \"NICOPOLY_CONFIRMED\":",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 302,
+      "text": "                provenance = \"NICOPOLY_COMMERCIAL_OBSERVATION\"",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 303,
+      "text": "            elif membership[\"classification\"] == \"NON_NICOPOLY_CONFIRMED\":",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 304,
+      "text": "                provenance = \"NON_NICOPOLY_OBSERVATION\"",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 336,
+      "text": "        \"\"\"Stage 10: Deterministic Grader G01 - G16 (added G16 for Nicopoly membership).\"\"\"",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 375,
+      "text": "            # G16: Nicopoly Membership Validation - MUST PASS for commercial admission",
+      "classification": "B",
+      "reason": "Historical example/comment; not executable brand comparison."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 408,
+      "text": "        # Stage 3c: Nicopoly Membership Validation - THE CRITICAL ADMISSION GATE",
+      "classification": "B",
+      "reason": "Historical example/comment; not executable brand comparison."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 410,
+      "text": "                      else self.validate_nicopoly_membership(norm, ident))",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 412,
+      "text": "        # If not NICOPOLY_CONFIRMED, write to evidence ledger only, NOT commercial tables",
+      "classification": "B",
+      "reason": "Historical example/comment; not executable brand comparison."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 426,
+      "text": "        # Only proceed with commercial materialization for NICOPOLY_CONFIRMED",
+      "classification": "B",
+      "reason": "Historical example/comment; not executable brand comparison."
+    },
+    {
+      "path": "mri_commercial_materialization_golden_slice/v001/materializer_engine.py",
+      "line": 447,
+      "text": "print(\"GenericCommercialMaterializer engine loaded with Nicopoly Membership Validation.\")",
+      "classification": "A",
+      "reason": "Legacy no-target materializer contract. Explicit target uses validate_target_membership and TARGET_IDENTITY_VERIFIED."
+    },
+    {
+      "path": "tests/test_mri_brand_first.py",
+      "line": 53,
+      "text": "        \"brand\": \"Nicopoly\",",
+      "classification": "D",
+      "reason": "Test fixture or standalone diagnostic, not production admission."
+    },
+    {
+      "path": "tests/test_mri_brand_first.py",
+      "line": 54,
+      "text": "        \"is_nicopoly\": 1,",
+      "classification": "D",
+      "reason": "Test fixture or standalone diagnostic, not production admission."
+    },
+    {
+      "path": "tests/test_mri_brand_first.py",
+      "line": 63,
+      "text": "    assert res[\"membership\"][\"classification\"] == \"NICOPOLY_CONFIRMED\" # Meaning target brand confirmed",
+      "classification": "D",
+      "reason": "Test fixture or standalone diagnostic, not production admission."
+    },
+    {
+      "path": "tests/test_mri_brand_first.py",
+      "line": 75,
+      "text": "        \"brand\": \"Nicopoly\",",
+      "classification": "D",
+      "reason": "Test fixture or standalone diagnostic, not production admission."
+    },
+    {
+      "path": "tests/test_mri_brand_first.py",
+      "line": 76,
+      "text": "        \"is_nicopoly\": 1,",
+      "classification": "D",
+      "reason": "Test fixture or standalone diagnostic, not production admission."
+    },
+    {
+      "path": "tests/test_mri_brand_first.py",
+      "line": 143,
+      "text": "        \"id\": 1, \"marketplace\": \"Ripley\", \"marketplace_sku\": \"SKU1\", \"product_title\": \"Item A\", \"brand\": \"Nicopoly\", \"is_nicopoly\": 1, \"_categories_list\": [\"Cat1\"], \"price\": 100, \"position_absolute\": 1, \"created_at\": now, \"audit_date\": now",
+      "classification": "D",
+      "reason": "Test fixture or standalone diagnostic, not production admission."
+    },
+    {
+      "path": "tests/test_mri_brand_first.py",
+      "line": 146,
+      "text": "        \"id\": 2, \"marketplace\": \"Ripley\", \"marketplace_sku\": \"SKU1\", \"product_title\": \"Item A\", \"brand\": \"Nicopoly\", \"is_nicopoly\": 1, \"_categories_list\": [\"Cat2\"], \"price\": 100, \"position_absolute\": 1, \"created_at\": now, \"audit_date\": now",
+      "classification": "D",
+      "reason": "Test fixture or standalone diagnostic, not production admission."
+    },
+    {
+      "path": "tests/test_mri_brand_first.py",
+      "line": 185,
+      "text": "        \"id\": 3, \"marketplace\": \"Ripley\", \"marketplace_sku\": \"SKU3\", \"product_title\": \"New Item\", \"brand\": \"Nicopoly\", \"is_nicopoly\": 1, \"category\": \"New Discovered Category\", \"_categories_list\": [\"New Discovered Category\"], \"price\": 100, \"position_absolute\": 1, \"created_at\": now, \"audit_date\": now",
+      "classification": "D",
+      "reason": "Test fixture or standalone diagnostic, not production admission."
+    },
+    {
+      "path": "tests/test_mri_brand_first.py",
+      "line": 190,
+      "text": "    assert res[\"membership\"][\"classification\"] == \"NICOPOLY_CONFIRMED\"",
+      "classification": "D",
+      "reason": "Test fixture or standalone diagnostic, not production admission."
+    },
+    {
+      "path": "tests/test_mri_brand_first.py",
+      "line": 350,
+      "text": "@pytest.mark.parametrize(\"brand\", [\"Nicopoly\", \"BrandA\", \"BrandB\"])",
+      "classification": "D",
+      "reason": "Test fixture or standalone diagnostic, not production admission."
+    },
+    {
+      "path": "tests/test_mri_brand_first.py",
+      "line": 380,
+      "text": "        \"price\": 10000, \"position_absolute\": 1, \"is_nicopoly\": 1,",
+      "classification": "D",
+      "reason": "Test fixture or standalone diagnostic, not production admission."
+    },
+    {
+      "path": "tests/test_mri_brand_first.py",
+      "line": 395,
+      "text": "      <div class=\"product-title\">Compatible con Nicopoly</div>",
+      "classification": "D",
+      "reason": "Test fixture or standalone diagnostic, not production admission."
+    },
+    {
+      "path": "tests/test_mri_brand_first.py",
+      "line": 401,
+      "text": "        \"marketplace\": \"Paris\", \"target_brand\": \"Nicopoly\", \"products\": products,",
+      "classification": "D",
+      "reason": "Test fixture or standalone diagnostic, not production admission."
+    }
+  ],
+  "runtime_C_matches": 11,
+  "result": "BLOCKED",
+  "demonstrated_blocker": "BF24: Paris title-only mention becomes vendor Nicopoly, then TARGET_IDENTITY_VERIFIED; no explicit brand field exists in fixture."
+}

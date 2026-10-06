@@ -1,0 +1,22 @@
+{
+  "TASK": "VA-MRI-BRAND-FIRST-CLOSE-001",
+  "STATUS": "BLOCKED",
+  "BF26": "GREEN: absent vendor insufficient; conflicting vendor rejected; explicit target vendor verified",
+  "FIX": "Falabella scrape_top_240 preserves only explicit brand selector; removed literal text promotion, free-text Por inference, adaptive brand rescue. Title recovery preserved.",
+  "BF_TESTS": "33 passed, exit 0, 0.65s",
+  "FULL_SUITE": "265 passed, 3 preexisting skipped, 35 warnings, exit 0, 56.58s",
+  "FIRST_UNRESOLVED_BLOCKER": "BF27 Ripley production JS promotes title-only mention to vendor, accepted as TARGET_IDENTITY_VERIFIED",
+  "BF27": "Standalone offline production-JS assertion exit 1; not yet part of pytest suite",
+  "ROOT_CAUSE": "app/scrapers/ripley_scraper.py:1246-1250",
+  "DEPENDENCIES_ADDED": 0,
+  "E2E_4MP_EXECUTED": "NO",
+  "COMMIT": null,
+  "REMOTE_VERIFIED": "NO",
+  "READY_FOR_FINAL_4MP_CERTIFICATION": "NO",
+  "HEAD_BEFORE": "835f771ad626f2eba67c4a63f9b7322b474e0c33",
+  "HEAD_AFTER": "835f771ad626f2eba67c4a63f9b7322b474e0c33",
+  "UNRELATED_DELTA_PROVENANCE": "UNKNOWN; untouched",
+  "HISTORICAL_510": "NOT_RECONSTRUCTABLE_FROM_EXISTING_EVIDENCE",
+  "BF27_EVIDENCE": "bf27_ripley_red.json",
+  "environment": "Existing Node C:/Program Files/nodejs/node.exe executed production JS with fixture DOM; no browser installed or started."
+}

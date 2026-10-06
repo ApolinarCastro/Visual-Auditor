@@ -1,0 +1,30 @@
+{
+  "TASK": "VA-MRI-BRAND-FIRST-CLOSE-001",
+  "STATUS": "BLOCKED",
+  "HEAD_BEFORE": "835f771ad626f2eba67c4a63f9b7322b474e0c33",
+  "HEAD_AFTER": "835f771ad626f2eba67c4a63f9b7322b474e0c33",
+  "BF24": "GREEN",
+  "ROOT_CAUSE_BF24": "Paris _extract_products_from_html promoted a text mention to vendor. Generic span-order and adaptive brand rescues also supplied unverified vendor values. Removed those assignments; explicit brand DOM selectors remain. Title remains observation text, not verified brand evidence.",
+  "BF25": "3 passed: explicit different vendor rejected, absent vendor insufficient, explicit matching vendor accepted",
+  "BF_TESTS": "30 passed, exit 0, 0.60s before BF26 was added",
+  "FULL_SUITE": "262 passed, 3 preexisting skipped, 0 failed, exit 0, 65.27s; collected before BF26 addition",
+  "FIRST_UNRESOLVED_BLOCKER": "BF26: app/scrapers/falabella_scraper.py:334-335 promotes pod text mention to vendor Nicopoly. Reachable through production recovery scrape_top_240.",
+  "BF26_RED": {
+    "command": "python -m pytest tests/test_mri_brand_first.py -k BF_26 -v",
+    "result": "1 failed, 30 deselected, exit 1, 0.29s",
+    "input": "Title Compatible con Nicopoly, explicit brand selector absent, pod text title plus price, native SKU 12345678",
+    "expected": "accepted=[]",
+    "actual": "1 accepted; vendor Nicopoly; TARGET_IDENTITY_VERIFIED; evidence Marketplace brand field: Nicopoly"
+  },
+  "BRAND_AGNOSTIC": "NO",
+  "BRAND_FIRST_PIPELINE": "NO",
+  "DEPENDENCIES_ADDED": 0,
+  "E2E_4MP_EXECUTED": "NO",
+  "COMMIT": null,
+  "PUSH": "NO",
+  "REMOTE_VERIFIED": "NO",
+  "READY_FOR_FINAL_4MP_CERTIFICATION": "NO",
+  "HISTORICAL_510": "NOT_RECONSTRUCTABLE_FROM_EXISTING_EVIDENCE",
+  "UNRELATED_DELTA_PROVENANCE": "UNKNOWN; untouched",
+  "note": "No Falabella production changes after new causal RED. Stop required by user. Full-suite result is not final-tree GREEN because BF26 was added after collection."
+}

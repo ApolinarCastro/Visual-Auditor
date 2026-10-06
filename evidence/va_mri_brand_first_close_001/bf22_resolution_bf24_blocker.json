@@ -1,0 +1,36 @@
+{
+  "TASK": "VA-MRI-BRAND-FIRST-CLOSE-001",
+  "STATUS": "BLOCKED",
+  "HEAD_BEFORE": "835f771ad626f2eba67c4a63f9b7322b474e0c33",
+  "HEAD_AFTER": "835f771ad626f2eba67c4a63f9b7322b474e0c33",
+  "ROOT_CAUSE_BF22": "materialize_discovered_products omitted target scope; process_record and G16 required legacy NICOPOLY_CONFIRMED. Explicit target now propagated and validated; legacy callers preserved.",
+  "BF_TESTS": "26 passed before BF24; BF24 targeted run: 1 failed, 26 deselected, exit 1",
+  "FULL_SUITE": "258 passed, 3 preexisting skipped, 0 failed, exit 0, 62.28s; collected before BF24 addition, not final-state GREEN",
+  "BRAND_AGNOSTIC": "NO",
+  "NICOPOLY_RUNTIME_DECISION_MATCHES": 11,
+  "MEMBERSHIP_PRESERVATION": "PASS (BF18/BF19)",
+  "EXPERIENCE_FIRST": "YES (BF16/BF17 plus experience lookup before discovery)",
+  "GAP_REQUIRED": "YES (BF16/BF17)",
+  "GLOBAL_DISCOVERY_FALLBACK_ONLY": "YES (BF16/BF17)",
+  "CROSS_CHECK": "YES (BF18/BF19)",
+  "FUTURE_NODE_IDENTITY_PERSISTENCE": "PASS (BF20/BF21)",
+  "HISTORICAL_510": "NOT_RECONSTRUCTABLE_FROM_EXISTING_EVIDENCE",
+  "DEPENDENCIES_ADDED": 0,
+  "E2E_4MP_EXECUTED": "NO",
+  "COMMIT": null,
+  "REMOTE_VERIFIED": "NO",
+  "FIRST_UNRESOLVED_BLOCKER": "BF24: app/scrapers/paris_scraper.py:258-259 manufactures vendor Nicopoly from text mention; accepted as explicit marketplace brand evidence.",
+  "READY_FOR_FINAL_4MP_CERTIFICATION": "NO",
+  "UNRELATED_DELTA_PROVENANCE": "UNKNOWN; untouched",
+  "RED_COMMAND": "python -m pytest tests/test_mri_brand_first.py -k BF_24 -v",
+  "RED_EVIDENCE": {
+    "input_html": "<a id=\"product-12345678\" href=\"/item-12345678.html\"><div class=\"product-title\">Compatible con Nicopoly</div><div class=\"price\">$10.000</div></a>",
+    "expected_accepted": 0,
+    "actual_accepted": 1,
+    "extracted_vendor": "Nicopoly",
+    "classification": "TARGET_IDENTITY_VERIFIED",
+    "membership_evidence": [
+      "Marketplace brand field: Nicopoly"
+    ]
+  }
+}
