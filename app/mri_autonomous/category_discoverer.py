@@ -470,6 +470,24 @@ def _verifiably_irrelevant(cat: dict) -> bool:
     return bool(cat.get("classification_evidence"))
 
 
+def _proven_relevant(cat: dict) -> bool:
+    """BRAND-FIRST COMMERCIAL SCOPE rule:
+    A candidate is only PROVEN_RELEVANT if it has direct brand evidence.
+    Global discovery candidates (navigation/menu) without evidence are hypotheses,
+    not mandatory work (RELEVANT_PENDING_WORK).
+    """
+    if _verifiably_irrelevant(cat):
+        return False
+        
+    discovery = str(cat.get("discovery_method") or "")
+    if discovery.startswith("navigation_") or discovery.startswith("menu_"):
+        if cat.get("brand_evidence_found") or cat.get("brand_facet_option_present") or cat.get("nicopoly_present"):
+            return True
+        return False
+        
+    return True
+
+
 def frontier_relevance_accounting(final_categories) -> dict:
     """VA-FINAL-RESOLUTION-LOOP-001.
 
@@ -488,7 +506,7 @@ def frontier_relevance_accounting(final_categories) -> dict:
         if cat.get("stop_reason") not in (None, "QUEUED", "NOT_VISITED"):
             continue
         raw.append(cat)
-        if not _verifiably_irrelevant(cat):
+        if _proven_relevant(cat):
             relevant.append(cat)
     return {
         "raw_frontier_remaining": len(raw),
