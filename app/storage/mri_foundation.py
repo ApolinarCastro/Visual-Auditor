@@ -174,7 +174,6 @@ CREATE TABLE IF NOT EXISTS mri_shadow_snapshots (
     FOREIGN KEY (run_id) REFERENCES mri_runs(run_id),
     FOREIGN KEY (publication_id) REFERENCES mri_publications(publication_id),
     FOREIGN KEY (evidence_id) REFERENCES mri_evidence_ledger(evidence_id)
-    FOREIGN KEY (evidence_id) REFERENCES mri_evidence_ledger(evidence_id)
 );
 
 CREATE TABLE IF NOT EXISTS mri_historical_publications (
