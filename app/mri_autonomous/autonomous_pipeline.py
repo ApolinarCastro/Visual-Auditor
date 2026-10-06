@@ -70,6 +70,22 @@ def resume_coverage_status(hub_skipped: bool, has_other_categories: bool,
     return None
 
 
+def next_no_progress_streak(streak: int, new_unique_count: int) -> int:
+    """VA-MRI-4MP-E2E-FAILURE-RESOLUTION-001: consecutive no-new-observations streak."""
+    if (new_unique_count or 0) > 0:
+        return 0
+    return int(streak or 0) + 1
+
+
+def no_progress_should_stop(streak: int, limit) -> bool:
+    """Bounded stop: True when `streak` consecutive categories produced no new
+    unique observations and a positive limit is configured (0/None disables)."""
+    try:
+        lim = int(limit)
+    except Exception:
+        return False
+    return lim > 0 and int(streak or 0) >= lim
+
 _FRONTIER_TERMINAL_CLASSES = (
     "NON_COMMERCIAL", "BRAND_NAVIGATION", "GENERAL_NAVIGATION", "CORPORATE_NAVIGATION",
 )
@@ -228,7 +244,7 @@ def sanitize_surfaces(categories, marketplace: str, hub_url: str):
     return sanitized, invalid_edges, notes
 
 
-async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopoly", max_categories: int = 12, headless: bool = True, category_budget_seconds: int = 300, progress_sink=None, max_batches: int = None, resume_state: Dict[str, Any] = None) -> Dict[str, Any]:
+async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopoly", max_categories: int = 12, headless: bool = True, category_budget_seconds: int = 300, progress_sink=None, max_batches: int = None, resume_state: Dict[str, Any] = None, no_progress_limit: int = 12) -> Dict[str, Any]:
     """
     Real autonomous discovery for a single marketplace.
     Returns discovered_categories with evidence and products.
@@ -489,6 +505,7 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
         _batches_emitted = 0
         _controlled_stop = False
         _hub_skipped = False
+        _consecutive_no_progress = 0
         nav_candidates = []
         nav_strategy = None
         nav_opened = None
@@ -1172,6 +1189,15 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
                     _controlled_stop = True
                     evidence_notes.append(
                         f"CONTROLLED_STOP: batch budget max_batches={max_batches} reached")
+
+            _no_new_here = len(global_product_map) - before_unique
+            _consecutive_no_progress = next_no_progress_streak(_consecutive_no_progress, _no_new_here)
+            if no_progress_should_stop(_consecutive_no_progress, no_progress_limit):
+                _controlled_stop = True
+                evidence_notes.append(
+                    f"NO_PROGRESS_BOUNDED_STOP: {_consecutive_no_progress} consecutive categories "
+                    f"produced no new unique observations (limit={no_progress_limit}); "
+                    f"remaining frontier terminal-classified")
 
         _final_cats = sanitized_categories if sanitized_categories else discovered_categories
         _resume_cov = resume_coverage_status(

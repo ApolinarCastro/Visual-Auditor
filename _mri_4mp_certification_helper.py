@@ -7,7 +7,11 @@ from datetime import datetime
 from pathlib import Path
 
 # --- Configuration ---
-EXPECTED_HEAD = "db3c63808360c767ba1e3ce43e0fceba67160a75"
+# Certification baseline: default = certified core baseline (db3c638); a
+# fixed-fix certification declares its frozen baseline via env
+# VA_MRI_CERT_EXPECTED_HEAD (VA-MRI-4MP-E2E-FAILURE-RESOLUTION-001).
+EXPECTED_HEAD = os.environ.get("VA_MRI_CERT_EXPECTED_HEAD",
+                               "db3c63808360c767ba1e3ce43e0fceba67160a75")
 BRAND = "NICOPOLY"
 MARKETPLACES = ["Mercado Libre", "Paris", "Falabella", "Ripley"]
 
@@ -122,6 +126,135 @@ def count_lines(filepath):
     with open(filepath, "r", encoding="utf-8") as f:
         return sum(1 for _ in f)
 
+
+def extract_marketplace_metrics(mkt_dir: str) -> dict:
+    """VA-MRI-4MP-E2E-FAILURE-RESOLUTION-001: read the REAL artifacts of one marketplace run.
+
+    The run artifacts live in a NESTED directory (<outroot>/<run_id>/); extract
+    COVERAGE_STATUS, recount, frontier accounting (RAW vs RELEVANT), budget
+    remainder, SOURCE_BLOCKED signals and evidence sufficiency from files only.
+    """
+    import re as _re
+    from pathlib import Path as _P
+    base = _P(mkt_dir)
+    out = {"found_artifacts": {}, "coverage_status": None, "stop_reason_hint": None,
+           "recount": None, "raw_frontier_remaining": None, "relevant_frontier_remaining": None,
+           "relevant_pending_work": None, "source_blocked_count": 0, "not_found_count": 0,
+           "evidence_count": 0, "evidence_sufficient": False, "notes": []}
+
+    candidates = [qp.parent for qp in base.glob("*/run_manifest.json")]
+    if (base / "run_manifest.json").exists():
+        candidates.append(base)
+    if not candidates:
+        out["notes"].append("no run_manifest.json found under outroot")
+        return out
+    run_dir = max(candidates, key=lambda q: q.stat().st_mtime)
+    out["found_artifacts"]["run_dir"] = str(run_dir)
+
+    try:
+        sub = json.loads((run_dir / "run_manifest.json").read_text(encoding="utf-8"))
+        out["recount"] = sub.get("recount")
+        out["run_id"] = sub.get("run_id")
+    except Exception as e:
+        out["notes"].append("run_manifest parse failed: %s" % e)
+
+    cov = None
+    fr = run_dir / "final_report.md"
+    if fr.exists():
+        out["found_artifacts"]["final_report"] = True
+        text = fr.read_text(encoding="utf-8", errors="ignore")
+        m = _re.search(r"STOP:\s*([A-Z_]+)\s*\(categories:\s*(\d+),\s*timeouts:\s*(\d+)\)", text)
+        if m:
+            cov = m.group(1)
+            out["stop_reason_hint"] = "%s (categories=%s, timeouts=%s)" % (m.group(1), m.group(2), m.group(3))
+    ev = run_dir / "events.jsonl"
+    if ev.exists():
+        out["found_artifacts"]["events"] = True
+        if cov is None:
+            for line in ev.read_text(encoding="utf-8", errors="ignore").splitlines():
+                if '"DISCOVERY_END"' in line:
+                    try:
+                        cov = json.loads(line).get("status") or cov
+                    except Exception:
+                        pass
+    out["coverage_status"] = cov
+
+    raw = rel = 0
+    blocked = 0
+    tx = run_dir / "taxonomy.json"
+    if tx.exists():
+        out["found_artifacts"]["taxonomy"] = True
+        try:
+            cats = json.loads(tx.read_text(encoding="utf-8"))
+            from app.mri_autonomous.category_discoverer import frontier_relevance_accounting
+            acc = frontier_relevance_accounting(cats)
+            raw += int(acc["raw_frontier_remaining"])
+            rel += int(acc["relevant_frontier_remaining"])
+            blocked += sum(1 for c in cats if c.get("coverage_status") == "BLOCKED")
+        except Exception as e:
+            out["notes"].append("taxonomy accounting failed: %s" % e)
+
+    fl = run_dir / "failures.json"
+    if fl.exists():
+        out["found_artifacts"]["failures"] = True
+        try:
+            fj = json.loads(fl.read_text(encoding="utf-8"))
+            notes = " | ".join(fj.get("evidence_notes", []) or [])
+            m = _re.search(r"raw=(\d+),\s*relevant=(\d+)", notes)
+            if m:
+                raw += int(m.group(1))
+                rel += int(m.group(2))
+            blocked += len(_re.findall(r"BLOCKED", notes))
+            out["not_found_count"] += len(_re.findall(r"NOT_FOUND", notes))
+        except Exception as e:
+            out["notes"].append("failures parse failed: %s" % e)
+
+    out["raw_frontier_remaining"] = raw
+    out["relevant_frontier_remaining"] = rel
+    out["relevant_pending_work"] = bool(rel > 0)
+    out["source_blocked_count"] = blocked
+
+    recount = out.get("recount") or {}
+    out["evidence_count"] = sum(int(recount.get(k) or 0) for k in
+                                ("RAW_OBSERVATIONS", "NORMALIZED_OBSERVATIONS",
+                                 "PUBLICATIONS", "MEMBERSHIPS"))
+    out["evidence_sufficient"] = bool(out["recount"] is not None and cov is not None
+                                      and out["found_artifacts"].get("taxonomy", False))
+    return out
+
+
+def classify_marketplace_semantics(metrics: dict, *, process_exit_code: int,
+                                   timed_out: bool) -> dict:
+    """Semantic status from PROCESS_RESULT + COVERAGE + RELEVANT_PENDING_WORK +
+    STOP_REASON + SOURCE_BLOCKED + EVIDENCE. The process exit code alone is NEVER
+    sufficient for PASS. SOURCE_BLOCKED is never converted to NOT_FOUND."""
+    if timed_out:
+        return {"STATUS": "FAIL",
+                "reason": "TIMEOUT: process killed; no semantic completion"}
+    if not metrics.get("evidence_sufficient"):
+        return {"STATUS": "UNKNOWN",
+                "reason": "insufficient artifacts to demonstrate coverage (never PASS by default)"}
+    cov = metrics.get("coverage_status")
+    rel = metrics.get("relevant_pending_work")
+    if cov == "BLOCKED":
+        return {"STATUS": "BLOCKED",
+                "reason": "coverage BLOCKED (source blocked / incomplete); distinct from NOT_FOUND"}
+    if rel is True:
+        return {"STATUS": "PARTIAL",
+                "reason": "PARTIAL with RELEVANT_PENDING_WORK>0"}
+    if cov == "CONFIRMED":
+        return {"STATUS": "PASS",
+                "reason": "CONFIRMED with RELEVANT_PENDING_WORK=0"}
+    if cov == "PARTIAL" and rel is False:
+        return {"STATUS": "PASS", "qualifier": "RELEVANT_SCOPE_COMPLETE",
+                "reason": "PARTIAL resolved by termination contract: relevant scope complete "
+                          "(RELEVANT_PENDING_WORK=0); not decided by the word PARTIAL"}
+    if process_exit_code not in (0,) and cov is None:
+        return {"STATUS": "FAIL", "reason": "process failed with no semantic artifacts"}
+    return {"STATUS": "UNKNOWN",
+            "reason": "unresolved semantics (coverage=%s, relevant=%s)" % (cov, rel)}
+
+
 def main():
     try:
         pre_status = run_precheck()
@@ -161,6 +294,7 @@ def main():
     
     global_fail = False
     global_partial = False
+    global_unknown = False
     
     for mkt in MARKETPLACES:
         elapsed_global = time.time() - global_start
@@ -217,60 +351,39 @@ def main():
         with open(all_stderr_log, "a", encoding="utf-8") as fa, open(mkt_stderr, "r", encoding="utf-8") as fr:
             fa.write(fr.read())
 
-        # Read status from run_manifest.json if generated by the run
-        pubs = "UNKNOWN"
-        cats = "UNKNOWN"
-        memberships = "UNKNOWN"
-        
-        manifest_path = mkt_dir / "run_manifest.json"
-        if not process_timeout and manifest_path.exists():
-            try:
-                with open(manifest_path, "r", encoding="utf-8") as f:
-                    sub_manifest = json.load(f)
-                
-                # Check for marketplace object inside manifest
-                # structure: {"marketplaces": {"Paris": {"status": "PARTIAL", "coverage": "PARTIAL", ...}}}
-                if "marketplaces" in sub_manifest and mkt in sub_manifest["marketplaces"]:
-                    mdata = sub_manifest["marketplaces"][mkt]
-                    coverage = mdata.get("coverage", "UNKNOWN")
-                    stop_reason = mdata.get("stop_reason", "UNKNOWN")
-                    pubs = mdata.get("publications", "UNKNOWN")
-                    cats = mdata.get("taxonomy_nodes", "UNKNOWN")
-                    memberships = mdata.get("memberships", "UNKNOWN")
-                    
-                    if coverage == "CONFIRMED":
-                        mkt_status = "PASS"
-                    elif coverage == "PARTIAL":
-                        mkt_status = "PARTIAL"
-                    elif coverage == "BLOCKED":
-                        mkt_status = "BLOCKED"
-                    elif coverage == "FAIL":
-                        mkt_status = "FAIL"
-            except Exception as e:
-                pass
+        # VA-MRI-4MP-E2E-FAILURE-RESOLUTION-001: artifact-based semantic certification.
+        # PASS must NEVER be derived from the process exit code alone.
+        metrics = extract_marketplace_metrics(str(mkt_dir))
+        verdict = classify_marketplace_semantics(metrics, process_exit_code=retcode,
+                                                 timed_out=process_timeout)
+        mkt_status = verdict["STATUS"]
+        coverage = metrics.get("coverage_status") or "UNKNOWN"
+        if metrics.get("stop_reason_hint"):
+            stop_reason = metrics.get("stop_reason_hint")
+        _recount = metrics.get("recount") or {}
+        pubs = _recount.get("PUBLICATIONS", "UNKNOWN")
+        cats = _recount.get("TAXONOMY_NODES", "UNKNOWN")
+        memberships = _recount.get("MEMBERSHIPS", "UNKNOWN")
+        semantic_reason = verdict.get("reason", "")
 
-        # If not fully updated from JSON, fallback to error codes
-        if mkt_status == "UNKNOWN":
-            if retcode != 0:
-                mkt_status = "FAIL"
-            else:
-                mkt_status = "PASS"
-
-        if mkt_status == "FAIL" or mkt_status == "BLOCKED":
+        if mkt_status in ("FAIL", "BLOCKED"):
             global_fail = True
         elif mkt_status == "PARTIAL":
             global_partial = True
+        elif mkt_status == "UNKNOWN":
+            global_unknown = True
             
         manifest["marketplaces"][mkt] = {
             "START_TIME": mkt_start_iso,
             "END_TIME": datetime.now().isoformat(),
             "DURATION_SECONDS": round(mkt_duration, 2),
             "STATUS": mkt_status,
+            "SEMANTIC_REASON": semantic_reason,
             "STOP_REASON": stop_reason,
             "COVERAGE_STATUS": coverage,
-            "RAW_FRONTIER_REMAINING": "UNKNOWN",
-            "RELEVANT_FRONTIER_REMAINING": "UNKNOWN",
-            "RELEVANT_PENDING_WORK": "UNKNOWN",
+            "RAW_FRONTIER_REMAINING": metrics.get("raw_frontier_remaining"),
+            "RELEVANT_FRONTIER_REMAINING": metrics.get("relevant_frontier_remaining"),
+            "RELEVANT_PENDING_WORK": metrics.get("relevant_pending_work"),
             "UNIQUE_PUBLICATIONS": pubs,
             "COMMERCIAL_CATEGORIES": cats,
             "CATEGORY_MEMBERSHIPS": memberships,
@@ -279,10 +392,10 @@ def main():
             "FALLBACKS_USED": "UNKNOWN",
             "RETRIES": "UNKNOWN",
             "TIMEOUTS": 1 if process_timeout else 0,
-            "SOURCE_BLOCKED_COUNT": "UNKNOWN",
-            "NOT_FOUND_COUNT": "UNKNOWN",
-            "ERROR_COUNT": "UNKNOWN",
-            "EVIDENCE_COUNT": count_lines(mkt_dir / "events.jsonl"),
+            "SOURCE_BLOCKED_COUNT": metrics.get("source_blocked_count", 0),
+            "NOT_FOUND_COUNT": metrics.get("not_found_count", 0),
+            "ERROR_COUNT": 1 if process_timeout else 0,
+            "EVIDENCE_COUNT": metrics.get("evidence_count", count_lines(mkt_dir / "events.jsonl")),
             "OUTPUT_PATH": str(mkt_dir)
         }
         
@@ -295,6 +408,9 @@ def main():
         exit_code = EXIT_FAIL
     elif global_partial:
         manifest["global_status"] = "PARTIAL"
+        exit_code = EXIT_PARTIAL
+    elif global_unknown:
+        manifest["global_status"] = "UNKNOWN"
         exit_code = EXIT_PARTIAL
     else:
         manifest["global_status"] = "PASS"

@@ -335,9 +335,12 @@ def build_navigation_candidates(nodes, hub_url: str, brand: str):
             
         # RED-2 / RED-4: Bounded Fallback. If discovered from raw generic DOM (not the structured menu api/dialog),
         # it must contain the brand explicitly, otherwise we're just harvesting the global site header.
-        if container != "menu_dialog" and brand_slug and brand_slug not in low_path:
-            # Only exception: search pages, but those are pruned by _NON_TAXONOMY_TYPES usually
-            # We strictly drop generic DOM links that don't have the brand slug.
+        _has_membership_evidence = bool(n.get("membership_evidence") or n.get("brand_evidence"))
+        if (container != "menu_dialog" and brand_slug and brand_slug not in low_path
+                and not _has_membership_evidence):
+            # Only exception: search pages, but those are pruned by _NON_TAXONOMY_TYPES usually.
+            # We strictly drop generic DOM links that don't have the brand slug,
+            # UNLESS the node carries real membership evidence (RIP-F guard).
             continue
             
         if st == "UNKNOWN":
