@@ -480,12 +480,27 @@ def _proven_relevant(cat: dict) -> bool:
         return False
         
     discovery = str(cat.get("discovery_method") or "")
-    if discovery.startswith("navigation_") or discovery.startswith("menu_"):
-        if cat.get("brand_evidence_found") or cat.get("brand_facet_option_present") or cat.get("nicopoly_present"):
-            return True
-        return False
+    
+    # Check for direct target brand evidence recorded during discovery or traversal
+    if cat.get("brand_evidence_found") or cat.get("target_brand_present") or cat.get("brand_facet_option_present"):
+        cat["relevance_evidence_type"] = "facet_or_membership_evidence"
+        return True
         
-    return True
+    # Seed surfaces (e.g. brand hubs) are inherently target evidence
+    if cat.get("is_seed_surface"):
+        cat["relevance_evidence_type"] = "seed_surface_verified"
+        return True
+        
+    # If the surface explicitly references the brand in the URL, that's a hypothesis,
+    # but not PROVEN_RELEVANT until items are found. However, if discovery method is BRAND_SEARCH/BRAND_STORE
+    # (extracted from the brand hub itself), it carries contextual evidence.
+    if discovery.startswith("BRAND_SEARCH") or discovery.startswith("BRAND_STORE"):
+        cat["relevance_evidence_type"] = "hub_derived_surface"
+        return True
+        
+    # DENY BY DEFAULT
+    cat["relevance_evidence_type"] = None
+    return False
 
 
 def frontier_relevance_accounting(final_categories) -> dict:

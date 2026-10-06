@@ -8,22 +8,40 @@ async function fetchJSON(url) {
 
 async function loadAll() {
   try {
-    const [sumData, mpData, auditData, alertData, healthData, sessionData] = await Promise.all([
+    const [sumData, mpData, auditData, alertData, healthData, sessionData, seasonData] = await Promise.all([
       fetchJSON('/api/summary'),
       fetchJSON('/api/marketplace'),
       fetchJSON('/api/audits'),
       fetchJSON('/api/alerts?limit=8&unack_only=true'),
       fetchJSON('/api/health'),
       fetchJSON('/api/sessions'),
+      fetchJSON('/api/mri/season_products').catch(() => ({items:[]}))
     ]);
 
     // Stats cards
-    document.getElementById('s-mp').textContent = sumData.marketplace_count ?? '—';
-    document.getElementById('s-cat').textContent = sumData.category_count ?? '—';
-    document.getElementById('s-total').textContent = sumData.total_audits ?? '—';
-    document.getElementById('s-avg').textContent = sumData.avg_pct_30 != null ? sumData.avg_pct_30.toFixed(1)+'%' : '—';
-    document.getElementById('s-crit').textContent = sumData.critical_count ?? '—';
-    document.getElementById('s-exc').textContent = sumData.excellent_count ?? '—';
+    document.getElementById('s-mp').textContent = sumData.marketplace_count ?? '...';
+    document.getElementById('s-cat').textContent = sumData.category_count ?? '...';
+    document.getElementById('s-total').textContent = sumData.total_audits ?? '...';
+    document.getElementById('s-avg').textContent = sumData.avg_pct_30 != null ? sumData.avg_pct_30.toFixed(1)+'%' : '...';
+    document.getElementById('s-crit').textContent = sumData.critical_count ?? '...';
+    
+    // Temporada Actual
+    if (seasonData && seasonData.items && seasonData.items.length > 0) {
+      document.getElementById('s-exc').textContent = "Activa (" + seasonData.items.length + " prods)";
+      // Populate Temporada View
+      document.getElementById('season-tbody').innerHTML = seasonData.items.map(p => `
+        <tr>
+          <td><strong>${p.parent_sku}</strong></td>
+          <td>${p.title}</td>
+          <td><span class="badge ${p.status==='ACTIVO'?'badge-ok':'badge-warn'}">${p.status}</span></td>
+          <td>${p.priority}</td>
+          <td><a href="${p.url}" target="_blank" style="color:var(--accent)">Ver Catálogo</a></td>
+        </tr>
+      `).join('');
+    } else {
+      document.getElementById('s-exc').textContent = "Sin Temporada";
+      document.getElementById('season-tbody').innerHTML = `<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--muted)">Sin catálogo de temporada activo.</td></tr>`;
+    }
 
     if (sumData.last_audit) {
       document.getElementById('last-updated').textContent = 'Última: ' + sumData.last_audit.substring(0,16).replace('T',' ');
@@ -176,7 +194,7 @@ function renderAlerts(alerts) {
     alerts.map(a => `
       <div class="alert-item" id="alert-${a.id}">
         <span class="alert-icon">${icons[a.alert_type]||'ℹ️'}</span>
-        <span class="alert-msg">${a.message}</span>
+        <span class="alert-msg">${a.message.replace(/Run '.*?'.*$/i, '')}</span>
         <span class="alert-time">${(a.created_at||'').substring(0,16).replace('T',' ')}</span>
         <button class="ack-btn" onclick="ackAlert(${a.id})">✓ OK</button>
       </div>`).join('');
@@ -259,6 +277,29 @@ function renderTable(data) {
     </tr>`;
   }).join('') || '<tr><td colspan="18" style="text-align:center;padding:2rem;color:#64748b">Sin datos. Ejecuta una auditoría primero.</td></tr>';
   renderTotals(data);
+}
+
+let _currentSort = { col: null, asc: false };
+
+function sortTableBy(col) {
+  if (_currentSort.col === col) {
+    _currentSort.asc = !_currentSort.asc;
+  } else {
+    _currentSort.col = col;
+    _currentSort.asc = false;
+  }
+  
+  _audits.sort((a, b) => {
+    let valA = a[col] || 0;
+    let valB = b[col] || 0;
+    if (typeof valA === 'string') valA = valA.toLowerCase();
+    if (typeof valB === 'string') valB = valB.toLowerCase();
+    
+    if (valA < valB) return _currentSort.asc ? -1 : 1;
+    if (valA > valB) return _currentSort.asc ? 1 : -1;
+    return 0;
+  });
+  filterTable();
 }
 
 function filterTable() {

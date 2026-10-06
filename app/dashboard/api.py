@@ -653,6 +653,16 @@ async def api_mri_evidence(
         limit=limit
     ))
 
+@app.get("/api/mri/search_intents")
+async def api_mri_search_intents():
+    _check_mri_enabled()
+    return JSONResponse(content=mri_read_model.get_search_intents())
+
+@app.get("/api/mri/season_products")
+async def api_mri_season_products():
+    _check_mri_enabled()
+    return JSONResponse(content=mri_read_model.get_season_products())
+
 @app.get("/api/mri/health")
 async def api_mri_health():
     _check_mri_enabled()

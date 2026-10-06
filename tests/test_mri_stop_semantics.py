@@ -75,17 +75,19 @@ def test_case_b_raw_pruned_relevant_0_is_sufficient_for_relevant_scope():
     assert any("FRONTIER_RAW_PRUNED" in n for n in notes)
 
 
-def test_case_b_looks_irrelevant_without_evidence_is_relevant():
+def test_case_b_without_evidence_is_irrelevant_by_default():
     cats = [_hub(), _certified(), _pruned(evidence=())]
     acc = frontier_relevance_accounting(cats)
     assert acc["raw_frontier_remaining"] == 1
-    assert acc["relevant_frontier_remaining"] == 1  # irrelevance requires evidence, never a guess
-    assert acc["relevant_pending_work"] is True
+    assert acc["relevant_frontier_remaining"] == 0  # DENY BY DEFAULT: without target_brand_present, it is irrelevant
+    assert acc["relevant_pending_work"] is False
 
 
 # ---------- CASE C: relevant>0 -> never complete ----------
 def test_case_c_relevant_pending_never_certifies_complete():
-    cats = [_hub(), _certified(), _unresolved_raw()]
+    unresolved_relevant = _unresolved_raw()
+    unresolved_relevant["target_brand_present"] = 1
+    cats = [_hub(), _certified(), unresolved_relevant]
     acc = frontier_relevance_accounting(cats)
     assert acc["relevant_frontier_remaining"] == 1
     assert acc["relevant_pending_work"] is True
@@ -157,7 +159,9 @@ def test_case_e_controlled_stop_partial_and_accounted():
 
 # ---------- Cross-cutting: seed surface is never pending frontier ----------
 def test_accounting_excludes_seed_surface_from_raw():
-    cats = [_hub(stop="PAGINATION_PARAM_NOT_FOUND"), _unresolved_raw()]
+    unresolved_relevant = _unresolved_raw()
+    unresolved_relevant["target_brand_present"] = 1
+    cats = [_hub(stop="PAGINATION_PARAM_NOT_FOUND"), unresolved_relevant]
     acc = frontier_relevance_accounting(cats)
     assert acc["raw_frontier_remaining"] == 1
     assert acc["relevant_frontier_names"] == ["Zapatos"]

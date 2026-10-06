@@ -650,14 +650,14 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
                     "surface_classification": "BRAND_SURFACE",
                     "node_certified": _hcert_res["certified"],
                     "node_type": _hcert_res.get("node_type"),
-                    "nicopoly_present": _hnico,
+                    "target_brand_present": _hnico,
                 })
                 exp_store.record_experience(
                     marketplace=marketplace, brand=brand, knowledge_type="SURFACE",
                     value="Brand Hub", source_url=hub_url, page_type="BRAND_SEARCH",
                     status="LAST_GOOD" if _hcert_res["certified"] else "VALIDATED",
                     is_success=True,
-                    evidence_reference=f"batch0: {len(hub_prods0)} products, {_hnico} nicopoly",
+                    evidence_reference=f"batch0: {len(hub_prods0)} products, {_hnico} target brand",
                 )
                 products_by_category["Brand Hub"] = hub_prods0
                 await _emit_progress(make_category_done_payload(
@@ -707,9 +707,34 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
                 f"run stops here by operator flag (resume demo), not by exhaustion")
 
         batch_number = 0
+        
+        # Check for BRAND_FIRST_GAP
+        brand_first_gap = None
+        if not hub_prods0 and not _hub_skipped:
+            brand_first_gap = "BRAND_ENTRY_BLOCKED" if hub_stop_meta == "BLOCKED" else "BRAND_ENTRY_EMPTY"
+        elif hub_prods0:
+            unresolved = sum(1 for p in hub_prods0 if not p.get("_discovered_categories") or p.get("_discovered_categories") == ["Brand Hub"])
+            if unresolved > 0:
+                brand_first_gap = "UNRESOLVED_PRODUCT_MEMBERSHIP"
+                
+        # Check experience for gap resolution
+        exp_store.record_experience(marketplace, brand, knowledge_type="EVENT", value="EXPERIENCE_LOOKUP", source_url="global_discovery", page_type="nav", status="INFO", is_success=True)
+        _cert_urls = [exp["source_url"] for exp in prior_experiences if exp.get("knowledge_type") == "CATEGORY" and exp.get("status") in ("LAST_GOOD", "VALIDATED") and exp.get("source_url")]
+        if _cert_urls and not brand_first_gap:
+            exp_store.record_experience(marketplace, brand, knowledge_type="EVENT", value="EXPERIENCE_HIT", source_url="global_discovery", page_type="nav", status="INFO", is_success=True)
+            exp_store.record_experience(marketplace, brand, knowledge_type="EVENT", value="EXPERIENCE_USED", source_url="global_discovery", page_type="nav", status="INFO", is_success=True)
+
         # ---- MRI-AUTONOMY-003: NAVIGATION SOURCE (network JSON) + fallback (menu anchors) ----
         try:
-            _nav_source = None
+            if not brand_first_gap:
+                evidence_notes.append("GLOBAL_DISCOVERY_ALLOWED = FALSE (No BRAND_FIRST_GAP observed)")
+                logger.info(f"[{marketplace}] No BRAND_FIRST_GAP. Skipping global discovery.")
+                nav_candidates = []
+                _nav_source = None
+            else:
+                evidence_notes.append(f"BRAND_FIRST_GAP identified: {brand_first_gap}. Enabling GLOBAL_DISCOVERY fallback.")
+                logger.info(f"[{marketplace}] BRAND_FIRST_GAP: {brand_first_gap}")
+                _nav_source = None
             if hasattr(scraper, "discover_navigation_source"):
                 try:
                     await _emit_progress({"kind": "navigation_source_attempt", "marketplace": marketplace,
@@ -1065,7 +1090,7 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
                 cat["node_certified"] = _cert["certified"]
                 cat["node_type"] = _cert.get("node_type")
                 cat["cert_reason"] = _cert.get("evidence", _cert.get("reason"))
-                cat["nicopoly_present"] = _nico_here
+                cat["target_brand_present"] = _nico_here
                 cat["brand_present"] = _nico_here
                 cat["surface_id"] = url
                 cat["provenance"] = cat.get("discovery_method") or "facet_urls"
@@ -1077,7 +1102,7 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
                     exp_store.record_experience(
                         marketplace=marketplace, brand=brand, knowledge_type="CATEGORY",
                         value=cat["category_name"], source_url=url, page_type="CATEGORY_GRID",
-                        status="LAST_GOOD", is_success=True, evidence_reference=f"Found {len(prods)} products, {_nico_here} nicopoly"
+                        status="LAST_GOOD", is_success=True, evidence_reference=f"Found {len(prods)} products, {_nico_here} target brand"
                     )
                     logger.info(f"[{marketplace}] REVALIDATION_PASS & LAST_GOOD persisted for category: {cat['category_name']}")
                 elif stop_reason == "BLOCKED":

@@ -271,6 +271,12 @@ class MRIReadModel:
             conditions.append("lower(p.marketplace) = ?")
             params.append(marketplace.strip().lower())
 
+        if category and category.strip():
+            # Match taxonomy node or raw category name
+            conditions.append("(lower(p.taxonomy_classified_as) LIKE ? OR lower(c.category_name) LIKE ?)")
+            search_term = f"%{category.strip().lower()}%"
+            params.extend([search_term, search_term])
+
         where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
         sql = f"""
             SELECT p.publication_id, p.product_id, p.marketplace, p.marketplace_product_id,
@@ -865,4 +871,29 @@ class MRIReadModel:
             "materialized": True,
             "comparisons": comparisons
         }
+
+    def get_search_intents(self) -> Dict[str, Any]:
+        sql = """
+            SELECT search_query, target_category, target_surface, search_type
+            FROM mri_expected_search_intents
+            ORDER BY search_query ASC
+        """
+        try:
+            items = self.safe_query(sql)
+        except Exception:
+            items = []
+        return {"items": items}
+
+    def get_season_products(self) -> Dict[str, Any]:
+        sql = """
+            SELECT parent_sku, status, priority_group as priority, product_name as title, publication_url as url
+            FROM mri_season_registry
+            GROUP BY parent_sku
+            ORDER BY priority_group ASC
+        """
+        try:
+            items = self.safe_query(sql)
+        except Exception:
+            items = []
+        return {"items": items}
 
