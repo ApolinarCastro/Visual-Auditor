@@ -2,7 +2,7 @@ const COLORS = { EXCELENTE:'#10b981', BUENA:'#3b82f6', MEDIA:'#f59e0b', CRITICA:
 let _audits = [], _alerts = [];
 
 async function fetchJSON(url) {
-  const r = await fetch(url, { headers: { 'Authorization': 'Basic ' + btoa('admin:nicopoly2026') } });
+  const r = await fetch(url);
   return r.json();
 }
 
@@ -898,8 +898,7 @@ async function triggerAudit(mp, btnEl) {
 
   try {
     const r = await fetch(`/api/audit/trigger?marketplace=${mp}`, {
-      method: 'POST',
-      headers: { 'Authorization': 'Basic ' + btoa('admin:nicopoly2026') }
+      method: 'POST'
     });
     const d = await r.json();
     if (r.status === 409 || d.status === 'already_running') {

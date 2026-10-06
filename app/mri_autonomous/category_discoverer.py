@@ -452,6 +452,50 @@ def global_coverage_cap(navigation_status: str, coverage_status: str) -> str:
     return coverage_status
 
 
+# --- VA-FINAL-RESOLUTION-LOOP-001: RAW vs RELEVANT frontier semantics ---
+_FRONTIER_IRRELEVANT_CLASSES = (
+    "NON_COMMERCIAL", "BRAND_NAVIGATION", "GENERAL_NAVIGATION", "CORPORATE_NAVIGATION",
+)
+
+
+def _verifiably_irrelevant(cat: dict) -> bool:
+    """Deterministic irrelevance rule: non-commercial classification WITH recorded
+    evidence. Irrelevance may never be declared because a node "looks" irrelevant."""
+    cls = cat.get("category_type") or cat.get("surface_classification") or ""
+    if cls not in _FRONTIER_IRRELEVANT_CLASSES:
+        return False
+    return bool(cat.get("classification_evidence"))
+
+
+def frontier_relevance_accounting(final_categories) -> dict:
+    """VA-FINAL-RESOLUTION-LOOP-001.
+
+    RAW_FRONTIER_REMAINING: non-seed nodes never processed at run end
+    (stop_reason in None/QUEUED/NOT_VISITED).
+    RELEVANT_FRONTIER_REMAINING: raw nodes lacking a verifiable irrelevance rule
+    (deterministic classification + recorded evidence). Only these represent work
+    that could still modify the audit result.
+    Closure decisions must be keyed on RELEVANT_PENDING_WORK; a verifiably pruned
+    frontier alone never forces an incomplete relevant census.
+    """
+    raw, relevant = [], []
+    for cat in (final_categories or []):
+        if cat.get("is_seed_surface"):
+            continue
+        if cat.get("stop_reason") not in (None, "QUEUED", "NOT_VISITED"):
+            continue
+        raw.append(cat)
+        if not _verifiably_irrelevant(cat):
+            relevant.append(cat)
+    return {
+        "raw_frontier_remaining": len(raw),
+        "relevant_frontier_remaining": len(relevant),
+        "relevant_pending_work": len(relevant) > 0,
+        "raw_frontier_names": [c.get("category_name") for c in raw],
+        "relevant_frontier_names": [c.get("category_name") for c in relevant],
+    }
+
+
 def parse_navigation_source(source_json, hub_url: str, brand: str, source_sha: str = ""):
     """Parse the marketplace navigation SOURCE (network JSON tree captured on load)
     into validation-ready candidates. BFS order: top levels first (evidence-based

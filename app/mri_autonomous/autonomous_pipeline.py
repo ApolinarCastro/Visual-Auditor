@@ -70,6 +70,89 @@ def resume_coverage_status(hub_skipped: bool, has_other_categories: bool,
     return None
 
 
+_FRONTIER_TERMINAL_CLASSES = (
+    "NON_COMMERCIAL", "BRAND_NAVIGATION", "GENERAL_NAVIGATION", "CORPORATE_NAVIGATION",
+)
+
+
+def classify_unvisited_terminal(cat: dict) -> dict:
+    """MRI-RIPLEY-FRONTIER-VALIDATION-001 / VA-FINAL-RESOLUTION-LOOP-001: under a
+    controlled stop or run completion every unvisited node must reach a terminal
+    classification (bounded stop; nothing is left QUEUED/NOT_VISITED forever)."""
+    st = cat.get("category_type") or cat.get("surface_classification")
+    if st in _FRONTIER_TERMINAL_CLASSES:
+        cat["stop_reason"] = st
+        cat["coverage_status"] = "TERMINAL"
+    else:
+        cat["stop_reason"] = "OPERATIONAL_BATCH_LIMIT_REACHED"
+        cat["coverage_status"] = "EXHAUSTED"
+    return cat
+
+
+def decide_coverage_status(final_categories, *, resume_override, controlled_stop,
+                           any_discovered_categories, base_notes_text="") -> tuple:
+    """VA-FINAL-RESOLUTION-LOOP-001: closure decision keyed on RELEVANT pending work.
+
+    Cases (mission contract):
+      A) raw=0 & relevant=0 -> full execution; may be CONFIRMED.
+      B) raw>0 but every remaining node is verifiably pruned (relevant=0) -> the
+         pruned raw frontier alone never forces an incomplete verdict.
+      C) relevant>0 -> never certifies complete coverage.
+      D) blocked/timeout relevance undetermined -> BLOCKED/PARTIAL; never NOT_FOUND.
+      E) bounded stop lives in the crawl loop (controlled stop -> terminal states);
+         this function only consumes terminal accounts.
+    Returns (coverage_status, notes, accounting)."""
+    from app.mri_autonomous.category_discoverer import frontier_relevance_accounting
+    notes = []
+    acc = frontier_relevance_accounting(final_categories)
+    if acc["relevant_pending_work"]:
+        notes.append(
+            "COVERAGE_PARTIAL: relevant frontier remaining "
+            "%d of raw %d (irrelevance requires verified evidence)"
+            % (acc["relevant_frontier_remaining"], acc["raw_frontier_remaining"]))
+        return "PARTIAL", notes, acc
+    if acc["raw_frontier_remaining"] > 0:
+        notes.append(
+            "FRONTIER_RAW_PRUNED: %d raw node(s) verifiably pruned as irrelevant "
+            "(deterministic classification + evidence); relevant pending = 0"
+            % acc["raw_frontier_remaining"])
+    _hub_rec = next((c for c in (final_categories or [])
+                     if c.get("category_name") == "Brand Hub"), None)
+    if resume_override:
+        notes.append(
+            "RESUME_COMPLETE: frontier processed by parent run (checkpoint); "
+            "nothing re-scraped (duplicate_completed_work=0)")
+        return resume_override, notes, acc
+    if _hub_rec is not None and (_hub_rec.get("stop_reason") or "") not in ("EXHAUSTION",):
+        notes.append(
+            "COVERAGE_PARTIAL: Brand Hub stop=%s pages=%s"
+            % (_hub_rec.get("stop_reason"), _hub_rec.get("pages_traversed")))
+        return "PARTIAL", notes, acc
+    if controlled_stop:
+        notes.append("CONTROLLED_STOP active: remaining facets NOT_VISITED by operator flag")
+        return "PARTIAL", notes, acc
+    if final_categories and any(c.get("products_found", 0) > 0 for c in final_categories):
+        _non_seed = [c for c in final_categories if not c.get("is_seed_surface")]
+        _unresolved_blocked = [
+            c for c in _non_seed
+            if c.get("coverage_status") == "BLOCKED"
+            or c.get("stop_reason") in ("BLOCKED", "CATEGORY_BUDGET_EXCEEDED", "EXTRACTOR_FAILURE")
+        ]
+        if _unresolved_blocked:
+            notes.append(
+                "COVERAGE_PARTIAL: %d unresolved blocked node(s) prevent relevance resolution"
+                % len(_unresolved_blocked))
+            return "PARTIAL", notes, acc
+        _non_seed_certified = [c for c in _non_seed if c.get("node_status") == "CERTIFIED"]
+        if _non_seed and not _non_seed_certified:
+            notes.append("COVERAGE_PARTIAL: discovered non-seed branches terminal but none CERTIFIED")
+            return "PARTIAL", notes, acc
+        return "CONFIRMED", notes, acc
+    if any_discovered_categories:
+        return "PARTIAL", notes, acc
+    return ("BLOCKED" if "BLOCKED" in str(base_notes_text) else "NOT_DISCOVERED"), notes, acc
+
+
 def make_category_done_payload(
     marketplace: str,
     batch_number: int,
@@ -168,6 +251,7 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
     # fails before reaching the sanitization section inside the try block.
     sanitized_categories: List[Dict[str, Any]] = []
     invalid_edges: int = 0
+    _facet_remainder_accounting: Dict[str, int] = {"raw": 0, "relevant": 0, "pruned": 0}
 
 
     # Lazy imports to avoid hard dependency at import time
@@ -369,9 +453,29 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
                 logger.warning(f"[{marketplace}] progress_sink failed (non-fatal): {sink_e}")
 
         if len(facet_urls) > max_categories:
+            _remainder_urls = facet_urls[max_categories:]
+            _rem_relevant = 0
+            _rem_pruned = 0
+            for _ru in _remainder_urls:
+                try:
+                    _rc = classify_surface(_ru, {"brand": brand})
+                except Exception:
+                    _rc = {}
+                _rcls = (_rc or {}).get("surface_type")
+                if (_rcls in ("NON_COMMERCIAL", "BRAND_NAVIGATION",
+                              "GENERAL_NAVIGATION", "CORPORATE_NAVIGATION")
+                        and (_rc or {}).get("evidence")):
+                    _rem_pruned += 1
+                else:
+                    _rem_relevant += 1
+            _facet_remainder_accounting = {
+                "raw": len(_remainder_urls), "relevant": _rem_relevant, "pruned": _rem_pruned,
+            }
             evidence_notes.append(
-                f"CATEGORY_BUDGET_EXHAUSTED: scraping {max_categories} of {len(facet_urls)} "
-                f"discovered facets; remainder NOT_VISITED (operational budget, not a result target)"
+                f"CATEGORY_BUDGET_EXHAUSTED: {len(_remainder_urls)} of {len(facet_urls)} discovered "
+                f"facets not visited within operational budget; deterministic accounting: "
+                f"raw={len(_remainder_urls)}, relevant={_rem_relevant}, "
+                f"pruned_with_evidence={_rem_pruned} (relevance never assumed)"
             )
 
         # SEED SURFACE FIRST (iteration-2 fix): the hub itself is a discovered
@@ -709,13 +813,7 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
                 # duplicate the seed surface rows within the same run.
                 continue
             if _controlled_stop:
-                st = cat.get("category_type") or cat.get("surface_classification")
-                if st in ("NON_COMMERCIAL", "BRAND_NAVIGATION", "GENERAL_NAVIGATION", "CORPORATE_NAVIGATION"):
-                    cat["stop_reason"] = st
-                    cat["coverage_status"] = "TERMINAL"
-                else:
-                    cat["stop_reason"] = "OPERATIONAL_BATCH_LIMIT_REACHED"
-                    cat["coverage_status"] = "EXHAUSTED"
+                classify_unvisited_terminal(cat)
                 continue
             url = cat["category_url"]
             if url in _completed_urls:
@@ -1076,43 +1174,26 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
                         f"CONTROLLED_STOP: batch budget max_batches={max_batches} reached")
 
         _final_cats = sanitized_categories if sanitized_categories else discovered_categories
-        _pending_branches = [c for c in (_final_cats or [])
-                              if c.get("stop_reason") in (None, "QUEUED", "NOT_VISITED")
-                              and not c.get("is_seed_surface")]
         _resume_cov = resume_coverage_status(
             hub_skipped=bool(_hub_skipped),
             has_other_categories=bool([c for c in (sanitized_categories or [])
                                        if c.get("category_name") != "Brand Hub"]),
             controlled_stop=bool(_controlled_stop))
-        _hub_rec = next((c for c in _final_cats if c.get("category_name") == "Brand Hub"), None)
-        _nav_status = "PASS" if nav_candidates else "BLOCKED"
-        if _pending_branches:
-            coverage_status = "PARTIAL"
-            evidence_notes.append(f"COVERAGE_PARTIAL: frontier remaining {len(_pending_branches)} discovered branch(es)")
-        elif _resume_cov:
-            coverage_status = _resume_cov
+        coverage_status, _cov_notes, _fa = decide_coverage_status(
+            _final_cats,
+            resume_override=_resume_cov,
+            controlled_stop=bool(_controlled_stop),
+            any_discovered_categories=bool(discovered_categories),
+            base_notes_text=str(evidence_notes),
+        )
+        evidence_notes.extend(_cov_notes)
+        if _facet_remainder_accounting.get("relevant", 0) > 0:
             evidence_notes.append(
-                "RESUME_COMPLETE: frontier processed by parent run (checkpoint); "
-                "nothing re-scraped (duplicate_completed_work=0)")
-        elif _hub_rec and (_hub_rec.get("stop_reason") or "") not in ("EXHAUSTION",):
-            coverage_status = "PARTIAL"
-            evidence_notes.append(
-                f"COVERAGE_PARTIAL: Brand Hub stop={_hub_rec.get('stop_reason')} pages={_hub_rec.get('pages_traversed')}")
-        elif _controlled_stop:
-            coverage_status = "PARTIAL"
-            evidence_notes.append("CONTROLLED_STOP active: remaining facets NOT_VISITED by operator flag")
-        elif _final_cats and any(c.get("products_found", 0) > 0 for c in _final_cats):
-            _non_seed = [c for c in _final_cats if not c.get("is_seed_surface")]
-            _non_seed_certified = [c for c in _non_seed if c.get("node_status") == "CERTIFIED"]
-            if _non_seed and not _non_seed_certified:
+                f"COVERAGE_PARTIAL_REASON: budget-truncated frontier with "
+                f"{_facet_remainder_accounting['relevant']} relevant facet(s) pending "
+                f"(RELEVANT_PENDING_WORK=true)")
+            if coverage_status == "CONFIRMED":
                 coverage_status = "PARTIAL"
-                evidence_notes.append("COVERAGE_PARTIAL: discovered non-seed branches terminal but none CERTIFIED")
-            else:
-                coverage_status = "CONFIRMED"
-        elif discovered_categories:
-            coverage_status = "PARTIAL"
-        else:
-            coverage_status = "BLOCKED" if "BLOCKED" in str(evidence_notes) else "NOT_DISCOVERED"
         
     except Exception as e:
         logger.error(f"[{marketplace}] autonomous discovery failed: {e}", exc_info=True)
@@ -1170,6 +1251,18 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
                         if c.get("stop_reason") in (None, "QUEUED", "NOT_VISITED")
                         and not c.get("is_seed_surface")],
     }
+    try:
+        _fa_view = _fa
+    except NameError:
+        _fa_view = {"raw_frontier_remaining": 0, "relevant_frontier_remaining": 0}
+    _fa_raw_total = int(_fa_view.get("raw_frontier_remaining", 0)) + int(_facet_remainder_accounting.get("raw", 0))
+    _fa_rel_total = int(_fa_view.get("relevant_frontier_remaining", 0)) + int(_facet_remainder_accounting.get("relevant", 0))
+    _frontier_view.update({
+        "raw_frontier_remaining": _fa_raw_total,
+        "relevant_frontier_remaining": _fa_rel_total,
+        "relevant_pending_work": bool(_fa_rel_total > 0),
+        "budget_remainder": dict(_facet_remainder_accounting),
+    })
     _multi_count = 0
     try:
         _multi_count = sum(1 for _p in global_product_map.values()

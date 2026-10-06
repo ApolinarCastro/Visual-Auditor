@@ -11,7 +11,9 @@ from app.dashboard.api import app
 class TestSecretNotRenderedInUI(unittest.TestCase):
     def setUp(self):
         self.client = TestClient(app)
-        self.auth = ("admin", "nicopoly2026")
+        self.auth = (os.getenv("DASHBOARD_USER", "admin"), os.getenv("DASHBOARD_PASS"))
+        if not self.auth[1]:
+            self.skipTest("DASHBOARD_PASS not available in test environment")
 
     def test_api_sessions_does_not_expose_raw_cookies(self):
         """Verifies /api/sessions does NOT return raw cookie secrets or arrays."""
