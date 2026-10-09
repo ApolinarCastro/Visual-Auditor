@@ -1,0 +1,9 @@
+GenericCommercialMaterializer engine loaded with Nicopoly Membership Validation.
+[2026-10-09T09:35:32.866480] Iniciando MRI Autonomous Execution Phase 2...
+[2026-10-09T09:38:20.997820] Auditoria terminada. Procesando resultados.
+Future exception was never retrieved
+future: <Future finished exception=TargetClosedError('Target page, context or browser has been closed\nCall log:\n  - navigating to "https://listado.mercadolibre.cl/pantalon-vestir-negro-nicopoly_Desde_49", waiting until "domcontentloaded"\n')>
+playwright._impl._errors.TargetClosedError: Target page, context or browser has been closed
+Call log:
+  - navigating to "https://listado.mercadolibre.cl/pantalon-vestir-negro-nicopoly_Desde_49", waiting until "domcontentloaded"
+

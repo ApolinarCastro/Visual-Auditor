@@ -5,6 +5,7 @@ import json
 import subprocess
 from datetime import datetime
 from pathlib import Path
+from _mri_differential_precheck import check_worktree
 
 # --- Configuration ---
 # Certification baseline: default = certified core baseline (db3c638); a
@@ -77,25 +78,11 @@ def run_precheck():
                 print(f"[PRECHECK] FAIL: Critical file modified in history since baseline: {changed_file}")
                 sys.exit(EXIT_PRECHECK_BLOCKED)
 
-    # 3. Critical files and runner files are not modified locally (uncommitted changes)
-    for line in status.splitlines():
-        if not line:
-            continue
-        # ignore untracked files for critical file check
-        is_untracked = line.startswith("?? ")
-        
-        filepath = line[3:].split(" -> ")[-1].strip()
-        
-        # We don't want the runner files modified locally AT ALL (even untracked? well, they are tracked now)
-        if filepath in RUNNER_FILES and not is_untracked:
-            print(f"[PRECHECK] FAIL: Runner file modified locally: {filepath}")
-            sys.exit(EXIT_PRECHECK_BLOCKED)
-            
-        if not is_untracked:
-            for cp in CRITICAL_PATHS:
-                if filepath.startswith(cp):
-                    print(f"[PRECHECK] FAIL: Critical MRI file modified locally: {filepath}")
-                    sys.exit(EXIT_PRECHECK_BLOCKED)
+    # 3. Differential source gate; known runtime/evidence may change independently.
+    classification = check_worktree()
+    print(json.dumps(classification, ensure_ascii=True, indent=2))
+    if classification['status'] != 'PASS':
+        sys.exit(EXIT_PRECHECK_BLOCKED)
 
     print(f"  Preexisting Changes:\n{status}")
     print("[PRECHECK] Git OK.")

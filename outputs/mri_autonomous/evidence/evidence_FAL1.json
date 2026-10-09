@@ -1,0 +1,17 @@
+{
+  "producto_id": "FAL1",
+  "producto_nombre": "Blazer Formal Azul Nicopoly",
+  "marketplace": "Falabella",
+  "url_encontrada": "https://falabella.com/falabella-cl/search?Ntt=Blazer+Formal+Azul+Nicopoly",
+  "fecha_observacion": "2026-10-09T09:37:32.429325",
+  "evidencia_identidad": [],
+  "estado_final": "FAIL",
+  "motivo_verificable": "0 results from query",
+  "historical_identity_known": false,
+  "acquisition_state": "NOT_FOUND",
+  "verification_result": "UNTESTED",
+  "status": "INCONCLUSIVE",
+  "classification": "UNKNOWN",
+  "reason": "0 results from query",
+  "duration": 5.95
+}
