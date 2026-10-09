@@ -189,57 +189,64 @@ class MercadoLibreScraper(BaseScraper):
             return False
 
     async def _load_or_harvest_session(self) -> bool:
-        """Cargar sesion: PRIORIDAD 1 = cookies frescas del perfil persistente
-        (ya vienen en el contexto de launch_persistent_context; el usuario resolvio
-        el CAPTCHA ahi una vez). PRIORIDAD 2 = session.json SOLO si el contexto no
-        tiene cookies de mercadolibre (respaldo para sesiones nuevas).
-
-        FIX ML-4 (14-Ago): NO sobrescribir las cookies frescas del perfil con las
-        viejas de session.json (11-Ago) — esas quedaron marcadas por Akamai y son
-        las que provocan el muro de login/CAPTCHA aunque el perfil este desbloqueado.
-        """
+        """Cargar sesion: PRIORIDAD 1 = cookies frescas del perfil persistente"""
+        print("[Mercado Libre] Entering _load_or_harvest_session...")
         # 1) Cookies ya en memoria (del perfil persistente): usarlas tal cual.
         if self._session_cookies:
             try:
                 sanitized = self._sanitize_cookies(self._session_cookies)
                 await self.page.context.add_cookies(sanitized)
-                logger.info(f"[Mercado Libre] Loaded {len(sanitized)} cookies from memory")
+                print(f"[Mercado Libre] Loaded {len(sanitized)} cookies from memory")
                 return True
             except Exception as e:
-                logger.warning(f"[Mercado Libre] Failed to load cookies from memory: {e}")
+                print(f"[Mercado Libre] Failed to load cookies from memory: {e}")
 
         # 2) Verificar si el contexto (perfil persistente) ya tiene cookies de ML.
-        #    Si las tiene, confiar en ellas: NO inyectar session.json viejo.
         try:
             ctx_cookies = await self.page.context.cookies()
             ml_names = [c.get("name") for c in ctx_cookies if "mercadolibre" in str(c.get("domain", ""))]
             if ml_names:
-                logger.info(f"[Mercado Libre] Usando {len(ml_names)} cookies frescas del perfil persistente (FIX ML-4)")
+                print(f"[Mercado Libre] Usando {len(ml_names)} cookies frescas del perfil persistente (FIX ML-4)")
                 self._session_cookies = self._sanitize_cookies(ctx_cookies)
                 return True
+            else:
+                print(f"[Mercado Libre] No mercadolibre cookies in context. Found: {len(ctx_cookies)}")
         except Exception as e:
-            logger.debug(f"[Mercado Libre] ctx cookies check failed: {e}")
+            print(f"[Mercado Libre] ctx cookies check failed: {e}")
 
-        # 3) Respaldo: session.json (FIX ML-9, 14-Ago): las cookies fueron renovadas
-        #    por el usuario (orguserid/orgnickp/ssid frescas) y verificadas en navegacion
-        #    real: 192 productos, sin bloqueo. Solo se omiten en modo publico (ML-5)
-        #    para evitar el loop del shield de colaboradores.
+        # 3) Respaldo: session.json 
         if self._public_mode:
-            logger.info("[Mercado Libre] Modo publico activo: NO recargando session.json (FIX ML-5)")
+            print("[Mercado Libre] Modo publico activo: NO recargando session.json (FIX ML-5)")
             return True
         if SESSION_FILE.exists():
+            print(f"[Mercado Libre] SESSION_FILE exists. Size: {os.path.getsize(SESSION_FILE)}")
             try:
                 cookies = json.loads(SESSION_FILE.read_text())
                 if cookies and len(cookies) > 0:
                     sanitized = self._sanitize_cookies(cookies)
                     await self.page.context.add_cookies(sanitized)
                     self._session_cookies = sanitized
-                    logger.info(f"[Mercado Libre] Loaded {len(sanitized)} saved session cookies (renovadas 14-Ago)")
+                    print(f"[Mercado Libre] Loaded {len(sanitized)} saved session cookies")
                     return True
             except Exception as e:
-                logger.warning(f"[Mercado Libre] Failed to load saved session: {e}")
+                print(f"[Mercado Libre] Failed to load saved session: {e}")
 
-        # FIX ML-2: siempre intentar cargar/harvestear sesion (nunca navegar sin cookies)
+        # 4) Auto-cosecha desde 'Tu Chrome' según regla de AGENTS.md
+        print("[Mercado Libre] Trying auto-harvest from Tu Chrome...")
+        chrome_cookies = await self._harvest_tu_chrome_cookies()
+        if chrome_cookies:
+            try:
+                sanitized = self._sanitize_cookies(chrome_cookies)
+                await self.page.context.add_cookies(sanitized)
+                self._session_cookies = sanitized
+                print(f"[Mercado Libre] Loaded {len(sanitized)} cookies via auto-harvest from 'Tu Chrome'")
+                return True
+            except Exception as e:
+                print(f"[Mercado Libre] Failed to load auto-harvested Chrome session: {e}")
+        else:
+            print("[Mercado Libre] Auto-harvest returned 0 cookies.")
+
+        print("[Mercado Libre] Falling back to _harvest_session...")
         return await self._harvest_session()
 
     async def _harvest_tu_chrome_cookies(self) -> list:
@@ -254,13 +261,21 @@ class MercadoLibreScraper(BaseScraper):
             from playwright.async_api import async_playwright
             dst_user_data = os.path.abspath("data/tu_chrome_profile_copy")
             os.makedirs(dst_user_data, exist_ok=True)
-            for item in ["Local State", "Default"]:
+            for item in ["Local State", r"Default\Network\Cookies"]:
                 src = os.path.join(src_user_data, item)
                 dst = os.path.join(dst_user_data, item)
+                os.makedirs(os.path.dirname(dst), exist_ok=True)
                 if os.path.isfile(src):
-                    shutil.copy2(src, dst)
-                elif os.path.isdir(src):
-                    shutil.copytree(src, dst, ignore=shutil.ignore_patterns("Singleton*", "LOCK", "*lock*", "Cache*", "Code Cache*"), dirs_exist_ok=True)
+                    try:
+                        shutil.copy2(src, dst)
+                    except PermissionError:
+                        # Fallback for locked files: try opening in read mode and writing bytes manually
+                        try:
+                            with open(src, "rb") as fsrc:
+                                with open(dst, "wb") as fdst:
+                                    fdst.write(fsrc.read())
+                        except Exception:
+                            pass
                     
             chrome_exe = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
             async with async_playwright() as p:
@@ -392,7 +407,7 @@ class MercadoLibreScraper(BaseScraper):
             logger.warning(f"[{self.marketplace}] Could not determine count for {url} (found 0). Snapshot disabled to prevent disk saturation.")
         return count
 
-    async def scrape_autonomous_category(self, url: str) -> dict:
+    async def scrape_autonomous_category(self, url: str, max_pages: int = 1) -> dict:
         await self.navigate(url)
         products = []
         current_page = 1
@@ -424,6 +439,10 @@ class MercadoLibreScraper(BaseScraper):
                 
             products.extend(page_products)
             logger.info(f"[{self.marketplace}] Scraped {len(products)} products (Page {current_page})...")
+
+            if current_page >= max_pages:
+                stop_reason = "MAX_PAGES_REACHED"
+                break
 
             if not await self._has_next_page():
                 break

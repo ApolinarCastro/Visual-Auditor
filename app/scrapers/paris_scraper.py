@@ -40,7 +40,7 @@ class ParisScraper(BaseScraper):
         # Fallback to title
         return await self.get_count_from_title()
 
-    async def scrape_autonomous_category(self, url: str) -> dict:
+    async def scrape_autonomous_category(self, url: str, max_pages: int = 1) -> dict:
         await self.navigate(url)
 
         pages_traversed = 1
@@ -60,6 +60,9 @@ class ParisScraper(BaseScraper):
                 last_count = items_count
 
             if consecutive_unchanged >= 3:
+                break
+                
+            if pages_traversed >= max_pages:
                 break
 
             next_btn = await self.page.query_selector('button:has-text("Mostrar más")')

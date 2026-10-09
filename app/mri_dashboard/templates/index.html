@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>MRI — Autonomous Marketplace Auditor</title>
+    <style>
+        :root {
+            --bg: #0f1115;
+            --surface: #1a1d24;
+            --surface-hover: #232730;
+            --primary: #4ade80;
+            --primary-dark: #22c55e;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --font: 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        aside {
+            width: 250px;
+            background-color: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+        }
+        
+        aside h1 {
+            font-size: 1.2rem;
+            margin: 0 20px 30px;
+            color: var(--primary);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .nav-item {
+            padding: 12px 20px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-item:hover {
+            background-color: var(--surface-hover);
+            color: var(--text);
+        }
+        
+        .nav-item.active {
+            background-color: var(--surface-hover);
+            color: var(--primary);
+            border-left-color: var(--primary);
+        }
+        
+        main {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .panel {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .panel.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h2 { margin-top: 0; color: #fff; font-size: 1.3rem; margin-bottom: 20px; }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        select, button {
+            background-color: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        
+        button.btn-primary { background-color: var(--primary); color: #000; border-color: var(--primary); font-weight: bold; }
+        button.btn-primary:hover { background-color: var(--primary-dark); }
+        button.btn-danger { background-color: var(--danger); color: #fff; border-color: var(--danger); font-weight: bold; }
+        
+        .status-box {
+            background-color: var(--bg);
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+        
+        .progress-bar-container {
+            height: 8px;
+            background-color: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        th { color: var(--text-muted); font-weight: 500; }
+        
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .badge-success { background: rgba(74, 222, 128, 0.2); color: var(--primary); }
+        .badge-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .badge-warning { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .badge-info { background: rgba(59, 130, 246, 0.2); color: var(--info); }
+        
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 6px;
+        }
+        
+        .card-title { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 5px; }
+        .card-value { font-size: 1.5rem; font-weight: 600; color: #fff; }
+    </style>
+</head>
+<body>
+    <aside>
+        <h1>MRI — Autonomous Marketplace Auditor</h1>
+        <div class="nav-item active" onclick="switchTab('ops')">A. Operaciones y Resultados</div>
+        <div class="nav-item" onclick="switchTab('learn')">B. Aprendizaje (ExperienceStore)</div>
+        <div class="nav-item" onclick="switchTab('hist')">C. Historial de Ejecuciones</div>
+    </aside>
+    
+    <main>
+        <!-- A. Operaciones -->
+        <div id="ops" class="panel active">
+            <h2>A. Operaciones y Resultados</h2>
+            <div class="controls">
+                <select id="modeSelect">
+                    <option value="DISCOVERY">Descubrimiento Autónomo (Categorías)</option>
+                    <option value="AUDIT">Auditoría Dirigida (Universo CSV)</option>
+                </select>
+                <select id="mktSelect">
+                    <option value="ALL">Todos los Marketplaces</option>
+                    <option value="Mercado Libre">Mercado Libre</option>
+                    <option value="Paris">Paris</option>
+                    <option value="Ripley">Ripley</option>
+                    <option value="Falabella">Falabella</option>
+                </select>
+                <select id="limitSelect">
+                    <option value="1">1 Página (Piloto Rápido)</option>
+                    <option value="5">5 Productos/Páginas</option>
+                    <option value="10">10 Productos/Páginas</option>
+                    <option value="ALL">Todo (No recomendado en pruebas)</option>
+                </select>
+                <button class="btn-primary" onclick="startAudit()" id="btnStart">Iniciar Auditoría</button>
+                <button class="btn-danger" onclick="stopAudit()" id="btnStop" disabled>Detener</button>
+            </div>
+            
+            <div class="status-box">
+                <div><strong>Estado:</strong> <span id="lblStatus">IDLE</span></div>
+                <div style="margin-top:8px; color: var(--text-muted)" id="lblStatusMsg">Esperando inicio de auditoría...</div>
+                
+                <div style="margin-top: 15px; display: flex; justify-content: space-between; font-size: 0.85rem">
+                    <span>Progreso: <span id="lblProgress">0</span> / <span id="lblTotal">0</span></span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+            
+            <div class="grid-cards" id="opsLiveCards">
+                <div class="card">
+                    <div class="card-title">Confirmados</div>
+                    <div class="card-value" style="color:var(--primary)" id="cntConfirmed">0</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Inconclusos / Bloqueos</div>
+                    <div class="card-value" style="color:var(--warning)" id="cntInconclusive">0</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Revisión Requerida</div>
+                    <div class="card-value" style="color:var(--info)" id="cntReview">0</div>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 30px; font-size: 1.1rem; color: #fff;">Tabla Completa de Productos Auditados</h3>
+            <div class="controls" style="margin-bottom: 10px;">
+                <select id="filterStatus" onchange="renderMainTable()">
+                    <option value="ALL">Filtro: Todos los Estados</option>
+                    <option value="CONFIRMED">Confirmados</option>
+                    <option value="REVIEW_REQUIRED">Revisión Requerida</option>
+                    <option value="INCONCLUSIVE">Inconclusos / Bloqueos</option>
+                </select>
+            </div>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Marketplace</th>
+                            <th>Producto (ID)</th>
+                            <th>URL / Observado</th>
+                            <th>Estado Final</th>
+                            <th>Evidencia y Motivo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbMainAudit"></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- B. Aprendizaje -->
+        <div id="learn" class="panel">
+            <h2>B. Aprendizaje y Experiencia (ExperienceStore)</h2>
+            <div class="grid-cards" style="margin-bottom: 20px;">
+                <div class="card">
+                    <div class="card-title">Identidades Validadas en Memoria</div>
+                    <div class="card-value" id="lrnTotal">0</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Reutilizaciones de Conocimiento (Hits)</div>
+                    <div class="card-value" id="lrnHits" style="color:var(--primary)">0</div>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Hash Identidad</th>
+                        <th>Producto</th>
+                        <th>Status</th>
+                        <th>Método</th>
+                        <th>Hits</th>
+                    </tr>
+                </thead>
+                <tbody id="tbLearn"></tbody>
+            </table>
+        </div>
+        
+        <!-- C. Historial -->
+        <div id="hist" class="panel">
+            <h2>C. Historial MRI</h2>
+            <p style="color:var(--text-muted); margin-bottom:15px; font-size:0.9rem">Auditorías finalizadas por este motor standalone.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Run ID</th>
+                        <th>Fecha</th>
+                        <th>Marketplace</th>
+                        <th>Total Procesados</th>
+                        <th>Confirmados</th>
+                    </tr>
+                </thead>
+                <tbody id="tbHist"></tbody>
+            </table>
+        </div>
+        
+    </main>
+
+    <script>
+        let currentResults = [];
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+            if(tabId === 'learn') loadLearning();
+            if(tabId === 'hist') loadHistory();
+        }
+        
+        let pollInterval = null;
+        
+        function getBadge(status) {
+            if(status === 'CONFIRMED' || status === 'NICOPOLY_CONFIRMED' || status === 'SUCCESS') return '<span class="badge badge-success">'+status+'</span>';
+            if(status === 'SOURCE_BLOCKED' || status === 'INCONCLUSIVE' || status === 'INSUFFICIENT_EVIDENCE' || status === 'FAIL' || status === 'NOT_FOUND' || status === 'BLOCKED') return '<span class="badge badge-warning">'+status+'</span>';
+            if(status === 'REVIEW_REQUIRED' || status === 'NON_NICOPOLY_CONFIRMED') return '<span class="badge badge-info">'+status+'</span>';
+            return '<span class="badge">'+status+'</span>';
+        }
+
+        async function startAudit() {
+            const mkt = document.getElementById('mktSelect').value;
+            const lim = document.getElementById('limitSelect').value;
+            const mode = document.getElementById('modeSelect').value;
+            const res = await fetch('/api/audit/start', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({marketplace: mkt, limit: lim, mode: mode})
+            });
+            if(res.ok) {
+                document.getElementById('btnStart').disabled = true;
+                document.getElementById('btnStop').disabled = false;
+                startPolling();
+            }
+        }
+        
+        async function stopAudit() {
+            await fetch('/api/audit/stop', { method: 'POST' });
+            document.getElementById('btnStop').disabled = true;
+        }
+        
+        function startPolling() {
+            if(pollInterval) clearInterval(pollInterval);
+            pollInterval = setInterval(pollState, 1000);
+        }
+        
+        async function pollState() {
+            try {
+                const res = await fetch('/api/state');
+                const data = await res.json();
+                
+                document.getElementById('lblStatus').innerText = data.is_running ? "RUNNING" : data.state.status_message;
+                document.getElementById('lblStatusMsg').innerText = data.state.status_message;
+                document.getElementById('lblProgress').innerText = data.state.progress;
+                document.getElementById('lblTotal').innerText = data.state.total;
+                
+                let pct = data.state.total > 0 ? (data.state.progress / data.state.total)*100 : 0;
+                document.getElementById('progressBar').style.width = pct + '%';
+                
+                currentResults = data.results;
+                
+                let cnf=0, inc=0, rev=0;
+                currentResults.forEach(r => {
+                    const st = r.estado_final || r.status;
+                    if(st === 'CONFIRMED') cnf++;
+                    else if(st === 'INCONCLUSIVE' || st === 'SOURCE_BLOCKED' || st === 'FAIL' || st === 'BLOCKED') inc++;
+                    else if(st === 'REVIEW_REQUIRED') rev++;
+                });
+                document.getElementById('cntConfirmed').innerText = cnf;
+                document.getElementById('cntInconclusive').innerText = inc;
+                document.getElementById('cntReview').innerText = rev;
+                
+                renderMainTable();
+                
+                if(!data.is_running && data.state.status_message !== "IDLE") {
+                    clearInterval(pollInterval);
+                    document.getElementById('btnStart').disabled = false;
+                    document.getElementById('btnStop').disabled = true;
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+        
+        function renderMainTable() {
+            const filter = document.getElementById('filterStatus').value;
+            let filtered = currentResults;
+            
+            if (filter !== "ALL") {
+                filtered = currentResults.filter(r => {
+                    const st = r.estado_final || r.status;
+                    if (filter === "INCONCLUSIVE") return st === 'INCONCLUSIVE' || st === 'SOURCE_BLOCKED' || st === 'FAIL' || st === 'BLOCKED';
+                    return st === filter;
+                });
+            }
+
+            const html = filtered.map(r => {
+                const prod = r.product || {};
+                const evs = r.evidencia_identidad || r.evidence || [];
+                const motivo = r.motivo_verificable || r.reason || '';
+                const urlLink = (r.url_encontrada || r.url || '').startsWith('http') 
+                    ? `<a href="${r.url_encontrada || r.url}" target="_blank" style="color:var(--info); text-decoration:none">Ver Enlace</a>`
+                    : (r.url_encontrada || r.url || 'N/A');
+                    
+                const catLink = r.category_url ? `<br><small><a href="${r.category_url}" target="_blank" style="color:var(--primary); text-decoration:none">Ver Categoría</a></small>` : '';
+
+                return `
+                <tr>
+                    <td>${r.marketplace}${catLink}</td>
+                    <td>${r.producto_nombre || prod.title || 'N/A'}<br><small style="color:var(--text-muted)">SKU: ${r.producto_id || prod.sku || 'N/A'}</small></td>
+                    <td>${urlLink}<br><small style="color:var(--text-muted)">Obs SKU: ${r.observed_sku || 'N/A'}</small></td>
+                    <td>${getBadge(r.estado_final || r.status)}</td>
+                    <td style="font-size:0.85rem">
+                        ${evs.length > 0 ? '<strong>Evidencia:</strong><br>' + evs.join('<br>') + '<br><br>' : ''}
+                        <strong>Motivo:</strong><br>${motivo}
+                    </td>
+                </tr>
+                `;
+            }).join('');
+            document.getElementById('tbMainAudit').innerHTML = html;
+        }
+        
+        async function loadLearning() {
+            const res = await fetch('/api/learning');
+            const data = await res.json();
+            document.getElementById('lrnTotal').innerText = data.total_validated;
+            document.getElementById('lrnHits').innerText = data.total_reused;
+            
+            const html = data.experiences.map(e => `
+                <tr>
+                    <td style="font-family:monospace; color:var(--text-muted)">${e.hash}</td>
+                    <td>${e.product_name} <br><small style="color:var(--text-muted)">${e.marketplace}</small></td>
+                    <td>${getBadge(e.status)}</td>
+                    <td>${e.method}</td>
+                    <td>${e.hits}</td>
+                </tr>
+            `).join('');
+            document.getElementById('tbLearn').innerHTML = html;
+        }
+        
+        async function loadHistory() {
+            const res = await fetch('/api/history');
+            const data = await res.json();
+            const html = data.history.map(h => `
+                <tr>
+                    <td style="font-family:monospace">${h.run_id}</td>
+                    <td>${h.timestamp.split('T').join(' ').split('.')[0]}</td>
+                    <td>${h.marketplace}</td>
+                    <td>${h.total}</td>
+                    <td>${h.confirmed}</td>
+                </tr>
+            `).join('');
+            document.getElementById('tbHist').innerHTML = html;
+        }
+        
+        // Initial load
+        pollState();
+    </script>
+</body>
+</html>

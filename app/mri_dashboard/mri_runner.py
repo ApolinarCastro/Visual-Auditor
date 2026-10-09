@@ -16,50 +16,41 @@ from mri_commercial_materialization_golden_slice.v001.materializer_engine import
 import csv
 import os
 
-def load_real_products(limit=5):
+def load_universe(marketplace="ALL", limit=5):
     filepath = os.path.join("outputs", "MRI_PRODUCTION_AUDIT_001.csv")
     products = []
-    seen_marketplaces = set()
+    seen_skus = set()
     
     if os.path.exists(filepath):
-        # First pass: try to get one from each marketplace
         with open(filepath, "r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
                 mkt = row["marketplace"]
-                if mkt not in seen_marketplaces:
-                    products.append({
-                        "sku": row["sku_parent"],
-                        "title": row["product_name"],
-                        "marketplace": mkt,
-                        "vendor": "Nicopoly"
-                    })
-                    seen_marketplaces.add(mkt)
-                    if len(products) >= limit:
-                        break
-        
-        # Second pass: fill the rest if we have less than limit
-        if len(products) < limit:
-            with open(filepath, "r", encoding="utf-8") as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    if len(products) >= limit:
-                        break
-                    # Avoid duplicates
-                    if not any(p["sku"] == row["sku_parent"] for p in products):
-                        products.append({
-                            "sku": row["sku_parent"],
-                            "title": row["product_name"],
-                            "marketplace": row["marketplace"],
-                            "vendor": "Nicopoly"
-                        })
+                if marketplace != "ALL" and mkt != marketplace:
+                    continue
+                
+                sku = row["sku_parent"]
+                if sku in seen_skus:
+                    continue
+                
+                products.append({
+                    "sku": sku,
+                    "title": row["product_name"],
+                    "marketplace": mkt,
+                    "vendor": "Nicopoly"
+                })
+                seen_skus.add(sku)
+                
+                if limit != "ALL" and len(products) >= int(limit):
+                    break
+                    
     if not products:
         products = [
             {"sku": "MLC6", "title": "Abrigo Efecto Piel Nicopoly", "marketplace": "Mercado Libre", "vendor": "Nicopoly"},
         ]
     return products
 
-EXPECTED_PRODUCTS = load_real_products(5)
+
 
 def verify_product_identity_match(expected_title: str, observed_title: str) -> tuple[bool, str]:
     exp = expected_title.lower().replace("nicopoly", "").split()
@@ -138,7 +129,7 @@ async def audit_product(product, materializer, store, state_dict, scraper_instan
         max_retries = 2
         for attempt in range(max_retries + 1):
             try:
-                results = await asyncio.wait_for(scraper.scrape_top_240(search_url), timeout=15)
+                results = await asyncio.wait_for(scraper.scrape_top_240(search_url), timeout=45)
                 break  # Success
             except Exception as e:
                 if attempt == max_retries:
@@ -183,6 +174,9 @@ async def audit_product(product, materializer, store, state_dict, scraper_instan
             "classification": "UNKNOWN",
             "reason": error_msg if blocked else "0 results from query",
             "duration": duration,
+            "product": product,
+            "url": search_url,
+            "timestamp": datetime.now().isoformat()
         }
         
     observed = None
@@ -291,9 +285,161 @@ class MRIOrchestrator:
             "status_message": "IDLE"
         }
         self.results = []
-        self.history = []
+        self.history_file = "data/mri_history.json"
+        self.history = self._load_history()
+
+    def _load_history(self):
+        import json
+        if os.path.exists(self.history_file):
+            try:
+                with open(self.history_file, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except:
+                return []
+        return []
+
+    def _save_history(self):
+        import json
+        os.makedirs(os.path.dirname(self.history_file), exist_ok=True)
+        with open(self.history_file, "w", encoding="utf-8") as f:
+            json.dump(self.history, f, indent=2)
+
+    async def run_discovery(self, marketplace="ALL", max_pages=1):
+        if self.is_running:
+            return
+            
+        self.is_running = True
+        self.results = []
         
-    async def run_audit(self, marketplace=None):
+        run_id = f"mri_disc_{uuid.uuid4().hex[:8]}"
+        materializer = GenericCommercialMaterializer(run_id)
+        store = ExperienceStore()
+        
+        pilot_urls = {
+            "Mercado Libre": "https://listado.mercadolibre.cl/ropa-mujer",
+            "Paris": "https://www.paris.cl/mujer/ropa-mujer/",
+            "Ripley": "https://simple.ripley.cl/moda/mujer",
+            "Falabella": "https://www.falabella.com/falabella-cl/category/cat1060012/Ropa-de-Mujer"
+        }
+        
+        mkts_to_run = [marketplace] if marketplace != "ALL" else list(pilot_urls.keys())
+        
+        self.state["total"] = len(mkts_to_run)
+        self.state["progress"] = 0
+        
+        try:
+            for mkt in mkts_to_run:
+                if not self.is_running: break
+                
+                url = pilot_urls.get(mkt)
+                if not url: continue
+                
+                self.state["status_message"] = f"Descubriendo categoría en {mkt}..."
+                scraper = get_scraper(mkt)
+                if scraper:
+                    await scraper.start()
+                    
+                try:
+                    res = await scraper.scrape_autonomous_category(url, max_pages=max_pages)
+                    discovered_products = res.get("products", [])
+                    coverage = "COMPLETE" if res.get("stop_reason") == "EXHAUSTION" else res.get("stop_reason", "PARTIAL")
+                    
+                    self.state["total"] += len(discovered_products)
+                    
+                    for observed in discovered_products:
+                        if not self.is_running: break
+                        
+                        title = observed.get("title", "UNKNOWN")
+                        prod_url = observed.get("url") or observed.get("link")
+                        raw_sku = observed.get('marketplace_sku', '')
+                        
+                        self.state["status_message"] = f"Verificando {title[:30]}..."
+                        start_time = time.time()
+                        
+                        is_nico = is_nicopoly(observed, marketplace=mkt)
+                        
+                        norm = {
+                            "sku_master": raw_sku, # Fallback to observed SKU
+                            "brand": observed.get('vendor') or observed.get('brand', ''),
+                            "raw_title": title,
+                            "raw_sku": raw_sku,
+                            "is_nicopoly": 1 if is_nico else 0,
+                            "marketplace": mkt,
+                            "captured_at": datetime.now().isoformat(),
+                            "raw_price": observed.get('price', 0.0),
+                            "source_record_id": f"disc_{hashlib.md5(str(observed).encode()).hexdigest()[:10]}"
+                        }
+                        
+                        pub_id = f"pub_{mkt.lower().replace(' ', '')}_{hashlib.md5(norm['raw_sku'].encode()).hexdigest()[:12]}"
+                        ident = {"publication_id": pub_id, "marketplace_product_id": norm["raw_sku"]}
+                        
+                        membership = materializer.validate_nicopoly_membership(norm, ident)
+                        classification = membership.get('classification', 'UNKNOWN')
+                        
+                        verification_result = "INSUFFICIENT_EVIDENCE"
+                        motivo = "INSUFFICIENT_EVIDENCE"
+                        
+                        if classification == "NICOPOLY_CONFIRMED":
+                            if prod_url:
+                                verification_result = "CONFIRMED"
+                                motivo = "Evidencia suficiente según materializador"
+                                store.record_experience(mkt, "Nicopoly", "DISCOVERY", title, parent_identity=norm["raw_sku"], discovery_method="autonomous_category", status="VALIDATED", evidence_reference=str(membership.get("evidence", [])))
+                            else:
+                                verification_result = "REVIEW_REQUIRED"
+                                motivo = "Pertenece a la marca pero falta URL individual"
+                                store.record_experience(mkt, "Nicopoly", "DISCOVERY", title, discovery_method="autonomous_category", status="INVALIDATED", is_success=False, evidence_reference=motivo)
+                        elif classification == "NON_NICOPOLY_CONFIRMED":
+                            verification_result = "REVIEW_REQUIRED"
+                            motivo = "NON_NICOPOLY_CONFIRMED"
+                            store.record_experience(mkt, "Nicopoly", "DISCOVERY", title, discovery_method="autonomous_category", status="INVALIDATED", is_success=False, evidence_reference="NON_NICOPOLY_CONFIRMED")
+                        else:
+                            store.record_experience(mkt, "Nicopoly", "DISCOVERY", title, discovery_method="autonomous_category", status="FAILED", is_success=False, evidence_reference="INSUFFICIENT_EVIDENCE")
+
+                        self.results.append({
+                            "producto_id": raw_sku,
+                            "producto_nombre": title,
+                            "marketplace": mkt,
+                            "url_encontrada": prod_url,
+                            "fecha_observacion": datetime.now().isoformat(),
+                            "evidencia_identidad": membership.get('evidence', []),
+                            "estado_final": verification_result,
+                            "motivo_verificable": motivo,
+                            "coverage": coverage,
+                            "category_url": url,
+                            
+                            # dashboard specific
+                            "status": verification_result,
+                            "product": {"title": title, "sku": raw_sku},
+                            "classification": classification,
+                            "observed_sku": raw_sku,
+                            "url": prod_url,
+                            "duration": round(time.time() - start_time, 2),
+                            "timestamp": datetime.now().isoformat()
+                        })
+                        self.state["progress"] += 1
+                        
+                finally:
+                    if scraper:
+                        await scraper.stop()
+                        
+            self.state["status_message"] = "COMPLETED"
+            
+            # Save to history
+            self.history.append({
+                "run_id": run_id,
+                "timestamp": datetime.now().isoformat(),
+                "marketplace": marketplace,
+                "total": sum(1 for r in self.results),
+                "confirmed": sum(1 for r in self.results if r["status"] == "CONFIRMED"),
+                "results": list(self.results),
+                "mode": "DISCOVERY"
+            })
+            self._save_history()
+            
+        finally:
+            self.is_running = False
+        
+    async def run_audit(self, marketplace="ALL", limit=5):
         if self.is_running:
             return
             
@@ -304,9 +450,8 @@ class MRIOrchestrator:
         materializer = GenericCommercialMaterializer(run_id)
         store = ExperienceStore()
         
-        products_to_audit = EXPECTED_PRODUCTS
-        if marketplace and marketplace != "ALL":
-            products_to_audit = [p for p in EXPECTED_PRODUCTS if p["marketplace"] == marketplace]
+        products_to_audit = load_universe(marketplace, limit)
+
             
         self.state["total"] = len(products_to_audit)
         self.state["progress"] = 0
@@ -348,6 +493,7 @@ class MRIOrchestrator:
                 "confirmed": sum(1 for r in self.results if r["status"] == "CONFIRMED"),
                 "results": list(self.results)
             })
+            self._save_history()
             
         finally:
             self.is_running = False

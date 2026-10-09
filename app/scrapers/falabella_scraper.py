@@ -143,7 +143,7 @@ class FalabellaScraper(BaseScraper):
 
         return 0
 
-    async def scrape_autonomous_category(self, url: str) -> dict:
+    async def scrape_autonomous_category(self, url: str, max_pages: int = 1) -> dict:
         """Scrape autonomous category handling block detection and structured data."""
         products = []
         page_num = 1
@@ -154,6 +154,9 @@ class FalabellaScraper(BaseScraper):
         failure_type = None
 
         while True:
+            if page_num > max_pages:
+                stop_reason = "MAX_PAGES_REACHED"
+                break
             page_url = url if page_num == 1 else f"{url}{'&' if '?' in url else '?'}page={page_num}"
             try:
                 ok = await self.navigate(page_url)
