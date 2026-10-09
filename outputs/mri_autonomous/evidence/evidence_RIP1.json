@@ -3,7 +3,7 @@
   "producto_nombre": "Abrigo Largo Invierno Nicopoly",
   "marketplace": "Ripley",
   "url_encontrada": "https://simple.ripley.cl/search/Abrigo+Largo+Invierno+Nicopoly",
-  "fecha_observacion": "2026-10-09T09:37:26.467301",
+  "fecha_observacion": "2026-10-09T10:20:57.548124",
   "evidencia_identidad": [
     "D: Explicit Nicopoly brand + title",
     "Legacy is_nicopoly flag"
@@ -23,8 +23,8 @@
   "classification": "NICOPOLY_CONFIRMED",
   "observed_sku": "",
   "url": "https://simple.ripley.cl/search/Abrigo+Largo+Invierno+Nicopoly",
-  "duration": 34.68,
-  "timestamp": "2026-10-09T09:37:26.467321",
+  "duration": 31.58,
+  "timestamp": "2026-10-09T10:20:57.548134",
   "evidence": [
     "D: Explicit Nicopoly brand + title",
     "Legacy is_nicopoly flag"

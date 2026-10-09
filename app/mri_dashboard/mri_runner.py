@@ -106,7 +106,7 @@ def build_search_url(marketplace, title):
     elif marketplace == "Falabella": return f"https://falabella.com/falabella-cl/search?Ntt={q}"
     return ""
 
-async def audit_product(product, materializer, store, state_dict):
+async def audit_product(product, materializer, store, state_dict, scraper_instance=None):
     mkt = product["marketplace"]
     title = product["title"]
     search_url = build_search_url(mkt, title)
@@ -123,7 +123,7 @@ async def audit_product(product, materializer, store, state_dict):
     else:
         state_dict["status_message"] = f"Identidad desconocida para {title}, iniciando descubrimiento..."
         
-    scraper = get_scraper(mkt)
+    scraper = scraper_instance or get_scraper(mkt)
     results = []
     blocked = False
     start_time = time.time()
@@ -131,7 +131,8 @@ async def audit_product(product, materializer, store, state_dict):
     state_dict["status_message"] = f"Adquiriendo {title} en {mkt}..."
     
     try:
-        await scraper.start()
+        if not scraper_instance:
+            await scraper.start()
         
         # Max 2 retries logic
         max_retries = 2
@@ -148,7 +149,8 @@ async def audit_product(product, materializer, store, state_dict):
                 else:
                     await asyncio.sleep(1) # wait a bit before retry
     finally:
-        await scraper.stop()
+        if not scraper_instance:
+            await scraper.stop()
         
     duration = round(time.time() - start_time, 2)
     
@@ -183,7 +185,26 @@ async def audit_product(product, materializer, store, state_dict):
             "duration": duration,
         }
         
-    observed = results[0]
+    observed = None
+    url_encontrada = search_url
+    
+    # Iterate to find the best identity match
+    for res in results:
+        obs_title = res.get('title', '')
+        identity_match, _ = verify_product_identity_match(title, obs_title)
+        
+        # We need an individual URL to confirm
+        ind_url = res.get("url") or res.get("link")
+        
+        if identity_match and ind_url and ind_url != search_url:
+            observed = res
+            url_encontrada = ind_url
+            break
+            
+    if not observed:
+        # Fallback to first if none matched perfectly
+        observed = results[0]
+        url_encontrada = observed.get("url") or observed.get("link") or search_url
     
     # Dimension 3: Resultado de verificación actual
     state_dict["status_message"] = f"Identificando {title}..."
@@ -214,9 +235,14 @@ async def audit_product(product, materializer, store, state_dict):
         identity_match, identity_reason = verify_product_identity_match(title, norm["raw_title"])
         
         if identity_match:
-            verification_result = "CONFIRMED"
-            motivo = "Evidencia suficiente según materializador e Identidad Coincidente"
-            store.record_experience(mkt, "Nicopoly", "IDENTITY", title, parent_identity=norm["raw_sku"], discovery_method="audit_materializer", status="VALIDATED", evidence_reference=str(membership.get("evidence", [])))
+            if url_encontrada and url_encontrada != search_url:
+                verification_result = "CONFIRMED"
+                motivo = "Evidencia suficiente según materializador e Identidad Coincidente con URL individual"
+                store.record_experience(mkt, "Nicopoly", "IDENTITY", title, parent_identity=norm["raw_sku"], discovery_method="audit_materializer", status="VALIDATED", evidence_reference=str(membership.get("evidence", [])))
+            else:
+                verification_result = "REVIEW_REQUIRED"
+                motivo = "Identidad coincidente pero falta URL de publicación individual"
+                store.record_experience(mkt, "Nicopoly", "IDENTITY", title, discovery_method="audit_materializer", status="INVALIDATED", is_success=False, evidence_reference=motivo)
         else:
             verification_result = "REVIEW_REQUIRED"
             motivo = identity_reason
@@ -227,8 +253,6 @@ async def audit_product(product, materializer, store, state_dict):
         store.record_experience(mkt, "Nicopoly", "IDENTITY", title, discovery_method="audit_materializer", status="INVALIDATED", is_success=False, evidence_reference="NON_NICOPOLY_CONFIRMED")
     else:
         store.record_experience(mkt, "Nicopoly", "IDENTITY", title, discovery_method="audit_materializer", status="FAILED", is_success=False, evidence_reference="INSUFFICIENT_EVIDENCE")
-        
-    url_encontrada = observed.get("url") or observed.get("link") or search_url
     
     return {
         "producto_id": product.get("sku", "UNKNOWN"),
@@ -288,15 +312,30 @@ class MRIOrchestrator:
         self.state["progress"] = 0
         
         try:
-            for i, prod in enumerate(products_to_audit):
-                if not self.is_running:
-                    self.state["status_message"] = "ABORTED"
-                    break
+            mkt_groups = {}
+            for prod in products_to_audit:
+                mkt_groups.setdefault(prod["marketplace"], []).append(prod)
                 
-                self.state["progress"] = i
-                res = await audit_product(prod, materializer, store, self.state)
-                self.results.append(res)
+            for mkt, prods in mkt_groups.items():
+                if not self.is_running: break
                 
+                scraper = get_scraper(mkt)
+                if scraper:
+                    await scraper.start()
+                    
+                try:
+                    for prod in prods:
+                        if not self.is_running:
+                            self.state["status_message"] = "ABORTED"
+                            break
+                        
+                        self.state["progress"] += 1
+                        res = await audit_product(prod, materializer, store, self.state, scraper_instance=scraper)
+                        self.results.append(res)
+                finally:
+                    if scraper:
+                        await scraper.stop()
+                        
             self.state["progress"] = len(products_to_audit)
             self.state["status_message"] = "COMPLETED"
             

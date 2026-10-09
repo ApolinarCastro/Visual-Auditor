@@ -3,7 +3,7 @@
   "producto_nombre": "Pantalon Vestir Negro Nicopoly",
   "marketplace": "Mercado Libre",
   "url_encontrada": "https://listado.mercadolibre.cl/Pantalon+Vestir+Negro+Nicopoly",
-  "fecha_observacion": "2026-10-09T09:38:20.997749",
+  "fecha_observacion": "2026-10-09T10:19:52.458289",
   "evidencia_identidad": [],
   "estado_final": "BLOCKED",
   "motivo_verificable": "TimeoutError",
@@ -13,5 +13,5 @@
   "status": "SOURCE_BLOCKED",
   "classification": "UNKNOWN",
   "reason": "TimeoutError",
-  "duration": 48.56
+  "duration": 47.04
 }

@@ -4,17 +4,17 @@
     "producto_nombre": "Blazer Cuello Cruzado Gris Nicopoly",
     "marketplace": "Mercado Libre",
     "url_encontrada": "https://listado.mercadolibre.cl/Blazer+Cuello+Cruzado+Gris+Nicopoly",
-    "fecha_observacion": "2026-10-09T09:36:01.972742",
+    "fecha_observacion": "2026-10-09T10:19:05.407353",
     "evidencia_identidad": [
       "D: Explicit Nicopoly brand + title",
       "Legacy is_nicopoly flag"
     ],
-    "estado_final": "CONFIRMED",
-    "motivo_verificable": "Evidencia suficiente según materializador e Identidad Coincidente",
-    "historical_identity_known": false,
+    "estado_final": "REVIEW_REQUIRED",
+    "motivo_verificable": "Identidad coincidente pero falta URL de publicación individual",
+    "historical_identity_known": true,
     "acquisition_state": "SUCCESS",
-    "verification_result": "CONFIRMED",
-    "status": "CONFIRMED",
+    "verification_result": "REVIEW_REQUIRED",
+    "status": "REVIEW_REQUIRED",
     "product": {
       "sku": "MLC1",
       "title": "Blazer Cuello Cruzado Gris Nicopoly",
@@ -24,19 +24,36 @@
     "classification": "NICOPOLY_CONFIRMED",
     "observed_sku": "MLC1663389613",
     "url": "https://listado.mercadolibre.cl/Blazer+Cuello+Cruzado+Gris+Nicopoly",
-    "duration": 29.09,
-    "timestamp": "2026-10-09T09:36:01.972754",
+    "duration": 28.26,
+    "timestamp": "2026-10-09T10:19:05.407363",
     "evidence": [
       "D: Explicit Nicopoly brand + title",
       "Legacy is_nicopoly flag"
     ]
   },
   {
+    "producto_id": "MLC2",
+    "producto_nombre": "Pantalon Vestir Negro Nicopoly",
+    "marketplace": "Mercado Libre",
+    "url_encontrada": "https://listado.mercadolibre.cl/Pantalon+Vestir+Negro+Nicopoly",
+    "fecha_observacion": "2026-10-09T10:19:52.458289",
+    "evidencia_identidad": [],
+    "estado_final": "BLOCKED",
+    "motivo_verificable": "TimeoutError",
+    "historical_identity_known": false,
+    "acquisition_state": "SOURCE_BLOCKED",
+    "verification_result": "UNTESTED",
+    "status": "SOURCE_BLOCKED",
+    "classification": "UNKNOWN",
+    "reason": "TimeoutError",
+    "duration": 47.04
+  },
+  {
     "producto_id": "PAR1",
     "producto_nombre": "Chaqueta Denim Nicopoly",
     "marketplace": "Paris",
     "url_encontrada": "https://www.paris.cl/search?q=Chaqueta+Denim+Nicopoly",
-    "fecha_observacion": "2026-10-09T09:36:13.805065",
+    "fecha_observacion": "2026-10-09T10:20:07.577872",
     "evidencia_identidad": [
       "D: Explicit Nicopoly brand + title",
       "Legacy is_nicopoly flag"
@@ -56,8 +73,8 @@
     "classification": "NICOPOLY_CONFIRMED",
     "observed_sku": "chaqueta-corta-tipo-gamuza-negro-nicopoly-MKZZ6TNAKM",
     "url": "https://www.paris.cl/search?q=Chaqueta+Denim+Nicopoly",
-    "duration": 11.82,
-    "timestamp": "2026-10-09T09:36:13.805081",
+    "duration": 13.76,
+    "timestamp": "2026-10-09T10:20:07.577884",
     "evidence": [
       "D: Explicit Nicopoly brand + title",
       "Legacy is_nicopoly flag"
@@ -68,7 +85,7 @@
     "producto_nombre": "Abrigo Largo Invierno Nicopoly",
     "marketplace": "Ripley",
     "url_encontrada": "https://simple.ripley.cl/search/Abrigo+Largo+Invierno+Nicopoly",
-    "fecha_observacion": "2026-10-09T09:37:26.467301",
+    "fecha_observacion": "2026-10-09T10:20:57.548124",
     "evidencia_identidad": [
       "D: Explicit Nicopoly brand + title",
       "Legacy is_nicopoly flag"
@@ -88,8 +105,8 @@
     "classification": "NICOPOLY_CONFIRMED",
     "observed_sku": "",
     "url": "https://simple.ripley.cl/search/Abrigo+Largo+Invierno+Nicopoly",
-    "duration": 34.68,
-    "timestamp": "2026-10-09T09:37:26.467321",
+    "duration": 31.58,
+    "timestamp": "2026-10-09T10:20:57.548134",
     "evidence": [
       "D: Explicit Nicopoly brand + title",
       "Legacy is_nicopoly flag"
@@ -100,7 +117,7 @@
     "producto_nombre": "Blazer Formal Azul Nicopoly",
     "marketplace": "Falabella",
     "url_encontrada": "https://falabella.com/falabella-cl/search?Ntt=Blazer+Formal+Azul+Nicopoly",
-    "fecha_observacion": "2026-10-09T09:37:32.429325",
+    "fecha_observacion": "2026-10-09T10:21:03.026819",
     "evidencia_identidad": [],
     "estado_final": "FAIL",
     "motivo_verificable": "0 results from query",
@@ -110,23 +127,6 @@
     "status": "INCONCLUSIVE",
     "classification": "UNKNOWN",
     "reason": "0 results from query",
-    "duration": 5.95
-  },
-  {
-    "producto_id": "MLC2",
-    "producto_nombre": "Pantalon Vestir Negro Nicopoly",
-    "marketplace": "Mercado Libre",
-    "url_encontrada": "https://listado.mercadolibre.cl/Pantalon+Vestir+Negro+Nicopoly",
-    "fecha_observacion": "2026-10-09T09:38:20.997749",
-    "evidencia_identidad": [],
-    "estado_final": "BLOCKED",
-    "motivo_verificable": "TimeoutError",
-    "historical_identity_known": false,
-    "acquisition_state": "SOURCE_BLOCKED",
-    "verification_result": "UNTESTED",
-    "status": "SOURCE_BLOCKED",
-    "classification": "UNKNOWN",
-    "reason": "TimeoutError",
-    "duration": 48.56
+    "duration": 4.31
   }
 ]

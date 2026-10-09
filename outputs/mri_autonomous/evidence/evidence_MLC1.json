@@ -3,17 +3,17 @@
   "producto_nombre": "Blazer Cuello Cruzado Gris Nicopoly",
   "marketplace": "Mercado Libre",
   "url_encontrada": "https://listado.mercadolibre.cl/Blazer+Cuello+Cruzado+Gris+Nicopoly",
-  "fecha_observacion": "2026-10-09T09:36:01.972742",
+  "fecha_observacion": "2026-10-09T10:19:05.407353",
   "evidencia_identidad": [
     "D: Explicit Nicopoly brand + title",
     "Legacy is_nicopoly flag"
   ],
-  "estado_final": "CONFIRMED",
-  "motivo_verificable": "Evidencia suficiente según materializador e Identidad Coincidente",
-  "historical_identity_known": false,
+  "estado_final": "REVIEW_REQUIRED",
+  "motivo_verificable": "Identidad coincidente pero falta URL de publicación individual",
+  "historical_identity_known": true,
   "acquisition_state": "SUCCESS",
-  "verification_result": "CONFIRMED",
-  "status": "CONFIRMED",
+  "verification_result": "REVIEW_REQUIRED",
+  "status": "REVIEW_REQUIRED",
   "product": {
     "sku": "MLC1",
     "title": "Blazer Cuello Cruzado Gris Nicopoly",
@@ -23,8 +23,8 @@
   "classification": "NICOPOLY_CONFIRMED",
   "observed_sku": "MLC1663389613",
   "url": "https://listado.mercadolibre.cl/Blazer+Cuello+Cruzado+Gris+Nicopoly",
-  "duration": 29.09,
-  "timestamp": "2026-10-09T09:36:01.972754",
+  "duration": 28.26,
+  "timestamp": "2026-10-09T10:19:05.407363",
   "evidence": [
     "D: Explicit Nicopoly brand + title",
     "Legacy is_nicopoly flag"
