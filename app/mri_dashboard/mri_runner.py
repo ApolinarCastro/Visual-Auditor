@@ -317,19 +317,8 @@ class MRIOrchestrator:
         
         from app.mri_dashboard.category_manager import category_manager
         
-        # Seed categories if empty
-        pilot_urls = {
-            "Mercado Libre": {"url": "https://listado.mercadolibre.cl/ropa-mujer", "id": "MLC1430"},
-            "Paris": {"url": "https://www.paris.cl/mujer/ropa-mujer/", "id": "PARIS_ROPA_MUJER"},
-            "Ripley": {"url": "https://simple.ripley.cl/moda/mujer", "id": "RIPLEY_MODA_MUJER"},
-            "Falabella": {"url": "https://www.falabella.com/falabella-cl/category/cat1060012/Ropa-de-Mujer", "id": "cat1060012"}
-        }
-        
-        for mkt, data in pilot_urls.items():
-            if not category_manager.get_categories(mkt):
-                category_manager.register_category(mkt, data["id"], "Ropa Mujer", data["url"], source="SEEDED", status="NOT_TESTED")
-                
-        mkts_to_run = [marketplace] if marketplace != "ALL" else list(pilot_urls.keys())
+        # Seed categories if empty - REMOVED for fully autonomous execution
+        mkts_to_run = [marketplace] if marketplace != "ALL" else ["Mercado Libre", "Paris", "Ripley", "Falabella"]
         
         self.state["total"] = len(mkts_to_run)
         self.state["progress"] = 0
@@ -339,7 +328,25 @@ class MRIOrchestrator:
                 if not self.is_running: break
                 
                 cats = category_manager.get_categories(mkt)
-                if not cats: continue
+                
+                # Autonomous Entry Point: If no accessible categories exist, generate brand search URL
+                if not cats:
+                    if mkt == "Mercado Libre":
+                        search_url = "https://listado.mercadolibre.cl/nicopoly"
+                        category_manager.register_category(mkt, "SEARCH_ML", "Búsqueda Nicopoly", search_url, source="AUTONOMOUS_SEARCH", status="VERIFIED")
+                        cats = category_manager.get_categories(mkt)
+                    elif mkt == "Paris":
+                        search_url = "https://www.paris.cl/search?q=nicopoly"
+                        category_manager.register_category(mkt, "SEARCH_PARIS", "Búsqueda Nicopoly", search_url, source="AUTONOMOUS_SEARCH", status="VERIFIED")
+                        cats = category_manager.get_categories(mkt)
+                    elif mkt == "Ripley":
+                        search_url = "https://simple.ripley.cl/search/nicopoly"
+                        category_manager.register_category(mkt, "SEARCH_RIPLEY", "Búsqueda Nicopoly", search_url, source="AUTONOMOUS_SEARCH", status="VERIFIED")
+                        cats = category_manager.get_categories(mkt)
+                    elif mkt == "Falabella":
+                        search_url = "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly"
+                        category_manager.register_category(mkt, "SEARCH_FALABELLA", "Búsqueda Nicopoly", search_url, source="AUTONOMOUS_SEARCH", status="VERIFIED")
+                        cats = category_manager.get_categories(mkt)
                 
                 scraper = get_scraper(mkt)
                 if scraper:
