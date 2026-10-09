@@ -563,8 +563,10 @@ class MercadoLibreScraper(BaseScraper):
                     price = self.parse_price_text(price_clone.get_text(separator=" ", strip=True))
                 
                 link_el = item.select_one("a[href*='articulo.mercadolibre.cl'], a[href*='MLC']")
+                product_url = ""
                 if link_el and link_el.get("href"):
                     href = link_el.get("href")
+                    product_url = href
                     mlc_match = re.search(r"MLC-?(\d+)", href, re.IGNORECASE)
                     if mlc_match:
                         marketplace_sku = f"MLC{mlc_match.group(1)}"
@@ -578,6 +580,7 @@ class MercadoLibreScraper(BaseScraper):
                     "brand_surface_url": brand_surface,
                     "price": price,
                     "marketplace_sku": marketplace_sku,
+                    "url": product_url if 'product_url' in locals() else "",
                     "page": page,
                     "position_local": idx + 1,
                     "position_absolute": current_total + idx + 1,

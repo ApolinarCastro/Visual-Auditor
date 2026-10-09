@@ -923,13 +923,14 @@ class RipleyScraper(BaseScraper):
                     const titleEl = item.querySelector(".catalog-product-details__name, [class*='name'], [class*='title']");
                     const priceEl = item.querySelector(".catalog-prices__offer-price, .catalog-prices__card-price, .catalog-prices__list-price, .catalog-product-details__prices, [class*='price'], [class*='Price']");
                     const linkEl = item.querySelector("a[href*='/p/'], a[href*='/mp/'], a[href]");
+                    const parentLink = item.closest("a[href]");
 
                     let brand = brandEl ? brandEl.innerText.trim() : "";
                     let title = titleEl ? titleEl.innerText.trim() : "";
                     let priceText = priceEl ? priceEl.innerText.trim() : "";
 
                     let mktSku = item.getAttribute("data-part-number") || item.getAttribute("data-sku-id") || item.getAttribute("data-product-id") || item.getAttribute("id") || "";
-                    const itemLink = linkEl ? linkEl.getAttribute("href") : (item.tagName === 'A' ? item.getAttribute("href") : "");
+                    const itemLink = linkEl ? linkEl.getAttribute("href") : (parentLink ? parentLink.getAttribute("href") : (item.tagName === 'A' ? item.getAttribute("href") : ""));
 
                     // FIX MRI-RIPLEY-IDENTITY-001: Extract product ID from image URL
                     // Ripley image URLs contain the product ID: .../MPM10002617343/full_image-4
@@ -963,6 +964,7 @@ class RipleyScraper(BaseScraper):
                         title: title,
                         priceText: priceText,
                         mktSku: mktSku,
+                        url: itemLink,
                         html: (!brand || !title) ? item.outerHTML : null
                     }};
                 }});
@@ -994,7 +996,7 @@ class RipleyScraper(BaseScraper):
                             pass
                     if title or brand_out:
                         rows.append({"title": title, "vendor": brand_out, "price": price,
-                                     "marketplace_sku": marketplace_sku})
+                                     "marketplace_sku": marketplace_sku, "url": f"https://simple.ripley.cl{data.get('url', '')}" if data.get('url', '').startswith('/') else data.get('url', '')})
                 except Exception as e:
                     logger.warning(f"[Ripley] Error parsing extracted data: {e}")
             return rows
@@ -1010,6 +1012,27 @@ class RipleyScraper(BaseScraper):
         except Exception:
             body_text_after = body_text
         pager = parse_pager_text(body_text_after)
+
+        next_data_cat = await self.page.evaluate("""() => {
+            const el = document.getElementById('__NEXT_DATA__');
+            return el ? el.innerText : null;
+        }""")
+        if next_data_cat:
+            try:
+                import math
+                data_json = json.loads(next_data_cat)
+                findability = data_json.get("props", {}).get("pageProps", {}).get("findabilityProps", {})
+                cat_data = findability.get("data", {})
+                if cat_data:
+                    cat_total = int(cat_data.get("total") or 0)
+                    cat_limit = int(cat_data.get("limit") or 1)
+                    if cat_total and cat_limit:
+                        total_pages = int(math.ceil(cat_total / cat_limit))
+                        current_page = int(findability.get("currentPage", 1))
+                        pager = {"current": current_page, "total": total_pages}
+            except Exception as e:
+                logger.warning(f"[Ripley] Failed to parse NEXT_DATA for pagination: {e}")
+
         sort_mode = detect_sort_mode(body_text_after)
         plan = pagination or {}
         param = plan.get("param")
@@ -1021,6 +1044,8 @@ class RipleyScraper(BaseScraper):
                 m2 = re.search(r"[?&](page|p|offset)=\d+", url)
                 if m2:
                     param = m2.group(1)
+                else:
+                    param = "page"
         total = (pager or {}).get("total")
         if total is None and param:
             _mo = plan.get("max_observed")
@@ -1053,9 +1078,10 @@ class RipleyScraper(BaseScraper):
                              "last_page_observed": _last_obs_first})
 
         stop_reason = "EXHAUSTION" if (total is not None and total <= 1) else "UNKNOWN"
-        if param and total is not None and total > 1:
+        if param and total is not None and int(total) > 1:
             base = plan.get("base_url") or url
-            current = (pager or {}).get("current") or 1
+            current = int((pager or {}).get("current") or 1)
+            total = int(total)
             while current < total and current < max_pages:
                 if time.time() - t_start > 480:
                     stop_reason = "PAGE_TIME_BUDGET"
@@ -1211,12 +1237,13 @@ class RipleyScraper(BaseScraper):
                         const priceEl = item.querySelector(".catalog-prices__offer-price, .catalog-prices__card-price, .catalog-prices__list-price, .catalog-product-details__prices, [class*='price'], [class*='Price']");
                         const linkEl = item.querySelector("a[href*='/p/'], a[href*='/mp/'], a[href]");
 
+                        const parentLink = item.closest("a[href]");
                         let brand = brandEl ? brandEl.innerText.trim() : "";
                         let title = titleEl ? titleEl.innerText.trim() : "";
                         let priceText = priceEl ? priceEl.innerText.trim() : "";
 
                         let mktSku = item.getAttribute("data-part-number") || item.getAttribute("data-sku-id") || item.getAttribute("data-product-id") || item.getAttribute("id") || "";
-                        const itemLink = linkEl ? linkEl.getAttribute("href") : (item.tagName === 'A' ? item.getAttribute("href") : "");
+                        const itemLink = linkEl ? linkEl.getAttribute("href") : (parentLink ? parentLink.getAttribute("href") : (item.tagName === 'A' ? item.getAttribute("href") : ""));
                         if (itemLink) {{
                             const numMatch = itemLink.match(/(\\d{{7,15}})/);
                             if (numMatch) {{
@@ -1240,6 +1267,7 @@ class RipleyScraper(BaseScraper):
                             title: title,
                             priceText: priceText,
                             mktSku: mktSku,
+                            url: itemLink,
                             html: (!brand || !title) ? item.outerHTML : null
                         }};
                     }});
@@ -1283,6 +1311,7 @@ class RipleyScraper(BaseScraper):
                             "vendor": brand,
                             "price": price,
                             "marketplace_sku": marketplace_sku,
+                            "url": f"https://simple.ripley.cl{data.get('url', '')}" if data.get('url', '').startswith('/') else data.get('url', ''),
                             "page": (i // 40) + 1,
                         })
                 except Exception as e:
