@@ -996,7 +996,7 @@ class RipleyScraper(BaseScraper):
                             pass
                     if title or brand_out:
                         rows.append({"title": title, "vendor": brand_out, "price": price,
-                                     "marketplace_sku": marketplace_sku, "url": f"https://simple.ripley.cl{data.get('url', '')}" if data.get('url', '').startswith('/') else data.get('url', '')})
+                                     "marketplace_sku": marketplace_sku, "url": f"https://simple.ripley.cl{data.get('url')}" if (data.get('url') or '').startswith('/') else (data.get('url') or '')})
                 except Exception as e:
                     logger.warning(f"[Ripley] Error parsing extracted data: {e}")
             return rows
@@ -1311,7 +1311,7 @@ class RipleyScraper(BaseScraper):
                             "vendor": brand,
                             "price": price,
                             "marketplace_sku": marketplace_sku,
-                            "url": f"https://simple.ripley.cl{data.get('url', '')}" if data.get('url', '').startswith('/') else data.get('url', ''),
+                            "url": f"https://simple.ripley.cl{data.get('url')}" if (data.get('url') or '').startswith('/') else (data.get('url') or ''),
                             "page": (i // 40) + 1,
                         })
                 except Exception as e:

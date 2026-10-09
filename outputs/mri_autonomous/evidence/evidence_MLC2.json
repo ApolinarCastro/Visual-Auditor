@@ -2,16 +2,33 @@
   "producto_id": "MLC2",
   "producto_nombre": "Pantalon Vestir Negro Nicopoly",
   "marketplace": "Mercado Libre",
-  "url_encontrada": "https://listado.mercadolibre.cl/Pantalon+Vestir+Negro+Nicopoly",
-  "fecha_observacion": "2026-10-09T10:19:52.458289",
-  "evidencia_identidad": [],
-  "estado_final": "BLOCKED",
-  "motivo_verificable": "TimeoutError",
+  "url_encontrada": "https://articulo.mercadolibre.cl/MLC-1343661582-pantalon-hombre-dockers-ultimate-chino-360-slim-_JM?searchVariation=178430374271#polycard_client=search-desktop&searchVariation=178430374271&be_origin=backend&overlay_label=not_apply&search_layout=grid&position=32&type=item&tracking_id=7f4fc38d-f435-4c68-a701-aaeea7074dd0&sid=search",
+  "fecha_observacion": "2026-10-09T11:59:23.404316",
+  "evidencia_identidad": [
+    "Other brand",
+    "No Nicopoly in title",
+    "Legacy is_nicopoly=0"
+  ],
+  "estado_final": "REVIEW_REQUIRED",
+  "motivo_verificable": "NON_NICOPOLY_CONFIRMED",
   "historical_identity_known": false,
-  "acquisition_state": "SOURCE_BLOCKED",
-  "verification_result": "UNTESTED",
-  "status": "SOURCE_BLOCKED",
-  "classification": "UNKNOWN",
-  "reason": "TimeoutError",
-  "duration": 47.04
+  "acquisition_state": "SUCCESS",
+  "verification_result": "REVIEW_REQUIRED",
+  "status": "REVIEW_REQUIRED",
+  "product": {
+    "sku": "MLC2",
+    "title": "Pantalon Vestir Negro Nicopoly",
+    "marketplace": "Mercado Libre",
+    "vendor": "Nicopoly"
+  },
+  "classification": "NON_NICOPOLY_CONFIRMED",
+  "observed_sku": "MLC1343661582",
+  "url": "https://articulo.mercadolibre.cl/MLC-1343661582-pantalon-hombre-dockers-ultimate-chino-360-slim-_JM?searchVariation=178430374271#polycard_client=search-desktop&searchVariation=178430374271&be_origin=backend&overlay_label=not_apply&search_layout=grid&position=32&type=item&tracking_id=7f4fc38d-f435-4c68-a701-aaeea7074dd0&sid=search",
+  "duration": 22.85,
+  "timestamp": "2026-10-09T11:59:23.404327",
+  "evidence": [
+    "Other brand",
+    "No Nicopoly in title",
+    "Legacy is_nicopoly=0"
+  ]
 }

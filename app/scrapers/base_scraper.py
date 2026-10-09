@@ -142,9 +142,10 @@ class BaseScraper:
         # Fetch best UA from learning layer
         if self.marketplace.lower() == "mercado libre":
             # FIX ML-8 (14-Ago): el UA aprendido dispara account-verification en ML.
-            # Se deja el UA del perfil persistente real (probado: 192 productos OK).
-            self.user_agent = None
-            logger.info("[Mercado Libre] UA aprendido omitido (FIX ML-8): usa UA del perfil persistente")
+            # Pero self.user_agent = None expone "HeadlessChrome" y dispara 403.
+            # Se fuerza un UA estático de Chrome estándar.
+            self.user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
+            logger.info(f"[{self.marketplace}] Forzando UA estandar para evitar 403 en modo headless: {self.user_agent}")
         else:
             ua_list = self._get_mobile_ua_list() if self.mobile else self._get_ua_list()
             best_uas = await ranked_selectors(self.marketplace, "stealth_ua", ua_list)
@@ -175,9 +176,9 @@ class BaseScraper:
         # Fallback / Native Playwright
         logger.info(f"[{self.marketplace}] Inicializando motor Playwright Nativo...")
 
-        # FIX ML-2 (14-Ago): forzar headless=False para ML y Ripley.
-        # Sin ventana real, ML redirige a account-verification (deteccion de bot).
-        if self.marketplace.lower() in ("ripley", "mercado libre"):
+        # FIX ML-2 (14-Ago): forzar headless=False para Ripley.
+        # Sin ventana real, puede haber redirección a account-verification (deteccion de bot).
+        if self.marketplace.lower() in ("ripley",):
             self.headless = False
             logger.info(f"[{self.marketplace}] Forcing headless=False to bypass Akamai/WAF bot shield natively.")
 
@@ -185,7 +186,7 @@ class BaseScraper:
             "--no-sandbox",
             "--disable-setuid-sandbox",
             "--disable-infobars",
-            "--window-position=-32000,-32000" if self.marketplace.lower() in ("ripley", "mercado libre") else "--window-position=0,0",
+            "--window-position=-32000,-32000" if self.marketplace.lower() in ("ripley",) else "--window-position=0,0",
             "--ignore-certificate-errors",
             "--disable-blink-features=AutomationControlled",
             "--disable-dev-shm-usage",
@@ -194,7 +195,7 @@ class BaseScraper:
             "--disable-plugins",
         ]
 
-        if self.marketplace.lower() in ["ripley", "mercado libre"]:
+        if self.marketplace.lower() in ["ripley"]:
             chrome_paths = [
                 r"C:\Program Files\Google\Chrome\Application\chrome.exe",
                 r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
@@ -207,6 +208,32 @@ class BaseScraper:
                 os.makedirs(user_data_dir, exist_ok=True)
 
                 logger.info(f"[{self.marketplace}] Launching native Chrome browser context with persistent profile ({user_data_dir})...")
+                
+                # FIX ProcessSingleton Hang: Proactively kill zombie Chrome processes locking this exact profile
+                try:
+                    import psutil
+                    normalized_profile_path = os.path.normpath(os.path.abspath(user_data_dir)).lower()
+                    for proc in psutil.process_iter(['name', 'cmdline']):
+                        try:
+                            pinfo = proc.info
+                            if pinfo.get('name') and pinfo['name'].lower() in ('chrome.exe', 'msedge.exe'):
+                                cmdline = pinfo.get('cmdline') or []
+                                for arg in cmdline:
+                                    if arg.startswith("--user-data-dir="):
+                                        arg_path = os.path.normpath(os.path.abspath(arg.split("=", 1)[1])).lower()
+                                        if arg_path == normalized_profile_path:
+                                            logger.warning(f"[{self.marketplace}] Killing zombie browser process {proc.pid} locking {user_data_dir}")
+                                            proc.terminate()
+                                            try:
+                                                proc.wait(timeout=3)
+                                            except psutil.TimeoutExpired:
+                                                proc.kill()
+                                            break
+                        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                            pass
+                except ImportError:
+                    pass
+
                 # Proactively remove Chrome singleton lock files left by crashed sessions.
                 # These do NOT corrupt the profile — they are only process-lock markers.
                 for _lock_name in ("SingletonLock", "SingletonCookie", "SingletonSocket"):

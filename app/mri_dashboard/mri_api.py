@@ -32,6 +32,11 @@ async def get_state():
         "results": orchestrator.results
     })
 
+@app.get("/api/categories/{marketplace}")
+async def get_categories_api(marketplace: str):
+    from app.mri_dashboard.category_manager import category_manager
+    return category_manager.get_categories(marketplace)
+
 @app.post("/api/audit/start")
 async def start_audit(background_tasks: BackgroundTasks, request: Request):
     if orchestrator.is_running:

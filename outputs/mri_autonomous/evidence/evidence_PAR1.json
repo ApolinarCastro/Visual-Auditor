@@ -3,14 +3,14 @@
   "producto_nombre": "Chaqueta Denim Nicopoly",
   "marketplace": "Paris",
   "url_encontrada": "https://www.paris.cl/search?q=Chaqueta+Denim+Nicopoly",
-  "fecha_observacion": "2026-10-09T10:20:07.577872",
+  "fecha_observacion": "2026-10-09T11:59:36.487446",
   "evidencia_identidad": [
     "D: Explicit Nicopoly brand + title",
     "Legacy is_nicopoly flag"
   ],
   "estado_final": "REVIEW_REQUIRED",
   "motivo_verificable": "Contradicción material: se esperaba ['denim'] pero se observó ['gamuza']",
-  "historical_identity_known": true,
+  "historical_identity_known": false,
   "acquisition_state": "SUCCESS",
   "verification_result": "REVIEW_REQUIRED",
   "status": "REVIEW_REQUIRED",
@@ -23,8 +23,8 @@
   "classification": "NICOPOLY_CONFIRMED",
   "observed_sku": "chaqueta-corta-tipo-gamuza-negro-nicopoly-MKZZ6TNAKM",
   "url": "https://www.paris.cl/search?q=Chaqueta+Denim+Nicopoly",
-  "duration": 13.76,
-  "timestamp": "2026-10-09T10:20:07.577884",
+  "duration": 11.92,
+  "timestamp": "2026-10-09T11:59:36.487454",
   "evidence": [
     "D: Explicit Nicopoly brand + title",
     "Legacy is_nicopoly flag"

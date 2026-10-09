@@ -2,18 +2,18 @@
   "producto_id": "MLC1",
   "producto_nombre": "Blazer Cuello Cruzado Gris Nicopoly",
   "marketplace": "Mercado Libre",
-  "url_encontrada": "https://listado.mercadolibre.cl/Blazer+Cuello+Cruzado+Gris+Nicopoly",
-  "fecha_observacion": "2026-10-09T10:19:05.407353",
+  "url_encontrada": "https://www.mercadolibre.cl/blazer-cuello-cruzado-gris-nicopoly/up/MLCU3348388130#polycard_client=search-desktop&be_origin=backend&overlay_label=not_apply&search_layout=grid&position=1&type=product&tracking_id=c460d26c-a06c-4293-ae2f-c70caf42c321&wid=MLC1663389613&sid=search",
+  "fecha_observacion": "2026-10-09T11:59:00.540950",
   "evidencia_identidad": [
     "D: Explicit Nicopoly brand + title",
     "Legacy is_nicopoly flag"
   ],
-  "estado_final": "REVIEW_REQUIRED",
-  "motivo_verificable": "Identidad coincidente pero falta URL de publicación individual",
+  "estado_final": "CONFIRMED",
+  "motivo_verificable": "Evidencia suficiente según materializador e Identidad Coincidente con URL individual",
   "historical_identity_known": true,
   "acquisition_state": "SUCCESS",
-  "verification_result": "REVIEW_REQUIRED",
-  "status": "REVIEW_REQUIRED",
+  "verification_result": "CONFIRMED",
+  "status": "CONFIRMED",
   "product": {
     "sku": "MLC1",
     "title": "Blazer Cuello Cruzado Gris Nicopoly",
@@ -22,9 +22,9 @@
   },
   "classification": "NICOPOLY_CONFIRMED",
   "observed_sku": "MLC1663389613",
-  "url": "https://listado.mercadolibre.cl/Blazer+Cuello+Cruzado+Gris+Nicopoly",
-  "duration": 28.26,
-  "timestamp": "2026-10-09T10:19:05.407363",
+  "url": "https://www.mercadolibre.cl/blazer-cuello-cruzado-gris-nicopoly/up/MLCU3348388130#polycard_client=search-desktop&be_origin=backend&overlay_label=not_apply&search_layout=grid&position=1&type=product&tracking_id=c460d26c-a06c-4293-ae2f-c70caf42c321&wid=MLC1663389613&sid=search",
+  "duration": 22.64,
+  "timestamp": "2026-10-09T11:59:00.540969",
   "evidence": [
     "D: Explicit Nicopoly brand + title",
     "Legacy is_nicopoly flag"

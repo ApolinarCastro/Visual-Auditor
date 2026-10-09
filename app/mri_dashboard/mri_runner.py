@@ -315,13 +315,20 @@ class MRIOrchestrator:
         materializer = GenericCommercialMaterializer(run_id)
         store = ExperienceStore()
         
+        from app.mri_dashboard.category_manager import category_manager
+        
+        # Seed categories if empty
         pilot_urls = {
-            "Mercado Libre": "https://listado.mercadolibre.cl/ropa-mujer",
-            "Paris": "https://www.paris.cl/mujer/ropa-mujer/",
-            "Ripley": "https://simple.ripley.cl/moda/mujer",
-            "Falabella": "https://www.falabella.com/falabella-cl/category/cat1060012/Ropa-de-Mujer"
+            "Mercado Libre": {"url": "https://listado.mercadolibre.cl/ropa-mujer", "id": "MLC1430"},
+            "Paris": {"url": "https://www.paris.cl/mujer/ropa-mujer/", "id": "PARIS_ROPA_MUJER"},
+            "Ripley": {"url": "https://simple.ripley.cl/moda/mujer", "id": "RIPLEY_MODA_MUJER"},
+            "Falabella": {"url": "https://www.falabella.com/falabella-cl/category/cat1060012/Ropa-de-Mujer", "id": "cat1060012"}
         }
         
+        for mkt, data in pilot_urls.items():
+            if not category_manager.get_categories(mkt):
+                category_manager.register_category(mkt, data["id"], "Ropa Mujer", data["url"], source="SEEDED", status="NOT_TESTED")
+                
         mkts_to_run = [marketplace] if marketplace != "ALL" else list(pilot_urls.keys())
         
         self.state["total"] = len(mkts_to_run)
@@ -331,92 +338,100 @@ class MRIOrchestrator:
             for mkt in mkts_to_run:
                 if not self.is_running: break
                 
-                url = pilot_urls.get(mkt)
-                if not url: continue
+                cats = category_manager.get_categories(mkt)
+                if not cats: continue
                 
-                self.state["status_message"] = f"Descubriendo categoría en {mkt}..."
                 scraper = get_scraper(mkt)
                 if scraper:
                     await scraper.start()
                     
                 try:
-                    res = await scraper.scrape_autonomous_category(url, max_pages=max_pages)
-                    discovered_products = res.get("products", [])
-                    coverage = "COMPLETE" if res.get("stop_reason") == "EXHAUSTION" else res.get("stop_reason", "PARTIAL")
-                    
-                    self.state["total"] += len(discovered_products)
-                    
-                    for observed in discovered_products:
+                    for cat_id, cat_data in cats.items():
                         if not self.is_running: break
+                        url = cat_data["url"]
                         
-                        title = observed.get("title", "UNKNOWN")
-                        prod_url = observed.get("url") or observed.get("link")
-                        raw_sku = observed.get('marketplace_sku', '')
+                        self.state["status_message"] = f"Descubriendo {mkt} - {cat_data['name']}..."
                         
-                        self.state["status_message"] = f"Verificando {title[:30]}..."
-                        start_time = time.time()
+                        res = await scraper.scrape_autonomous_category(url, max_pages=max_pages)
+                        discovered_products = res.get("products", [])
+                        coverage = "COMPLETE" if res.get("stop_reason") == "EXHAUSTION" else res.get("stop_reason", "PARTIAL")
                         
-                        is_nico = is_nicopoly(observed, marketplace=mkt)
+                        # Mark category as VERIFIED since we ran it
+                        category_manager.register_category(mkt, cat_id, cat_data["name"], url, status="VERIFIED")
                         
-                        norm = {
-                            "sku_master": raw_sku, # Fallback to observed SKU
-                            "brand": observed.get('vendor') or observed.get('brand', ''),
-                            "raw_title": title,
-                            "raw_sku": raw_sku,
-                            "is_nicopoly": 1 if is_nico else 0,
-                            "marketplace": mkt,
-                            "captured_at": datetime.now().isoformat(),
-                            "raw_price": observed.get('price', 0.0),
-                            "source_record_id": f"disc_{hashlib.md5(str(observed).encode()).hexdigest()[:10]}"
-                        }
+                        self.state["total"] += len(discovered_products)
                         
-                        pub_id = f"pub_{mkt.lower().replace(' ', '')}_{hashlib.md5(norm['raw_sku'].encode()).hexdigest()[:12]}"
-                        ident = {"publication_id": pub_id, "marketplace_product_id": norm["raw_sku"]}
-                        
-                        membership = materializer.validate_nicopoly_membership(norm, ident)
-                        classification = membership.get('classification', 'UNKNOWN')
-                        
-                        verification_result = "INSUFFICIENT_EVIDENCE"
-                        motivo = "INSUFFICIENT_EVIDENCE"
-                        
-                        if classification == "NICOPOLY_CONFIRMED":
-                            if prod_url:
-                                verification_result = "CONFIRMED"
-                                motivo = "Evidencia suficiente según materializador"
-                                store.record_experience(mkt, "Nicopoly", "DISCOVERY", title, parent_identity=norm["raw_sku"], discovery_method="autonomous_category", status="VALIDATED", evidence_reference=str(membership.get("evidence", [])))
-                            else:
-                                verification_result = "REVIEW_REQUIRED"
-                                motivo = "Pertenece a la marca pero falta URL individual"
-                                store.record_experience(mkt, "Nicopoly", "DISCOVERY", title, discovery_method="autonomous_category", status="INVALIDATED", is_success=False, evidence_reference=motivo)
-                        elif classification == "NON_NICOPOLY_CONFIRMED":
-                            verification_result = "REVIEW_REQUIRED"
-                            motivo = "NON_NICOPOLY_CONFIRMED"
-                            store.record_experience(mkt, "Nicopoly", "DISCOVERY", title, discovery_method="autonomous_category", status="INVALIDATED", is_success=False, evidence_reference="NON_NICOPOLY_CONFIRMED")
-                        else:
-                            store.record_experience(mkt, "Nicopoly", "DISCOVERY", title, discovery_method="autonomous_category", status="FAILED", is_success=False, evidence_reference="INSUFFICIENT_EVIDENCE")
-
-                        self.results.append({
-                            "producto_id": raw_sku,
-                            "producto_nombre": title,
-                            "marketplace": mkt,
-                            "url_encontrada": prod_url,
-                            "fecha_observacion": datetime.now().isoformat(),
-                            "evidencia_identidad": membership.get('evidence', []),
-                            "estado_final": verification_result,
-                            "motivo_verificable": motivo,
-                            "coverage": coverage,
-                            "category_url": url,
+                        for observed in discovered_products:
+                            if not self.is_running: break
                             
-                            # dashboard specific
-                            "status": verification_result,
-                            "product": {"title": title, "sku": raw_sku},
-                            "classification": classification,
-                            "observed_sku": raw_sku,
-                            "url": prod_url,
-                            "duration": round(time.time() - start_time, 2),
-                            "timestamp": datetime.now().isoformat()
-                        })
-                        self.state["progress"] += 1
+                            title = observed.get("title", "UNKNOWN")
+                            prod_url = observed.get("url") or observed.get("link")
+                            raw_sku = observed.get('marketplace_sku', '')
+                            
+                            self.state["status_message"] = f"Verificando {title[:30]}..."
+                            start_time = time.time()
+                            
+                            is_nico = is_nicopoly(observed, marketplace=mkt)
+                            
+                            norm = {
+                                "sku_master": raw_sku, # Fallback to observed SKU
+                                "brand": observed.get('vendor') or observed.get('brand', ''),
+                                "raw_title": title,
+                                "raw_sku": raw_sku,
+                                "is_nicopoly": 1 if is_nico else 0,
+                                "marketplace": mkt,
+                                "captured_at": datetime.now().isoformat(),
+                                "raw_price": observed.get('price', 0.0),
+                                "source_record_id": f"disc_{hashlib.md5(str(observed).encode()).hexdigest()[:10]}"
+                            }
+                            
+                            pub_id = f"pub_{mkt.lower().replace(' ', '')}_{hashlib.md5(norm['raw_sku'].encode()).hexdigest()[:12]}"
+                            ident = {"publication_id": pub_id, "marketplace_product_id": norm["raw_sku"]}
+                            
+                            membership = materializer.validate_nicopoly_membership(norm, ident)
+                            classification = membership.get('classification', 'UNKNOWN')
+                            
+                            verification_result = "INSUFFICIENT_EVIDENCE"
+                            motivo = "INSUFFICIENT_EVIDENCE"
+                            
+                            if classification == "NICOPOLY_CONFIRMED":
+                                if prod_url:
+                                    verification_result = "CONFIRMED"
+                                    motivo = "Evidencia suficiente según materializador"
+                                    store.record_experience(mkt, "Nicopoly", "DISCOVERY", title, parent_identity=norm["raw_sku"], discovery_method="autonomous_category", status="VALIDATED", evidence_reference=str(membership.get("evidence", [])))
+                                else:
+                                    verification_result = "REVIEW_REQUIRED"
+                                    motivo = "Pertenece a la marca pero falta URL individual"
+                                    store.record_experience(mkt, "Nicopoly", "DISCOVERY", title, discovery_method="autonomous_category", status="INVALIDATED", is_success=False, evidence_reference=motivo)
+                            elif classification == "NON_NICOPOLY_CONFIRMED":
+                                verification_result = "REVIEW_REQUIRED"
+                                motivo = "NON_NICOPOLY_CONFIRMED"
+                                store.record_experience(mkt, "Nicopoly", "DISCOVERY", title, discovery_method="autonomous_category", status="INVALIDATED", is_success=False, evidence_reference="NON_NICOPOLY_CONFIRMED")
+                            else:
+                                store.record_experience(mkt, "Nicopoly", "DISCOVERY", title, discovery_method="autonomous_category", status="FAILED", is_success=False, evidence_reference="INSUFFICIENT_EVIDENCE")
+
+                            self.results.append({
+                                "producto_id": raw_sku,
+                                "producto_nombre": title,
+                                "marketplace": mkt,
+                                "url_encontrada": prod_url,
+                                "fecha_observacion": datetime.now().isoformat(),
+                                "evidencia_identidad": membership.get('evidence', []),
+                                "estado_final": verification_result,
+                                "motivo_verificable": motivo,
+                                "coverage": coverage,
+                                "category_url": url,
+                                
+                                # dashboard specific
+                                "status": verification_result,
+                                "product": {"title": title, "sku": raw_sku},
+                                "classification": classification,
+                                "observed_sku": raw_sku,
+                                "url": prod_url,
+                                "duration": round(time.time() - start_time, 2),
+                                "timestamp": datetime.now().isoformat()
+                            })
+                            self.state["progress"] += 1
                         
                 finally:
                     if scraper:

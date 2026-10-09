@@ -1,9 +1,9 @@
 GenericCommercialMaterializer engine loaded with Nicopoly Membership Validation.
-[2026-10-09T10:18:35.647812] Iniciando MRI Autonomous Execution Phase 2...
-Future exception was never retrieved
-future: <Future finished exception=TargetClosedError('Target page, context or browser has been closed\nCall log:\n  - waiting for locator("li.ui-search-layout__item, .poly-card") to be visible\n')>
-playwright._impl._errors.TargetClosedError: Target page, context or browser has been closed
-Call log:
-  - waiting for locator("li.ui-search-layout__item, .poly-card") to be visible
-
-[2026-10-09T10:21:03.100856] Auditoria terminada. Procesando resultados.
+[2026-10-09T11:58:36.801112] Iniciando MRI Autonomous Execution Phase 2...
+[Mercado Libre] Entering _load_or_harvest_session...
+[Mercado Libre] No mercadolibre cookies in context. Found: 0
+[Mercado Libre] SESSION_FILE exists. Size: 15608
+[Mercado Libre] Loaded 43 saved session cookies
+[Mercado Libre] Entering _load_or_harvest_session...
+[Mercado Libre] Loaded 43 cookies from memory
+[2026-10-09T12:00:18.262723] Auditoria terminada. Procesando resultados.
