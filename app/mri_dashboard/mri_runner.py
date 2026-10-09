@@ -398,6 +398,54 @@ class MRIOrchestrator:
                             membership = materializer.validate_nicopoly_membership(norm, ident)
                             classification = membership.get('classification', 'UNKNOWN')
                             
+                            # CATEGORY IDENTIFICATION
+                            real_category = "CATEGORY_UNKNOWN"
+                            real_subcategory = "CATEGORY_UNKNOWN"
+                            category_source = "NONE"
+                            
+                            # We only fetch breadcrumbs if it's considered Nicopoly or if we want to trace everything.
+                            # The prompt: "Para cada publicación descubierta: Recuperar los datos disponibles de su URL individual..."
+                            if prod_url and scraper and scraper.page:
+                                self.state["status_message"] = f"Extrayendo categoría de {title[:30]}..."
+                                try:
+                                    import random
+                                    import asyncio
+                                    await scraper.page.goto(prod_url, wait_until="commit", timeout=15000)
+                                    await asyncio.sleep(random.uniform(0.5, 1.2))
+                                    # Extract breadcrumbs depending on marketplace
+                                    if mkt == "Mercado Libre":
+                                        # Breadcrumb in ML: a.andes-breadcrumb__link
+                                        crumbs = await scraper.page.evaluate('''() => {
+                                            return Array.from(document.querySelectorAll('.andes-breadcrumb__link')).map(el => {
+                                                return {name: el.innerText.trim(), url: el.href};
+                                            });
+                                        }''')
+                                        if crumbs and len(crumbs) > 0:
+                                            real_category = crumbs[0]['name']
+                                            if len(crumbs) > 1:
+                                                real_subcategory = crumbs[1]['name']
+                                            category_source = "BREADCRUMBS"
+                                            # Register discovered category
+                                            category_manager.register_category(mkt, f"CAT_{real_category.replace(' ', '_')}", real_category, crumbs[0]['url'], source="OBSERVED", status="VERIFIED")
+                                            if len(crumbs) > 1:
+                                                category_manager.register_category(mkt, f"CAT_{real_subcategory.replace(' ', '_')}", real_subcategory, crumbs[1]['url'], parent_id=f"CAT_{real_category.replace(' ', '_')}", source="OBSERVED", status="VERIFIED")
+                                                
+                                    elif mkt == "Falabella":
+                                        # Breadcrumb in Falabella: .Breadcrumbs-module_breadcrumb__... a
+                                        crumbs = await scraper.page.evaluate('''() => {
+                                            return Array.from(document.querySelectorAll('[class*="Breadcrumbs-module_breadcrumb"] a, .breadcrumb a')).map(el => {
+                                                return {name: el.innerText.trim(), url: el.href};
+                                            });
+                                        }''')
+                                        if crumbs and len(crumbs) > 0:
+                                            real_category = crumbs[0]['name']
+                                            if len(crumbs) > 1:
+                                                real_subcategory = crumbs[1]['name']
+                                            category_source = "BREADCRUMBS"
+                                            
+                                except Exception as e:
+                                    print(f"Error fetching breadcrumbs for {prod_url}: {e}")
+                            
                             verification_result = "INSUFFICIENT_EVIDENCE"
                             motivo = "INSUFFICIENT_EVIDENCE"
                             
@@ -428,6 +476,11 @@ class MRIOrchestrator:
                                 "motivo_verificable": motivo,
                                 "coverage": coverage,
                                 "category_url": url,
+                                
+                                # category identification
+                                "real_category": real_category,
+                                "real_subcategory": real_subcategory,
+                                "category_source": category_source,
                                 
                                 # dashboard specific
                                 "status": verification_result,

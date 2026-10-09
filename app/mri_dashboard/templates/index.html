@@ -228,10 +228,22 @@
                 </div>
             </div>
             
-            <div class="grid-cards" id="opsLiveCards">
+            <div class="grid-cards" id="opsLiveCards" style="margin-top: 15px;">
                 <div class="card">
                     <div class="card-title">Confirmados</div>
                     <div class="card-value" style="color:var(--primary)" id="cntConfirmed">0</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Categorías Verificadas</div>
+                    <div class="card-value" style="color:var(--info)" id="cntCatVerified">0</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Subcategorías Verificadas</div>
+                    <div class="card-value" style="color:var(--info)" id="cntSubcatVerified">0</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Sin Categoría (Unknown)</div>
+                    <div class="card-value" style="color:var(--danger)" id="cntCatUnknown">0</div>
                 </div>
                 <div class="card">
                     <div class="card-title">Inconclusos / Bloqueos</div>
@@ -244,13 +256,23 @@
             </div>
 
             <h3 style="margin-top: 30px; font-size: 1.1rem; color: #fff;">Tabla Completa de Productos Auditados</h3>
-            <div class="controls" style="margin-bottom: 10px;">
+            <div class="controls" style="margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 10px;">
                 <select id="filterStatus" onchange="renderMainTable()">
                     <option value="ALL">Filtro: Todos los Estados</option>
                     <option value="CONFIRMED">Confirmados</option>
                     <option value="REVIEW_REQUIRED">Revisión Requerida</option>
-                    <option value="INCONCLUSIVE">Inconclusos / Bloqueos</option>
+                    <option value="INSUFFICIENT_EVIDENCE">Sin Evidencia</option>
                 </select>
+                <select id="filterCategory" onchange="renderMainTable()">
+                    <option value="ALL">Filtro: Todas las Categorías</option>
+                </select>
+                <select id="filterSubcategory" onchange="renderMainTable()">
+                    <option value="ALL">Filtro: Todas las Subcategorías</option>
+                </select>
+                <select id="filterCoverage" onchange="renderMainTable()">
+                    <option value="ALL">Filtro: Cobertura (Todas)</option>
+                    <option value="COMPLETE">Cobertura: Completa</option>
+                    <option value="PARTIAL">Cobertura: Parcial</option>
             </div>
             <div style="overflow-x: auto;">
                 <table>
@@ -259,6 +281,8 @@
                             <th>Marketplace</th>
                             <th>Producto (ID)</th>
                             <th>URL / Observado</th>
+                            <th>Categoría Real</th>
+                            <th>Subcategoría Real</th>
                             <th>Estado Final</th>
                             <th>Evidencia y Motivo</th>
                         </tr>
@@ -378,15 +402,24 @@
                 currentResults = data.results;
                 
                 let cnf=0, inc=0, rev=0;
+                let catOk=0, subcatOk=0, catUnk=0;
                 currentResults.forEach(r => {
                     const st = r.estado_final || r.status;
                     if(st === 'CONFIRMED') cnf++;
                     else if(st === 'INCONCLUSIVE' || st === 'SOURCE_BLOCKED' || st === 'FAIL' || st === 'BLOCKED') inc++;
                     else if(st === 'REVIEW_REQUIRED') rev++;
+                    
+                    if(r.real_category && r.real_category !== 'CATEGORY_UNKNOWN') catOk++;
+                    else catUnk++;
+                    
+                    if(r.real_subcategory && r.real_subcategory !== 'CATEGORY_UNKNOWN') subcatOk++;
                 });
                 document.getElementById('cntConfirmed').innerText = cnf;
                 document.getElementById('cntInconclusive').innerText = inc;
                 document.getElementById('cntReview').innerText = rev;
+                document.getElementById('cntCatVerified').innerText = catOk;
+                document.getElementById('cntSubcatVerified').innerText = subcatOk;
+                document.getElementById('cntCatUnknown').innerText = catUnk;
                 
                 renderMainTable();
                 
@@ -400,17 +433,50 @@
             }
         }
         
+        function populateDropdown(id, options) {
+            const select = document.getElementById(id);
+            const currentVal = select.value;
+            const firstOpt = select.options[0].text;
+            select.innerHTML = `<option value="ALL">${firstOpt}</option>` + 
+                Array.from(options).sort().map(opt => `<option value="${opt}">${opt}</option>`).join('');
+            if (options.has(currentVal)) select.value = currentVal;
+        }
+
         function renderMainTable() {
-            const filter = document.getElementById('filterStatus').value;
+            // Populate dynamic dropdowns first
+            const cats = new Set();
+            const subcats = new Set();
+            currentResults.forEach(r => {
+                if (r.real_category) cats.add(r.real_category);
+                if (r.real_subcategory) subcats.add(r.real_subcategory);
+            });
+            populateDropdown('filterCategory', cats);
+            populateDropdown('filterSubcategory', subcats);
+
+            const filterStatus = document.getElementById('filterStatus').value;
+            const filterCategory = document.getElementById('filterCategory').value;
+            const filterSubcategory = document.getElementById('filterSubcategory').value;
+            const filterCoverage = document.getElementById('filterCoverage').value;
+
             let filtered = currentResults;
             
-            if (filter !== "ALL") {
-                filtered = currentResults.filter(r => {
-                    const st = r.estado_final || r.status;
-                    if (filter === "INCONCLUSIVE") return st === 'INCONCLUSIVE' || st === 'SOURCE_BLOCKED' || st === 'FAIL' || st === 'BLOCKED';
-                    return st === filter;
-                });
-            }
+            filtered = filtered.filter(r => {
+                const st = r.estado_final || r.status;
+                let match = true;
+                
+                if (filterStatus !== "ALL") {
+                    if (filterStatus === "INCONCLUSIVE") {
+                        if (st !== 'INCONCLUSIVE' && st !== 'SOURCE_BLOCKED' && st !== 'FAIL' && st !== 'BLOCKED') match = false;
+                    } else if (st !== filterStatus) {
+                        match = false;
+                    }
+                }
+                if (filterCategory !== "ALL" && r.real_category !== filterCategory) match = false;
+                if (filterSubcategory !== "ALL" && r.real_subcategory !== filterSubcategory) match = false;
+                if (filterCoverage !== "ALL" && r.coverage !== filterCoverage) match = false;
+                
+                return match;
+            });
 
             const html = filtered.map(r => {
                 const prod = r.product || {};
@@ -420,17 +486,20 @@
                     ? `<a href="${r.url_encontrada || r.url}" target="_blank" style="color:var(--info); text-decoration:none">Ver Enlace</a>`
                     : (r.url_encontrada || r.url || 'N/A');
                     
-                const catLink = r.category_url ? `<br><small><a href="${r.category_url}" target="_blank" style="color:var(--primary); text-decoration:none">Ver Categoría</a></small>` : '';
+                const catLink = r.category_url ? `<br><small><a href="${r.category_url}" target="_blank" style="color:var(--primary); text-decoration:none">Ver Categoría Origen</a></small>` : '';
 
                 return `
                 <tr>
                     <td>${r.marketplace}${catLink}</td>
                     <td>${r.producto_nombre || prod.title || 'N/A'}<br><small style="color:var(--text-muted)">SKU: ${r.producto_id || prod.sku || 'N/A'}</small></td>
                     <td>${urlLink}<br><small style="color:var(--text-muted)">Obs SKU: ${r.observed_sku || 'N/A'}</small></td>
+                    <td><span class="badge ${r.real_category === 'CATEGORY_UNKNOWN' ? 'badge-danger' : 'badge-info'}">${r.real_category || 'N/A'}</span></td>
+                    <td><span class="badge ${r.real_subcategory === 'CATEGORY_UNKNOWN' ? 'badge-danger' : 'badge-info'}">${r.real_subcategory || 'N/A'}</span></td>
                     <td>${getBadge(r.estado_final || r.status)}</td>
                     <td style="font-size:0.85rem">
                         ${evs.length > 0 ? '<strong>Evidencia:</strong><br>' + evs.join('<br>') + '<br><br>' : ''}
-                        <strong>Motivo:</strong><br>${motivo}
+                        <strong>Motivo:</strong><br>${motivo}<br>
+                        <strong>Fuente Cat:</strong> ${r.category_source || 'N/A'}
                     </td>
                 </tr>
                 `;
