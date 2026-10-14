@@ -1,42 +1,42 @@
 {
-  "task_id": "VA-4MP-LIVE-PUBLICATIONS-001",
-  "timestamp": "2026-10-14T12:24:53.260658",
+  "task_id": "VA-4MP-EVIDENCE-TRUTH-001",
+  "timestamp": "2026-10-14T12:42:59.707290",
   "artifacts": {
     "BLOCKERS.json": {
-      "size_bytes": 398643,
-      "sha256": "07145661807938f5bc0bb65c491116dcf7d7918932beeefd19961e7fc8282f4c"
+      "size_bytes": 478048,
+      "sha256": "1a66e4f9102e9b8dac05ae58ea18a832052f51d5780452367d432f1d5406781c"
     },
     "CATEGORY_AUDIT.json": {
-      "size_bytes": 2347055,
-      "sha256": "a70fbcdc9c59ad8c3be92dc22b31bc83bc0399934c8678d79ee82483879f4b61"
+      "size_bytes": 2255146,
+      "sha256": "aa4d9a135c478ea88fd39c92077928e5408abed9d89e5936731b317de84f610d"
     },
     "EXECUTION_SUMMARY.json": {
-      "size_bytes": 1800,
-      "sha256": "ab3177141bdf940429a11f78282330ce201252a4c785aca0af893bbcda27f539"
+      "size_bytes": 1775,
+      "sha256": "e9d8c38671b2f7c7db50b7101bcb586fc9c8cfc72d92a468afcae7bf986df85a"
     },
     "FINAL_REPORT.md": {
-      "size_bytes": 5374,
-      "sha256": "75c23775e65a90e4cc20cd0eb95bf3a02248838391ba6c392527f7ac24ee4ca2"
+      "size_bytes": 5785,
+      "sha256": "f4014869b632932aa10ff1a44d6842ae2bd8abe89ede6548aeeefb53a0dc12ef"
     },
     "IDENTITY_RECONCILIATION.json": {
-      "size_bytes": 1581527,
-      "sha256": "41c6ce857c841e3a8a163e733f4341c718dab376c3bffec077eb4acb03474128"
+      "size_bytes": 1581524,
+      "sha256": "6b51f1168f949f1c059ea05df56b72827e30d3232ac1d5d504ade9461fcc67ea"
     },
     "MRI_4MP_PUBLICATIONS_AUDIT.xlsx": {
-      "size_bytes": 1013359,
-      "sha256": "ce5794a255275be3d222149efff161a194c98759f2d65a7bf89bdf42b9e9fc33"
+      "size_bytes": 1014768,
+      "sha256": "8a41e39feb4708bf1abfb9201522d0c73ba4d82323477e4d207b6eb561a1ac01"
     },
     "PUBLICATION_OBSERVATIONS.jsonl": {
-      "size_bytes": 5440024,
-      "sha256": "74758e5650c5e068847db7659f313df0568eb049fa4c8eae51093d8c2c068c36"
+      "size_bytes": 6474026,
+      "sha256": "66586c12700bf60d77e0e8f297e2251159097e9232a1f5ebaa0c96602659ff5b"
     },
     "raw_live_harvest.json": {
       "size_bytes": 732074,
       "sha256": "ea735823bca659dfdb6cd0e3e94cd6aa263b6f84ff583b8fb7de068c805d29ef"
     },
     "RUN_MANIFEST.json": {
-      "size_bytes": 603,
-      "sha256": "8f996514ac52dad72c054a232db1b17b3274b480a9d50d92b11d2f083be300dc"
+      "size_bytes": 611,
+      "sha256": "0a6ef57f8318b63adae6bc80ac3882f009a4230d3d7695ce30d0fd9862078b71"
     }
   }
 }
