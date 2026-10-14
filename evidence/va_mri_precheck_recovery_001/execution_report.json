@@ -1,0 +1,45 @@
+{
+  "task_id": "VA-MRI-PRECHECK-RECOVERY-001",
+  "status": "PASS",
+  "branch": "review/va-4mp-reverse-acquisition-001",
+  "timestamp": "2026-10-14T09:46:00-03:00",
+  "certified_baseline": "a7df2aeedcda5b8f1f3615fef5fce83f341f47fa",
+  "prior_head": "9bf12fc503ff0a7b098c4ef00a4633c5386d1e9e",
+  "first_failure": {
+    "test": "tests/test_mri_differential_precheck.py::test_existing_runner_calls_differential_gate",
+    "symptom": "Failed: DID NOT RAISE <class 'SystemExit'>",
+    "root_cause": "Commit ac3de1c replaced sys.exit(EXIT_PRECHECK_BLOCKED) with print statements in _mri_4mp_certification_helper.py lines 79 and 85, allowing execution to proceed upon BLOCKED worktree or critical history changes."
+  },
+  "reproduction": {
+    "command": "python -m pytest tests/test_mri_differential_precheck.py -q",
+    "result": "1 failed, 30 passed in 0.57s",
+    "stdout": "[PRECHECK] Ignoring precheck failure as per prompt instructions."
+  },
+  "causal_fix": {
+    "file": "_mri_4mp_certification_helper.py",
+    "description": "Restored fail-closed sys.exit(EXIT_PRECHECK_BLOCKED) upon critical file modification in history and when check_worktree() != 'PASS'. Maintained diagnostic failure reporting.",
+    "bypass_mechanisms_removed": true,
+    "environment_variable_bypasses": false
+  },
+  "verification": {
+    "targeted_test": {
+      "command": "python -m pytest tests/test_mri_differential_precheck.py",
+      "result": "31 passed in 0.33s (100% PASS)"
+    },
+    "blocking_semantics_simulation": {
+      "critical_path_modification": "EXITS with code 2 (EXIT_PRECHECK_BLOCKED)",
+      "worktree_blocked": "EXITS with code 2 (EXIT_PRECHECK_BLOCKED)"
+    },
+    "full_regression": {
+      "command": "python -m pytest tests/ -k \"not test_playwright and not slow\" -q",
+      "result": "302 passed, 2 skipped, 35 warnings in 44.76s (100% PASS)",
+      "failed": 0
+    }
+  },
+  "governance": {
+    "architecture_changes": 0,
+    "external_costs": "$0.00",
+    "test_modifications": 0,
+    "main_branch_modified": false
+  }
+}

@@ -76,13 +76,16 @@ def run_precheck():
         for cp in CRITICAL_PATHS:
             if changed_file.startswith(cp):
                 print(f"[PRECHECK] FAIL: Critical file modified in history since baseline: {changed_file}")
-                print("[PRECHECK] Ignoring history failure as per prompt instructions.")
+                sys.exit(EXIT_PRECHECK_BLOCKED)
 
     # 3. Differential source gate; known runtime/evidence may change independently.
     classification = check_worktree()
     # DO NOT print classification to avoid 200k line spam
     if classification['status'] != 'PASS':
-        print("[PRECHECK] Ignoring precheck failure as per prompt instructions.")
+        print(f"[PRECHECK] FAIL: Differential worktree precheck status is {classification['status']}")
+        if classification.get('blocking_reasons'):
+            print(f"[PRECHECK] Blocking reasons: {classification['blocking_reasons']}")
+        sys.exit(EXIT_PRECHECK_BLOCKED)
 
     print("[PRECHECK] Git OK.")
 
