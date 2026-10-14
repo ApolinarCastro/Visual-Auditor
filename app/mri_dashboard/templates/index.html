@@ -2,86 +2,86 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MRI — Autonomous Marketplace Auditor</title>
     <style>
         :root {
-            --bg: #0f1115;
-            --surface: #1a1d24;
-            --surface-hover: #232730;
+            --bg: #0f172a;
+            --panel-bg: #1e293b;
+            --border: #334155;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
             --primary: #4ade80;
             --primary-dark: #22c55e;
-            --text: #e2e8f0;
-            --text-muted: #94a3b8;
-            --border: #334155;
             --danger: #ef4444;
             --warning: #f59e0b;
-            --info: #3b82f6;
-            --font: 'Segoe UI', system-ui, sans-serif;
+            --info: #38bdf8;
+            --purple: #c084fc;
         }
         
         body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg);
             color: var(--text);
-            font-family: var(--font);
             margin: 0;
-            padding: 0;
             display: flex;
             height: 100vh;
             overflow: hidden;
         }
         
         aside {
-            width: 250px;
-            background-color: var(--surface);
+            width: 260px;
+            background-color: var(--panel-bg);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            padding: 20px 0;
+            padding: 20px;
+            box-sizing: border-box;
+            flex-shrink: 0;
         }
         
         aside h1 {
-            font-size: 1.2rem;
-            margin: 0 20px 30px;
+            font-size: 1.1rem;
+            margin-bottom: 25px;
             color: var(--primary);
-            font-weight: 600;
-            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
         }
         
         .nav-item {
-            padding: 12px 20px;
-            color: var(--text-muted);
+            padding: 12px 15px;
+            border-radius: 6px;
             cursor: pointer;
-            transition: all 0.2s;
-            border-left: 3px solid transparent;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            user-select: none;
         }
         
         .nav-item:hover {
-            background-color: var(--surface-hover);
+            background-color: rgba(255, 255, 255, 0.05);
             color: var(--text);
         }
         
         .nav-item.active {
-            background-color: var(--surface-hover);
-            color: var(--primary);
-            border-left-color: var(--primary);
+            background-color: var(--primary);
+            color: #000;
+            font-weight: 600;
         }
         
         main {
             flex: 1;
-            padding: 30px;
+            padding: 25px 30px;
+            box-sizing: border-box;
             overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+            position: relative;
         }
         
         .panel {
-            background-color: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 20px;
             display: none;
-            animation: fadeIn 0.3s ease;
+            animation: fadeIn 0.2s ease-in-out;
         }
         
         .panel.active {
@@ -89,44 +89,54 @@
         }
         
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
+            from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
-        h2 { margin-top: 0; color: #fff; font-size: 1.3rem; margin-bottom: 20px; }
+        h2 { margin-top: 0; color: #fff; font-size: 1.35rem; margin-bottom: 20px; }
         
         .controls {
             display: flex;
-            gap: 15px;
+            flex-wrap: wrap;
+            gap: 12px;
             margin-bottom: 20px;
         }
         
-        select, button {
+        select, button, input {
             background-color: var(--bg);
             color: var(--text);
             border: 1px solid var(--border);
-            padding: 10px 15px;
-            border-radius: 4px;
-            font-size: 0.95rem;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 0.92rem;
             cursor: pointer;
             transition: 0.2s;
         }
         
+        select:focus, button:focus, input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
         button.btn-primary { background-color: var(--primary); color: #000; border-color: var(--primary); font-weight: bold; }
-        button.btn-primary:hover { background-color: var(--primary-dark); }
+        button.btn-primary:hover:not(:disabled) { background-color: var(--primary-dark); }
+        button.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
         button.btn-danger { background-color: var(--danger); color: #fff; border-color: var(--danger); font-weight: bold; }
+        button.btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+        button.btn-secondary { background-color: var(--panel-bg); color: var(--text); border-color: var(--border); }
+        button.btn-secondary:hover { border-color: var(--primary); }
         
         .status-box {
-            background-color: var(--bg);
-            padding: 15px;
-            border-radius: 6px;
+            background-color: var(--panel-bg);
+            padding: 18px;
+            border-radius: 8px;
             border: 1px solid var(--border);
             margin-bottom: 20px;
         }
         
         .progress-bar-container {
             height: 8px;
-            background-color: var(--border);
+            background-color: var(--bg);
             border-radius: 4px;
             overflow: hidden;
             margin-top: 10px;
@@ -142,95 +152,191 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
+            background-color: var(--panel-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
         }
         
         th, td {
-            padding: 12px;
+            padding: 12px 14px;
             text-align: left;
             border-bottom: 1px solid var(--border);
+            vertical-align: top;
         }
         
-        th { color: var(--text-muted); font-weight: 500; }
+        th { 
+            background-color: rgba(15, 23, 42, 0.7); 
+            color: var(--text-muted); 
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+        
+        tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
         
         .badge {
-            padding: 4px 8px;
+            display: inline-block;
+            padding: 3px 8px;
             border-radius: 4px;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: 600;
         }
         
-        .badge-success { background: rgba(74, 222, 128, 0.2); color: var(--primary); }
-        .badge-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
-        .badge-warning { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
-        .badge-info { background: rgba(59, 130, 246, 0.2); color: var(--info); }
+        .badge-success { background: rgba(74, 222, 128, 0.18); color: var(--primary); border: 1px solid rgba(74, 222, 128, 0.3); }
+        .badge-danger { background: rgba(239, 68, 68, 0.18); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .badge-warning { background: rgba(245, 158, 11, 0.18); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-info { background: rgba(56, 189, 248, 0.18); color: var(--info); border: 1px solid rgba(56, 189, 248, 0.3); }
+        .badge-purple { background: rgba(192, 132, 252, 0.18); color: var(--purple); border: 1px solid rgba(192, 132, 252, 0.3); }
         
         .grid-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
             gap: 15px;
+            margin-bottom: 25px;
         }
         
         .card {
-            background: var(--bg);
+            background: var(--panel-bg);
             border: 1px solid var(--border);
-            padding: 15px;
-            border-radius: 6px;
+            padding: 16px;
+            border-radius: 8px;
         }
         
-        .card-title { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 5px; }
-        .card-value { font-size: 1.5rem; font-weight: 600; color: #fff; }
+        .card-title { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .card-value { font-size: 1.6rem; font-weight: 700; color: #fff; }
+        
+        .empty-state {
+            padding: 40px;
+            text-align: center;
+            background: var(--panel-bg);
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+            color: var(--text-muted);
+            margin: 20px 0;
+        }
+        .empty-state h3 { color: #fff; margin-bottom: 8px; }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            width: 90%;
+            max-width: 750px;
+            max-height: 85vh;
+            border-radius: 10px;
+            padding: 24px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .modal-header h3 { margin: 0; color: #fff; font-size: 1.25rem; }
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+        .modal-close:hover { color: #fff; }
+        .detail-row {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.9rem;
+        }
+        .detail-label {
+            width: 180px;
+            font-weight: 600;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+        .detail-value {
+            flex: 1;
+            word-break: break-all;
+            color: var(--text);
+        }
     </style>
 </head>
 <body>
     <aside>
-        <h1>MRI — Autonomous Marketplace Auditor</h1>
-        <div class="nav-item active" onclick="switchTab('ops')">A. Operaciones y Resultados</div>
-        <div class="nav-item" onclick="switchTab('learn')">B. Aprendizaje (ExperienceStore)</div>
-        <div class="nav-item" onclick="switchTab('hist')">C. Historial de Ejecuciones</div>
+        <h1>MRI Auditor</h1>
+        <div class="nav-item active" id="tab-ops" onclick="switchTab('ops')">A. Operaciones y Resultados</div>
+        <div class="nav-item" id="tab-hist" onclick="switchTab('hist')">B. Historial de Ejecuciones</div>
+        <div class="nav-item" id="tab-learn" onclick="switchTab('learn')">C. Aprendizaje y Experiencia</div>
     </aside>
     
     <main>
-        <!-- A. Operaciones -->
+        <!-- A. Operaciones y Resultados -->
         <div id="ops" class="panel active">
-            <h2>A. Operaciones y Resultados</h2>
+            <h2>A. Operaciones y Resultados Verificables</h2>
             <div class="controls">
                 <select id="modeSelect">
+                    <option value="CONSOLIDATED_RECOVERY">Corredor Consolidado (Recuperación y Pipeline SQLite)</option>
                     <option value="DISCOVERY">Descubrimiento Autónomo (Categorías)</option>
                     <option value="AUDIT">Auditoría Dirigida (Universo CSV)</option>
                 </select>
                 <select id="mktSelect">
                     <option value="ALL">Todos los Marketplaces</option>
                     <option value="Mercado Libre">Mercado Libre</option>
+                    <option value="Falabella">Falabella</option>
                     <option value="Paris">Paris</option>
                     <option value="Ripley">Ripley</option>
-                    <option value="Falabella">Falabella</option>
                 </select>
                 <select id="limitSelect">
-                    <option value="1">1 Página (Piloto Rápido)</option>
+                    <option value="1">1 Página / Muestra Rápida</option>
                     <option value="5">5 Productos/Páginas</option>
                     <option value="10">10 Productos/Páginas</option>
-                    <option value="ALL">Todo (No recomendado en pruebas)</option>
+                    <option value="ALL">Todo el Catálogo</option>
                 </select>
                 <button class="btn-primary" onclick="startAudit()" id="btnStart">Iniciar Auditoría</button>
                 <button class="btn-danger" onclick="stopAudit()" id="btnStop" disabled>Detener</button>
             </div>
             
             <div class="status-box">
-                <div><strong>Estado:</strong> <span id="lblStatus">IDLE</span></div>
+                <div><strong>Estado del Corredor:</strong> <span id="lblStatus" class="badge badge-info">IDLE</span></div>
                 <div style="margin-top:8px; color: var(--text-muted)" id="lblStatusMsg">Esperando inicio de auditoría...</div>
                 
                 <div style="margin-top: 15px; display: flex; justify-content: space-between; font-size: 0.85rem">
                     <span>Progreso: <span id="lblProgress">0</span> / <span id="lblTotal">0</span></span>
+                    <span id="lblActiveRun" style="color:var(--info); font-family:monospace"></span>
                 </div>
                 <div class="progress-bar-container">
                     <div class="progress-bar" id="progressBar"></div>
                 </div>
             </div>
             
-            <div class="grid-cards" id="opsLiveCards" style="margin-top: 15px;">
+            <div class="grid-cards" id="opsLiveCards">
                 <div class="card">
-                    <div class="card-title">Confirmados</div>
+                    <div class="card-title">Confirmados / Observados</div>
                     <div class="card-value" style="color:var(--primary)" id="cntConfirmed">0</div>
                 </div>
                 <div class="card">
@@ -239,7 +345,7 @@
                 </div>
                 <div class="card">
                     <div class="card-title">Subcategorías Verificadas</div>
-                    <div class="card-value" style="color:var(--info)" id="cntSubcatVerified">0</div>
+                    <div class="card-value" style="color:var(--purple)" id="cntSubcatVerified">0</div>
                 </div>
                 <div class="card">
                     <div class="card-title">Sin Categoría (Unknown)</div>
@@ -251,16 +357,28 @@
                 </div>
                 <div class="card">
                     <div class="card-title">Revisión Requerida</div>
-                    <div class="card-value" style="color:var(--info)" id="cntReview">0</div>
+                    <div class="card-value" style="color:var(--text-muted)" id="cntReview">0</div>
                 </div>
             </div>
 
-            <h3 style="margin-top: 30px; font-size: 1.1rem; color: #fff;">Tabla Completa de Productos Auditados</h3>
-            <div class="controls" style="margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; margin-bottom:12px;">
+                <h3 style="margin: 0; font-size: 1.15rem; color: #fff;">Tabla Completa de Publicaciones Verificadas</h3>
+                <span id="lblTableCount" style="color:var(--text-muted); font-size:0.85rem"></span>
+            </div>
+            
+            <div class="controls" style="margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 10px;">
+                <select id="filterMarketplace" onchange="renderMainTable()">
+                    <option value="ALL">Canal: Todos</option>
+                    <option value="Mercado Libre">Mercado Libre</option>
+                    <option value="Falabella">Falabella</option>
+                    <option value="Paris">Paris</option>
+                    <option value="Ripley">Ripley</option>
+                </select>
                 <select id="filterStatus" onchange="renderMainTable()">
                     <option value="ALL">Filtro: Todos los Estados</option>
-                    <option value="CONFIRMED">Confirmados</option>
+                    <option value="CONFIRMED">Confirmados / Observados</option>
                     <option value="REVIEW_REQUIRED">Revisión Requerida</option>
+                    <option value="INCONCLUSIVE">Inconclusos / Bloqueos</option>
                     <option value="INSUFFICIENT_EVIDENCE">Sin Evidencia</option>
                 </select>
                 <select id="filterCategory" onchange="renderMainTable()">
@@ -273,106 +391,199 @@
                     <option value="ALL">Filtro: Cobertura (Todas)</option>
                     <option value="COMPLETE">Cobertura: Completa</option>
                     <option value="PARTIAL">Cobertura: Parcial</option>
+                </select>
             </div>
+            
             <div style="overflow-x: auto;">
                 <table>
                     <thead>
                         <tr>
                             <th>Marketplace</th>
-                            <th>Producto (ID)</th>
-                            <th>URL / Observado</th>
-                            <th>Categoría Real</th>
-                            <th>Subcategoría Real</th>
+                            <th>Producto (ID / Título)</th>
+                            <th>URL Canónica / Observada</th>
+                            <th>Categoría Observada</th>
+                            <th>Subcategoría</th>
                             <th>Estado Final</th>
-                            <th>Evidencia y Motivo</th>
+                            <th>Acciones / Evidencia</th>
                         </tr>
                     </thead>
                     <tbody id="tbMainAudit"></tbody>
                 </table>
             </div>
+            <div id="emptyOpsTable" class="empty-state" style="display:none;">
+                <h3>Sin resultados para los filtros seleccionados</h3>
+                <p>No se encontraron publicaciones que coincidan con los criterios actuales.</p>
+            </div>
+        </div>
+
+        <!-- B. Historial de Ejecuciones -->
+        <div id="hist" class="panel">
+            <h2>B. Historial de Ejecuciones Persistidas en SQLite</h2>
+            <p style="color:var(--text-muted); margin-bottom:18px; font-size:0.92rem">
+                Seleccione una corrida histórica registrada en la base de datos para cargar y examinar inmediatamente sus publicaciones y evidencias sin repetir la adquisición en vivo.
+            </p>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Run ID</th>
+                            <th>Fecha de Ejecución</th>
+                            <th>Marketplace / Modo</th>
+                            <th>Total Publicaciones</th>
+                            <th>Confirmados</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbHist"></tbody>
+                </table>
+            </div>
+            <div id="emptyHistTable" class="empty-state" style="display:none;">
+                <h3>No hay corridas históricas registradas</h3>
+                <p>Inicie una auditoría o sincronización para registrar ejecuciones en SQLite.</p>
+            </div>
         </div>
         
-        <!-- B. Aprendizaje -->
+        <!-- C. Aprendizaje y Experiencia -->
         <div id="learn" class="panel">
-            <h2>B. Aprendizaje y Experiencia (ExperienceStore)</h2>
-            <div class="grid-cards" style="margin-bottom: 20px;">
+            <h2>C. Aprendizaje y Experiencia (Experience Store & Recovery)</h2>
+            <div class="grid-cards" style="margin-bottom: 25px;">
                 <div class="card">
                     <div class="card-title">Identidades Validadas en Memoria</div>
-                    <div class="card-value" id="lrnTotal">0</div>
+                    <div class="card-value" style="color:var(--primary)" id="lrnTotal">0</div>
                 </div>
                 <div class="card">
                     <div class="card-title">Reutilizaciones de Conocimiento (Hits)</div>
-                    <div class="card-value" id="lrnHits" style="color:var(--primary)">0</div>
+                    <div class="card-value" style="color:var(--info)" id="lrnHits">0</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Experiencias de Recuperación</div>
+                    <div class="card-value" style="color:var(--purple)" id="lrnRecoveryCount">0</div>
                 </div>
             </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Hash Identidad</th>
-                        <th>Producto</th>
-                        <th>Status</th>
-                        <th>Método</th>
-                        <th>Hits</th>
-                    </tr>
-                </thead>
-                <tbody id="tbLearn"></tbody>
-            </table>
+            
+            <h3 style="font-size: 1.1rem; color: #fff; margin-bottom: 12px;">Experiencias de Recuperación y Estrategias (visibility.db)</h3>
+            <div style="overflow-x: auto; margin-bottom: 30px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Fecha</th>
+                            <th>Marketplace</th>
+                            <th>Categoría</th>
+                            <th>Estrategia Aplicada</th>
+                            <th>Resultado</th>
+                            <th>Tiempo Rec.</th>
+                            <th>Evidencia Registrada</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbRecExp"></tbody>
+                </table>
+            </div>
+            <div id="emptyRecExpTable" class="empty-state" style="display:none;">
+                <h3>No hay experiencias de recuperación registradas</h3>
+            </div>
+
+            <h3 style="font-size: 1.1rem; color: #fff; margin-bottom: 12px;">Registros de Conocimiento de Productos y Categorías (ExperienceStore)</h3>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID / Hash</th>
+                            <th>Producto / Valor</th>
+                            <th>Marketplace</th>
+                            <th>Estado</th>
+                            <th>Método</th>
+                            <th>Hits</th>
+                            <th>Evidencia / Referencia</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbLearn"></tbody>
+                </table>
+            </div>
+            <div id="emptyLearnTable" class="empty-state" style="display:none;">
+                <h3>No hay registros de experiencia disponibles</h3>
+            </div>
         </div>
-        
-        <!-- C. Historial -->
-        <div id="hist" class="panel">
-            <h2>C. Historial MRI</h2>
-            <p style="color:var(--text-muted); margin-bottom:15px; font-size:0.9rem">Auditorías finalizadas por este motor standalone.</p>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Run ID</th>
-                        <th>Fecha</th>
-                        <th>Marketplace</th>
-                        <th>Total Procesados</th>
-                        <th>Confirmados</th>
-                    </tr>
-                </thead>
-                <tbody id="tbHist"></tbody>
-            </table>
-        </div>
-        
     </main>
+
+    <!-- Modal Detalle Verificable de Publicación -->
+    <div id="modalDetail" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Detalle Verificable de la Publicación</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modalBody">
+                <!-- Injected via JavaScript -->
+            </div>
+        </div>
+    </div>
 
     <script>
         let currentResults = [];
+        let pollInterval = null;
+        let selectedRunId = null;
 
         function switchTab(tabId) {
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            event.target.classList.add('active');
+            
+            const p = document.getElementById(tabId);
+            if(p) p.classList.add('active');
+            
+            const btn = document.getElementById('tab-' + tabId);
+            if(btn) btn.classList.add('active');
+            
             if(tabId === 'learn') loadLearning();
             if(tabId === 'hist') loadHistory();
         }
         
-        let pollInterval = null;
-        
         function getBadge(status) {
-            if(status === 'CONFIRMED' || status === 'NICOPOLY_CONFIRMED' || status === 'SUCCESS') return '<span class="badge badge-success">'+status+'</span>';
-            if(status === 'SOURCE_BLOCKED' || status === 'INCONCLUSIVE' || status === 'INSUFFICIENT_EVIDENCE' || status === 'FAIL' || status === 'NOT_FOUND' || status === 'BLOCKED') return '<span class="badge badge-warning">'+status+'</span>';
-            if(status === 'REVIEW_REQUIRED' || status === 'NON_NICOPOLY_CONFIRMED') return '<span class="badge badge-info">'+status+'</span>';
-            return '<span class="badge">'+status+'</span>';
+            if(!status) return '<span class="badge">NO_VERIFICADO</span>';
+            const s = String(status).toUpperCase();
+            if(s === 'CONFIRMED' || s === 'NICOPOLY_CONFIRMED' || s === 'SUCCESS' || s === 'OBSERVED' || s === 'PROMOTED') {
+                return '<span class="badge badge-success">' + s + '</span>';
+            }
+            if(s === 'SOURCE_BLOCKED' || s === 'INCONCLUSIVE' || s === 'INSUFFICIENT_EVIDENCE' || s === 'FAIL' || s === 'NOT_FOUND' || s === 'BLOCKED') {
+                return '<span class="badge badge-warning">' + s + '</span>';
+            }
+            if(s === 'REVIEW_REQUIRED' || s === 'NON_NICOPOLY_CONFIRMED') {
+                return '<span class="badge badge-purple">' + s + '</span>';
+            }
+            if(s === 'NO_VERIFICADO') {
+                return '<span class="badge badge-danger">NO_VERIFICADO</span>';
+            }
+            return '<span class="badge badge-info">' + s + '</span>';
         }
 
         async function startAudit() {
             const mkt = document.getElementById('mktSelect').value;
             const lim = document.getElementById('limitSelect').value;
             const mode = document.getElementById('modeSelect').value;
-            const res = await fetch('/api/audit/start', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({marketplace: mkt, limit: lim, mode: mode})
-            });
-            if(res.ok) {
-                document.getElementById('btnStart').disabled = true;
-                document.getElementById('btnStop').disabled = false;
-                startPolling();
+            
+            document.getElementById('btnStart').disabled = true;
+            document.getElementById('btnStop').disabled = false;
+            document.getElementById('lblStatus').innerText = "INICIANDO...";
+            document.getElementById('lblStatusMsg').innerText = "Despachando tarea al motor MRI...";
+            
+            try {
+                const res = await fetch('/api/audit/start', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({marketplace: mkt, limit: lim, mode: mode})
+                });
+                if(res.ok) {
+                    startPolling();
+                } else {
+                    const err = await res.json();
+                    document.getElementById('lblStatusMsg').innerText = "Error: " + (err.message || "No se pudo iniciar");
+                    document.getElementById('btnStart').disabled = false;
+                    document.getElementById('btnStop').disabled = true;
+                }
+            } catch(e) {
+                document.getElementById('lblStatusMsg').innerText = "Excepción de red: " + e.message;
+                document.getElementById('btnStart').disabled = false;
+                document.getElementById('btnStop').disabled = true;
             }
         }
         
@@ -383,7 +594,7 @@
         
         function startPolling() {
             if(pollInterval) clearInterval(pollInterval);
-            pollInterval = setInterval(pollState, 1000);
+            pollInterval = setInterval(pollState, 1500);
         }
         
         async function pollState() {
@@ -391,81 +602,94 @@
                 const res = await fetch('/api/state');
                 const data = await res.json();
                 
-                document.getElementById('lblStatus').innerText = data.is_running ? "RUNNING" : data.state.status_message;
-                document.getElementById('lblStatusMsg').innerText = data.state.status_message;
-                document.getElementById('lblProgress').innerText = data.state.progress;
-                document.getElementById('lblTotal').innerText = data.state.total;
+                const isRun = data.is_running;
+                const st = data.state || {};
                 
-                let pct = data.state.total > 0 ? (data.state.progress / data.state.total)*100 : 0;
-                document.getElementById('progressBar').style.width = pct + '%';
+                document.getElementById('lblStatus').innerText = isRun ? "RUNNING" : (st.status_message || "IDLE");
+                document.getElementById('lblStatusMsg').innerText = st.status_message || "En espera";
+                document.getElementById('lblProgress').innerText = st.progress || 0;
+                document.getElementById('lblTotal').innerText = st.total || 0;
                 
-                currentResults = data.results;
+                let pct = st.total > 0 ? (st.progress / st.total)*100 : 0;
+                document.getElementById('progressBar').style.width = Math.min(pct, 100) + '%';
                 
-                let cnf=0, inc=0, rev=0;
-                let catOk=0, subcatOk=0, catUnk=0;
-                currentResults.forEach(r => {
-                    const st = r.estado_final || r.status;
-                    if(st === 'CONFIRMED') cnf++;
-                    else if(st === 'INCONCLUSIVE' || st === 'SOURCE_BLOCKED' || st === 'FAIL' || st === 'BLOCKED') inc++;
-                    else if(st === 'REVIEW_REQUIRED') rev++;
-                    
-                    if(r.real_category && r.real_category !== 'CATEGORY_UNKNOWN') catOk++;
-                    else catUnk++;
-                    
-                    if(r.real_subcategory && r.real_subcategory !== 'CATEGORY_UNKNOWN') subcatOk++;
-                });
-                document.getElementById('cntConfirmed').innerText = cnf;
-                document.getElementById('cntInconclusive').innerText = inc;
-                document.getElementById('cntReview').innerText = rev;
-                document.getElementById('cntCatVerified').innerText = catOk;
-                document.getElementById('cntSubcatVerified').innerText = subcatOk;
-                document.getElementById('cntCatUnknown').innerText = catUnk;
+                if (data.results && data.results.length > 0) {
+                    currentResults = data.results;
+                    updateDashboardCards();
+                    renderMainTable();
+                }
                 
-                renderMainTable();
-                
-                if(!data.is_running && data.state.status_message !== "IDLE") {
+                if(!isRun && st.status_message && st.status_message !== "IDLE" && !st.status_message.includes("INICIANDO")) {
                     clearInterval(pollInterval);
                     document.getElementById('btnStart').disabled = false;
                     document.getElementById('btnStop').disabled = true;
                 }
             } catch(e) {
-                console.error(e);
+                console.error("Error al consultar /api/state:", e);
             }
+        }
+
+        function updateDashboardCards() {
+            let cnf=0, inc=0, rev=0;
+            let catOk=0, subcatOk=0, catUnk=0;
+            
+            currentResults.forEach(r => {
+                const st = (r.estado_final || r.status || '').toUpperCase();
+                if(st === 'CONFIRMED' || st === 'NICOPOLY_CONFIRMED' || st === 'OBSERVED' || st === 'SUCCESS') cnf++;
+                else if(st === 'INCONCLUSIVE' || st === 'SOURCE_BLOCKED' || st === 'FAIL' || st === 'BLOCKED' || st === 'INSUFFICIENT_EVIDENCE') inc++;
+                else if(st === 'REVIEW_REQUIRED' || st === 'NON_NICOPOLY_CONFIRMED') rev++;
+                
+                if(r.real_category && r.real_category !== 'CATEGORY_UNKNOWN' && r.real_category !== 'NO_VERIFICADO') catOk++;
+                else catUnk++;
+                
+                if(r.real_subcategory && r.real_subcategory !== 'CATEGORY_UNKNOWN' && r.real_subcategory !== 'NO_VERIFICADO') subcatOk++;
+            });
+            
+            document.getElementById('cntConfirmed').innerText = cnf;
+            document.getElementById('cntInconclusive').innerText = inc;
+            document.getElementById('cntReview').innerText = rev;
+            document.getElementById('cntCatVerified').innerText = catOk;
+            document.getElementById('cntSubcatVerified').innerText = subcatOk;
+            document.getElementById('cntCatUnknown').innerText = catUnk;
         }
         
         function populateDropdown(id, options) {
             const select = document.getElementById(id);
+            if(!select) return;
             const currentVal = select.value;
-            const firstOpt = select.options[0].text;
+            const firstOpt = select.options.length > 0 ? select.options[0].text : 'Todos';
             select.innerHTML = `<option value="ALL">${firstOpt}</option>` + 
-                Array.from(options).sort().map(opt => `<option value="${opt}">${opt}</option>`).join('');
+                Array.from(options).filter(Boolean).sort().map(opt => `<option value="${opt}">${opt}</option>`).join('');
             if (options.has(currentVal)) select.value = currentVal;
         }
 
         function renderMainTable() {
-            // Populate dynamic dropdowns first
+            // Dynamic categories from currentResults
             const cats = new Set();
             const subcats = new Set();
             currentResults.forEach(r => {
-                if (r.real_category) cats.add(r.real_category);
-                if (r.real_subcategory) subcats.add(r.real_subcategory);
+                if (r.real_category && r.real_category !== 'NO_VERIFICADO') cats.add(r.real_category);
+                if (r.real_subcategory && r.real_subcategory !== 'NO_VERIFICADO') subcats.add(r.real_subcategory);
             });
             populateDropdown('filterCategory', cats);
             populateDropdown('filterSubcategory', subcats);
 
+            const filterMkt = document.getElementById('filterMarketplace').value;
             const filterStatus = document.getElementById('filterStatus').value;
             const filterCategory = document.getElementById('filterCategory').value;
             const filterSubcategory = document.getElementById('filterSubcategory').value;
             const filterCoverage = document.getElementById('filterCoverage').value;
 
-            let filtered = currentResults;
-            
-            filtered = filtered.filter(r => {
-                const st = r.estado_final || r.status;
+            let filtered = currentResults.filter(r => {
+                const st = (r.estado_final || r.status || '').toUpperCase();
                 let match = true;
                 
+                if (filterMkt !== "ALL" && r.marketplace !== filterMkt) match = false;
+                
                 if (filterStatus !== "ALL") {
-                    if (filterStatus === "INCONCLUSIVE") {
+                    if (filterStatus === "CONFIRMED") {
+                        if (st !== 'CONFIRMED' && st !== 'NICOPOLY_CONFIRMED' && st !== 'OBSERVED') match = false;
+                    } else if (filterStatus === "INCONCLUSIVE") {
                         if (st !== 'INCONCLUSIVE' && st !== 'SOURCE_BLOCKED' && st !== 'FAIL' && st !== 'BLOCKED') match = false;
                     } else if (st !== filterStatus) {
                         match = false;
@@ -478,70 +702,274 @@
                 return match;
             });
 
-            const html = filtered.map(r => {
+            document.getElementById('lblTableCount').innerText = `Mostrando ${filtered.length} de ${currentResults.length} registros`;
+
+            const emptyDiv = document.getElementById('emptyOpsTable');
+            const tbody = document.getElementById('tbMainAudit');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '';
+                emptyDiv.style.display = 'block';
+                return;
+            } else {
+                emptyDiv.style.display = 'none';
+            }
+
+            // Render at most 250 rows to keep DOM highly responsive
+            const slice = filtered.slice(0, 250);
+
+            const html = slice.map((r, idx) => {
                 const prod = r.product || {};
                 const evs = r.evidencia_identidad || r.evidence || [];
-                const motivo = r.motivo_verificable || r.reason || '';
-                const urlLink = (r.url_encontrada || r.url || '').startsWith('http') 
-                    ? `<a href="${r.url_encontrada || r.url}" target="_blank" style="color:var(--info); text-decoration:none">Ver Enlace</a>`
-                    : (r.url_encontrada || r.url || 'N/A');
-                    
-                const catLink = r.category_url ? `<br><small><a href="${r.category_url}" target="_blank" style="color:var(--primary); text-decoration:none">Ver Categoría Origen</a></small>` : '';
+                const motivo = r.motivo_verificable || r.reason || 'NO_VERIFICADO';
+                const url = r.url_encontrada || r.url || '';
+                
+                const urlLink = url.startsWith('http') 
+                    ? `<a href="${url}" target="_blank" style="color:var(--info); text-decoration:none; font-weight:500;">Abrir Publicación &rarr;</a>`
+                    : '<span style="color:var(--text-muted)">NO_VERIFICADO</span>';
+
+                const catBadgeClass = (r.real_category && r.real_category !== 'CATEGORY_UNKNOWN' && r.real_category !== 'NO_VERIFICADO') 
+                    ? 'badge-info' : 'badge-danger';
 
                 return `
                 <tr>
-                    <td>${r.marketplace}${catLink}</td>
-                    <td>${r.producto_nombre || prod.title || 'N/A'}<br><small style="color:var(--text-muted)">SKU: ${r.producto_id || prod.sku || 'N/A'}</small></td>
-                    <td>${urlLink}<br><small style="color:var(--text-muted)">Obs SKU: ${r.observed_sku || 'N/A'}</small></td>
-                    <td><span class="badge ${r.real_category === 'CATEGORY_UNKNOWN' ? 'badge-danger' : 'badge-info'}">${r.real_category || 'N/A'}</span></td>
-                    <td><span class="badge ${r.real_subcategory === 'CATEGORY_UNKNOWN' ? 'badge-danger' : 'badge-info'}">${r.real_subcategory || 'N/A'}</span></td>
+                    <td><strong>${r.marketplace || 'N/A'}</strong></td>
+                    <td>
+                        <strong>${r.producto_nombre || prod.title || 'N/A'}</strong><br>
+                        <small style="color:var(--text-muted)">SKU: ${r.producto_id || prod.sku || 'N/A'}</small>
+                    </td>
+                    <td>
+                        ${urlLink}<br>
+                        <small style="color:var(--text-muted)">${r.fecha_observacion ? r.fecha_observacion.split('T')[0] : 'NO_VERIFICADO'}</small>
+                    </td>
+                    <td><span class="badge ${catBadgeClass}">${r.real_category || 'NO_VERIFICADO'}</span></td>
+                    <td><span class="badge badge-purple">${r.real_subcategory || 'NO_VERIFICADO'}</span></td>
                     <td>${getBadge(r.estado_final || r.status)}</td>
-                    <td style="font-size:0.85rem">
-                        ${evs.length > 0 ? '<strong>Evidencia:</strong><br>' + evs.join('<br>') + '<br><br>' : ''}
-                        <strong>Motivo:</strong><br>${motivo}<br>
-                        <strong>Fuente Cat:</strong> ${r.category_source || 'N/A'}
+                    <td>
+                        <button class="btn-secondary" style="padding:4px 10px; font-size:0.8rem;" onclick="openDetailModal(${idx})">Ver Detalle</button>
                     </td>
                 </tr>
                 `;
             }).join('');
-            document.getElementById('tbMainAudit').innerHTML = html;
-        }
-        
-        async function loadLearning() {
-            const res = await fetch('/api/learning');
-            const data = await res.json();
-            document.getElementById('lrnTotal').innerText = data.total_validated;
-            document.getElementById('lrnHits').innerText = data.total_reused;
             
-            const html = data.experiences.map(e => `
-                <tr>
-                    <td style="font-family:monospace; color:var(--text-muted)">${e.hash}</td>
-                    <td>${e.product_name} <br><small style="color:var(--text-muted)">${e.marketplace}</small></td>
-                    <td>${getBadge(e.status)}</td>
-                    <td>${e.method}</td>
-                    <td>${e.hits}</td>
-                </tr>
-            `).join('');
-            document.getElementById('tbLearn').innerHTML = html;
+            tbody.innerHTML = html;
+        }
+
+        function openDetailModal(index) {
+            const r = currentResults[index];
+            if (!r) return;
+            
+            const evs = r.evidencia_identidad || r.evidence || [];
+            const evText = evs.length > 0 ? evs.join('<br>') : 'NO_VERIFICADO';
+            const url = r.url_encontrada || r.url || 'NO_VERIFICADO';
+            const urlDisplay = url.startsWith('http') 
+                ? `<a href="${url}" target="_blank" style="color:var(--info)">${url}</a>`
+                : url;
+
+            const modalHtml = `
+                <div class="detail-row">
+                    <div class="detail-label">Marketplace:</div>
+                    <div class="detail-value"><strong>${r.marketplace || 'NO_VERIFICADO'}</strong></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Identificador (SKU):</div>
+                    <div class="detail-value"><code>${r.producto_id || r.observed_sku || 'NO_VERIFICADO'}</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Nombre Publicación:</div>
+                    <div class="detail-value">${r.producto_nombre || 'NO_VERIFICADO'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">URL Canónica:</div>
+                    <div class="detail-value">${urlDisplay}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Categoría Observada:</div>
+                    <div class="detail-value"><span class="badge badge-info">${r.real_category || 'NO_VERIFICADO'}</span></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Categoría Esperada:</div>
+                    <div class="detail-value"><span class="badge badge-purple">${r.expected_category || 'Vestuario Femenino / Nicopoly'}</span></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Decisión Final:</div>
+                    <div class="detail-value">${getBadge(r.decision || r.estado_final || r.status)}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Fuente de Adquisición:</div>
+                    <div class="detail-value"><code>${r.source || 'PAGINATED_ADAPTER_HARVEST'}</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Timestamp de Observación:</div>
+                    <div class="detail-value">${r.fecha_observacion || r.timestamp || 'NO_VERIFICADO'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Evidencia Recopilada:</div>
+                    <div class="detail-value" style="background:rgba(0,0,0,0.2); padding:8px; border-radius:4px; font-size:0.85rem">
+                        ${evText}
+                        <div style="margin-top:6px; color:var(--text-muted)"><strong>Motivo:</strong> ${r.motivo_verificable || r.reason || 'NO_VERIFICADO'}</div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('modalBody').innerHTML = modalHtml;
+            document.getElementById('modalDetail').style.display = 'flex';
+        }
+
+        function closeModal(event) {
+            document.getElementById('modalDetail').style.display = 'none';
         }
         
         async function loadHistory() {
-            const res = await fetch('/api/history');
-            const data = await res.json();
-            const html = data.history.map(h => `
-                <tr>
-                    <td style="font-family:monospace">${h.run_id}</td>
-                    <td>${h.timestamp.split('T').join(' ').split('.')[0]}</td>
-                    <td>${h.marketplace}</td>
-                    <td>${h.total}</td>
-                    <td>${h.confirmed}</td>
-                </tr>
-            `).join('');
-            document.getElementById('tbHist').innerHTML = html;
+            try {
+                const res = await fetch('/api/history');
+                const data = await res.json();
+                const historyList = data.history || [];
+                
+                const emptyDiv = document.getElementById('emptyHistTable');
+                const tbody = document.getElementById('tbHist');
+
+                if (historyList.length === 0) {
+                    tbody.innerHTML = '';
+                    emptyDiv.style.display = 'block';
+                    return;
+                }
+                emptyDiv.style.display = 'none';
+
+                const html = historyList.map(h => {
+                    const isSelected = h.run_id === selectedRunId;
+                    return `
+                    <tr style="${isSelected ? 'background:rgba(74,222,128,0.1); border-left:3px solid var(--primary);' : ''}">
+                        <td style="font-family:monospace; font-weight:600; color:var(--info)">${h.run_id}</td>
+                        <td>${h.timestamp.split('T').join(' ').split('.')[0]}</td>
+                        <td>
+                            <strong>${h.marketplace}</strong><br>
+                            <small style="color:var(--text-muted)">Modo: ${h.mode || 'RECOVERY'}</small>
+                        </td>
+                        <td><strong>${h.total}</strong></td>
+                        <td><span class="badge badge-success">${h.confirmed}</span></td>
+                        <td>
+                            <button class="btn-primary" style="padding:5px 12px; font-size:0.85rem;" onclick="selectHistoricalRun('${h.run_id}')">
+                                ${isSelected ? '&check; Seleccionada' : 'Cargar en Vivo'}
+                            </button>
+                        </td>
+                    </tr>
+                    `;
+                }).join('');
+                tbody.innerHTML = html;
+            } catch(e) {
+                console.error("Error al cargar historial:", e);
+            }
+        }
+
+        async function selectHistoricalRun(runId) {
+            try {
+                const res = await fetch(`/api/history/${encodeURIComponent(runId)}`);
+                if(!res.ok) {
+                    alert("No se pudieron recuperar las publicaciones de la corrida: " + runId);
+                    return;
+                }
+                const data = await res.json();
+                currentResults = data.publications || [];
+                selectedRunId = runId;
+                
+                document.getElementById('lblActiveRun').innerText = `Corrida cargada: ${runId} (${currentResults.length} pubs)`;
+                document.getElementById('lblStatus').innerText = "PERSISTED_VIEW";
+                document.getElementById('lblStatusMsg').innerText = `Visualizando corrida histórica persistida ${runId} (${data.source})`;
+                document.getElementById('lblProgress').innerText = currentResults.length;
+                document.getElementById('lblTotal').innerText = currentResults.length;
+                document.getElementById('progressBar').style.width = '100%';
+
+                updateDashboardCards();
+                renderMainTable();
+                switchTab('ops');
+            } catch(e) {
+                alert("Error de conexión al cargar la corrida: " + e.message);
+            }
         }
         
-        // Initial load
-        pollState();
+        async function loadLearning() {
+            try {
+                const res = await fetch('/api/learning');
+                const data = await res.json();
+                
+                document.getElementById('lrnTotal').innerText = data.total_validated || 0;
+                document.getElementById('lrnHits').innerText = data.total_reused || 0;
+                
+                const recExps = data.recovery_experiences || [];
+                document.getElementById('lrnRecoveryCount').innerText = recExps.length;
+                
+                const tbRec = document.getElementById('tbRecExp');
+                const emptyRec = document.getElementById('emptyRecExpTable');
+                if (recExps.length === 0) {
+                    tbRec.innerHTML = '';
+                    emptyRec.style.display = 'block';
+                } else {
+                    emptyRec.style.display = 'none';
+                    tbRec.innerHTML = recExps.map(rx => `
+                        <tr>
+                            <td><code>${rx.id}</code></td>
+                            <td>${rx.timestamp.split('T')[0]}</td>
+                            <td><strong>${rx.marketplace}</strong></td>
+                            <td>${rx.category || 'N/A'}</td>
+                            <td><code>${rx.strategy}</code></td>
+                            <td>${getBadge(rx.result)}</td>
+                            <td>${rx.recovery_seconds ? rx.recovery_seconds + 's' : 'N/A'}</td>
+                            <td style="font-size:0.85rem">${rx.evidence || 'N/A'}</td>
+                        </tr>
+                    `).join('');
+                }
+
+                const exps = data.experiences || [];
+                const tbLrn = document.getElementById('tbLearn');
+                const emptyLrn = document.getElementById('emptyLearnTable');
+                if (exps.length === 0) {
+                    tbLrn.innerHTML = '';
+                    emptyLrn.style.display = 'block';
+                } else {
+                    emptyLrn.style.display = 'none';
+                    tbLrn.innerHTML = exps.map(e => `
+                        <tr>
+                            <td style="font-family:monospace; color:var(--text-muted)">${e.hash}</td>
+                            <td><strong>${e.product_name}</strong></td>
+                            <td>${e.marketplace}</td>
+                            <td>${getBadge(e.status)}</td>
+                            <td><code>${e.method}</code></td>
+                            <td><strong style="color:var(--primary)">${e.hits}</strong></td>
+                            <td style="font-size:0.85rem">${e.evidence || 'N/A'}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch(e) {
+                console.error("Error al cargar aprendizaje:", e);
+            }
+        }
+        
+        // Initial setup: Auto-load latest certified SQLite run if state is IDLE
+        async function initialSetup() {
+            try {
+                const stateRes = await fetch('/api/state');
+                const stateData = await stateRes.json();
+                
+                if (stateData.results && stateData.results.length > 0) {
+                    currentResults = stateData.results;
+                    updateDashboardCards();
+                    renderMainTable();
+                } else {
+                    // Pre-load latest persisted run from history
+                    const histRes = await fetch('/api/history');
+                    const histData = await histRes.json();
+                    if (histData.history && histData.history.length > 0) {
+                        const latest = histData.history[0];
+                        await selectHistoricalRun(latest.run_id);
+                    }
+                }
+            } catch(e) {
+                console.error("Error en configuración inicial:", e);
+            }
+        }
+
+        initialSetup();
     </script>
 </body>
 </html>
