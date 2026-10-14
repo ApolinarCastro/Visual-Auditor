@@ -1,7 +1,7 @@
 {
-  "task_id": "VA-4MP-ACQUISITION-RECOVERY-002",
-  "base_commit": "90a43a71cdc62db81a5ad06e6a28f2ed7a4007ed",
-  "timestamp": "2026-10-14T13:26:19.456427",
+  "task_id": "VA-4MP-RECOVERY-FINALIZATION-001",
+  "base_commit": "5a995fe2978e0e92bd861842cf437d2675eddeaa",
+  "timestamp": "2026-10-14T14:29:01.441176",
   "manifest_processed": 3999,
   "http_request_attempted": 65,
   "initial_live_confirmed": 854,
@@ -13,12 +13,13 @@
   "not_found": 0,
   "not_tested": 0,
   "error": 0,
-  "identities_verified": 2148,
-  "identity_not_linked": 1851,
+  "identities_verified": 2565,
+  "identity_not_linked": 1434,
   "categories_verified": 65,
-  "categories_review_required": 1894,
-  "category_mismatch_confirmed": 189,
+  "categories_review_required": 2081,
+  "category_mismatch_confirmed": 247,
   "position_observed": 2533,
+  "titles_restored_from_live": 1223,
   "coverage_percent": 63.34,
   "external_cost_usd": 0.0,
   "tls_verification_policy": "STRICT_ENFORCED_ZERO_INSECURE",
@@ -34,8 +35,8 @@
       "total_live": 672,
       "not_confirmed": 1139,
       "source_blocked": 0,
-      "id_verified": 1133,
-      "id_unlinked": 678,
+      "id_verified": 1394,
+      "id_unlinked": 417,
       "pos_obs": 672
     },
     "Falabella": {
@@ -56,8 +57,8 @@
       "total_live": 538,
       "not_confirmed": 225,
       "source_blocked": 0,
-      "id_verified": 549,
-      "id_unlinked": 214,
+      "id_verified": 703,
+      "id_unlinked": 60,
       "pos_obs": 538
     },
     "Ripley": {
@@ -67,8 +68,8 @@
       "total_live": 318,
       "not_confirmed": 44,
       "source_blocked": 0,
-      "id_verified": 116,
-      "id_unlinked": 246,
+      "id_verified": 118,
+      "id_unlinked": 244,
       "pos_obs": 318
     }
   }

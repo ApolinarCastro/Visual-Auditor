@@ -1,7 +1,7 @@
 {
-  "task_id": "VA-4MP-ACQUISITION-RECOVERY-002",
-  "timestamp": "2026-10-14T13:26:19.457019",
-  "execution_mode": "ACQUISITION RECOVERY / MULTI-MARKETPLACE HARVEST",
+  "task_id": "VA-4MP-RECOVERY-FINALIZATION-001",
+  "timestamp": "2026-10-14T14:29:01.442062",
+  "execution_mode": "ACQUISITION RECOVERY FINALIZATION / REPRODUCIBLE PIPELINE",
   "marketplaces": [
     "Mercado Libre",
     "Falabella",
