@@ -1,0 +1,42 @@
+{
+  "task_id": "VA-4MP-LIVE-PUBLICATIONS-001",
+  "timestamp": "2026-10-14T12:24:53.260658",
+  "artifacts": {
+    "BLOCKERS.json": {
+      "size_bytes": 398643,
+      "sha256": "07145661807938f5bc0bb65c491116dcf7d7918932beeefd19961e7fc8282f4c"
+    },
+    "CATEGORY_AUDIT.json": {
+      "size_bytes": 2347055,
+      "sha256": "a70fbcdc9c59ad8c3be92dc22b31bc83bc0399934c8678d79ee82483879f4b61"
+    },
+    "EXECUTION_SUMMARY.json": {
+      "size_bytes": 1800,
+      "sha256": "ab3177141bdf940429a11f78282330ce201252a4c785aca0af893bbcda27f539"
+    },
+    "FINAL_REPORT.md": {
+      "size_bytes": 5374,
+      "sha256": "75c23775e65a90e4cc20cd0eb95bf3a02248838391ba6c392527f7ac24ee4ca2"
+    },
+    "IDENTITY_RECONCILIATION.json": {
+      "size_bytes": 1581527,
+      "sha256": "41c6ce857c841e3a8a163e733f4341c718dab376c3bffec077eb4acb03474128"
+    },
+    "MRI_4MP_PUBLICATIONS_AUDIT.xlsx": {
+      "size_bytes": 1013359,
+      "sha256": "ce5794a255275be3d222149efff161a194c98759f2d65a7bf89bdf42b9e9fc33"
+    },
+    "PUBLICATION_OBSERVATIONS.jsonl": {
+      "size_bytes": 5440024,
+      "sha256": "74758e5650c5e068847db7659f313df0568eb049fa4c8eae51093d8c2c068c36"
+    },
+    "raw_live_harvest.json": {
+      "size_bytes": 732074,
+      "sha256": "ea735823bca659dfdb6cd0e3e94cd6aa263b6f84ff583b8fb7de068c805d29ef"
+    },
+    "RUN_MANIFEST.json": {
+      "size_bytes": 603,
+      "sha256": "8f996514ac52dad72c054a232db1b17b3274b480a9d50d92b11d2f083be300dc"
+    }
+  }
+}

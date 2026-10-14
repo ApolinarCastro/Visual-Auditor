@@ -1,0 +1,72 @@
+{
+  "task_id": "VA-4MP-LIVE-PUBLICATIONS-001",
+  "timestamp": "2026-10-14T12:24:44.510407",
+  "manifest_total": 3999,
+  "by_marketplace": {
+    "Mercado Libre": 1811,
+    "Falabella": 1063,
+    "Paris": 763,
+    "Ripley": 362
+  },
+  "publications_attempted": 3999,
+  "publications_live_confirmed": 1185,
+  "found": 1185,
+  "not_found": 1834,
+  "source_blocked": 980,
+  "not_tested": 0,
+  "error": 0,
+  "identities_verified": 2148,
+  "identity_not_linked": 1851,
+  "categories_verified": 1104,
+  "category_mismatch_confirmed": 666,
+  "position_observed": 1185,
+  "coverage_percent": 100.0,
+  "external_cost_usd": 0.0,
+  "first_blocker": "CLOUDFLARE_WAF_CHALLENGE_FALABELLA_RIPLEY_PDP",
+  "mkt_breakdown": {
+    "Mercado Libre": {
+      "attempted": 1811,
+      "live_confirmed": 582,
+      "record_reconciled": 1229,
+      "found": 582,
+      "not_found": 1229,
+      "source_blocked": 0,
+      "id_verified": 1133,
+      "id_unlinked": 678,
+      "pos_obs": 582
+    },
+    "Falabella": {
+      "attempted": 1063,
+      "live_confirmed": 398,
+      "record_reconciled": 665,
+      "found": 398,
+      "not_found": 0,
+      "source_blocked": 665,
+      "id_verified": 350,
+      "id_unlinked": 713,
+      "pos_obs": 398
+    },
+    "Paris": {
+      "attempted": 763,
+      "live_confirmed": 158,
+      "record_reconciled": 605,
+      "found": 158,
+      "not_found": 605,
+      "source_blocked": 0,
+      "id_verified": 549,
+      "id_unlinked": 214,
+      "pos_obs": 158
+    },
+    "Ripley": {
+      "attempted": 362,
+      "live_confirmed": 47,
+      "record_reconciled": 315,
+      "found": 47,
+      "not_found": 0,
+      "source_blocked": 315,
+      "id_verified": 116,
+      "id_unlinked": 246,
+      "pos_obs": 47
+    }
+  }
+}
