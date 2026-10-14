@@ -66,28 +66,28 @@ async def get_history():
 @app.get("/api/learning")
 async def get_learning():
     # Fetch from ExperienceStore
-    conn = store._get_conn()
+    conn = store._get_connection()
     try:
         cur = conn.cursor()
-        cur.execute("SELECT identity_hash, product_name, brand, marketplace, status, evidence_method, confidence_score, hit_count, created_at, updated_at FROM identity_experiences ORDER BY updated_at DESC LIMIT 50")
+        cur.execute("SELECT id, value, brand, marketplace, status, discovery_method, confidence, success_count, first_seen_at, last_seen_at FROM experience ORDER BY last_seen_at DESC LIMIT 50")
         rows = cur.fetchall()
         
         experiences = []
         for r in rows:
             experiences.append({
-                "hash": r[0],
+                "hash": str(r[0]),
                 "product_name": r[1],
                 "brand": r[2],
                 "marketplace": r[3],
                 "status": r[4],
-                "method": r[5],
-                "score": r[6],
-                "hits": r[7],
+                "method": r[5] or "AUTONOMOUS_EXTRACTION",
+                "score": r[6] if r[6] is not None else 1.0,
+                "hits": r[7] if r[7] is not None else 0,
                 "created_at": r[8],
                 "updated_at": r[9]
             })
             
-        cur.execute("SELECT COUNT(*), SUM(hit_count) FROM identity_experiences WHERE status='VALIDATED'")
+        cur.execute("SELECT COUNT(*), SUM(success_count) FROM experience WHERE status='VALIDATED' OR status='ACTIVE' OR status='VERIFIED'")
         stats = cur.fetchone()
         
         return JSONResponse(content={

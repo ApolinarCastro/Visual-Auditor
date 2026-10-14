@@ -1,0 +1,153 @@
+{
+  "index_metadata": {
+    "task_id": "VA-4MP-REVERSE-ACQUISITION-001",
+    "generated_at": "2026-10-14T11:47:36.430681+00:00",
+    "total_evidence_directories": 49,
+    "primary_databases_and_manifests": 8
+  },
+  "core_artifacts": [
+    {
+      "path": "data/sqlite/visibility.db",
+      "size_bytes": 89575424,
+      "sha256": "391bf3cde7d002e4ddb8200974f9616ec770a572997bd86d13bf9b09721a2f3a",
+      "status": "VERIFIED_ON_DISK"
+    },
+    {
+      "path": "data/mri_experience.db",
+      "size_bytes": 811008,
+      "sha256": "bbe7f32b5f3f183968a7747ed679e5e8cece0372310e269238f34945ff6c092c",
+      "status": "VERIFIED_ON_DISK"
+    },
+    {
+      "path": "data/mri_categories.json",
+      "size_bytes": 3877,
+      "sha256": "f27c4d9eb3b564fc48025fa00b1a7370109b1d8ad5450310807a0fb8bbfb6430",
+      "status": "VERIFIED_ON_DISK"
+    },
+    {
+      "path": "data/mri_history.json",
+      "size_bytes": 1592508,
+      "sha256": "3139613b904117cca3670ec6a9c0f5d5a2a7cae8514690c9dca874bd7044b28f",
+      "status": "VERIFIED_ON_DISK"
+    },
+    {
+      "path": "SVMP.xlsx",
+      "size_bytes": 654923,
+      "sha256": "cbecc32e3e2d56c1455f05850305186141c02fad070919940d57630893db397c",
+      "status": "VERIFIED_ON_DISK"
+    },
+    {
+      "path": "Actualización masiva de productos.xlsx",
+      "size_bytes": 22586272,
+      "sha256": "e9576857fe17338dc0a550c420c541f3a6a97b61a99639807a2c51a6d8043046",
+      "status": "VERIFIED_ON_DISK"
+    },
+    {
+      "path": "outputs/MRI_PRODUCTION_AUDIT_001.csv",
+      "size_bytes": 5374,
+      "sha256": "96012c81c13bdb493a519ed2d89d53e5114945da04afc333dbcc052ff8c15465",
+      "status": "VERIFIED_ON_DISK"
+    },
+    {
+      "path": "outputs/MRI_PRODUCTION_AUDIT_002.csv",
+      "size_bytes": 3750,
+      "sha256": "78adac1a48a7f3730285057fe3ca5bc42fa8cc3cf7c992c33ea741e24a334543",
+      "status": "VERIFIED_ON_DISK"
+    }
+  ],
+  "certified_runs": [
+    {
+      "run_id": "run_mri_4mp_final_cert_1790865503",
+      "milestone": "MRI-4MP-FINAL-E2E-CERT-001",
+      "products_observed": 1362,
+      "brand_evidence": 1314,
+      "exit_code": 0
+    },
+    {
+      "run_id": "mri_disc_b0eb1d27",
+      "milestone": "MRI-AUTONOMOUS-CATEGORY-IDENTIFICATION-005",
+      "marketplace": "Mercado Libre",
+      "products_discovered": 68,
+      "exit_code": 0
+    },
+    {
+      "run_id": "mri_disc_dcaf3a75",
+      "milestone": "MRI-FINAL-EVIDENCE-AND-MULTIMARKETPLACE-007",
+      "marketplace": "Mercado Libre",
+      "products_discovered": 153,
+      "exit_code": 0
+    },
+    {
+      "run_id": "mri_disc_9b32d0c3",
+      "milestone": "MRI-FINAL-EVIDENCE-AND-MULTIMARKETPLACE-007",
+      "marketplace": "Paris",
+      "products_discovered": 30,
+      "exit_code": 0
+    },
+    {
+      "run_id": "mri_disc_0f899c2e",
+      "milestone": "MRI-FINAL-EVIDENCE-AND-MULTIMARKETPLACE-007",
+      "marketplace": "Ripley",
+      "products_discovered": 48,
+      "exit_code": 0
+    },
+    {
+      "run_id": "mri_disc_9c79316e",
+      "milestone": "MRI-FINAL-EVIDENCE-AND-MULTIMARKETPLACE-007",
+      "marketplace": "Falabella",
+      "products_discovered": 48,
+      "exit_code": 0
+    }
+  ],
+  "evidence_directories": [
+    "mri_4mp_e2e_cert_001",
+    "mri_4mp_e2e_cert_002",
+    "mri_4mp_final_e2e_cert_001",
+    "mri_autoclaw_001",
+    "mri_crossmarket_blockers_001",
+    "mri_dashboard_live_materialization_001",
+    "mri_falabella_brand_routing_001",
+    "mri_falabella_entry_001",
+    "mri_full_autonomous_audit_and_dashboard_001",
+    "mri_ml_brand_routing_001",
+    "mri_ml_pagination_block_001",
+    "mri_paris_brand_routing_001",
+    "mri_ripley_frontier_validation_001",
+    "mri_ripley_rate_limit_and_brand_filter_001",
+    "pre_audit",
+    "resilience_v1",
+    "va_baseline_failure_classification_001",
+    "va_controlled_production_maintenance_001",
+    "va_dashboard_visual_access_001",
+    "va_executive_dashboard_redesign_001",
+    "va_executive_dashboard_semantic_audit_001",
+    "va_final_203_restoration_001",
+    "va_history_routes_taxonomy_forensic_cert_001",
+    "va_history_routes_taxonomy_readiness_001",
+    "va_integrated_recovery_to_green_001",
+    "va_integrity_season_ux_recovery_001",
+    "va_mri_baseline_regression_recovery_001",
+    "va_mri_brand_first_close_001",
+    "va_mri_differential_precheck_001",
+    "va_mri_one_shot_e2e_001",
+    "va_mri_operational_source_reconciliation_001",
+    "va_mri_product_closure_001",
+    "va_mri_ripley_first_failure_closure_001",
+    "va_mri_ripley_frontier_fix_final_run_001",
+    "va_mri_ripley_pagination_closure_001",
+    "va_mri_skills_root_enforcement_001",
+    "va_mri_unknown_source_disposition_001",
+    "va_mri_untracked_source_boundary_001",
+    "va_product_closure_001",
+    "va_product_taxonomy_capability_001",
+    "va_pytest_collection_dual_fix_001",
+    "va_pytest_collection_recovery_001",
+    "va_redesign_blocker_recovery_001",
+    "va_search_intent_season_cert_001",
+    "va_search_intent_season_fit_probe_002",
+    "va_search_intent_season_minimal_implementation_001",
+    "va_season_real_observation_gap_001",
+    "va_svmp_category_sync_001",
+    "va_uncommitted_state_causality_001"
+  ]
+}

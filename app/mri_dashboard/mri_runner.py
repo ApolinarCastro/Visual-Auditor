@@ -353,7 +353,7 @@ class MRIOrchestrator:
                     await scraper.start()
                     
                 try:
-                    for cat_id, cat_data in cats.items():
+                    for cat_id, cat_data in list(cats.items()):
                         if not self.is_running: break
                         url = cat_data["url"]
                         

@@ -1,0 +1,349 @@
+{
+  "inventory_metadata": {
+    "task_id": "VA-4MP-REVERSE-ACQUISITION-001",
+    "generated_at": "2026-10-14T11:47:36.221090+00:00",
+    "repository": "Visibility Auditor / MRI",
+    "scope": "Mercado Libre, Falabella, Paris, Ripley"
+  },
+  "marketplaces": {
+    "Mercado Libre Chile": {
+      "scraper_script": "app/scrapers/mercadolibre_scraper.py",
+      "scraper_class": "MercadoLibreScraper",
+      "base_class": "app/scrapers/base_scraper.py (BaseScraper)",
+      "key_functions": [
+        {
+          "name": "scrape_top_240",
+          "purpose": "Extracts top 240 products for given category/search query in headless Playwright",
+          "line": 40
+        },
+        {
+          "name": "scrape_autonomous_category",
+          "purpose": "Autonomous traversal of category routes, preserving clean URL and poly-card showcase",
+          "line": 180
+        },
+        {
+          "name": "_extract_products_from_html",
+          "purpose": "HTML parser extracting title, price, brand, vendor, poly-component item selectors",
+          "line": 280
+        },
+        {
+          "name": "_get_clean_navigation_url",
+          "purpose": "Prevents destructive rewriting of official store URLs",
+          "line": 75
+        }
+      ],
+      "known_endpoints": [
+        {
+          "type": "OFFICIAL_STORE",
+          "url": "https://tienda.mercadolibre.cl/nicopoly",
+          "method": "GET",
+          "notes": "Official store brand catalog"
+        },
+        {
+          "type": "STORE_FALLBACK",
+          "url": "https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly",
+          "method": "GET",
+          "notes": "Catalog fallback route"
+        },
+        {
+          "type": "SEARCH_PUBLIC",
+          "url": "https://listado.mercadolibre.cl/nicopoly",
+          "method": "GET",
+          "notes": "Autonomous search entrypoint"
+        }
+      ],
+      "acquisition_mechanism": "SSR_HTML_PLAYWRIGHT_HEADLESS",
+      "pagination": {
+        "mechanism": "NEXT_BUTTON_CLICK_OR_OFFSET_URL",
+        "selector": ".andes-pagination__button--next a",
+        "offset_step": 48
+      },
+      "session_handling": {
+        "file": "data/mercadolibre_session.json",
+        "profile_dir": "data/mercado_libre_buyer_profile",
+        "fallback": "Non-locking copy of Chrome Default profile",
+        "policy": "Direct in-memory cookie injection, zero raw secrets exposed in UI"
+      },
+      "output_contract": {
+        "fields": [
+          "index",
+          "brand",
+          "title",
+          "priceText",
+          "mktSku",
+          "url",
+          "vendor",
+          "position_absolute"
+        ]
+      }
+    },
+    "Falabella Chile": {
+      "scraper_script": "app/scrapers/falabella_scraper.py",
+      "scraper_class": "FalabellaScraper",
+      "base_class": "app/scrapers/base_scraper.py (BaseScraper)",
+      "key_functions": [
+        {
+          "name": "navigate",
+          "purpose": "Overrides base navigation with legitimate HTTP SSR fallback (F1) upon Cloudflare 403 challenge",
+          "line": 35
+        },
+        {
+          "name": "scrape_top_240",
+          "purpose": "Scrapes top 240 products from SSR payload or DOM pods",
+          "line": 95
+        },
+        {
+          "name": "scrape_autonomous_category",
+          "purpose": "Extracts products directly from __NEXT_DATA__.props.pageProps.results",
+          "line": 150
+        },
+        {
+          "name": "_extract_next_data",
+          "purpose": "Parses structured Next.js JSON from <script id='__NEXT_DATA__'>",
+          "line": 210
+        }
+      ],
+      "known_endpoints": [
+        {
+          "type": "BRAND_SEARCH",
+          "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly",
+          "method": "GET",
+          "notes": "Next.js SSR document with 1.97MB payload"
+        },
+        {
+          "type": "CATEGORY_FACET",
+          "url": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly&f.product.attribute.Tipo={category}",
+          "method": "GET",
+          "notes": "Faceted category route"
+        }
+      ],
+      "acquisition_mechanism": "HTTP_SSR_FALLBACK_NEXT_DATA_PARSER",
+      "pagination": {
+        "mechanism": "QUERY_PARAM_PAGE",
+        "param": "page",
+        "limit_per_page": 48
+      },
+      "session_handling": {
+        "policy": "No cookies or session required. Standard desktop User-Agent unblocks HTTP 200"
+      },
+      "output_contract": {
+        "fields": [
+          "index",
+          "brand",
+          "title",
+          "priceText",
+          "mktSku",
+          "url",
+          "vendor",
+          "position_absolute"
+        ]
+      }
+    },
+    "Paris Chile": {
+      "scraper_script": "app/scrapers/paris_scraper.py",
+      "scraper_class": "ParisScraper",
+      "base_class": "app/scrapers/base_scraper.py (BaseScraper)",
+      "key_functions": [
+        {
+          "name": "scrape_top_240",
+          "purpose": "Navigates search PLP and extracts products via Playwright headless",
+          "line": 30
+        },
+        {
+          "name": "scrape_autonomous_category",
+          "purpose": "Extracts products for category using query parameter tipoProductoAll",
+          "line": 85
+        },
+        {
+          "name": "_extract_products_from_dom",
+          "purpose": "DOM and script extractor parsing Paris PLP product cards",
+          "line": 130
+        }
+      ],
+      "known_endpoints": [
+        {
+          "type": "BRAND_SEARCH",
+          "url": "https://www.paris.cl/search?q=nicopoly",
+          "method": "GET",
+          "notes": "Next.js App Router streaming RSC"
+        },
+        {
+          "type": "CATEGORY_FACET",
+          "url": "https://www.paris.cl/search?q=nicopoly&tipoProductoAll={category}",
+          "method": "GET",
+          "notes": "Category facet query parameter route"
+        }
+      ],
+      "acquisition_mechanism": "NEXTJS_APP_ROUTER_STREAMING_RSC_PARSER",
+      "pagination": {
+        "mechanism": "QUERY_PARAM_PAGE",
+        "param": "page",
+        "limit_per_page": 40
+      },
+      "session_handling": {
+        "policy": "Headless navigation without login. Clean browser context"
+      },
+      "output_contract": {
+        "fields": [
+          "index",
+          "brand",
+          "title",
+          "priceText",
+          "mktSku",
+          "url",
+          "vendor",
+          "position_absolute"
+        ]
+      }
+    },
+    "Ripley Chile": {
+      "scraper_script": "app/scrapers/ripley_scraper.py",
+      "scraper_class": "RipleyScraper",
+      "base_class": "app/scrapers/base_scraper.py (BaseScraper)",
+      "key_functions": [
+        {
+          "name": "scrape_top_240",
+          "purpose": "Extracts up to 240 catalog items in headless Playwright with brand extraction",
+          "line": 50
+        },
+        {
+          "name": "scrape_autonomous_category",
+          "purpose": "Navigates URL_QUERY brand facet and extracts products with MPM regex",
+          "line": 160
+        },
+        {
+          "name": "handle_turnstile_if_needed",
+          "purpose": "Cloudflare Turnstile WAF handling when required",
+          "line": 280
+        }
+      ],
+      "known_endpoints": [
+        {
+          "type": "BRAND_SEARCH",
+          "url": "https://simple.ripley.cl/search/nicopoly",
+          "method": "GET",
+          "notes": "Brand search hub"
+        },
+        {
+          "type": "CATEGORY_FACET",
+          "url": "https://simple.ripley.cl/search/nicopoly?facet=... or query param",
+          "method": "GET",
+          "notes": "URL_QUERY facet mechanism"
+        }
+      ],
+      "acquisition_mechanism": "HEADLESS_PLAYWRIGHT_URL_QUERY_BRAND_FACET",
+      "pagination": {
+        "mechanism": "PAGE_QUERY_PARAM_AND_INFINITE_SCROLL",
+        "param": "page",
+        "limit_per_page": 48
+      },
+      "session_handling": {
+        "file": "data/ripley_session.json",
+        "profile_dir": "data/ripley_profile",
+        "policy": "Protected profile handling for Turnstile WAF"
+      },
+      "output_contract": {
+        "fields": [
+          "index",
+          "brand",
+          "title",
+          "priceText",
+          "mktSku",
+          "url",
+          "vendor",
+          "position_absolute"
+        ]
+      }
+    }
+  },
+  "autonomous_intelligence_modules": [
+    {
+      "path": "app/mri_autonomous/autonomous_pipeline.py",
+      "purpose": "Core MRI execution loop, frontier manager, product materializer"
+    },
+    {
+      "path": "app/mri_autonomous/category_discoverer.py",
+      "purpose": "Facet and route discovery engine, builds URL_QUERY targets"
+    },
+    {
+      "path": "app/mri_autonomous/surface_classifier.py",
+      "purpose": "URL and DOM surface classifier (COMMERCIAL_CATEGORY, NOISE, GENERAL_NAV)"
+    },
+    {
+      "path": "app/mri_autonomous/experience_store.py",
+      "purpose": "SQLite-backed experience and strategy decision ledger (data/mri_experience.db)"
+    },
+    {
+      "path": "app/mri_autonomous/brand_norm.py",
+      "purpose": "Runtime brand normalization and target identity resolution"
+    },
+    {
+      "path": "app/mri_autonomous/category_alignment.py",
+      "purpose": "Taxonomy mapper aligning marketplace categories to master taxonomy"
+    },
+    {
+      "path": "app/mri_autonomous/simulation_guard.py",
+      "purpose": "Guard preventing synthetic or simulated truth insertion"
+    }
+  ],
+  "dashboard_and_orchestration_modules": [
+    {
+      "path": "app/mri_dashboard/mri_api.py",
+      "purpose": "FastAPI REST server on port 8055 exposing /api/state, /api/start, /api/history, /api/learning"
+    },
+    {
+      "path": "app/mri_dashboard/mri_runner.py",
+      "purpose": "MRIOrchestrator running discovery loops and saving history"
+    },
+    {
+      "path": "app/mri_dashboard/category_manager.py",
+      "purpose": "Manages discovered categories in data/mri_categories.json"
+    },
+    {
+      "path": "app/dashboard/mri_read_model.py",
+      "purpose": "Dynamic SQLite read model for categories, publications, and legacy comparisons"
+    },
+    {
+      "path": "app/loaders/excel_loader.py",
+      "purpose": "openpyxl-based loader for SVMP.xlsx cell hyperlinks"
+    },
+    {
+      "path": "app/auditor/audit_runner.py",
+      "purpose": "Legacy audit dispatcher"
+    }
+  ],
+  "databases_and_data_files": [
+    {
+      "path": "data/sqlite/visibility.db",
+      "type": "SQLITE",
+      "tables": [
+        "mri_publications",
+        "mri_products",
+        "mri_categories",
+        "mri_publication_categories",
+        "mri_evidence_ledger",
+        "product_snapshots"
+      ]
+    },
+    {
+      "path": "data/mri_experience.db",
+      "type": "SQLITE",
+      "tables": [
+        "experience",
+        "taxonomy_graph",
+        "strategy",
+        "strategy_decision"
+      ]
+    },
+    {
+      "path": "data/mri_categories.json",
+      "type": "JSON",
+      "purpose": "Verified category taxonomy for 4 marketplaces"
+    },
+    {
+      "path": "data/mri_history.json",
+      "type": "JSON",
+      "purpose": "Historical execution run payloads and product items"
+    }
+  ]
+}
