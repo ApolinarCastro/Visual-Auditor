@@ -23,6 +23,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 
+# Ensure project root in sys.path when executed directly
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+
 from app.scrapers.mercadolibre_scraper import MercadoLibreScraper
 from app.scrapers.paris_scraper import ParisScraper
 from app.scrapers.ripley_scraper import RipleyScraper
