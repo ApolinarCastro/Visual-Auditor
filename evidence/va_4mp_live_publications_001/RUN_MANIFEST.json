@@ -1,7 +1,7 @@
 {
-  "task_id": "VA-4MP-EVIDENCE-TRUTH-001",
-  "timestamp": "2026-10-14T12:42:55.484110",
-  "execution_mode": "EVIDENCE TRUTH RECONCILIATION / RECLASSIFICATION",
+  "task_id": "VA-4MP-ACQUISITION-RECOVERY-002",
+  "timestamp": "2026-10-14T13:26:19.457019",
+  "execution_mode": "ACQUISITION RECOVERY / MULTI-MARKETPLACE HARVEST",
   "marketplaces": [
     "Mercado Libre",
     "Falabella",

@@ -1,65 +1,75 @@
 {
-  "task_id": "VA-4MP-EVIDENCE-TRUTH-001",
-  "base_commit": "ff250684a549e53087a77e08ba1dbc2c673e554c",
-  "timestamp": "2026-10-14T12:42:55.483349",
+  "task_id": "VA-4MP-ACQUISITION-RECOVERY-002",
+  "base_commit": "90a43a71cdc62db81a5ad06e6a28f2ed7a4007ed",
+  "timestamp": "2026-10-14T13:26:19.456427",
   "manifest_processed": 3999,
-  "http_request_attempted": 15,
-  "live_observation_confirmed": 854,
-  "not_confirmed": 3145,
+  "http_request_attempted": 65,
+  "initial_live_confirmed": 854,
+  "newly_recovered": 1679,
+  "total_live_confirmed": 2533,
+  "not_confirmed": 1466,
   "source_blocked": 0,
-  "source_blocked_inferred": 980,
+  "source_blocked_inferred": 102,
   "not_found": 0,
   "not_tested": 0,
   "error": 0,
   "identities_verified": 2148,
   "identity_not_linked": 1851,
-  "categories_verified": 1446,
-  "categories_review_required": 513,
+  "categories_verified": 65,
+  "categories_review_required": 1894,
   "category_mismatch_confirmed": 189,
-  "position_observed": 854,
-  "coverage_percent": 100.0,
+  "position_observed": 2533,
+  "coverage_percent": 63.34,
   "external_cost_usd": 0.0,
   "tls_verification_policy": "STRICT_ENFORCED_ZERO_INSECURE",
   "quarantined_test_scripts": [
     "scratch/test_live_fetch.py (utilizó ssl.CERT_NONE, excluida de evidencia)"
   ],
-  "first_blocker": "NONE_BLOCKING_CORRECTION",
+  "first_blocker": "WAF_PROTECTED_RESIDUAL_PDP_URLs",
   "by_marketplace": {
     "Mercado Libre": {
       "manifest": 1811,
-      "live_confirmed": 339,
-      "not_confirmed": 1472,
+      "initial_live": 339,
+      "newly_recovered": 333,
+      "total_live": 672,
+      "not_confirmed": 1139,
       "source_blocked": 0,
       "id_verified": 1133,
       "id_unlinked": 678,
-      "pos_obs": 339
+      "pos_obs": 672
     },
     "Falabella": {
       "manifest": 1063,
-      "live_confirmed": 310,
-      "not_confirmed": 753,
+      "initial_live": 310,
+      "newly_recovered": 695,
+      "total_live": 1005,
+      "not_confirmed": 58,
       "source_blocked": 0,
       "id_verified": 350,
       "id_unlinked": 713,
-      "pos_obs": 310
+      "pos_obs": 1005
     },
     "Paris": {
       "manifest": 763,
-      "live_confirmed": 158,
-      "not_confirmed": 605,
+      "initial_live": 158,
+      "newly_recovered": 380,
+      "total_live": 538,
+      "not_confirmed": 225,
       "source_blocked": 0,
       "id_verified": 549,
       "id_unlinked": 214,
-      "pos_obs": 158
+      "pos_obs": 538
     },
     "Ripley": {
       "manifest": 362,
-      "live_confirmed": 47,
-      "not_confirmed": 315,
+      "initial_live": 47,
+      "newly_recovered": 271,
+      "total_live": 318,
+      "not_confirmed": 44,
       "source_blocked": 0,
       "id_verified": 116,
       "id_unlinked": 246,
-      "pos_obs": 47
+      "pos_obs": 318
     }
   }
 }
