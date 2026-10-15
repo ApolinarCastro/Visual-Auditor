@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MRI — Autonomous Marketplace Auditor</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --panel-bg: #1e293b;
+            --border: #334155;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #4ade80;
+            --primary-dark: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #38bdf8;
+            --purple: #c084fc;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        aside {
+            width: 260px;
+            background-color: var(--panel-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+        
+        aside h1 {
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+        
+        .nav-item {
+            padding: 12px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+        }
+        
+        .nav-item.active {
+            background-color: var(--primary);
+            color: #000;
+            font-weight: 600;
+        }
+        
+        main {
+            flex: 1;
+            padding: 25px 30px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .panel {
+            display: none;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+        
+        .panel.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h2 { margin-top: 0; color: #fff; font-size: 1.35rem; margin-bottom: 20px; }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        select, button, input {
+            background-color: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 0.92rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        
+        select:focus, button:focus, input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        button.btn-primary { background-color: var(--primary); color: #000; border-color: var(--primary); font-weight: bold; }
+        button.btn-primary:hover:not(:disabled) { background-color: var(--primary-dark); }
+        button.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        button.btn-danger { background-color: var(--danger); color: #fff; border-color: var(--danger); font-weight: bold; }
+        button.btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+        button.btn-secondary { background-color: var(--panel-bg); color: var(--text); border-color: var(--border); }
+        button.btn-secondary:hover { border-color: var(--primary); }
+        
+        .status-box {
+            background-color: var(--panel-bg);
+            padding: 18px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+        
+        .progress-bar-container {
+            height: 8px;
+            background-color: var(--bg);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            background-color: var(--panel-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        
+        th, td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+        
+        th { 
+            background-color: rgba(15, 23, 42, 0.7); 
+            color: var(--text-muted); 
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+        
+        tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+        
+        .badge-success { background: rgba(74, 222, 128, 0.18); color: var(--primary); border: 1px solid rgba(74, 222, 128, 0.3); }
+        .badge-danger { background: rgba(239, 68, 68, 0.18); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .badge-warning { background: rgba(245, 158, 11, 0.18); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-info { background: rgba(56, 189, 248, 0.18); color: var(--info); border: 1px solid rgba(56, 189, 248, 0.3); }
+        .badge-purple { background: rgba(192, 132, 252, 0.18); color: var(--purple); border: 1px solid rgba(192, 132, 252, 0.3); }
+        
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: 8px;
+        }
+        
+        .card-title { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .card-value { font-size: 1.6rem; font-weight: 700; color: #fff; }
+        
+        .empty-state {
+            padding: 40px;
+            text-align: center;
+            background: var(--panel-bg);
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+            color: var(--text-muted);
+            margin: 20px 0;
+        }
+        .empty-state h3 { color: #fff; margin-bottom: 8px; }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            width: 90%;
+            max-width: 750px;
+            max-height: 85vh;
+            border-radius: 10px;
+            padding: 24px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .modal-header h3 { margin: 0; color: #fff; font-size: 1.25rem; }
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+        .modal-close:hover { color: #fff; }
+        .detail-row {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.9rem;
+        }
+        .detail-label {
+            width: 180px;
+            font-weight: 600;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+        .detail-value {
+            flex: 1;
+            word-break: break-all;
+            color: var(--text);
+        }
+    </style>
+</head>
+<body>
+    <aside>
+        <h1>MRI Auditor</h1>
+        <div class="nav-item active" id="tab-ops" onclick="switchTab('ops')">A. Operaciones y Resultados</div>
+        <div class="nav-item" id="tab-hist" onclick="switchTab('hist')">B. Historial de Ejecuciones</div>
+        <div class="nav-item" id="tab-learn" onclick="switchTab('learn')">C. Aprendizaje y Experiencia</div>
+    </aside>
+    
+    <main>
+        <!-- A. Operaciones y Resultados -->
+        <div id="ops" class="panel active">
+            <h2>A. Operaciones y Resultados Verificables</h2>
+            <div class="controls">
+                <select id="modeSelect">
+                    <option value="CONSOLIDATED_RECOVERY">Corredor Consolidado (Recuperación y Pipeline SQLite)</option>
+                    <option value="DISCOVERY">Descubrimiento Autónomo (Categorías)</option>
+                    <option value="AUDIT">Auditoría Dirigida (Universo CSV)</option>
+                </select>
+                <select id="mktSelect">
+                    <option value="ALL">Todos los Marketplaces</option>
+                    <option value="Mercado Libre">Mercado Libre</option>
+                    <option value="Falabella">Falabella</option>
+                    <option value="Paris">Paris</option>
+                    <option value="Ripley">Ripley</option>
+                </select>
+                <select id="limitSelect">
+                    <option value="1">1 Página / Muestra Rápida</option>
+                    <option value="5">5 Productos/Páginas</option>
+                    <option value="10">10 Productos/Páginas</option>
+                    <option value="ALL">Todo el Catálogo</option>
+                </select>
+                <button class="btn-primary" onclick="startAudit()" id="btnStart">Iniciar Auditoría</button>
+                <button class="btn-danger" onclick="stopAudit()" id="btnStop" disabled>Detener</button>
+            </div>
+            
+            <div class="status-box">
+                <div><strong>Estado del Corredor:</strong> <span id="lblStatus" class="badge badge-info">IDLE</span></div>
+                <div style="margin-top:8px; color: var(--text-muted)" id="lblStatusMsg">Esperando inicio de auditoría...</div>
+                
+                <div style="margin-top: 15px; display: flex; justify-content: space-between; font-size: 0.85rem">
+                    <span>Progreso: <span id="lblProgress">0</span> / <span id="lblTotal">0</span></span>
+                    <span id="lblActiveRun" style="color:var(--info); font-family:monospace"></span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+            
+            <div class="grid-cards" id="opsLiveCards">
+                <div class="card" onclick="filterByDecision('ALL')" style="cursor:pointer;" title="Click para ver todas las publicaciones observadas">
+                    <div class="card-title">Adquisición Observada</div>
+                    <div class="card-value" style="color:var(--primary)" id="cntAcquired">0</div>
+                </div>
+                <div class="card" onclick="filterByDecision('CORRECT')" style="cursor:pointer;" title="Click para filtrar por Categoría Correcta">
+                    <div class="card-title">Categoría Correcta</div>
+                    <div class="card-value" style="color:var(--primary)" id="cntCorrect">0</div>
+                </div>
+                <div class="card" onclick="filterByDecision('INCORRECT')" style="cursor:pointer;" title="Click para filtrar por Categoría Incorrecta">
+                    <div class="card-title">Categoría Incorrecta</div>
+                    <div class="card-value" style="color:var(--danger)" id="cntIncorrect">0</div>
+                </div>
+                <div class="card" onclick="filterByDecision('REVIEW_REQUIRED')" style="cursor:pointer;" title="Click para filtrar por Revisión Requerida">
+                    <div class="card-title">Revisión Requerida</div>
+                    <div class="card-value" style="color:var(--purple)" id="cntReview">0</div>
+                </div>
+                <div class="card" onclick="filterByDecision('NOT_VERIFIED')" style="cursor:pointer;" title="Click para filtrar por No Verificado">
+                    <div class="card-title">No Verificado / Sin Evidencia</div>
+                    <div class="card-value" style="color:var(--warning)" id="cntNotVerified">0</div>
+                </div>
+                <div class="card" onclick="filterByDecision('ALL')" style="cursor:pointer;" title="Click para ver publicaciones con categoría pública observada">
+                    <div class="card-title">Categoría Pública Observada</div>
+                    <div class="card-value" style="color:var(--info)" id="cntCatObserved">0</div>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; margin-bottom:12px;">
+                <h3 style="margin: 0; font-size: 1.15rem; color: #fff;">Tabla Completa de Publicaciones y Auditoría Comercial</h3>
+                <span id="lblTableCount" style="color:var(--text-muted); font-size:0.85rem"></span>
+            </div>
+            
+            <div class="controls" style="margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 10px;">
+                <select id="filterMarketplace" onchange="renderMainTable()">
+                    <option value="ALL">Canal: Todos</option>
+                    <option value="Mercado Libre">Mercado Libre</option>
+                    <option value="Falabella">Falabella</option>
+                    <option value="Paris">Paris</option>
+                    <option value="Ripley">Ripley</option>
+                </select>
+                <select id="filterStatus" onchange="renderMainTable()">
+                    <option value="ALL">Decisión: Todas</option>
+                    <option value="CORRECT">CORRECTO (Validada)</option>
+                    <option value="INCORRECT">INCORRECTO (Contradicción)</option>
+                    <option value="REVIEW_REQUIRED">REVISIÓN REQUERIDA (General / Variantes / Identidad)</option>
+                    <option value="NOT_VERIFIED">NO VERIFICADO (Sin Evidencia Pública)</option>
+                </select>
+                <select id="filterCategory" onchange="renderMainTable()">
+                    <option value="ALL">Filtro: Todas las Categorías Observadas</option>
+                </select>
+                <select id="filterCoverage" onchange="renderMainTable()">
+                    <option value="ALL">Filtro: Cobertura (Todas)</option>
+                    <option value="COMPLETE">Cobertura: Completa</option>
+                    <option value="PARTIAL">Cobertura: Parcial</option>
+                </select>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Marketplace</th>
+                            <th>Producto (ID / Título)</th>
+                            <th>URL Canónica</th>
+                            <th>Categoría Observada</th>
+                            <th>Categoría Esperada</th>
+                            <th>Decisión Comercial</th>
+                            <th>Acciones / Evidencia</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbMainAudit"></tbody>
+                </table>
+            </div>
+            <div id="emptyOpsTable" class="empty-state" style="display:none;">
+                <h3>Sin resultados para los filtros seleccionados</h3>
+                <p>No se encontraron publicaciones que coincidan con los criterios actuales.</p>
+            </div>
+        </div>
+
+        <!-- B. Historial de Ejecuciones -->
+        <div id="hist" class="panel">
+            <h2>B. Historial de Ejecuciones Persistidas en SQLite</h2>
+            <p style="color:var(--text-muted); margin-bottom:18px; font-size:0.92rem">
+                Seleccione una corrida histórica registrada en la base de datos para cargar y examinar inmediatamente sus publicaciones y evidencias sin repetir la adquisición en vivo.
+            </p>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Run ID</th>
+                            <th>Fecha de Ejecución</th>
+                            <th>Marketplace / Modo</th>
+                            <th>Total Publicaciones</th>
+                            <th>Confirmados</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbHist"></tbody>
+                </table>
+            </div>
+            <div id="emptyHistTable" class="empty-state" style="display:none;">
+                <h3>No hay corridas históricas registradas</h3>
+                <p>Inicie una auditoría o sincronización para registrar ejecuciones en SQLite.</p>
+            </div>
+        </div>
+        
+        <!-- C. Aprendizaje y Experiencia -->
+        <div id="learn" class="panel">
+            <h2>C. Aprendizaje y Experiencia (Experience Store & Recovery)</h2>
+            <div class="grid-cards" style="margin-bottom: 25px;">
+                <div class="card">
+                    <div class="card-title">Identidades Validadas en Memoria</div>
+                    <div class="card-value" style="color:var(--primary)" id="lrnTotal">0</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Reutilizaciones de Conocimiento (Hits)</div>
+                    <div class="card-value" style="color:var(--info)" id="lrnHits">0</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Experiencias de Recuperación</div>
+                    <div class="card-value" style="color:var(--purple)" id="lrnRecoveryCount">0</div>
+                </div>
+            </div>
+            
+            <h3 style="font-size: 1.1rem; color: #fff; margin-bottom: 12px;">Experiencias de Recuperación y Estrategias (visibility.db)</h3>
+            <div style="overflow-x: auto; margin-bottom: 30px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Fecha</th>
+                            <th>Marketplace</th>
+                            <th>Categoría</th>
+                            <th>Estrategia Aplicada</th>
+                            <th>Resultado</th>
+                            <th>Tiempo Rec.</th>
+                            <th>Evidencia Registrada</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbRecExp"></tbody>
+                </table>
+            </div>
+            <div id="emptyRecExpTable" class="empty-state" style="display:none;">
+                <h3>No hay experiencias de recuperación registradas</h3>
+            </div>
+
+            <h3 style="font-size: 1.1rem; color: #fff; margin-bottom: 12px;">Registros de Conocimiento de Productos y Categorías (ExperienceStore)</h3>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID / Hash</th>
+                            <th>Producto / Valor</th>
+                            <th>Marketplace</th>
+                            <th>Estado</th>
+                            <th>Método</th>
+                            <th>Hits</th>
+                            <th>Evidencia / Referencia</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbLearn"></tbody>
+                </table>
+            </div>
+            <div id="emptyLearnTable" class="empty-state" style="display:none;">
+                <h3>No hay registros de experiencia disponibles</h3>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Detalle Verificable de Publicación -->
+    <div id="modalDetail" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Detalle Verificable de la Publicación</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modalBody">
+                <!-- Injected via JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentResults = [];
+        let pollInterval = null;
+        let selectedRunId = null;
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            const p = document.getElementById(tabId);
+            if(p) p.classList.add('active');
+            
+            const btn = document.getElementById('tab-' + tabId);
+            if(btn) btn.classList.add('active');
+            
+            if(tabId === 'learn') loadLearning();
+            if(tabId === 'hist') loadHistory();
+        }
+        
+        const SPANISH_LABELS = {
+            'CORRECT': 'CORRECTO',
+            'INCORRECT': 'INCORRECTO',
+            'REVIEW_REQUIRED': 'REVISIÓN REQUERIDA',
+            'NOT_VERIFIED': 'NO VERIFICADO',
+            'IDENTIDAD_NO_VERIFICADA': 'IDENTIDAD NO VERIFICADA',
+            'PARENT_IDENTITY_VERIFIED': 'IDENTIDAD PADRE VERIFICADA',
+            'TARGET_IDENTITY_VERIFIED': 'IDENTIDAD VERIFICADA',
+            'IDENTITY_NOT_LINKED': 'IDENTIDAD NO VINCULADA',
+            'TIENDA_DE_MARCA': 'TIENDA DE MARCA',
+            'BRAND_STORE': 'TIENDA DE MARCA',
+            'BRAND_HUB': 'CORREDOR DE MARCA',
+            'SOURCE_BLOCKED': 'FUENTE BLOQUEADA',
+            'OBSERVED': 'OBSERVADO',
+            'CONFIRMED': 'CONFIRMADO',
+            'LIVE_OBSERVATION_CONFIRMED': 'CONFIRMADO EN VIVO',
+            'NOT_CONFIRMED': 'NO CONFIRMADO',
+            'SUCCESS': 'ÉXITO',
+            'RUNNING': 'EN EJECUCIÓN',
+            'IDLE': 'INACTIVO / EN ESPERA',
+            'COMPLETED': 'COMPLETADO',
+            'FAILED': 'FALLIDO',
+            'PUBLIC_CHANNEL_BREADCRUMBS': 'MIGAS DE PAN (CANAL PÚBLICO)',
+            'PUBLIC_CHANNEL_ATTRIBUTES': 'ATRIBUTOS DE ESPECIFICACIONES (CANAL PÚBLICO)',
+            'MIGA_DE_PAN_CANAL_PUBLICO': 'MIGAS DE PAN (CANAL PÚBLICO)',
+            'SEARCH_OR_STORE': 'BÚSQUEDA / TIENDA OFICIAL',
+            'LIVE_OBSERVATION': 'OBSERVACIÓN EN VIVO',
+            'PERSISTED_VIEW': 'VISTA HISTÓRICA PERSISTIDA',
+            'SQLITE_PERSISTED': 'PERSISTIDO EN BASE DE DATOS',
+            'ADAPTER_HARVEST': 'EXTRACCIÓN POR ADAPTADOR',
+            'PAGINATED_ADAPTER_HARVEST': 'EXTRACCIÓN POR ADAPTADOR PAGINADO',
+            'DERIVED_PRICE_RECONSTRUCTION': 'RECONSTRUCCIÓN DERIVADA DE PRECIOS',
+            'PAGE_BUDGET_EXCEEDED': 'PRESUPUESTO DE PÁGINAS EXCEDIDO',
+            'PARTIAL': 'PARCIAL',
+            'COMPLETE': 'COMPLETO',
+            'RATE_LIMIT': 'LÍMITE DE VELOCIDAD / WAF',
+            'EXTRACTOR_FAILURE': 'FALLA DE EXTRACTOR',
+            'INSUFFICIENT_EVIDENCE': 'EVIDENCIA INSUFICIENTE',
+            'NON_NICOPOLY_CONFIRMED': 'NO NICOPOLY CONFIRMADO',
+            'NICOPOLY_CONFIRMED': 'NICOPOLY CONFIRMADO',
+            'STOPPED_BY_USER': 'DETENIDO POR USUARIO',
+            'CONSOLIDATED_RECOVERY': 'RECUPERACIÓN CONSOLIDADA'
+        };
+
+        function getSpanishLabel(status) {
+            if (!status) return 'NO VERIFICADO';
+            const s = String(status).trim().toUpperCase();
+            return SPANISH_LABELS[s] || s;
+        }
+
+        function getBadge(status) {
+            if(!status) return '<span class="badge">NO VERIFICADO</span>';
+            const s = String(status).toUpperCase();
+            const label = getSpanishLabel(s);
+            if(s === 'CORRECT' || s === 'CORRECTO' || s === 'CONFIRMED' || s === 'NICOPOLY_CONFIRMED' || s === 'SUCCESS' || s === 'OBSERVED' || s === 'PROMOTED' || s === 'TARGET_IDENTITY_VERIFIED') {
+                return '<span class="badge badge-success">' + label + '</span>';
+            }
+            if(s === 'INCORRECT' || s === 'INCORRECTO' || s === 'FAIL') {
+                return '<span class="badge badge-danger">' + label + '</span>';
+            }
+            if(s === 'SOURCE_BLOCKED' || s === 'FUENTE_BLOQUEADA' || s === 'INCONCLUSIVE' || s === 'INSUFFICIENT_EVIDENCE' || s === 'NOT_FOUND' || s === 'BLOCKED' || s === 'NOT_VERIFIED' || s === 'NO_VERIFICADO') {
+                return '<span class="badge badge-warning">' + label + '</span>';
+            }
+            if(s === 'REVIEW_REQUIRED' || s === 'REVISIÓN REQUERIDA' || s === 'IDENTIDAD_NO_VERIFICADA' || s === 'PARENT_IDENTITY_VERIFIED' || s === 'TIENDA_DE_MARCA' || s === 'NON_NICOPOLY_CONFIRMED') {
+                return '<span class="badge badge-purple">' + label + '</span>';
+            }
+            return '<span class="badge badge-info">' + label + '</span>';
+        }
+
+        async function startAudit() {
+            const mkt = document.getElementById('mktSelect').value;
+            const lim = document.getElementById('limitSelect').value;
+            const mode = document.getElementById('modeSelect').value;
+            
+            document.getElementById('btnStart').disabled = true;
+            document.getElementById('btnStop').disabled = false;
+            document.getElementById('lblStatus').innerText = "INICIANDO...";
+            document.getElementById('lblStatusMsg').innerText = "Despachando tarea al motor MRI...";
+            
+            try {
+                const res = await fetch('/api/audit/start', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({marketplace: mkt, limit: lim, mode: mode})
+                });
+                if(res.ok) {
+                    startPolling();
+                } else {
+                    const err = await res.json();
+                    document.getElementById('lblStatusMsg').innerText = "Error: " + (err.message || "No se pudo iniciar");
+                    document.getElementById('btnStart').disabled = false;
+                    document.getElementById('btnStop').disabled = true;
+                }
+            } catch(e) {
+                document.getElementById('lblStatusMsg').innerText = "Excepción de red: " + e.message;
+                document.getElementById('btnStart').disabled = false;
+                document.getElementById('btnStop').disabled = true;
+            }
+        }
+        
+        async function stopAudit() {
+            await fetch('/api/audit/stop', { method: 'POST' });
+            document.getElementById('btnStop').disabled = true;
+        }
+        
+        function startPolling() {
+            if(pollInterval) clearInterval(pollInterval);
+            pollInterval = setInterval(pollState, 1500);
+        }
+        
+        async function pollState() {
+            try {
+                const res = await fetch('/api/state');
+                const data = await res.json();
+                
+                const isRun = data.is_running;
+                const st = data.state || {};
+                
+                document.getElementById('lblStatus').innerText = isRun ? "RUNNING" : (st.status_message || "IDLE");
+                document.getElementById('lblStatusMsg').innerText = st.status_message || "En espera";
+                document.getElementById('lblProgress').innerText = st.progress || 0;
+                document.getElementById('lblTotal').innerText = st.total || 0;
+                
+                let pct = st.total > 0 ? (st.progress / st.total)*100 : 0;
+                document.getElementById('progressBar').style.width = Math.min(pct, 100) + '%';
+                
+                if (data.results && data.results.length > 0) {
+                    currentResults = data.results;
+                    updateDashboardCards();
+                    renderMainTable();
+                }
+                
+                if(!isRun && st.status_message && st.status_message !== "IDLE" && !st.status_message.includes("INICIANDO")) {
+                    clearInterval(pollInterval);
+                    document.getElementById('btnStart').disabled = false;
+                    document.getElementById('btnStop').disabled = true;
+                }
+            } catch(e) {
+                console.error("Error al consultar /api/state:", e);
+            }
+        }
+
+        function updateDashboardCards() {
+            let acq=0, cor=0, inc=0, rev=0, notv=0, catObs=0;
+            
+            currentResults.forEach(r => {
+                const acqSt = (r.acquisition_status || 'OBSERVED').toUpperCase();
+                if(acqSt === 'OBSERVED' || acqSt === 'CONFIRMED' || acqSt === 'LIVE_OBSERVATION_CONFIRMED') acq++;
+
+                const dec = (r.decision || r.estado_final || r.status || '').toUpperCase();
+                if(dec === 'CORRECT') cor++;
+                else if(dec === 'INCORRECT') inc++;
+                else if(dec === 'REVIEW_REQUIRED') rev++;
+                else if(dec === 'NOT_VERIFIED') notv++;
+                
+                if(r.real_category && r.real_category !== 'CATEGORY_UNKNOWN' && r.real_category !== 'NO_VERIFICADO') catObs++;
+            });
+            
+            document.getElementById('cntAcquired').innerText = acq;
+            document.getElementById('cntCorrect').innerText = cor;
+            document.getElementById('cntIncorrect').innerText = inc;
+            document.getElementById('cntReview').innerText = rev;
+            document.getElementById('cntNotVerified').innerText = notv;
+            document.getElementById('cntCatObserved').innerText = catObs;
+        }
+        
+        function populateDropdown(id, options) {
+            const select = document.getElementById(id);
+            if(!select) return;
+            const currentVal = select.value;
+            const firstOpt = select.options.length > 0 ? select.options[0].text : 'Todos';
+            select.innerHTML = `<option value="ALL">${firstOpt}</option>` + 
+                Array.from(options).filter(Boolean).sort().map(opt => `<option value="${opt}">${opt}</option>`).join('');
+            if (options.has(currentVal)) select.value = currentVal;
+        }
+
+        function filterByDecision(decision) {
+            const sel = document.getElementById('filterStatus');
+            if(sel) {
+                sel.value = decision;
+                renderMainTable();
+            }
+        }
+
+        function renderMainTable() {
+            // Dynamic categories from currentResults
+            const cats = new Set();
+            currentResults.forEach(r => {
+                if (r.real_category && r.real_category !== 'NO_VERIFICADO') cats.add(r.real_category);
+            });
+            populateDropdown('filterCategory', cats);
+
+            const filterMkt = document.getElementById('filterMarketplace').value;
+            const filterStatus = document.getElementById('filterStatus').value;
+            const filterCategory = document.getElementById('filterCategory').value;
+            const filterCoverage = document.getElementById('filterCoverage').value;
+
+            let filtered = currentResults.filter(r => {
+                const dec = (r.decision || r.estado_final || r.status || '').toUpperCase();
+                let match = true;
+                
+                if (filterMkt !== "ALL" && r.marketplace !== filterMkt) match = false;
+                
+                if (filterStatus !== "ALL") {
+                    if (dec !== filterStatus) match = false;
+                }
+                if (filterCategory !== "ALL" && r.real_category !== filterCategory) match = false;
+                if (filterCoverage !== "ALL" && r.coverage !== filterCoverage) match = false;
+                
+                return match;
+            });
+
+            document.getElementById('lblTableCount').innerText = `Mostrando ${filtered.length} de ${currentResults.length} registros`;
+
+            const emptyDiv = document.getElementById('emptyOpsTable');
+            const tbody = document.getElementById('tbMainAudit');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '';
+                emptyDiv.style.display = 'block';
+                return;
+            } else {
+                emptyDiv.style.display = 'none';
+            }
+
+            // Render at most 250 rows to keep DOM highly responsive
+            const slice = filtered.slice(0, 250);
+
+            const html = slice.map((r, idx) => {
+                const prod = r.product || {};
+                const evs = r.evidencia_identidad || r.evidence || [];
+                const motivo = r.motivo_verificable || r.reason || 'NO_VERIFICADO';
+                const url = r.url_encontrada || r.url || '';
+                
+                const urlLink = url.startsWith('http') 
+                    ? `<a href="${url}" target="_blank" style="color:var(--info); text-decoration:none; font-weight:500;">Abrir Publicación &rarr;</a>`
+                    : '<span style="color:var(--text-muted)">NO_VERIFICADO</span>';
+
+                const catBadgeClass = (r.real_category && r.real_category !== 'CATEGORY_UNKNOWN' && r.real_category !== 'NO_VERIFICADO') 
+                    ? 'badge-info' : 'badge-danger';
+
+                const dec = r.decision || r.estado_final || r.status;
+
+                return `
+                <tr>
+                    <td><strong>${r.marketplace || 'N/A'}</strong></td>
+                    <td>
+                        <strong>${r.producto_nombre || prod.title || 'N/A'}</strong><br>
+                        <small style="color:var(--text-muted)">SKU: ${r.producto_id || prod.sku || 'N/A'}</small>
+                    </td>
+                    <td>
+                        ${urlLink}<br>
+                        <small style="color:var(--text-muted)">${r.fecha_observacion ? r.fecha_observacion.split('T')[0] : 'NO_VERIFICADO'}</small>
+                    </td>
+                    <td><span class="badge ${catBadgeClass}">${r.real_category || 'NO_VERIFICADO'}</span></td>
+                    <td><span class="badge badge-purple">${r.expected_category || 'NO_VERIFICADO'}</span></td>
+                    <td>${getBadge(dec)}</td>
+                    <td>
+                        <button class="btn-secondary" style="padding:4px 10px; font-size:0.8rem;" onclick="openDetailModal('${(r.producto_id || prod.sku || '').replace(/'/g, "\\'")}')">Ver Detalle</button>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+            
+            tbody.innerHTML = html;
+        }
+
+        function openDetailModal(productId) {
+            const r = currentResults.find(p => (p.producto_id || p.observed_sku || '') === productId);
+            if (!r) return;
+            
+            const evs = r.evidencia_identidad || r.evidence || [];
+            const evText = evs.length > 0 ? evs.join('<br>') : 'NO_VERIFICADO';
+            const url = r.url_encontrada || r.url || 'NO_VERIFICADO';
+            const urlDisplay = url.startsWith('http') 
+                ? `<a href="${url}" target="_blank" style="color:var(--info)">${url}</a>`
+                : url;
+
+            const modalHtml = `
+                <div class="detail-row">
+                    <div class="detail-label">Marketplace:</div>
+                    <div class="detail-value"><strong>${r.marketplace || 'NO_VERIFICADO'}</strong></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Identificador (SKU):</div>
+                    <div class="detail-value"><code>${r.producto_id || r.observed_sku || 'NO_VERIFICADO'}</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Nombre Publicación:</div>
+                    <div class="detail-value">${r.producto_nombre || 'NO_VERIFICADO'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">URL Canónica:</div>
+                    <div class="detail-value">${urlDisplay}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Estado de Adquisición:</div>
+                    <div class="detail-value">${getBadge(r.acquisition_status || 'OBSERVED')}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Estado de Identidad:</div>
+                    <div class="detail-value">${getBadge(r.identity_status || 'IDENTIDAD_NO_VERIFICADA')}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Categoría Pública Observada:</div>
+                    <div class="detail-value"><span class="badge badge-info">${r.real_category || 'NO VERIFICADO'}</span></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Ruta de Navegación Literal:</div>
+                    <div class="detail-value"><code>${r.real_category || 'NO VERIFICADO'}</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Fuente de Procedencia:</div>
+                    <div class="detail-value"><code>${getSpanishLabel(r.category_source || 'MIGA_DE_PAN_CANAL_PUBLICO')}</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Clasificación Maestro:</div>
+                    <div class="detail-value"><span class="badge badge-purple">${r.expected_category || 'Vestuario Femenino / Nicopoly'}</span></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Dictamen Comercial:</div>
+                    <div class="detail-value">${getBadge(r.decision || r.estado_final || r.status)}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Tienda / Corredor de Marca:</div>
+                    <div class="detail-value"><code>${r.brand_corridor || 'NINGUNO (CATEGORÍA DEPARTAMENTAL)'}</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Producto Padre (Master):</div>
+                    <div class="detail-value"><code>${r.parent_sku || 'NO_VINCULADO'}</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Variantes en Catálogo:</div>
+                    <div class="detail-value"><code>${(r.candidate_variants && r.candidate_variants.length > 0) ? r.candidate_variants.join(', ') : (r.variant_sku || 'NO_DIFERENCIADA')}</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Fecha y Hora de Observación:</div>
+                    <div class="detail-value">${r.fecha_observacion || r.timestamp || 'NO_VERIFICADO'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Evidencia y Diagnóstico:</div>
+                    <div class="detail-value" style="background:rgba(0,0,0,0.2); padding:8px; border-radius:4px; font-size:0.85rem">
+                        ${evText}
+                        <div style="margin-top:6px; color:#fff"><strong>Diagnóstico y Motivo:</strong> ${r.motivo_verificable || r.reason || 'NO_VERIFICADO'}</div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('modalBody').innerHTML = modalHtml;
+            document.getElementById('modalDetail').style.display = 'flex';
+        }
+
+        function closeModal(event) {
+            document.getElementById('modalDetail').style.display = 'none';
+        }
+        
+        async function loadHistory() {
+            try {
+                const res = await fetch('/api/history');
+                const data = await res.json();
+                const historyList = data.history || [];
+                
+                const emptyDiv = document.getElementById('emptyHistTable');
+                const tbody = document.getElementById('tbHist');
+
+                if (historyList.length === 0) {
+                    tbody.innerHTML = '';
+                    emptyDiv.style.display = 'block';
+                    return;
+                }
+                emptyDiv.style.display = 'none';
+
+                const html = historyList.map(h => {
+                    const isSelected = h.run_id === selectedRunId;
+                    return `
+                    <tr style="${isSelected ? 'background:rgba(74,222,128,0.1); border-left:3px solid var(--primary);' : ''}">
+                        <td style="font-family:monospace; font-weight:600; color:var(--info)">${h.run_id}</td>
+                        <td>${h.timestamp.split('T').join(' ').split('.')[0]}</td>
+                        <td>
+                            <strong>${h.marketplace}</strong><br>
+                            <small style="color:var(--text-muted)">Modo: ${h.mode || 'RECOVERY'}</small>
+                        </td>
+                        <td><strong>${h.total}</strong></td>
+                        <td><span class="badge badge-success">${h.confirmed}</span></td>
+                        <td>
+                            <button class="btn-primary" style="padding:5px 12px; font-size:0.85rem;" onclick="selectHistoricalRun('${h.run_id}')">
+                                ${isSelected ? '&check; Seleccionada' : 'Cargar en Vivo'}
+                            </button>
+                        </td>
+                    </tr>
+                    `;
+                }).join('');
+                tbody.innerHTML = html;
+            } catch(e) {
+                console.error("Error al cargar historial:", e);
+            }
+        }
+
+        async function selectHistoricalRun(runId) {
+            try {
+                const res = await fetch(`/api/history/${encodeURIComponent(runId)}`);
+                if(!res.ok) {
+                    alert("No se pudieron recuperar las publicaciones de la corrida: " + runId);
+                    return;
+                }
+                const data = await res.json();
+                currentResults = data.publications || [];
+                selectedRunId = runId;
+                
+                document.getElementById('lblActiveRun').innerText = `Corrida cargada: ${runId} (${currentResults.length} pubs)`;
+                document.getElementById('lblStatus').innerText = "PERSISTED_VIEW";
+                document.getElementById('lblStatusMsg').innerText = `Visualizando corrida histórica persistida ${runId} (${data.source})`;
+                document.getElementById('lblProgress').innerText = currentResults.length;
+                document.getElementById('lblTotal').innerText = currentResults.length;
+                document.getElementById('progressBar').style.width = '100%';
+
+                updateDashboardCards();
+                renderMainTable();
+                switchTab('ops');
+            } catch(e) {
+                alert("Error de conexión al cargar la corrida: " + e.message);
+            }
+        }
+        
+        async function loadLearning() {
+            try {
+                const res = await fetch('/api/learning');
+                const data = await res.json();
+                
+                document.getElementById('lrnTotal').innerText = data.total_validated || 0;
+                document.getElementById('lrnHits').innerText = data.total_reused || 0;
+                
+                const recExps = data.recovery_experiences || [];
+                document.getElementById('lrnRecoveryCount').innerText = recExps.length;
+                
+                const tbRec = document.getElementById('tbRecExp');
+                const emptyRec = document.getElementById('emptyRecExpTable');
+                if (recExps.length === 0) {
+                    tbRec.innerHTML = '';
+                    emptyRec.style.display = 'block';
+                } else {
+                    emptyRec.style.display = 'none';
+                    tbRec.innerHTML = recExps.map(rx => `
+                        <tr>
+                            <td><code>${rx.id}</code></td>
+                            <td>${rx.timestamp.split('T')[0]}</td>
+                            <td><strong>${rx.marketplace}</strong></td>
+                            <td>${rx.category || 'N/A'}</td>
+                            <td><code>${rx.strategy}</code></td>
+                            <td>${getBadge(rx.result)}</td>
+                            <td>${rx.recovery_seconds ? rx.recovery_seconds + 's' : 'N/A'}</td>
+                            <td style="font-size:0.85rem">${rx.evidence || 'N/A'}</td>
+                        </tr>
+                    `).join('');
+                }
+
+                const exps = data.experiences || [];
+                const tbLrn = document.getElementById('tbLearn');
+                const emptyLrn = document.getElementById('emptyLearnTable');
+                if (exps.length === 0) {
+                    tbLrn.innerHTML = '';
+                    emptyLrn.style.display = 'block';
+                } else {
+                    emptyLrn.style.display = 'none';
+                    tbLrn.innerHTML = exps.map(e => `
+                        <tr>
+                            <td style="font-family:monospace; color:var(--text-muted)">${e.hash}</td>
+                            <td><strong>${e.product_name}</strong></td>
+                            <td>${e.marketplace}</td>
+                            <td>${getBadge(e.status)}</td>
+                            <td><code>${e.method}</code></td>
+                            <td><strong style="color:var(--primary)">${e.hits}</strong></td>
+                            <td style="font-size:0.85rem">${e.evidence || 'N/A'}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch(e) {
+                console.error("Error al cargar aprendizaje:", e);
+            }
+        }
+        
+        // Initial setup: Auto-load latest certified SQLite run if state is IDLE
+        async function initialSetup() {
+            try {
+                const stateRes = await fetch('/api/state');
+                const stateData = await stateRes.json();
+                
+                if (stateData.results && stateData.results.length > 0) {
+                    currentResults = stateData.results;
+                    updateDashboardCards();
+                    renderMainTable();
+                } else {
+                    // Pre-load latest persisted run from history
+                    const histRes = await fetch('/api/history');
+                    const histData = await histRes.json();
+                    if (histData.history && histData.history.length > 0) {
+                        const latest = histData.history[0];
+                        await selectHistoricalRun(latest.run_id);
+                    }
+                }
+            } catch(e) {
+                console.error("Error en configuración inicial:", e);
+            }
+        }
+
+        initialSetup();
+    </script>
+</body>
+</html>

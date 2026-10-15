@@ -4,11 +4,30 @@ import sqlite3
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "mri_experience.db")
+try:
+    from app.mri_autonomous.storage_guard import StorageConfig
+    DEFAULT_EXP_DB = StorageConfig.get_experience_db_path()
+except Exception:
+    DEFAULT_EXP_DB = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "mri_experience.db")
 
 class ExperienceStore:
-    def __init__(self, db_path: str = DB_PATH):
-        self.db_path = db_path
+    def __init__(self, db_path: Optional[Any] = None):
+        if db_path is not None:
+            self.db_path = str(db_path)
+        else:
+            try:
+                from app.mri_autonomous.storage_guard import StorageConfig
+                self.db_path = str(StorageConfig.get_experience_db_path())
+            except Exception:
+                self.db_path = str(DEFAULT_EXP_DB)
+        
+        # Enforce storage barrier on write/init
+        try:
+            from app.mri_autonomous.storage_guard import StorageConfig
+            StorageConfig.assert_write_allowed(self.db_path)
+        except ImportError:
+            pass
+            
         os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         self._init_db()
 
