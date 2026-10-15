@@ -94,19 +94,70 @@ class StorageConfig:
         """
         Validates whether writing to target_path is allowed.
         Raises ProductionWriteBlockedError if target_path points to production storage
-        while in test mode or without explicit permission.
+        or falls outside the authorized sandbox when in test mode.
         """
+        raw_str = str(target_path).replace("\\", "/").lower()
         p = Path(target_path).resolve()
-        is_prod_target = p in (
-            cls.PRODUCTION_SQLITE,
-            cls.PRODUCTION_EXPERIENCE,
-            cls.PRODUCTION_EXPERIENCE_ALT,
-            cls.PRODUCTION_HISTORY,
-            cls.PRODUCTION_CATEGORIES
-        ) or "data/sqlite/visibility.db" in str(p).replace("\\", "/") or "data/mri_experience.db" in str(p).replace("\\", "/")
+        norm_p = str(p).replace("\\", "/").lower()
 
-        if is_prod_target:
-            if cls.is_test_mode() or not cls._ALLOW_PRODUCTION_WRITES:
+        # Basenames of production files
+        PROD_BASENAMES = {
+            "visibility.db",
+            "mri_experience.db",
+            "experience.db",
+            "mri_history.json",
+            "mri_categories.json"
+        }
+
+        # Check if target matches canonical production objects regardless of CWD
+        target_name = p.name.lower()
+        has_data_dir = (
+            "/data/" in norm_p
+            or raw_str.startswith("data/")
+            or raw_str.startswith("./data/")
+            or raw_str.startswith(".\\data\\")
+        )
+        is_prod_target = (
+            p in (
+                cls.PRODUCTION_SQLITE,
+                cls.PRODUCTION_EXPERIENCE,
+                cls.PRODUCTION_EXPERIENCE_ALT,
+                cls.PRODUCTION_HISTORY,
+                cls.PRODUCTION_CATEGORIES
+            )
+            or (target_name in PROD_BASENAMES and has_data_dir)
+            or any(
+                raw_str == f"data/{b}"
+                or raw_str == f"data/sqlite/{b}"
+                or raw_str == f"data\\{b}"
+                or raw_str == f"data\\sqlite\\{b}"
+                or raw_str.endswith(f"/data/{b}")
+                or raw_str.endswith(f"/data/sqlite/{b}")
+                or raw_str.endswith(f"\\data\\{b}")
+                or raw_str.endswith(f"\\data\\sqlite\\{b}")
+                for b in PROD_BASENAMES
+            )
+        )
+
+        if cls.is_test_mode():
+            # If in test mode, writing to any production target is strictly forbidden
+            if is_prod_target:
+                raise ProductionWriteBlockedError(
+                    f"PRODUCTION WRITE BARRIER ACTIVATED: Attempted unauthorized write to production target '{target_path}'. "
+                    f"Execution blocked under Controlled Maintenance policy."
+                )
+            # If an isolated sandbox directory is configured, any target that attempts to write to data/
+            # or has a production basename outside the sandbox is strictly blocked
+            if cls._ISOLATED_DIR:
+                iso_norm = str(cls._ISOLATED_DIR).replace("\\", "/").lower()
+                if not (norm_p.startswith(iso_norm + "/") or norm_p == iso_norm):
+                    if is_prod_target or target_name in PROD_BASENAMES or has_data_dir:
+                        raise ProductionWriteBlockedError(
+                            f"PRODUCTION WRITE BARRIER ACTIVATED: Target '{target_path}' is outside isolated sandbox '{cls._ISOLATED_DIR}'. "
+                            f"Execution blocked under Controlled Maintenance policy."
+                        )
+        elif not cls._ALLOW_PRODUCTION_WRITES:
+            if is_prod_target:
                 raise ProductionWriteBlockedError(
                     f"PRODUCTION WRITE BARRIER ACTIVATED: Attempted unauthorized write to production target '{target_path}'. "
                     f"Execution blocked under Controlled Maintenance policy."

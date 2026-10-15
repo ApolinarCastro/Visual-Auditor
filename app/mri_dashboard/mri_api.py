@@ -144,7 +144,8 @@ def run_consolidated_recovery_pipeline():
     }
     orchestrator.results = []
     try:
-        res = recovery_runner.execute_complete_pipeline(reuse_harvest=True)
+        runner = get_recovery_runner()
+        res = runner.execute_complete_pipeline(reuse_harvest=True)
         run_id = res.get("run_id")
         
         # Load publications of this run into orchestrator results for live view
@@ -514,7 +515,10 @@ def fetch_run_publications(run_id: str) -> List[Dict[str, Any]]:
                 cat_dec = cat_eval["decision"]
                 cat_reason = cat_eval["reason"]
             else:
-                cat_reason = f"Decisión {cat_dec} verificada contra catálogo maestro y evidencia pública."
+                if ident_st == "IDENTITY_NOT_LINKED" or not parent_sku:
+                    cat_reason = f"Publicación observada en marketplace ({cat_dec}). Sin correspondencia unívoca verificada en catálogo maestro."
+                else:
+                    cat_reason = f"Decisión {cat_dec} verificada contra catálogo maestro y evidencia pública."
 
             # Evidence collection
             ev_list = []
@@ -721,29 +725,123 @@ async def get_learning():
 async def get_rea_paris_data():
     """
     Returns normalized Paris commercial intelligence discovered via REA engine:
-    - Commercial entities (categories, subcategories, brand corridor, promotional collections)
-    - Brand vs Seller separation metrics
-    - Operational category counts
+    - Queries SQLite visibility.db first (entities, categories, publications)
+    - Reconstructs Brand vs Official Seller breakdown from persisted data
+    - Differentiates incomplete/empty evidence from operational truth
+    - Operates 100% offline without forcing network requests
     """
+    rows = []
+    cat_rows = []
+    try:
+        conn = get_sqlite_conn()
+        try:
+            cur = conn.cursor()
+            # Check persisted Paris publications if table exists
+            try:
+                rows = cur.execute("""
+                    SELECT publication_id, marketplace_product_id, commercial_attributes, category_observed
+                    FROM mri_publications
+                    WHERE marketplace = 'Paris'
+                """).fetchall()
+            except sqlite3.OperationalError:
+                rows = []
+
+            # Check persisted Paris categories / entities if table exists
+            try:
+                cat_rows = cur.execute("""
+                    SELECT category_id, category_name, canonical_url
+                    FROM mri_categories
+                    WHERE marketplace = 'Paris'
+                """).fetchall()
+            except sqlite3.OperationalError:
+                cat_rows = []
+        finally:
+            conn.close()
+    except Exception:
+        rows = []
+        cat_rows = []
+
+    # If data is persisted in SQLite, serve it directly
+    if rows:
+        official_seller_count = 0
+        all_sellers = set()
+        promotions_found = set()
+        for r in rows:
+            attrs = {}
+            try:
+                attrs = json.loads(r["commercial_attributes"] or "{}")
+            except Exception:
+                pass
+            sellers = attrs.get("sellers", [])
+            for s in sellers:
+                all_sellers.add(s)
+            if attrs.get("is_official_seller") or any("nicopoly" in s.lower() for s in sellers):
+                official_seller_count += 1
+            for p in attrs.get("promotions", []):
+                promotions_found.add(p)
+
+        total_pubs = len(rows)
+        other_sellers = max(0, total_pubs - official_seller_count)
+
+        return JSONResponse(content={
+            "marketplace": "Paris",
+            "brand": "Nicopoly",
+            "total_brand": total_pubs,
+            "official_seller": "NICOPOLY",
+            "total_official_seller": official_seller_count,
+            "other_sellers_total": other_sellers,
+            "categories_persisted_count": len(cat_rows),
+            "promotions_observed": list(promotions_found),
+            "storage_source": "SQLITE_MRI_PERSISTENCE",
+            "discovery_engine": "Constructor.io AI Search",
+            "status": "OPERATIONAL"
+        })
+
+    # If no persisted Paris data in current DB, try querying engine safely if allowed
     try:
         from app.mri_autonomous.rea_paris_engine import REAParisEngine
         engine = REAParisEngine()
         brand_summary = engine.get_brand_summary("Nicopoly")
         seller_summary = engine.get_seller_summary("NICOPOLY")
+        tot_b = brand_summary.get("total_brand_results", 0)
+        tot_s = seller_summary.get("total_seller_results", 0)
+        
+        # Do not convert empty response to operational
+        if tot_b == 0 and tot_s == 0:
+            return JSONResponse(content={
+                "marketplace": "Paris",
+                "brand": "Nicopoly",
+                "total_brand": 0,
+                "total_official_seller": 0,
+                "other_sellers_total": 0,
+                "status": "NO_EVIDENCE_RECORDED",
+                "reason": "Sin datos persistidos en almacenamiento ni respuesta de red válida"
+            })
+
         return JSONResponse(content={
             "marketplace": "Paris",
             "brand": "Nicopoly",
-            "total_brand": brand_summary.get("total_brand_results", 4904),
+            "total_brand": tot_b,
             "official_seller": "NICOPOLY",
-            "total_official_seller": seller_summary.get("total_seller_results", 4213),
-            "other_sellers_total": max(0, brand_summary.get("total_brand_results", 4904) - seller_summary.get("total_seller_results", 4213)),
+            "total_official_seller": tot_s,
+            "other_sellers_total": max(0, tot_b - tot_s),
             "facets": brand_summary.get("facets_available", []),
             "product_types": brand_summary.get("product_types", []),
+            "storage_source": "LIVE_REA_ENGINE",
             "discovery_engine": "Constructor.io AI Search",
             "status": "OPERATIONAL"
         })
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
+    except Exception:
+        # When offline and no records yet, return clear NO_EVIDENCE state instead of 500 error
+        return JSONResponse(content={
+            "marketplace": "Paris",
+            "brand": "Nicopoly",
+            "total_brand": 0,
+            "total_official_seller": 0,
+            "other_sellers_total": 0,
+            "status": "OFFLINE_NO_PERSISTED_RECORDS",
+            "message": "No hay registros persistidos de Paris en almacenamiento y la red está aislada."
+        })
 
 
 if __name__ == "__main__":

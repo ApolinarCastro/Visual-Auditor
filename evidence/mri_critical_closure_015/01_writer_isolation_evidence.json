@@ -1,0 +1,25 @@
+{
+  "defect_1_status": "RESOLVED",
+  "isolation_checks": [
+    {
+      "target": "data/experience.db",
+      "blocked": true,
+      "error": "PRODUCTION WRITE BARRIER ACTIVATED: Attempted unauthorized write to production target 'data/experience.db'. Execution blocked under Controlled Maintenance policy."
+    },
+    {
+      "target": "C:\\Users\\ASUS Zenbook\\Documents\\Visibility Auditor\\data\\mri_experience.db",
+      "blocked": true,
+      "error": "PRODUCTION WRITE BARRIER ACTIVATED: Attempted unauthorized write to production target 'C:\\Users\\ASUS Zenbook\\Documents\\Visibility Auditor\\data\\mri_experience.db'. Execution blocked under Controlled Maintenance policy."
+    },
+    {
+      "target": "data/mri_categories.json",
+      "blocked": true,
+      "error": "PRODUCTION WRITE BARRIER ACTIVATED: Attempted unauthorized write to production target 'data/mri_categories.json'. Execution blocked under Controlled Maintenance policy."
+    },
+    {
+      "target": "data/mri_history.json",
+      "blocked": true,
+      "error": "PRODUCTION WRITE BARRIER ACTIVATED: Attempted unauthorized write to production target 'data/mri_history.json'. Execution blocked under Controlled Maintenance policy."
+    }
+  ]
+}

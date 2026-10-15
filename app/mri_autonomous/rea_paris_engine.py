@@ -409,8 +409,34 @@ class REAParisEngine:
                 ) VALUES (?, ?, ?, ?)
             """, (prod_id, pub.brand, "ACTIVE", now_str))
 
-            # Primary category decision
+            # Check if this SKU matches master catalog
+            parent_sku = None
+            category_expected = None
+            identity_status = "IDENTITY_NOT_LINKED"
+            category_decision = "REVIEW_REQUIRED"
+
+            try:
+                from app.mri_dashboard.mri_api import get_master_catalog
+                child_to_cat, parent_to_cat, title_to_cat, _ = get_master_catalog()
+                m_match = child_to_cat.get(pub.sku) or parent_to_cat.get(pub.sku)
+                if not m_match and pub.title:
+                    m_match = title_to_cat.get(pub.title.lower().strip())
+                if m_match:
+                    identity_status = "TARGET_IDENTITY_VERIFIED"
+                    parent_sku = m_match.get("parent")
+                    category_expected = m_match.get("category")
+                    # Evaluate decision
+                    primary_cat = pub.categories[0]["name"] if pub.categories else "NO_VERIFICADO"
+                    if category_expected and primary_cat and category_expected.lower() in primary_cat.lower():
+                        category_decision = "CORRECT"
+                    else:
+                        category_decision = "REVIEW_REQUIRED"
+            except Exception:
+                pass
+
             primary_cat = pub.categories[0]["name"] if pub.categories else "NO_VERIFICADO"
+            exp_cat = category_expected or "NO_VERIFICADO"
+
             comm_attrs = json.dumps({
                 "sellers": pub.sellers,
                 "is_official_seller": pub.is_official_seller,
@@ -420,6 +446,36 @@ class REAParisEngine:
                 "promotions": pub.promotions,
                 "facets": pub.facets
             }, ensure_ascii=False)
+
+            # Check for existing publication to archive into historical table
+            existing = cur.execute("""
+                SELECT publication_id, product_id, marketplace, marketplace_product_id,
+                       canonical_url, status, observed_at, run_id, position, surface,
+                       position_state, category_relationship, evidence_type, raw_source_id,
+                       acquisition_status, identity_status, category_observed,
+                       category_source, category_expected, category_decision, commercial_attributes
+                FROM mri_publications WHERE publication_id = ?
+            """, (pub.publication_id,)).fetchone()
+
+            if existing and existing[7] and existing[7] != run_id:
+                cur.execute("""
+                    INSERT OR REPLACE INTO mri_historical_publications (
+                        history_id, publication_id, product_id, marketplace, marketplace_product_id,
+                        canonical_url, status, observed_at, run_id, position, surface,
+                        position_state, category_relationship, evidence_type, raw_source_id,
+                        acquisition_status, identity_status, category_observed,
+                        category_source, category_expected, category_decision, commercial_attributes
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    f"hist_{existing[7]}_{pub.publication_id}", existing[0], existing[1], existing[2], existing[3],
+                    existing[4], existing[5], existing[6], existing[7], existing[8], existing[9],
+                    existing[10], existing[11], existing[12], existing[13], existing[14], existing[15],
+                    existing[16], existing[17], existing[18], existing[19], existing[20]
+                ))
+
+            # Preserve real provenance: REPLAY / FIXTURE vs LIVE_OBSERVATION
+            ev_type = getattr(pub, "evidence_type", None) or "CONTROLLED_REPLAY"
+            raw_src = getattr(pub, "raw_source_id", None) or f"HAR-REPLAY-{pub.sku}"
 
             cur.execute("""
                 INSERT OR REPLACE INTO mri_publications (
@@ -432,10 +488,10 @@ class REAParisEngine:
             """, (
                 pub.publication_id, prod_id, pub.marketplace, pub.sku,
                 pub.canonical_url, "OBSERVED", pub.observed_at, run_id, idx,
-                "CONSTRUCTOR_SEARCH_GRID", "EXACT", "CORRECT",
-                "REA_OBSERVED_TRAFFIC", f"REA-HARVEST-{pub.sku}",
-                "OBSERVED", "TARGET_IDENTITY_VERIFIED", primary_cat,
-                "CONSTRUCTOR_CDP_TAXONOMY", primary_cat, "CORRECT", comm_attrs
+                "CONSTRUCTOR_SEARCH_GRID", "EXACT", category_decision,
+                ev_type, raw_src,
+                "OBSERVED", identity_status, primary_cat,
+                "CONSTRUCTOR_CDP_TAXONOMY", exp_cat, category_decision, comm_attrs
             ))
             pubs_inserted += 1
 

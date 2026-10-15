@@ -387,7 +387,8 @@
                 <select id="filterCoverage" onchange="renderMainTable()">
                     <option value="ALL">Filtro: Cobertura (Todas)</option>
                     <option value="COMPLETE">Cobertura: Completa</option>
-                    <option value="PARTIAL">Cobertura: Parcial</option>
+                    <option value="PARTIAL">Cobertura: Parcial (General)</option>
+                    <option value="PAGE_BUDGET_EXCEEDED">Cobertura: Presupuesto de Páginas Excedido (Parcial)</option>
                 </select>
             </div>
             
@@ -742,7 +743,15 @@
                     if (dec !== filterStatus) match = false;
                 }
                 if (filterCategory !== "ALL" && r.real_category !== filterCategory) match = false;
-                if (filterCoverage !== "ALL" && r.coverage !== filterCoverage) match = false;
+                if (filterCoverage !== "ALL") {
+                    if (filterCoverage === "PARTIAL") {
+                        if (r.coverage !== "PARTIAL" && r.coverage !== "PAGE_BUDGET_EXCEEDED") match = false;
+                    } else if (filterCoverage === "PAGE_BUDGET_EXCEEDED") {
+                        if (r.coverage !== "PAGE_BUDGET_EXCEEDED") match = false;
+                    } else if (r.coverage !== filterCoverage) {
+                        match = false;
+                    }
+                }
                 
                 return match;
             });
@@ -857,6 +866,10 @@
                 <div class="detail-row">
                     <div class="detail-label">Dictamen Comercial:</div>
                     <div class="detail-value">${getBadge(r.decision || r.estado_final || r.status)}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Cobertura y Límite:</div>
+                    <div class="detail-value"><span class="badge ${r.coverage === 'COMPLETE' ? 'badge-success' : 'badge-warning'}">${getSpanishLabel(r.coverage || 'PARTIAL')}</span></div>
                 </div>
                 <div class="detail-row">
                     <div class="detail-label">Tienda / Corredor de Marca:</div>
