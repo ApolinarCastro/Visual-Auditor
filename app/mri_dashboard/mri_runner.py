@@ -10,9 +10,11 @@ from app.scrapers.mercadolibre_scraper import MercadoLibreScraper
 from app.scrapers.paris_scraper import ParisScraper
 from app.scrapers.ripley_scraper import RipleyScraper
 from app.scrapers.falabella_scraper import FalabellaScraper
+from app.mri_autonomous.category_evaluator import evaluate_commercial_category
 from app.auditor.nicopoly_matcher import is_nicopoly
 from mri_commercial_materialization_golden_slice.v001.materializer_engine import GenericCommercialMaterializer
 
+import re
 import csv
 import os
 
@@ -278,6 +280,7 @@ async def audit_product(product, materializer, store, state_dict, scraper_instan
 class MRIOrchestrator:
     def __init__(self):
         self.is_running = False
+        self.stop_requested = False
         self.state = {
             "progress": 0,
             "total": 0,
@@ -361,7 +364,13 @@ class MRIOrchestrator:
                         
                         res = await scraper.scrape_autonomous_category(url, max_pages=max_pages)
                         discovered_products = res.get("products", [])
-                        coverage = "COMPLETE" if res.get("stop_reason") == "EXHAUSTION" else res.get("stop_reason", "PARTIAL")
+                        stop_reason = res.get("stop_reason")
+                        if not discovered_products and stop_reason in ("EXTRACTOR_FAILURE", "SOURCE_BLOCKED", "RATE_LIMIT"):
+                            self.state["status_message"] = stop_reason
+                            category_manager.register_category(mkt, cat_id, cat_data["name"], url, status=stop_reason)
+                            continue
+
+                        coverage = "COMPLETE" if stop_reason == "EXHAUSTION" else (stop_reason or "PARTIAL")
                         
                         # Mark category as VERIFIED since we ran it
                         category_manager.register_category(mkt, cat_id, cat_data["name"], url, status="VERIFIED")
@@ -374,7 +383,15 @@ class MRIOrchestrator:
                             title = observed.get("title", "UNKNOWN")
                             prod_url = observed.get("url") or observed.get("link")
                             raw_sku = observed.get('marketplace_sku', '')
-                            
+
+                            # Canonical URL formatting for Paris if missing or relative
+                            if mkt == "Paris":
+                                if not prod_url or not str(prod_url).startswith("http"):
+                                    if raw_sku:
+                                        prod_url = f"https://www.paris.cl/{raw_sku}.html"
+                                    elif observed.get("id"):
+                                        prod_url = f"https://www.paris.cl/{observed.get('id')}.html"
+
                             self.state["status_message"] = f"Verificando {title[:30]}..."
                             start_time = time.time()
                             
@@ -398,23 +415,24 @@ class MRIOrchestrator:
                             membership = materializer.validate_nicopoly_membership(norm, ident)
                             classification = membership.get('classification', 'UNKNOWN')
                             
-                            # CATEGORY IDENTIFICATION
+                            # CATEGORY & ATTRIBUTE PUBLIC EXTRACTION
                             real_category = "CATEGORY_UNKNOWN"
                             real_subcategory = "CATEGORY_UNKNOWN"
                             category_source = "NONE"
+                            public_attrs = {}
+                            corredor_tipo = None
                             
-                            # We only fetch breadcrumbs if it's considered Nicopoly or if we want to trace everything.
-                            # The prompt: "Para cada publicación descubierta: Recuperar los datos disponibles de su URL individual..."
+                            # Recover public data from individual URL
                             if prod_url and scraper and scraper.page:
-                                self.state["status_message"] = f"Extrayendo categoría de {title[:30]}..."
+                                self.state["status_message"] = f"Extrayendo categoría y atributos de {title[:30]}..."
                                 try:
                                     import random
                                     import asyncio
                                     await scraper.page.goto(prod_url, wait_until="commit", timeout=15000)
                                     await asyncio.sleep(random.uniform(0.5, 1.2))
-                                    # Extract breadcrumbs depending on marketplace
+
+                                    # Extract breadcrumbs and public attributes depending on marketplace
                                     if mkt == "Mercado Libre":
-                                        # Breadcrumb in ML: a.andes-breadcrumb__link
                                         crumbs = await scraper.page.evaluate('''() => {
                                             return Array.from(document.querySelectorAll('.andes-breadcrumb__link')).map(el => {
                                                 return {name: el.innerText.trim(), url: el.href};
@@ -424,35 +442,211 @@ class MRIOrchestrator:
                                             real_category = crumbs[0]['name']
                                             if len(crumbs) > 1:
                                                 real_subcategory = crumbs[1]['name']
-                                            category_source = "BREADCRUMBS"
-                                            # Register discovered category
+                                            category_source = "PUBLIC_CHANNEL_BREADCRUMBS"
                                             category_manager.register_category(mkt, f"CAT_{real_category.replace(' ', '_')}", real_category, crumbs[0]['url'], source="OBSERVED", status="VERIFIED")
                                             if len(crumbs) > 1:
                                                 category_manager.register_category(mkt, f"CAT_{real_subcategory.replace(' ', '_')}", real_subcategory, crumbs[1]['url'], parent_id=f"CAT_{real_category.replace(' ', '_')}", source="OBSERVED", status="VERIFIED")
                                                 
                                     elif mkt == "Falabella":
-                                        # Breadcrumb in Falabella: .Breadcrumbs-module_breadcrumb__... a
+                                        # Breadcrumbs
                                         crumbs = await scraper.page.evaluate('''() => {
-                                            return Array.from(document.querySelectorAll('[class*="Breadcrumbs-module_breadcrumb"] a, .breadcrumb a')).map(el => {
+                                            return Array.from(document.querySelectorAll('[class*="Breadcrumbs-module_breadcrumb"] a, .breadcrumb a, [class*="breadcrumbs"] a')).map(el => {
                                                 return {name: el.innerText.trim(), url: el.href};
                                             });
                                         }''')
                                         if crumbs and len(crumbs) > 0:
-                                            real_category = crumbs[0]['name']
-                                            if len(crumbs) > 1:
-                                                real_subcategory = crumbs[1]['name']
-                                            category_source = "BREADCRUMBS"
+                                            real_category = " → ".join(c['name'] for c in crumbs if c['name'] and c['name'] != 'Home')
+                                            category_source = "PUBLIC_CHANNEL_BREADCRUMBS"
                                             
+                                        # Public Specifications / Attributes from DOM table
+                                        specs = await scraper.page.evaluate('''() => {
+                                            const attrs = {};
+                                            const rows = document.querySelectorAll('tr, [class*="spec-row"], [class*="property-row"]');
+                                            rows.forEach(r => {
+                                                const cells = r.querySelectorAll('td, th, span, div');
+                                                if (cells.length >= 2) {
+                                                    const k = cells[0].innerText.trim();
+                                                    const v = cells[1].innerText.trim();
+                                                    if (k && v && k.length < 50 && v.length < 100) attrs[k] = v;
+                                                }
+                                            });
+                                            return attrs;
+                                        }''')
+                                        if specs:
+                                            public_attrs.update(specs)
+                                            if "Tipo" in public_attrs or any("tipo" in k.lower() for k in public_attrs):
+                                                category_source = "PUBLIC_CHANNEL_ATTRIBUTES"
+
+                                    elif mkt == "Ripley":
+                                        # Breadcrumbs: Moda Mujer → Marcas Casuales → Nicopoly
+                                        crumbs = await scraper.page.evaluate('''() => {
+                                            const nav = document.querySelector('nav[aria-label*="Breadcrumb" i], [class*="breadcrumb" i], [class*="Breadcrumb" i]');
+                                            if (nav) {
+                                                const links = Array.from(nav.querySelectorAll('a, li, span')).map(el => el.innerText.trim()).filter(Boolean);
+                                                return links;
+                                            }
+                                            return [];
+                                        }''')
+                                        if crumbs and len(crumbs) > 0:
+                                            # Clean duplicate breadcrumb tokens
+                                            clean_crumbs = []
+                                            for c in crumbs:
+                                                if c not in clean_crumbs and c.lower() not in ('inicio', 'home', '>'):
+                                                    clean_crumbs.append(c)
+                                            if clean_crumbs:
+                                                real_category = " → ".join(clean_crumbs)
+                                                category_source = "PUBLIC_CHANNEL_BREADCRUMBS"
+                                                if any('marcas casuales' in c.lower() or 'nicopoly' in c.lower() for c in clean_crumbs):
+                                                    corredor_tipo = "TIENDA_DE_MARCA"
+                                        
+                                        # Specifications table & Seller / Brand Store link
+                                        specs_and_seller = await scraper.page.evaluate('''() => {
+                                            const attrs = {};
+                                            const rows = document.querySelectorAll('table tr');
+                                            rows.forEach(r => {
+                                                const cells = r.querySelectorAll('td, th');
+                                                if (cells.length >= 2) {
+                                                    const k = cells[0].innerText.trim();
+                                                    const v = cells[1].innerText.trim();
+                                                    if (k && v) attrs[k] = v;
+                                                }
+                                            });
+                                            
+                                            // Check seller / brand store link
+                                            let storeUrl = null;
+                                            const sLink = document.querySelector('a[href*="/tienda/"], [class*="seller" i] a, [class*="vendor" i] a');
+                                            if (sLink && sLink.href) {
+                                                storeUrl = sLink.href;
+                                            }
+                                            return { attrs, storeUrl };
+                                        }''')
+                                        if specs_and_seller:
+                                            if specs_and_seller.get("attrs"):
+                                                public_attrs.update(specs_and_seller["attrs"])
+                                            if specs_and_seller.get("storeUrl"):
+                                                public_attrs["store_url"] = specs_and_seller["storeUrl"]
+                                            
+                                    elif mkt == "Paris":
+                                        crumbs = await scraper.page.evaluate('''() => {
+                                            const selectors = [
+                                                '.breadcrumb a',
+                                                '[class*="breadcrumb" i] a',
+                                                '[class*="Breadcrumb" i] a',
+                                                '[data-testid*="breadcrumb" i] a',
+                                                'nav[aria-label*="breadcrumb" i] a',
+                                                'ol[class*="breadcrumb" i] li'
+                                            ];
+                                            for (const sel of selectors) {
+                                                const els = Array.from(document.querySelectorAll(sel)).map(el => el.innerText.trim()).filter(Boolean);
+                                                if (els.length > 0) return els;
+                                            }
+                                            return [];
+                                        }''')
+                                        if crumbs and len(crumbs) > 0:
+                                            clean_crumbs = []
+                                            for c in crumbs:
+                                                if c not in clean_crumbs and c.lower() not in ('inicio', 'home', '>'):
+                                                    clean_crumbs.append(c)
+                                            if clean_crumbs:
+                                                real_category = " → ".join(clean_crumbs)
+                                                category_source = "PUBLIC_CHANNEL_BREADCRUMBS"
+                                                
                                 except Exception as e:
-                                    print(f"Error fetching breadcrumbs for {prod_url}: {e}")
+                                    print(f"Error fetching breadcrumbs/attributes for {prod_url}: {e}")
+                            
+                            # Master Catalog & Identity Resolution
+                            resolved_master_sku = None
+                            parent_sku = None
+                            variant_sku = None
+                            candidate_variants = []
+                            expected_category = None
+                            identity_status = "IDENTIDAD_NO_VERIFICADA"
+                            
+                            from app.mri_dashboard.mri_api import get_master_catalog, clean_cat_title, normalize_title_tokens
+                            child_to_cat, parent_to_cat, title_to_cat, token_to_entries = get_master_catalog()
+                            
+                            # 1. Try matching by raw_sku extracted or parsed ID
+                            sku_cand = raw_sku
+                            if mkt == "Paris" and "MKC" in raw_sku:
+                                m_p = re.search(r"(MKC[0-9A-Z]+)", raw_sku)
+                                if m_p:
+                                    sku_cand = m_p.group(1)
+                                    
+                            if sku_cand and sku_cand in child_to_cat:
+                                m_match = child_to_cat[sku_cand]
+                                variant_sku = sku_cand
+                                parent_sku = m_match.get("parent")
+                                resolved_master_sku = variant_sku
+                                expected_category = m_match.get("category")
+                                identity_status = "TARGET_IDENTITY_VERIFIED"
+                            elif sku_cand and sku_cand in parent_to_cat:
+                                m_match = parent_to_cat[sku_cand]
+                                parent_sku = sku_cand
+                                resolved_master_sku = parent_sku
+                                expected_category = m_match.get("category")
+                                identity_status = "PARENT_IDENTITY_VERIFIED"
+                            elif title:
+                                c_key = clean_cat_title(title)
+                                if c_key and c_key in title_to_cat:
+                                    m_match = title_to_cat[c_key]
+                                    parent_sku = m_match.get("parent")
+                                    resolved_master_sku = parent_sku
+                                    expected_category = m_match.get("category")
+                                    # Check if title corresponds to multiple variants
+                                    t_toks = normalize_title_tokens(title)
+                                    if t_toks and t_toks in token_to_entries:
+                                        candidate_variants = [e.get("child") for e in token_to_entries[t_toks] if e.get("child")]
+                                    if candidate_variants and len(candidate_variants) > 1:
+                                        identity_status = "PARENT_IDENTITY_VERIFIED"
+                                    else:
+                                        variant_sku = m_match.get("child")
+                                        resolved_master_sku = variant_sku or parent_sku
+                                        identity_status = "TARGET_IDENTITY_VERIFIED"
+                                else:
+                                    t_toks = normalize_title_tokens(title)
+                                    if t_toks and t_toks in token_to_entries:
+                                        entries = token_to_entries[t_toks]
+                                        m_match = entries[0]
+                                        parent_sku = m_match.get("parent")
+                                        resolved_master_sku = parent_sku
+                                        expected_category = m_match.get("category")
+                                        candidate_variants = [e.get("child") for e in entries if e.get("child")]
+                                        if len(candidate_variants) > 1:
+                                            identity_status = "PARENT_IDENTITY_VERIFIED"
+                                        else:
+                                            variant_sku = candidate_variants[0]
+                                            resolved_master_sku = variant_sku or parent_sku
+                                            identity_status = "TARGET_IDENTITY_VERIFIED"
+                            
+                            if parent_sku and not candidate_variants:
+                                candidate_variants = [c for c, e in child_to_cat.items() if e.get("parent") == parent_sku]
+                            
+                            # Commercial Evaluation & Double Membership
+                            brand_corridor_val = corredor_tipo if corredor_tipo == "TIENDA_DE_MARCA" else None
+                            if not brand_corridor_val and any(m in real_category.lower() for m in ['marcas casuales', 'tienda_de_marca', 'tienda oficial', 'tienda/nicopoly', 'brand store', 'brand hub']):
+                                brand_corridor_val = real_category
+                            if public_attrs and "store_url" in public_attrs:
+                                brand_corridor_val = f"Tienda oficial Nicopoly ({public_attrs['store_url']})"
+
+                            cat_eval = evaluate_commercial_category(
+                                product_title=title,
+                                expected_category=expected_category or "NO_VERIFICADO",
+                                observed_category=real_category,
+                                public_attributes=public_attrs,
+                                marketplace=mkt,
+                                identity_status=identity_status,
+                                brand_corridor=brand_corridor_val
+                            )
+                            category_decision = cat_eval.get("decision", "REVIEW_REQUIRED")
+                            category_reason = cat_eval.get("reason", "")
                             
                             verification_result = "INSUFFICIENT_EVIDENCE"
                             motivo = "INSUFFICIENT_EVIDENCE"
                             
                             if classification == "NICOPOLY_CONFIRMED":
                                 if prod_url:
-                                    verification_result = "CONFIRMED"
-                                    motivo = "Evidencia suficiente según materializador"
+                                    verification_result = category_decision
+                                    motivo = category_reason or "Evidencia suficiente según materializador"
                                     store.record_experience(mkt, "Nicopoly", "DISCOVERY", title, parent_identity=norm["raw_sku"], discovery_method="autonomous_category", status="VALIDATED", evidence_reference=str(membership.get("evidence", [])))
                                 else:
                                     verification_result = "REVIEW_REQUIRED"
@@ -465,26 +659,44 @@ class MRIOrchestrator:
                             else:
                                 store.record_experience(mkt, "Nicopoly", "DISCOVERY", title, discovery_method="autonomous_category", status="FAILED", is_success=False, evidence_reference="INSUFFICIENT_EVIDENCE")
 
+                            evidence_items = list(membership.get('evidence', []))
+                            if real_category != "CATEGORY_UNKNOWN":
+                                evidence_items.append(f"Ruta pública: {real_category} ({category_source})")
+                            if public_attrs:
+                                evidence_items.append(f"Atributos públicos: {public_attrs}")
+                            if corredor_tipo or brand_corridor_val:
+                                evidence_items.append(f"Corredor de marca: {brand_corridor_val or corredor_tipo}")
+
                             self.results.append({
-                                "producto_id": raw_sku,
+                                "producto_id": resolved_master_sku or raw_sku,
                                 "producto_nombre": title,
                                 "marketplace": mkt,
                                 "url_encontrada": prod_url,
                                 "fecha_observacion": datetime.now().isoformat(),
-                                "evidencia_identidad": membership.get('evidence', []),
+                                "evidencia_identidad": evidence_items,
                                 "estado_final": verification_result,
                                 "motivo_verificable": motivo,
                                 "coverage": coverage,
                                 "category_url": url,
                                 
-                                # category identification
+                                # category identification & double membership
                                 "real_category": real_category,
                                 "real_subcategory": real_subcategory,
                                 "category_source": category_source,
+                                "expected_category": expected_category,
+                                "decision": category_decision,
+                                "identity_status": identity_status,
+                                "parent_sku": parent_sku,
+                                "variant_sku": variant_sku,
+                                "candidate_variants": candidate_variants,
+                                "commercial_attributes": public_attrs,
+                                "corredor_tipo": corredor_tipo or ("TIENDA_DE_MARCA" if brand_corridor_val else None),
+                                "brand_corridor": brand_corridor_val,
                                 
                                 # dashboard specific
                                 "status": verification_result,
-                                "product": {"title": title, "sku": raw_sku},
+                                "acquisition_status": "OBSERVED",
+                                "product": {"title": title, "sku": resolved_master_sku or raw_sku},
                                 "classification": classification,
                                 "observed_sku": raw_sku,
                                 "url": prod_url,
@@ -497,22 +709,55 @@ class MRIOrchestrator:
                     if scraper:
                         await scraper.stop()
                         
-            self.state["status_message"] = "COMPLETED"
+            if self.stop_requested or not self.is_running:
+                self.state["status_message"] = "STOPPED_BY_USER"
+            else:
+                self.state["status_message"] = "COMPLETED"
             
+            # Save to SQLite DB for persistent API querying
+            try:
+                import json
+                from app.mri_autonomous.recovery_runner import AcquisitionRecoveryRunner
+                rec_runner = AcquisitionRecoveryRunner()
+                obs_to_persist = []
+                for res in self.results:
+                    obs_to_persist.append({
+                        "publication_id": res.get("observed_sku") or res.get("producto_id"),
+                        "marketplace": res.get("marketplace"),
+                        "observed_url": res.get("url"),
+                        "position_observed": 1,
+                        "title": res.get("producto_nombre"),
+                        "observation_timestamp": res.get("timestamp"),
+                        "status": "OBSERVED",
+                        "acquisition_status": "OBSERVED",
+                        "identity_status": res.get("identity_status"),
+                        "category_observed": res.get("real_category"),
+                        "category_source": res.get("category_source"),
+                        "category_expected": res.get("expected_category"),
+                        "category_decision": res.get("decision"),
+                        "commercial_attributes": json.dumps(res.get("commercial_attributes") or {})
+                    })
+                if obs_to_persist:
+                    rec_runner.persist_to_sqlite({"observations": obs_to_persist}, run_id)
+            except Exception as e:
+                print(f"Error persisting discovery run to SQLite: {e}")
+
             # Save to history
             self.history.append({
                 "run_id": run_id,
                 "timestamp": datetime.now().isoformat(),
                 "marketplace": marketplace,
                 "total": sum(1 for r in self.results),
-                "confirmed": sum(1 for r in self.results if r["status"] == "CONFIRMED"),
+                "confirmed": sum(1 for r in self.results if r["status"] in ("CONFIRMED", "CORRECT")),
                 "results": list(self.results),
-                "mode": "DISCOVERY"
+                "mode": "DISCOVERY",
+                "terminal_state": self.state["status_message"]
             })
             self._save_history()
             
         finally:
             self.is_running = False
+            self.stop_requested = False
         
     async def run_audit(self, marketplace="ALL", limit=5):
         if self.is_running:
@@ -557,7 +802,10 @@ class MRIOrchestrator:
                         await scraper.stop()
                         
             self.state["progress"] = len(products_to_audit)
-            self.state["status_message"] = "COMPLETED"
+            if self.stop_requested or not self.is_running:
+                self.state["status_message"] = "STOPPED_BY_USER"
+            else:
+                self.state["status_message"] = "COMPLETED"
             
             # Save to history
             self.history.append({
@@ -566,15 +814,18 @@ class MRIOrchestrator:
                 "marketplace": marketplace,
                 "total": len(products_to_audit),
                 "confirmed": sum(1 for r in self.results if r["status"] == "CONFIRMED"),
-                "results": list(self.results)
+                "results": list(self.results),
+                "terminal_state": self.state["status_message"]
             })
             self._save_history()
             
         finally:
             self.is_running = False
+            self.stop_requested = False
             
     def stop(self):
+        self.stop_requested = True
         self.is_running = False
-        self.state["status_message"] = "STOPPING..."
+        self.state["status_message"] = "STOPPED_BY_USER"
 
 orchestrator = MRIOrchestrator()

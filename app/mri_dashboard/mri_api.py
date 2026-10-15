@@ -7,6 +7,7 @@ from pathlib import Path
 import os
 import sys
 import sqlite3
+import json
 import re
 from typing import Dict, Any, List
 
@@ -34,30 +35,26 @@ def get_sqlite_conn():
 
 
 def extract_title_from_url(url: str, sku: str) -> str:
-    """Fallback extraction of clean product title from canonical URL slug."""
+    """Fallback extraction of clean product title from canonical URL slug across marketplaces."""
     if not url:
-        return f"Producto {sku}"
+        return f"Publicación {sku}"
     try:
         from urllib.parse import urlparse
         path = urlparse(url).path
-        slug = path.strip("/").split("/")[-1]
-        slug = re.sub(r"\.html$", "", slug, flags=re.IGNORECASE)
-        # remove sku suffix like -MKKXV8V9X8 or -MLCU... or trailing numbers
-        parts = [p for p in slug.split("-") if p]
-        cleaned_parts = []
-        for p in parts:
-            if re.match(r"^MK[A-Z0-9]+$", p, re.IGNORECASE):
-                continue
-            if re.match(r"^MLC[U0-9]+$", p, re.IGNORECASE):
-                continue
-            if re.match(r"^vop[0-9]+$", p, re.IGNORECASE):
-                continue
-            if re.match(r"^[0-9]{6,}$", p):
-                continue
-            cleaned_parts.append(p)
-        if cleaned_parts:
-            title = " ".join(cleaned_parts).capitalize()
-            return title
+        segments = [s for s in path.strip("/").split("/") if s]
+        for seg in reversed(segments):
+            seg_clean = re.sub(r"\.html$", "", seg, flags=re.IGNORECASE)
+            parts = [p for p in seg_clean.split("-") if p]
+            cleaned_parts = []
+            for p in parts:
+                if re.match(r"^MK[A-Z0-9]+$", p, re.IGNORECASE): continue
+                if re.match(r"^MLC[U0-9]+$", p, re.IGNORECASE): continue
+                if re.match(r"^mpm[0-9]+$", p, re.IGNORECASE): continue
+                if re.match(r"^vop[0-9]+$", p, re.IGNORECASE): continue
+                if re.match(r"^[0-9]{5,}$", p): continue
+                cleaned_parts.append(p)
+            if len(cleaned_parts) >= 2:
+                return " ".join(cleaned_parts).capitalize()
     except Exception:
         pass
     return f"Publicación {sku}"
@@ -146,11 +143,139 @@ async def stop_audit():
     return JSONResponse(content={"message": "Stopping..."})
 
 
+from app.mri_autonomous.category_evaluator import evaluate_commercial_category
+
+CATALOG_PATH = Path("Actualización masiva de productos.xlsx")
+_master_catalog_cache = None
+
+def clean_cat_title(s: str) -> str:
+    if not s:
+        return ""
+    s = s.lower()
+    repl = {
+        'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u', 'ñ': 'n',
+        chr(225): 'a', chr(233): 'e', chr(237): 'i', chr(243): 'o', chr(250): 'u', chr(241): 'n',
+        '\ufffd': 'a'
+    }
+    for k, v in repl.items():
+        s = s.replace(k, v)
+    return re.sub(r'[^a-z0-9]', '', s)
+
+
+def normalize_title_tokens(t: str) -> frozenset:
+    if not t:
+        return frozenset()
+    t = t.lower()
+    repl = {'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u', 'ñ': 'n'}
+    for k, v in repl.items():
+        t = t.replace(k, v)
+    t = re.sub(r'[^a-z0-9\s]', ' ', t)
+    stop_words = {'mujer', 'de', 'con', 'para', 'y', 'el', 'la', 'los', 'las', 'en'}
+    tokens = [w for w in t.split() if w not in stop_words and len(w) > 2]
+    return frozenset(tokens)
+
+
+def get_master_catalog():
+    global _master_catalog_cache
+    if _master_catalog_cache is not None:
+        return _master_catalog_cache
+    
+    child_to_cat = {}
+    parent_to_cat = {}
+    title_to_cat = {}
+    token_to_entries = {}
+    
+    if CATALOG_PATH.exists():
+        try:
+            import openpyxl
+            wb = openpyxl.load_workbook(CATALOG_PATH, read_only=True)
+            ws = wb.active
+            for r in ws.iter_rows(values_only=True):
+                p = str(r[2] or "").strip()
+                c = str(r[3] or "").strip()
+                t = str(r[4] or "").strip()
+                cat = str(r[7] or "").strip()
+                fal_tipo = str(r[54] or "").strip() if len(r) > 54 else ""
+                entry = {"category": cat, "falabella_tipo": fal_tipo, "title": t, "parent": p, "child": c}
+                if c and c not in child_to_cat:
+                    child_to_cat[c] = entry
+                if p and p not in parent_to_cat:
+                    parent_to_cat[p] = entry
+                if t:
+                    c_key = clean_cat_title(t)
+                    if c_key and c_key not in title_to_cat:
+                        title_to_cat[c_key] = entry
+                    toks = normalize_title_tokens(t)
+                    if toks:
+                        if toks not in token_to_entries:
+                            token_to_entries[toks] = []
+                        token_to_entries[toks].append(entry)
+            wb.close()
+        except Exception as e:
+            print("Error loading master catalog in API:", e)
+            
+    _master_catalog_cache = (child_to_cat, parent_to_cat, title_to_cat, token_to_entries)
+    return _master_catalog_cache
+
+
 def fetch_run_publications(run_id: str) -> List[Dict[str, Any]]:
     conn = get_sqlite_conn()
+    child_to_cat, parent_to_cat, title_to_cat, token_to_entries = get_master_catalog()
+    
     try:
         cur = conn.cursor()
         query = """
+            WITH unified_pubs AS (
+                SELECT 
+                    pub.publication_id,
+                    pub.product_id,
+                    pub.marketplace,
+                    pub.marketplace_product_id,
+                    pub.canonical_url,
+                    pub.status,
+                    pub.observed_at,
+                    pub.run_id,
+                    pub.position,
+                    pub.surface,
+                    pub.position_state,
+                    pub.category_relationship,
+                    pub.evidence_type,
+                    pub.raw_source_id,
+                    pub.acquisition_status,
+                    pub.identity_status,
+                    pub.category_observed,
+                    pub.category_source,
+                    pub.category_expected,
+                    pub.category_decision,
+                    pub.commercial_attributes
+                FROM mri_publications pub
+                WHERE pub.run_id = ?
+                UNION ALL
+                SELECT 
+                    hp.publication_id,
+                    hp.product_id,
+                    hp.marketplace,
+                    hp.marketplace_product_id,
+                    hp.canonical_url,
+                    hp.status,
+                    hp.observed_at,
+                    hp.run_id,
+                    hp.position,
+                    hp.surface,
+                    hp.position_state,
+                    hp.category_relationship,
+                    hp.evidence_type,
+                    hp.raw_source_id,
+                    hp.acquisition_status,
+                    hp.identity_status,
+                    hp.category_observed,
+                    hp.category_source,
+                    hp.category_expected,
+                    hp.category_decision,
+                    hp.commercial_attributes
+                FROM mri_historical_publications hp
+                WHERE hp.run_id = ?
+            )
             SELECT 
                 pub.publication_id,
                 pub.product_id,
@@ -165,9 +290,17 @@ def fetch_run_publications(run_id: str) -> List[Dict[str, Any]]:
                 pub.category_relationship,
                 pub.evidence_type,
                 pub.raw_source_id,
-                cat.category_name as observed_category,
-                ps.product_title
-            FROM mri_publications pub
+                pub.acquisition_status,
+                pub.identity_status,
+                pub.category_observed,
+                pub.category_source,
+                pub.category_expected,
+                pub.category_decision,
+                pub.commercial_attributes,
+                cat.category_name as legacy_cat_name,
+                ps.product_title,
+                ps.sku_master
+            FROM unified_pubs pub
             LEFT JOIN (
                 SELECT publication_id, MIN(category_id) as category_id
                 FROM mri_publication_categories
@@ -175,14 +308,17 @@ def fetch_run_publications(run_id: str) -> List[Dict[str, Any]]:
             ) pc ON pub.publication_id = pc.publication_id
             LEFT JOIN mri_categories cat ON pc.category_id = cat.category_id
             LEFT JOIN (
-                SELECT marketplace_sku, MAX(product_title) as product_title
-                FROM product_snapshots
-                GROUP BY marketplace_sku
+                SELECT ps1.marketplace_sku, ps1.product_title, ps1.sku_master
+                FROM product_snapshots ps1
+                INNER JOIN (
+                    SELECT marketplace_sku, MAX(audit_date) as max_audit_date
+                    FROM product_snapshots
+                    GROUP BY marketplace_sku
+                ) ps2 ON ps1.marketplace_sku = ps2.marketplace_sku AND ps1.audit_date = ps2.max_audit_date
             ) ps ON pub.marketplace_product_id = ps.marketplace_sku
-            WHERE pub.run_id = ?
             ORDER BY pub.marketplace, pub.position ASC
         """
-        rows = cur.execute(query, (run_id,)).fetchall()
+        rows = cur.execute(query, (run_id, run_id)).fetchall()
         
         results = []
         for r in rows:
@@ -190,13 +326,122 @@ def fetch_run_publications(run_id: str) -> List[Dict[str, Any]]:
             sku = r["marketplace_product_id"] or r["publication_id"] or "UNKNOWN"
             url = r["canonical_url"] or ""
             title = r["product_title"]
-            if not title or title.strip() == "":
-                title = extract_title_from_url(url, sku)
+            if not title or title.strip() == "" or "\ufffd" in title or "?" in title:
+                url_title = extract_title_from_url(url, sku)
+                if url_title and not url_title.startswith("Publicación"):
+                    title = url_title
+                elif not title:
+                    title = url_title
                 
-            obs_cat = r["observed_category"] or "NO_VERIFICADO"
-            st = r["status"] or "NO_VERIFICADO"
-            decision = "CONFIRMED" if st in ("OBSERVED", "CONFIRMED", "NICOPOLY_CONFIRMED") else st
+            # Master catalog matching for expected category & identity resolution
+            sku_m = r["sku_master"] or sku
+            m_entry = None
+            parent_sku = None
+            variant_sku = None
+            candidate_variants = []
             
+            # First check if title maps cleanly to a master product parent or variant entries
+            title_matched_entry = None
+            if title:
+                c_key = clean_cat_title(title)
+                if c_key and c_key in title_to_cat:
+                    title_matched_entry = title_to_cat[c_key]
+                else:
+                    t_toks = normalize_title_tokens(title)
+                    if t_toks and t_toks in token_to_entries:
+                        title_matched_entry = token_to_entries[t_toks][0]
+                        candidate_variants = [e.get("child") for e in token_to_entries[t_toks] if e.get("child")]
+            
+            # If title cleanly matched a parent product, verify whether sku_m belongs to that parent
+            if title_matched_entry:
+                m_entry = title_matched_entry
+                parent_sku = m_entry.get("parent")
+                # When parent has multiple variants, only confirm a child variant if size/attribute evidence allows differentiating it
+                if parent_sku and not candidate_variants:
+                    candidate_variants = [c for c, e in child_to_cat.items() if e.get("parent") == parent_sku]
+                
+                # Check if multiple variants exist in master catalog
+                if candidate_variants and len(candidate_variants) > 1:
+                    # Do not arbitrarily select one child variant without size/attribute differentiation
+                    variant_sku = None
+                elif sku_m and sku_m in child_to_cat and child_to_cat[sku_m].get("parent") == parent_sku:
+                    variant_sku = sku_m
+                else:
+                    variant_sku = None
+            elif sku_m and sku_m in child_to_cat:
+                m_entry = child_to_cat[sku_m]
+                variant_sku = sku_m
+                parent_sku = m_entry.get("parent")
+            elif sku_m and sku_m in parent_to_cat:
+                m_entry = parent_to_cat[sku_m]
+                parent_sku = sku_m
+            
+            if parent_sku and not candidate_variants:
+                # Find all known children for this parent in master catalog
+                candidate_variants = [c for c, e in child_to_cat.items() if e.get("parent") == parent_sku]
+            
+            # Identity status: distinguish parent identity verified from variant verified
+            ident_st = r["identity_status"]
+            if not ident_st or ident_st == "IDENTITY_NOT_LINKED":
+                if variant_sku:
+                    ident_st = "TARGET_IDENTITY_VERIFIED"
+                elif parent_sku:
+                    ident_st = "PARENT_IDENTITY_VERIFIED"
+                else:
+                    ident_st = "IDENTIDAD_NO_VERIFICADA"
+            
+            # Prioritize explicit DB column if migrated, else fallback
+            exp_cat = r["category_expected"]
+            if not exp_cat or exp_cat in ("NO_VERIFICADO", "Vestuario Femenino / Nicopoly"):
+                if m_entry and m_entry.get("category"):
+                    exp_cat = m_entry["category"]
+                else:
+                    exp_cat = "NO_VERIFICADO"
+
+            # Observed category: prioritize explicit column, then joined category table
+            obs_cat = r["category_observed"] or r["legacy_cat_name"] or "NO_VERIFICADO"
+            if obs_cat in ("NONE", "CATEGORY_UNKNOWN", ""):
+                obs_cat = "NO_VERIFICADO"
+                
+            cat_source = r["category_source"] or ("PUBLIC_CHANNEL_BREADCRUMBS" if r["legacy_cat_name"] else "NO_VERIFICADO")
+            
+            # Acquisition status
+            acq_st = r["acquisition_status"] or ("OBSERVED" if r["status"] in ("OBSERVED", "LIVE_OBSERVATION_CONFIRMED") else r["status"])
+            
+            # Parse attributes - only include if explicitly captured as commercial_attributes in DB
+            attrs = {}
+            if r["commercial_attributes"]:
+                try:
+                    attrs = json.loads(r["commercial_attributes"])
+                except Exception as e:
+                    logger.warning(f"Error parsing commercial_attributes for {sku}: {e}")
+
+            # Brand corridor extraction from attributes, category, or surface
+            brand_corridor = None
+            if attrs and "store_url" in attrs:
+                brand_corridor = f"Tienda oficial Nicopoly ({attrs['store_url']})"
+            elif any(m in obs_cat.lower() for m in ['marcas casuales', 'tienda_de_marca', 'tienda oficial', 'tienda/nicopoly', 'brand store', 'brand hub']):
+                brand_corridor = obs_cat
+
+            # Commercial category decision
+            cat_dec = r["category_decision"]
+            cat_reason = None
+            if not cat_dec or cat_dec in ("OBSERVED", "CONFIRMED", "ACTIVE"):
+                cat_eval = evaluate_commercial_category(
+                    product_title=title,
+                    expected_category=exp_cat,
+                    observed_category=obs_cat,
+                    public_attributes=attrs,
+                    marketplace=mkt,
+                    identity_status=ident_st,
+                    brand_corridor=brand_corridor
+                )
+                cat_dec = cat_eval["decision"]
+                cat_reason = cat_eval["reason"]
+            else:
+                cat_reason = f"Decisión {cat_dec} verificada contra catálogo maestro y evidencia pública."
+
+            # Evidence collection
             ev_list = []
             if r["evidence_type"]:
                 ev_list.append(f"Tipo: {r['evidence_type']}")
@@ -204,10 +449,18 @@ def fetch_run_publications(run_id: str) -> List[Dict[str, Any]]:
                 ev_list.append(f"Posición observada: {r['position']}")
             if r["surface"]:
                 ev_list.append(f"Superficie: {r['surface']}")
-            if r["category_relationship"]:
-                ev_list.append(f"Relación categoría: {r['category_relationship']}")
+            if obs_cat != "NO_VERIFICADO":
+                ev_list.append(f"Categoría pública: {obs_cat} (Fuente: {cat_source})")
+            if brand_corridor:
+                ev_list.append(f"Corredor de marca: {brand_corridor}")
+            if parent_sku:
+                ev_list.append(f"Producto Padre: {parent_sku}")
+            if candidate_variants:
+                ev_list.append(f"Variantes conocidas en catálogo: {', '.join(candidate_variants)}")
+            if attrs:
+                ev_list.append(f"Atributos públicos: {attrs}")
                 
-            motivo = f"Publicación {st} verificada en canal comercial {mkt} con URL canónica individual."
+            motivo = f"Publicación observada en canal comercial {mkt}. {cat_reason}"
             
             results.append({
                 "producto_id": sku,
@@ -219,16 +472,22 @@ def fetch_run_publications(run_id: str) -> List[Dict[str, Any]]:
                 "timestamp": r["observed_at"] or "NO_VERIFICADO",
                 "evidencia_identidad": ev_list if ev_list else ["NO_VERIFICADO"],
                 "evidence": ev_list if ev_list else ["NO_VERIFICADO"],
-                "estado_final": decision,
-                "status": decision,
+                "estado_final": cat_dec,
+                "status": cat_dec,
+                "acquisition_status": acq_st,
+                "identity_status": ident_st,
+                "parent_sku": parent_sku,
+                "variant_sku": variant_sku,
+                "candidate_variants": candidate_variants,
+                "brand_corridor": brand_corridor,
                 "motivo_verificable": motivo,
                 "reason": motivo,
-                "coverage": "COMPLETE" if url else "PARTIAL",
+                "coverage": "COMPLETE" if (url and obs_cat != "NO_VERIFICADO" and ident_st in ("TARGET_IDENTITY_VERIFIED", "PARENT_IDENTITY_VERIFIED")) else "PARTIAL",
                 "real_category": obs_cat,
-                "expected_category": "Vestuario Femenino / Nicopoly",
+                "expected_category": exp_cat,
                 "real_subcategory": "NO_VERIFICADO",
-                "category_source": "SQLITE_CATALOG" if r["observed_category"] else "NO_VERIFICADO",
-                "decision": decision,
+                "category_source": cat_source,
+                "decision": cat_dec,
                 "source": "PAGINATED_ADAPTER_HARVEST",
                 "observed_sku": sku
             })
@@ -251,8 +510,13 @@ async def get_history():
         conn = get_sqlite_conn()
         try:
             cur = conn.cursor()
-            # Runs from mri_publications grouped by run_id
+            # Runs from unified mri_publications + mri_historical_publications grouped by run_id
             query = """
+                WITH all_pubs AS (
+                    SELECT run_id, observed_at, marketplace, publication_id, status FROM mri_publications
+                    UNION ALL
+                    SELECT run_id, observed_at, marketplace, publication_id, status FROM mri_historical_publications
+                )
                 SELECT 
                     p.run_id,
                     MIN(p.observed_at) as started_at,
@@ -260,7 +524,7 @@ async def get_history():
                     COUNT(p.publication_id) as total,
                     SUM(CASE WHEN p.status IN ('OBSERVED', 'CONFIRMED', 'NICOPOLY_CONFIRMED') THEN 1 ELSE 0 END) as confirmed,
                     COALESCE(r.execution_mode, 'SQLITE_PERSISTED') as mode
-                FROM mri_publications p
+                FROM all_pubs p
                 LEFT JOIN mri_runs r ON p.run_id = r.run_id
                 GROUP BY p.run_id
                 ORDER BY started_at DESC

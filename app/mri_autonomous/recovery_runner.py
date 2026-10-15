@@ -32,6 +32,7 @@ from app.scrapers.mercadolibre_scraper import MercadoLibreScraper
 from app.scrapers.paris_scraper import ParisScraper
 from app.scrapers.ripley_scraper import RipleyScraper
 from app.dashboard.mri_read_model import MRIReadModel
+from app.mri_autonomous.category_evaluator import evaluate_commercial_category
 
 logger = logging.getLogger(__name__)
 
@@ -67,10 +68,10 @@ class AcquisitionRecoveryRunner:
     Runs certified paginated harvesting, deduplication, and persistence.
     """
 
-    def __init__(self, output_dir: Optional[Path] = None, db_path: Optional[Path] = None):
-        self.output_dir = output_dir or EVIDENCE_DIR
+    def __init__(self, output_dir: Optional[Any] = None, db_path: Optional[Any] = None):
+        self.output_dir = Path(output_dir) if output_dir else EVIDENCE_DIR
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        self.db_path = db_path or DB_PATH
+        self.db_path = Path(db_path) if db_path else DB_PATH
         self.raw_harvest_file = self.output_dir / "raw_live_harvest.json"
 
     # ──────────────────────────────────────────────────────────────────────────
@@ -258,7 +259,18 @@ class AcquisitionRecoveryRunner:
             child = str(r[3] or "").strip()
             title = str(r[4] or "").strip()
             cat = str(r[7] or "").strip()
-            entry = {"parent_sku": parent, "child_sku": child, "title": title, "category": cat}
+            fal_tipo = str(r[54] or "").strip() if len(r) > 54 else ""
+            shopify_tipo = str(r[88] or "").strip() if len(r) > 88 else ""
+            ml_prenda = str(r[115] or "").strip() if len(r) > 115 else ""
+            entry = {
+                "parent_sku": parent,
+                "child_sku": child,
+                "title": title,
+                "category": cat,
+                "falabella_tipo": fal_tipo,
+                "shopify_tipo": shopify_tipo,
+                "ml_prenda": ml_prenda
+            }
             if child and child not in child_to_master:
                 child_to_master[child] = entry
             if parent and parent not in parent_to_master:
@@ -396,13 +408,32 @@ class AcquisitionRecoveryRunner:
                 category_expected = p.get("category_expected") or ""
                 identity_reason = "Publicación observada en marketplace sin correspondencia unívoca en catálogo maestro"
 
-            # Category inference if empty
-            if not real_category_observed and not category_expected and real_title:
-                t_low = real_title.lower()
-                for kw_list, cat_target in category_map:
-                    if any(kw in t_low for kw in kw_list):
-                        real_category_observed = cat_target
-                        break
+            # Categoría observada: exclusivamente evidencia pública capturada
+            cat_observed_public = real_category_observed
+            cat_source = "SNAPSHOT_PUBLIC_OBSERVATION" if (snap and real_category_observed) else ("MANIFEST_PUBLIC_OBSERVATION" if real_category_observed else "NO_VERIFICADO")
+            cat_obs_time = hist_date if (snap and hist_date) else now_str
+
+            if live_match and not cat_observed_public:
+                live_cat = live_match.get("category") or live_match.get("category_observed")
+                if live_cat and live_cat not in ("NO_VERIFICADO", "CATEGORY_UNKNOWN", "NONE"):
+                    cat_observed_public = live_cat
+                    cat_source = f"LIVE_HARVEST_{mkt.upper()}"
+                    cat_obs_time = live_match.get("harvest_time") or now_str
+
+            # Atributos comerciales públicos explícitos (exclusivamente evidencia pública de canal)
+            public_attrs = {}
+            if live_match and live_match.get("attributes"):
+                public_attrs.update(live_match.get("attributes"))
+
+            # Evaluación comercial de categoría
+            cat_eval = evaluate_commercial_category(
+                product_title=real_title,
+                expected_category=category_expected,
+                observed_category=cat_observed_public,
+                public_attributes=public_attrs
+            )
+            category_decision = cat_eval["decision"]
+            category_decision_reason = cat_eval["reason"]
 
             if live_match:
                 observation_status = "LIVE_OBSERVATION_CONFIRMED"
@@ -439,8 +470,13 @@ class AcquisitionRecoveryRunner:
                 "reclassification_reason": reclass_reason,
                 "identity_status": identity_status,
                 "identity_reason": identity_reason,
-                "category_observed": real_category_observed,
-                "category_expected": category_expected,
+                "category_observed": cat_observed_public if cat_observed_public else "NO_VERIFICADO",
+                "category_source": cat_source,
+                "category_obs_time": cat_obs_time,
+                "category_expected": category_expected if category_expected else "NO_VERIFICADO",
+                "category_decision": category_decision,
+                "category_decision_reason": category_decision_reason,
+                "commercial_attributes": json.dumps(public_attrs, ensure_ascii=False) if public_attrs else None,
                 "evidence_verified": evidence_verified,
                 "run_id": run_id
             })
@@ -483,7 +519,7 @@ class AcquisitionRecoveryRunner:
         edges_inserted = 0
 
         for obs in reconciled_result["observations"]:
-            if obs["status"] == "LIVE_OBSERVATION_CONFIRMED":
+            if obs["status"] in ("LIVE_OBSERVATION_CONFIRMED", "OBSERVED", "NICOPOLY_CONFIRMED"):
                 pub_id = obs["publication_id"]
                 mkt = obs["marketplace"]
                 canon_url = obs["observed_url"]
@@ -498,22 +534,58 @@ class AcquisitionRecoveryRunner:
                     VALUES (?, ?, ?, ?)
                 """, (p_id, "Nicopoly", "ACTIVE", obs_at))
 
-                # mri_publications
+                # mri_publications con dimensiones separadas
+                acq_st = obs["acquisition_status"]
+                ident_st = obs["identity_status"]
+                cat_obs = obs["category_observed"]
+                cat_src = obs["category_source"]
+                cat_exp = obs["category_expected"]
+                cat_dec = obs["category_decision"]
+                comm_attr = obs["commercial_attributes"]
+
+                # Preservar historial: respaldar estado previo si la publicación ya existe con otro run_id
+                existing = c.execute("""
+                    SELECT publication_id, product_id, marketplace, marketplace_product_id,
+                           canonical_url, status, observed_at, run_id, position, surface,
+                           position_state, category_relationship, evidence_type, raw_source_id,
+                           acquisition_status, identity_status, category_observed,
+                           category_source, category_expected, category_decision, commercial_attributes
+                    FROM mri_publications WHERE publication_id = ?
+                """, (pub_id,)).fetchone()
+                if existing and existing[7] and existing[7] != run_id:
+                    c.execute("""
+                        INSERT OR REPLACE INTO mri_historical_publications (
+                            history_id, publication_id, product_id, marketplace, marketplace_product_id,
+                            canonical_url, status, observed_at, run_id, position, surface,
+                            position_state, category_relationship, evidence_type, raw_source_id,
+                            acquisition_status, identity_status, category_observed,
+                            category_source, category_expected, category_decision, commercial_attributes
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        f"hist_{existing[7]}_{pub_id}", existing[0], existing[1], existing[2], existing[3],
+                        existing[4], existing[5], existing[6], existing[7], existing[8], existing[9],
+                        existing[10], existing[11], existing[12], existing[13], existing[14], existing[15],
+                        existing[16], existing[17], existing[18], existing[19], existing[20]
+                    ))
+
                 c.execute("""
                     INSERT OR REPLACE INTO mri_publications (
                         publication_id, product_id, marketplace, marketplace_product_id,
                         canonical_url, status, observed_at, run_id, position, surface,
-                        position_state, category_relationship, evidence_type
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        position_state, category_relationship, evidence_type,
+                        acquisition_status, identity_status, category_observed,
+                        category_source, category_expected, category_decision, commercial_attributes
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     pub_id, p_id, mkt, pub_id, canon_url, "OBSERVED",
                     obs_at, run_id, pos, "SEARCH_OR_STORE",
-                    "EXACT", "CONFIRMED", "LIVE_OBSERVATION"
+                    "EXACT", cat_dec, "LIVE_OBSERVATION",
+                    acq_st, ident_st, cat_obs, cat_src, cat_exp, cat_dec, comm_attr
                 ))
                 pubs_inserted += 1
 
                 # Deterministic Category Resolution
-                cat_name = (obs["category_observed"] or obs["category_expected"] or "Moda Mujer").strip()
+                cat_name = (obs["category_observed"] if obs["category_observed"] != "NO_VERIFICADO" else (obs["category_expected"] if obs["category_expected"] != "NO_VERIFICADO" else "Moda Mujer")).strip()
                 cat_id = deterministic_category_id(mkt, cat_name)
 
                 # Insert category with canonical_url = NULL (ZERO fake example.com URLs)

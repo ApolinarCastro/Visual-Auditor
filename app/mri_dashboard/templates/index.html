@@ -335,34 +335,34 @@
             </div>
             
             <div class="grid-cards" id="opsLiveCards">
-                <div class="card">
-                    <div class="card-title">Confirmados / Observados</div>
-                    <div class="card-value" style="color:var(--primary)" id="cntConfirmed">0</div>
+                <div class="card" onclick="filterByDecision('ALL')" style="cursor:pointer;" title="Click para ver todas las publicaciones observadas">
+                    <div class="card-title">Adquisición Observada</div>
+                    <div class="card-value" style="color:var(--primary)" id="cntAcquired">0</div>
                 </div>
-                <div class="card">
-                    <div class="card-title">Categorías Verificadas</div>
-                    <div class="card-value" style="color:var(--info)" id="cntCatVerified">0</div>
+                <div class="card" onclick="filterByDecision('CORRECT')" style="cursor:pointer;" title="Click para filtrar por Categoría Correcta">
+                    <div class="card-title">Categoría Correcta</div>
+                    <div class="card-value" style="color:var(--primary)" id="cntCorrect">0</div>
                 </div>
-                <div class="card">
-                    <div class="card-title">Subcategorías Verificadas</div>
-                    <div class="card-value" style="color:var(--purple)" id="cntSubcatVerified">0</div>
+                <div class="card" onclick="filterByDecision('INCORRECT')" style="cursor:pointer;" title="Click para filtrar por Categoría Incorrecta">
+                    <div class="card-title">Categoría Incorrecta</div>
+                    <div class="card-value" style="color:var(--danger)" id="cntIncorrect">0</div>
                 </div>
-                <div class="card">
-                    <div class="card-title">Sin Categoría (Unknown)</div>
-                    <div class="card-value" style="color:var(--danger)" id="cntCatUnknown">0</div>
-                </div>
-                <div class="card">
-                    <div class="card-title">Inconclusos / Bloqueos</div>
-                    <div class="card-value" style="color:var(--warning)" id="cntInconclusive">0</div>
-                </div>
-                <div class="card">
+                <div class="card" onclick="filterByDecision('REVIEW_REQUIRED')" style="cursor:pointer;" title="Click para filtrar por Revisión Requerida">
                     <div class="card-title">Revisión Requerida</div>
-                    <div class="card-value" style="color:var(--text-muted)" id="cntReview">0</div>
+                    <div class="card-value" style="color:var(--purple)" id="cntReview">0</div>
+                </div>
+                <div class="card" onclick="filterByDecision('NOT_VERIFIED')" style="cursor:pointer;" title="Click para filtrar por No Verificado">
+                    <div class="card-title">No Verificado / Sin Evidencia</div>
+                    <div class="card-value" style="color:var(--warning)" id="cntNotVerified">0</div>
+                </div>
+                <div class="card" onclick="filterByDecision('ALL')" style="cursor:pointer;" title="Click para ver publicaciones con categoría pública observada">
+                    <div class="card-title">Categoría Pública Observada</div>
+                    <div class="card-value" style="color:var(--info)" id="cntCatObserved">0</div>
                 </div>
             </div>
 
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; margin-bottom:12px;">
-                <h3 style="margin: 0; font-size: 1.15rem; color: #fff;">Tabla Completa de Publicaciones Verificadas</h3>
+                <h3 style="margin: 0; font-size: 1.15rem; color: #fff;">Tabla Completa de Publicaciones y Auditoría Comercial</h3>
                 <span id="lblTableCount" style="color:var(--text-muted); font-size:0.85rem"></span>
             </div>
             
@@ -375,17 +375,14 @@
                     <option value="Ripley">Ripley</option>
                 </select>
                 <select id="filterStatus" onchange="renderMainTable()">
-                    <option value="ALL">Filtro: Todos los Estados</option>
-                    <option value="CONFIRMED">Confirmados / Observados</option>
-                    <option value="REVIEW_REQUIRED">Revisión Requerida</option>
-                    <option value="INCONCLUSIVE">Inconclusos / Bloqueos</option>
-                    <option value="INSUFFICIENT_EVIDENCE">Sin Evidencia</option>
+                    <option value="ALL">Decisión: Todas</option>
+                    <option value="CORRECT">CORRECTO (Validada)</option>
+                    <option value="INCORRECT">INCORRECTO (Contradicción)</option>
+                    <option value="REVIEW_REQUIRED">REVISIÓN REQUERIDA (General / Variantes / Identidad)</option>
+                    <option value="NOT_VERIFIED">NO VERIFICADO (Sin Evidencia Pública)</option>
                 </select>
                 <select id="filterCategory" onchange="renderMainTable()">
-                    <option value="ALL">Filtro: Todas las Categorías</option>
-                </select>
-                <select id="filterSubcategory" onchange="renderMainTable()">
-                    <option value="ALL">Filtro: Todas las Subcategorías</option>
+                    <option value="ALL">Filtro: Todas las Categorías Observadas</option>
                 </select>
                 <select id="filterCoverage" onchange="renderMainTable()">
                     <option value="ALL">Filtro: Cobertura (Todas)</option>
@@ -400,10 +397,10 @@
                         <tr>
                             <th>Marketplace</th>
                             <th>Producto (ID / Título)</th>
-                            <th>URL Canónica / Observada</th>
+                            <th>URL Canónica</th>
                             <th>Categoría Observada</th>
-                            <th>Subcategoría</th>
-                            <th>Estado Final</th>
+                            <th>Categoría Esperada</th>
+                            <th>Decisión Comercial</th>
                             <th>Acciones / Evidencia</th>
                         </tr>
                     </thead>
@@ -538,22 +535,63 @@
             if(tabId === 'hist') loadHistory();
         }
         
+        const SPANISH_LABELS = {
+            'CORRECT': 'CORRECTO',
+            'INCORRECT': 'INCORRECTO',
+            'REVIEW_REQUIRED': 'REVISIÓN REQUERIDA',
+            'NOT_VERIFIED': 'NO VERIFICADO',
+            'IDENTIDAD_NO_VERIFICADA': 'IDENTIDAD NO VERIFICADA',
+            'PARENT_IDENTITY_VERIFIED': 'IDENTIDAD PADRE VERIFICADA',
+            'TARGET_IDENTITY_VERIFIED': 'IDENTIDAD VERIFICADA',
+            'IDENTITY_NOT_LINKED': 'IDENTIDAD NO VINCULADA',
+            'TIENDA_DE_MARCA': 'TIENDA DE MARCA',
+            'BRAND_STORE': 'TIENDA DE MARCA',
+            'BRAND_HUB': 'CORREDOR DE MARCA',
+            'SOURCE_BLOCKED': 'FUENTE BLOQUEADA',
+            'OBSERVED': 'OBSERVADO',
+            'CONFIRMED': 'CONFIRMADO',
+            'LIVE_OBSERVATION_CONFIRMED': 'CONFIRMADO EN VIVO',
+            'NOT_CONFIRMED': 'NO CONFIRMADO',
+            'SUCCESS': 'ÉXITO',
+            'RUNNING': 'EN EJECUCIÓN',
+            'IDLE': 'INACTIVO / EN ESPERA',
+            'COMPLETED': 'COMPLETADO',
+            'FAILED': 'FALLIDO',
+            'PUBLIC_CHANNEL_BREADCRUMBS': 'MIGAS DE PAN (CANAL PÚBLICO)',
+            'PUBLIC_CHANNEL_ATTRIBUTES': 'ATRIBUTOS DE ESPECIFICACIONES (CANAL PÚBLICO)',
+            'MIGA_DE_PAN_CANAL_PUBLICO': 'MIGAS DE PAN (CANAL PÚBLICO)',
+            'SEARCH_OR_STORE': 'BÚSQUEDA / TIENDA OFICIAL',
+            'LIVE_OBSERVATION': 'OBSERVACIÓN EN VIVO',
+            'PERSISTED_VIEW': 'VISTA HISTÓRICA PERSISTIDA',
+            'SQLITE_PERSISTED': 'PERSISTIDO EN BASE DE DATOS',
+            'ADAPTER_HARVEST': 'EXTRACCIÓN POR ADAPTADOR',
+            'PAGINATED_ADAPTER_HARVEST': 'EXTRACCIÓN POR ADAPTADOR PAGINADO',
+            'DERIVED_PRICE_RECONSTRUCTION': 'RECONSTRUCCIÓN DERIVADA DE PRECIOS'
+        };
+
+        function getSpanishLabel(status) {
+            if (!status) return 'NO VERIFICADO';
+            const s = String(status).trim().toUpperCase();
+            return SPANISH_LABELS[s] || s;
+        }
+
         function getBadge(status) {
-            if(!status) return '<span class="badge">NO_VERIFICADO</span>';
+            if(!status) return '<span class="badge">NO VERIFICADO</span>';
             const s = String(status).toUpperCase();
-            if(s === 'CONFIRMED' || s === 'NICOPOLY_CONFIRMED' || s === 'SUCCESS' || s === 'OBSERVED' || s === 'PROMOTED') {
-                return '<span class="badge badge-success">' + s + '</span>';
+            const label = getSpanishLabel(s);
+            if(s === 'CORRECT' || s === 'CORRECTO' || s === 'CONFIRMED' || s === 'NICOPOLY_CONFIRMED' || s === 'SUCCESS' || s === 'OBSERVED' || s === 'PROMOTED' || s === 'TARGET_IDENTITY_VERIFIED') {
+                return '<span class="badge badge-success">' + label + '</span>';
             }
-            if(s === 'SOURCE_BLOCKED' || s === 'INCONCLUSIVE' || s === 'INSUFFICIENT_EVIDENCE' || s === 'FAIL' || s === 'NOT_FOUND' || s === 'BLOCKED') {
-                return '<span class="badge badge-warning">' + s + '</span>';
+            if(s === 'INCORRECT' || s === 'INCORRECTO' || s === 'FAIL') {
+                return '<span class="badge badge-danger">' + label + '</span>';
             }
-            if(s === 'REVIEW_REQUIRED' || s === 'NON_NICOPOLY_CONFIRMED') {
-                return '<span class="badge badge-purple">' + s + '</span>';
+            if(s === 'SOURCE_BLOCKED' || s === 'FUENTE_BLOQUEADA' || s === 'INCONCLUSIVE' || s === 'INSUFFICIENT_EVIDENCE' || s === 'NOT_FOUND' || s === 'BLOCKED' || s === 'NOT_VERIFIED' || s === 'NO_VERIFICADO') {
+                return '<span class="badge badge-warning">' + label + '</span>';
             }
-            if(s === 'NO_VERIFICADO') {
-                return '<span class="badge badge-danger">NO_VERIFICADO</span>';
+            if(s === 'REVIEW_REQUIRED' || s === 'REVISIÓN REQUERIDA' || s === 'IDENTIDAD_NO_VERIFICADA' || s === 'PARENT_IDENTITY_VERIFIED' || s === 'TIENDA_DE_MARCA' || s === 'NON_NICOPOLY_CONFIRMED') {
+                return '<span class="badge badge-purple">' + label + '</span>';
             }
-            return '<span class="badge badge-info">' + s + '</span>';
+            return '<span class="badge badge-info">' + label + '</span>';
         }
 
         async function startAudit() {
@@ -630,27 +668,27 @@
         }
 
         function updateDashboardCards() {
-            let cnf=0, inc=0, rev=0;
-            let catOk=0, subcatOk=0, catUnk=0;
+            let acq=0, cor=0, inc=0, rev=0, notv=0, catObs=0;
             
             currentResults.forEach(r => {
-                const st = (r.estado_final || r.status || '').toUpperCase();
-                if(st === 'CONFIRMED' || st === 'NICOPOLY_CONFIRMED' || st === 'OBSERVED' || st === 'SUCCESS') cnf++;
-                else if(st === 'INCONCLUSIVE' || st === 'SOURCE_BLOCKED' || st === 'FAIL' || st === 'BLOCKED' || st === 'INSUFFICIENT_EVIDENCE') inc++;
-                else if(st === 'REVIEW_REQUIRED' || st === 'NON_NICOPOLY_CONFIRMED') rev++;
+                const acqSt = (r.acquisition_status || 'OBSERVED').toUpperCase();
+                if(acqSt === 'OBSERVED' || acqSt === 'CONFIRMED' || acqSt === 'LIVE_OBSERVATION_CONFIRMED') acq++;
+
+                const dec = (r.decision || r.estado_final || r.status || '').toUpperCase();
+                if(dec === 'CORRECT') cor++;
+                else if(dec === 'INCORRECT') inc++;
+                else if(dec === 'REVIEW_REQUIRED') rev++;
+                else if(dec === 'NOT_VERIFIED') notv++;
                 
-                if(r.real_category && r.real_category !== 'CATEGORY_UNKNOWN' && r.real_category !== 'NO_VERIFICADO') catOk++;
-                else catUnk++;
-                
-                if(r.real_subcategory && r.real_subcategory !== 'CATEGORY_UNKNOWN' && r.real_subcategory !== 'NO_VERIFICADO') subcatOk++;
+                if(r.real_category && r.real_category !== 'CATEGORY_UNKNOWN' && r.real_category !== 'NO_VERIFICADO') catObs++;
             });
             
-            document.getElementById('cntConfirmed').innerText = cnf;
-            document.getElementById('cntInconclusive').innerText = inc;
+            document.getElementById('cntAcquired').innerText = acq;
+            document.getElementById('cntCorrect').innerText = cor;
+            document.getElementById('cntIncorrect').innerText = inc;
             document.getElementById('cntReview').innerText = rev;
-            document.getElementById('cntCatVerified').innerText = catOk;
-            document.getElementById('cntSubcatVerified').innerText = subcatOk;
-            document.getElementById('cntCatUnknown').innerText = catUnk;
+            document.getElementById('cntNotVerified').innerText = notv;
+            document.getElementById('cntCatObserved').innerText = catObs;
         }
         
         function populateDropdown(id, options) {
@@ -663,40 +701,37 @@
             if (options.has(currentVal)) select.value = currentVal;
         }
 
+        function filterByDecision(decision) {
+            const sel = document.getElementById('filterStatus');
+            if(sel) {
+                sel.value = decision;
+                renderMainTable();
+            }
+        }
+
         function renderMainTable() {
             // Dynamic categories from currentResults
             const cats = new Set();
-            const subcats = new Set();
             currentResults.forEach(r => {
                 if (r.real_category && r.real_category !== 'NO_VERIFICADO') cats.add(r.real_category);
-                if (r.real_subcategory && r.real_subcategory !== 'NO_VERIFICADO') subcats.add(r.real_subcategory);
             });
             populateDropdown('filterCategory', cats);
-            populateDropdown('filterSubcategory', subcats);
 
             const filterMkt = document.getElementById('filterMarketplace').value;
             const filterStatus = document.getElementById('filterStatus').value;
             const filterCategory = document.getElementById('filterCategory').value;
-            const filterSubcategory = document.getElementById('filterSubcategory').value;
             const filterCoverage = document.getElementById('filterCoverage').value;
 
             let filtered = currentResults.filter(r => {
-                const st = (r.estado_final || r.status || '').toUpperCase();
+                const dec = (r.decision || r.estado_final || r.status || '').toUpperCase();
                 let match = true;
                 
                 if (filterMkt !== "ALL" && r.marketplace !== filterMkt) match = false;
                 
                 if (filterStatus !== "ALL") {
-                    if (filterStatus === "CONFIRMED") {
-                        if (st !== 'CONFIRMED' && st !== 'NICOPOLY_CONFIRMED' && st !== 'OBSERVED') match = false;
-                    } else if (filterStatus === "INCONCLUSIVE") {
-                        if (st !== 'INCONCLUSIVE' && st !== 'SOURCE_BLOCKED' && st !== 'FAIL' && st !== 'BLOCKED') match = false;
-                    } else if (st !== filterStatus) {
-                        match = false;
-                    }
+                    if (dec !== filterStatus) match = false;
                 }
                 if (filterCategory !== "ALL" && r.real_category !== filterCategory) match = false;
-                if (filterSubcategory !== "ALL" && r.real_subcategory !== filterSubcategory) match = false;
                 if (filterCoverage !== "ALL" && r.coverage !== filterCoverage) match = false;
                 
                 return match;
@@ -731,6 +766,8 @@
                 const catBadgeClass = (r.real_category && r.real_category !== 'CATEGORY_UNKNOWN' && r.real_category !== 'NO_VERIFICADO') 
                     ? 'badge-info' : 'badge-danger';
 
+                const dec = r.decision || r.estado_final || r.status;
+
                 return `
                 <tr>
                     <td><strong>${r.marketplace || 'N/A'}</strong></td>
@@ -743,10 +780,10 @@
                         <small style="color:var(--text-muted)">${r.fecha_observacion ? r.fecha_observacion.split('T')[0] : 'NO_VERIFICADO'}</small>
                     </td>
                     <td><span class="badge ${catBadgeClass}">${r.real_category || 'NO_VERIFICADO'}</span></td>
-                    <td><span class="badge badge-purple">${r.real_subcategory || 'NO_VERIFICADO'}</span></td>
-                    <td>${getBadge(r.estado_final || r.status)}</td>
+                    <td><span class="badge badge-purple">${r.expected_category || 'NO_VERIFICADO'}</span></td>
+                    <td>${getBadge(dec)}</td>
                     <td>
-                        <button class="btn-secondary" style="padding:4px 10px; font-size:0.8rem;" onclick="openDetailModal(${idx})">Ver Detalle</button>
+                        <button class="btn-secondary" style="padding:4px 10px; font-size:0.8rem;" onclick="openDetailModal('${(r.producto_id || prod.sku || '').replace(/'/g, "\\'")}')">Ver Detalle</button>
                     </td>
                 </tr>
                 `;
@@ -755,8 +792,8 @@
             tbody.innerHTML = html;
         }
 
-        function openDetailModal(index) {
-            const r = currentResults[index];
+        function openDetailModal(productId) {
+            const r = currentResults.find(p => (p.producto_id || p.observed_sku || '') === productId);
             if (!r) return;
             
             const evs = r.evidencia_identidad || r.evidence || [];
@@ -784,30 +821,54 @@
                     <div class="detail-value">${urlDisplay}</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Categoría Observada:</div>
-                    <div class="detail-value"><span class="badge badge-info">${r.real_category || 'NO_VERIFICADO'}</span></div>
+                    <div class="detail-label">Estado de Adquisición:</div>
+                    <div class="detail-value">${getBadge(r.acquisition_status || 'OBSERVED')}</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Categoría Esperada:</div>
+                    <div class="detail-label">Estado de Identidad:</div>
+                    <div class="detail-value">${getBadge(r.identity_status || 'IDENTIDAD_NO_VERIFICADA')}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Categoría Pública Observada:</div>
+                    <div class="detail-value"><span class="badge badge-info">${r.real_category || 'NO VERIFICADO'}</span></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Ruta de Navegación Literal:</div>
+                    <div class="detail-value"><code>${r.real_category || 'NO VERIFICADO'}</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Fuente de Procedencia:</div>
+                    <div class="detail-value"><code>${getSpanishLabel(r.category_source || 'MIGA_DE_PAN_CANAL_PUBLICO')}</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Clasificación Maestro:</div>
                     <div class="detail-value"><span class="badge badge-purple">${r.expected_category || 'Vestuario Femenino / Nicopoly'}</span></div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Decisión Final:</div>
+                    <div class="detail-label">Dictamen Comercial:</div>
                     <div class="detail-value">${getBadge(r.decision || r.estado_final || r.status)}</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Fuente de Adquisición:</div>
-                    <div class="detail-value"><code>${r.source || 'PAGINATED_ADAPTER_HARVEST'}</code></div>
+                    <div class="detail-label">Tienda / Corredor de Marca:</div>
+                    <div class="detail-value"><code>${r.brand_corridor || 'NINGUNO (CATEGORÍA DEPARTAMENTAL)'}</code></div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Timestamp de Observación:</div>
+                    <div class="detail-label">Producto Padre (Master):</div>
+                    <div class="detail-value"><code>${r.parent_sku || 'NO_VINCULADO'}</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Variantes en Catálogo:</div>
+                    <div class="detail-value"><code>${(r.candidate_variants && r.candidate_variants.length > 0) ? r.candidate_variants.join(', ') : (r.variant_sku || 'NO_DIFERENCIADA')}</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Fecha y Hora de Observación:</div>
                     <div class="detail-value">${r.fecha_observacion || r.timestamp || 'NO_VERIFICADO'}</div>
                 </div>
                 <div class="detail-row">
-                    <div class="detail-label">Evidencia Recopilada:</div>
+                    <div class="detail-label">Evidencia y Diagnóstico:</div>
                     <div class="detail-value" style="background:rgba(0,0,0,0.2); padding:8px; border-radius:4px; font-size:0.85rem">
                         ${evText}
-                        <div style="margin-top:6px; color:var(--text-muted)"><strong>Motivo:</strong> ${r.motivo_verificable || r.reason || 'NO_VERIFICADO'}</div>
+                        <div style="margin-top:6px; color:#fff"><strong>Diagnóstico y Motivo:</strong> ${r.motivo_verificable || r.reason || 'NO_VERIFICADO'}</div>
                     </div>
                 </div>
             `;
