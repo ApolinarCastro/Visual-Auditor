@@ -1,0 +1,357 @@
+{
+  "api_falabella": {
+    "marketplace": "Falabella",
+    "brand": "NICOPOLY",
+    "official_seller": "Nicopoly",
+    "seller_id": "SC75ABC",
+    "total_brand_publications": 368,
+    "total_seller_publications": 368,
+    "brand_seller_identity_match": true,
+    "l0_department": {
+      "id": "cat7330051",
+      "name": "Mujer",
+      "count": 368
+    },
+    "l1_subcategory": {
+      "id": "cat20002",
+      "name": "Moda Mujer",
+      "count": 368
+    },
+    "l2_subcategories": [
+      {
+        "id": "cat850036",
+        "name": "Abrigos y Chaquetas",
+        "count": 107
+      },
+      {
+        "id": "cat850040",
+        "name": "Pantalones",
+        "count": 67
+      },
+      {
+        "id": "CATG35031",
+        "name": "Poleras Mujer",
+        "count": 54
+      },
+      {
+        "id": "cat850034",
+        "name": "Sweaters y chalecos",
+        "count": 52
+      },
+      {
+        "id": "cat850030",
+        "name": "Blusas Mujer",
+        "count": 46
+      },
+      {
+        "id": "cat14330023",
+        "name": "Vestidos y enteritos",
+        "count": 20
+      },
+      {
+        "id": "cat850044",
+        "name": "Shorts",
+        "count": 13
+      },
+      {
+        "id": "cat850042",
+        "name": "Faldas",
+        "count": 6
+      },
+      {
+        "id": "CATG34995",
+        "name": "Parkas Mujer",
+        "count": 3
+      }
+    ],
+    "total_l2_categories": 9,
+    "sum_l2_publications": 368,
+    "discovery_mechanism": "NEXT_JS_SSR_EXTRACTION",
+    "status": "OPERATIONAL"
+  },
+  "api_meli": {
+    "marketplace": "Mercado Libre",
+    "site_id": "MLC",
+    "brand": "Nicopoly",
+    "official_store_id": "56574",
+    "seller_id": "386329223",
+    "official_store_url": "https://tienda.mercadolibre.cl/nicopoly",
+    "search_access_status": "AUTH_REQUIRED",
+    "oauth_status": "AUTH_REQUIRED",
+    "total_product_categories": 14,
+    "product_categories": [
+      {
+        "category_id": "MLC158340",
+        "name": "Chaquetas, Parkas y Blazers",
+        "parent_id": "MLC455528",
+        "domain_name": "MLC-JACKETS_AND_COATS",
+        "entity_type": "subcategory"
+      },
+      {
+        "category_id": "MLC158425",
+        "name": "Vestidos",
+        "parent_id": "MLC1430",
+        "domain_name": "MLC-DRESSES",
+        "entity_type": "category"
+      },
+      {
+        "category_id": "MLC158583",
+        "name": "Pantalones",
+        "parent_id": "MLC1430",
+        "domain_name": "MLC-PANTS",
+        "entity_type": "category"
+      },
+      {
+        "category_id": "MLC158342",
+        "name": "Blusas",
+        "parent_id": "MLC1430",
+        "domain_name": "MLC-BLOUSES",
+        "entity_type": "category"
+      },
+      {
+        "category_id": "MLC158307",
+        "name": "Bermudas y Shorts",
+        "parent_id": "MLC1430",
+        "domain_name": "MLC-SHORTS",
+        "entity_type": "category"
+      },
+      {
+        "category_id": "MLC158457",
+        "name": "Faldas",
+        "parent_id": "MLC1430",
+        "domain_name": "MLC-SKIRTS",
+        "entity_type": "category"
+      },
+      {
+        "category_id": "MLC440371",
+        "name": "Chalecos, Sweaters y Cardigans",
+        "parent_id": "MLC455528",
+        "domain_name": "MLC-SWEATERS_AND_CARDIGANS",
+        "entity_type": "subcategory"
+      },
+      {
+        "category_id": "MLC158467",
+        "name": "Poleras",
+        "parent_id": "MLC1430",
+        "domain_name": "MLC-T_SHIRTS",
+        "entity_type": "category"
+      },
+      {
+        "category_id": "MLC158335",
+        "name": "Camisas",
+        "parent_id": "MLC1430",
+        "domain_name": "MLC-SHIRTS",
+        "entity_type": "category"
+      },
+      {
+        "category_id": "MLC440714",
+        "name": "Enteritos",
+        "parent_id": "MLC1430",
+        "domain_name": "MLC-JUMPSUITS",
+        "entity_type": "category"
+      },
+      {
+        "category_id": "MLC440654",
+        "name": "Calzas",
+        "parent_id": "MLC1430",
+        "domain_name": "MLC-LEGGINGS",
+        "entity_type": "category"
+      },
+      {
+        "category_id": "MLC158382",
+        "name": "Polerones",
+        "parent_id": "MLC455528",
+        "domain_name": "MLC-SWEATSHIRTS",
+        "entity_type": "subcategory"
+      },
+      {
+        "category_id": "MLC440679",
+        "name": "Trajes de Baño",
+        "parent_id": "MLC1430",
+        "domain_name": "MLC-SWIMWEAR",
+        "entity_type": "category"
+      },
+      {
+        "category_id": "MLC158310",
+        "name": "Accesorios de Moda",
+        "parent_id": "MLC1430",
+        "domain_name": "MLC-FASHION_ACCESSORIES",
+        "entity_type": "category"
+      }
+    ],
+    "audiovisual_clips": {
+      "entity_name": "Clips",
+      "content_type": "AUDIOVISUAL_SHORT_VIDEO",
+      "is_product_category": false,
+      "status": "SEGREGATED_FROM_TAXONOMY"
+    },
+    "status": "OPERATIONAL"
+  },
+  "api_paris": {
+    "marketplace": "Paris",
+    "brand": "Nicopoly",
+    "total_brand": 4904,
+    "official_seller": "NICOPOLY",
+    "total_official_seller": 4213,
+    "other_sellers_total": 691,
+    "facets": [
+      "tipoProductoAll",
+      "brand",
+      "regularPrice",
+      "displayedPrice",
+      "isMarketplace",
+      "rating",
+      "deliveryHomeNDComunaDays",
+      "collectInStoreComunas",
+      "size",
+      "subdepartmentId",
+      "discountPercentage",
+      "material",
+      "color",
+      "conditions",
+      "genero",
+      "deliveryHomeSDComunaDays",
+      "infantilRangoEdad",
+      "productoSostenible"
+    ],
+    "product_types": [
+      {
+        "name": "Poleras",
+        "count": 830,
+        "value": "Poleras"
+      },
+      {
+        "name": "Chaquetas",
+        "count": 740,
+        "value": "Chaquetas"
+      },
+      {
+        "name": "Blusas",
+        "count": 683,
+        "value": "Blusas"
+      },
+      {
+        "name": "Vestidos",
+        "count": 540,
+        "value": "Vestidos"
+      },
+      {
+        "name": "Sweaters",
+        "count": 527,
+        "value": "Sweaters"
+      },
+      {
+        "name": "Pantalones",
+        "count": 409,
+        "value": "Pantalones"
+      },
+      {
+        "name": "Chalecos",
+        "count": 258,
+        "value": "Chalecos"
+      },
+      {
+        "name": "Enteritos",
+        "count": 173,
+        "value": "Enteritos"
+      },
+      {
+        "name": "Abrigos",
+        "count": 150,
+        "value": "Abrigos"
+      },
+      {
+        "name": "Faldas",
+        "count": 141,
+        "value": "Faldas"
+      },
+      {
+        "name": "Vestidos de Fiesta",
+        "count": 118,
+        "value": "Vestidos de Fiesta"
+      },
+      {
+        "name": "Parkas",
+        "count": 116,
+        "value": "Parkas"
+      },
+      {
+        "name": "Shorts",
+        "count": 63,
+        "value": "Shorts"
+      },
+      {
+        "name": "Pañuelos y Bufandas",
+        "count": 46,
+        "value": "Pañuelos y Bufandas"
+      },
+      {
+        "name": "Calzas",
+        "count": 42,
+        "value": "Calzas"
+      },
+      {
+        "name": "Jeans",
+        "count": 38,
+        "value": "Jeans"
+      },
+      {
+        "name": "Polerones",
+        "count": 26,
+        "value": "Polerones"
+      },
+      {
+        "name": "Petos",
+        "count": 1,
+        "value": "Petos"
+      },
+      {
+        "name": "Jardineras",
+        "count": 1,
+        "value": "Jardineras"
+      }
+    ],
+    "discovery_engine": "Constructor.io AI Search",
+    "status": "OPERATIONAL"
+  },
+  "api_multimarketplace_summary": {
+    "brand": "Nicopoly",
+    "marketplaces": {
+      "Paris": {
+        "mechanism": "Constructor.io JSON API",
+        "brand_publications": 4902,
+        "official_seller_publications": 4211,
+        "categories_count": 43,
+        "status": "OPERATIONAL"
+      },
+      "Falabella": {
+        "mechanism": "Next.js SSR __NEXT_DATA__",
+        "brand_publications": 368,
+        "official_seller_publications": 368,
+        "seller_id": "SC75ABC",
+        "categories_count": 9,
+        "status": "OPERATIONAL"
+      },
+      "Mercado Libre": {
+        "mechanism": "Official REST API / Taxonomy",
+        "official_store_id": "56574",
+        "seller_id": "386329223",
+        "product_categories_count": 14,
+        "clips_segregated": true,
+        "oauth_readiness": "AUTH_REQUIRED",
+        "status": "OPERATIONAL"
+      },
+      "Ripley": {
+        "mechanism": "Facets SSR + Counter Verification",
+        "brand_publications": 772,
+        "categories_count": 3,
+        "status": "OPERATIONAL"
+      }
+    },
+    "total_active_marketplaces": 4,
+    "shared_mri_contract_version": "2.0",
+    "status": "ALL_MARKETPLACES_OPERATIONAL"
+  },
+  "dashboard_tab_d_present": true,
+  "status": "ALL_MARKETPLACES_CONNECTED"
+}

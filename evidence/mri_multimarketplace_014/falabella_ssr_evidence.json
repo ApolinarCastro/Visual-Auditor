@@ -1,0 +1,64 @@
+{
+  "marketplace": "Falabella",
+  "mechanism": "SSR_NEXT_DATA_EXTRACTION",
+  "pagination_count_extracted": 368,
+  "brand_seller_identity_equivalence": {
+    "brand": "NICOPOLY",
+    "seller": "Nicopoly",
+    "seller_id": "SC75ABC",
+    "brand_count": 368,
+    "seller_count": 368,
+    "identity_match": true
+  },
+  "l2_subcategories_count": 9,
+  "l2_subcategories_sum": 368,
+  "l2_subcategories": [
+    {
+      "id": "cat850036",
+      "name": "Abrigos y Chaquetas",
+      "count": 107
+    },
+    {
+      "id": "cat850040",
+      "name": "Pantalones",
+      "count": 67
+    },
+    {
+      "id": "CATG35031",
+      "name": "Poleras Mujer",
+      "count": 54
+    },
+    {
+      "id": "cat850034",
+      "name": "Sweaters y chalecos",
+      "count": 52
+    },
+    {
+      "id": "cat850030",
+      "name": "Blusas Mujer",
+      "count": 46
+    },
+    {
+      "id": "cat14330023",
+      "name": "Vestidos y enteritos",
+      "count": 20
+    },
+    {
+      "id": "cat850044",
+      "name": "Shorts",
+      "count": 13
+    },
+    {
+      "id": "cat850042",
+      "name": "Faldas",
+      "count": 6
+    },
+    {
+      "id": "CATG34995",
+      "name": "Parkas Mujer",
+      "count": 3
+    }
+  ],
+  "normalized_publications_count": 1,
+  "status": "VERIFIED_OPERATIONAL"
+}
