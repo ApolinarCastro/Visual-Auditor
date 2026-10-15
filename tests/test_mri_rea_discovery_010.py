@@ -41,6 +41,15 @@ class TestMRIREADiscovery010:
         assert data["mcp_status"] == "READY_AVAILABLE"
         assert "inspect-web-page" in data["tools_supported"]
 
+        # Verify demonstrated REA network inspection artifact
+        rea_inspection_file = "evidence/mri_rea_discovery_010/rea_har_inspection.json"
+        assert os.path.exists(rea_inspection_file), "REA HAR inspection evidence must exist"
+        with open(rea_inspection_file, "r", encoding="utf-8") as f:
+            insp_data = json.load(f)
+        records = insp_data.get("data", {}).get("normalized_result", {}).get("records", [])
+        assert len(records) >= 1, "REA must have inspected at least 1 record"
+        assert insp_data.get("data", {}).get("operation") == "inspect_web_network_capture"
+
         engine = REAParisEngine()
         assert engine.api_key == "key_6PvQHDnR0zdWgEPh"
         assert engine.base_url == "https://ac.cnstrc.com"

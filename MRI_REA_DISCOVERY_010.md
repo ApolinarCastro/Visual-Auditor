@@ -31,6 +31,13 @@ Se prohíben propuestas abstractas o mocks. La integración opera con endpoints 
 - **npm**: `11.6.2`
 - **REA Agents**: `rea-agents@6.5.0` verificado y funcional vía `npx rea-agents`.
 - **Servidor MCP**: Configurado y disponible mediante `npx rea-agents mcp` (soporte nativo para `inspect-web-page`, `inspect-web-network-capture`, `recover-javascript-sources`, `observe-web-session`).
+- **Invocación Real y Demostrada de REA (`REA_OBSERVATION=EXECUTED`)**:
+  - Se capturó una sesión de red auténtica de Paris.cl en formato HAR 1.2: `evidence/mri_rea_discovery_010/paris_search_capture.har`.
+  - Se ejecutó la herramienta de inspección de tráfico de red de REA:
+    ```bash
+    npx rea-agents inspect-web-network-capture "evidence/mri_rea_discovery_010/paris_search_capture.har" har --full-output --format json
+    ```
+  - REA decodificó e inspeccionó exitosamente la transacción con `status=200`, `size=72885 bytes` y `mimeType=application/json`, registrando la evidencia verificable en `evidence/mri_rea_discovery_010/rea_har_inspection.json`.
 - **Alcance acotado**: No se requirió ni instaló ningún analizador binario pesado (Ghidra, Hopper, IDA), cumpliendo estrictamente con el principio de mínima superficie.
 
 ---
@@ -161,11 +168,13 @@ Resultado: **7 passed in 5.11s (100% PASS)**
 ## 9. Evidencias Verificables Registradas
 Todos los artefactos de evidencia se encuentran generados en [evidence/mri_rea_discovery_010/](file:///c:/Users/ASUS%20Zenbook/Documents/Visibility%20Auditor/evidence/mri_rea_discovery_010/):
 1. `rea_toolchain_status.json`: Registro de versiones de REA, herramientas y estado MCP.
-2. `paris_api_discovery.json`: Especificación de endpoints, API keys y parámetros de consulta de Constructor.io en Paris.
-3. `paris_brand_vs_seller.json`: Cuantificación y desglose de Marca Nicopoly vs Seller NICOPOLY vs Vendedores de prendas usadas.
-4. `paris_category_matrix.json`: Matriz jerárquica con conteos de mercado, marca y seller para las categorías de Paris.
-5. `paris_promotions_matrix.json`: Desglose de membresía en campañas (Cyber Day, New In, Night Out, Liquidación).
-6. `paris_normalized_contract_sample.json`: Muestra de publicaciones y entidades comerciales bajo el contrato normalizado de MRI.
+2. `paris_search_capture.har`: Captura auténtica de tráfico HTTP/1.1 de la API de Paris.cl.
+3. `rea_har_inspection.json`: Evidencia procesada por la CLI de REA (`inspect-web-network-capture`).
+4. `paris_api_discovery.json`: Especificación de endpoints, API keys y parámetros de consulta de Constructor.io en Paris.
+5. `paris_brand_vs_seller.json`: Cuantificación y desglose de Marca Nicopoly vs Seller NICOPOLY vs Vendedores de prendas usadas.
+6. `paris_category_matrix.json`: Matriz jerárquica con conteos de mercado, marca y seller para las categorías de Paris.
+7. `paris_promotions_matrix.json`: Desglose de membresía en campañas (Cyber Day, New In, Night Out, Liquidación).
+8. `paris_normalized_contract_sample.json`: Muestra de publicaciones y entidades comerciales bajo el contrato normalizado de MRI.
 
 ---
 
