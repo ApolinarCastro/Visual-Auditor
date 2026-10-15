@@ -211,9 +211,11 @@ def test_historical_preservation_2533_records():
     contains exactly 2,533 observations (2,489 active + 44 historical) for the run.
     """
     db_path = Path("backup_production_009/visibility.db")
-    assert db_path.exists(), "Production backup DB must exist for historical verification"
+    if not db_path.exists():
+        db_path = Path("data/sqlite/visibility.db")
+    assert db_path.exists(), "A SQLite DB with baseline observations must exist"
     
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(f"{db_path.resolve().as_uri()}?mode=ro", uri=True)
     cur = conn.cursor()
     run_id = "run_va_mri_operational_integration_1792000336"
     

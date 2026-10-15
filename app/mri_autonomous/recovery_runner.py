@@ -521,6 +521,9 @@ class AcquisitionRecoveryRunner:
         c = conn.cursor()
         now_str = datetime.now().isoformat()
 
+        term_state = reconciled_result.get("terminal_state") or "COMPLETED"
+        run_status = "STOPPED" if term_state in ("PAGE_BUDGET_EXCEEDED", "STOPPED", "FAILED") else "SUCCESS"
+
         # 1. Register Run
         c.execute("""
             INSERT OR REPLACE INTO mri_runs (
@@ -529,8 +532,8 @@ class AcquisitionRecoveryRunner:
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             run_id, now_str, now_str, "MULTI_MARKETPLACE", "Nicopoly",
-            "RECOVERY_OPERATIONAL_INTEGRATION", "2.0", "COMPLETED",
-            "PAGINATED_ADAPTER_HARVEST", "SUCCESS", now_str
+            "RECOVERY_OPERATIONAL_INTEGRATION", "2.0", term_state,
+            "PAGINATED_ADAPTER_HARVEST", run_status, now_str
         ))
 
         pubs_inserted = 0
@@ -561,6 +564,8 @@ class AcquisitionRecoveryRunner:
                 cat_exp = obs["category_expected"]
                 cat_dec = obs["category_decision"]
                 comm_attr = obs["commercial_attributes"]
+                raw_src_id = obs.get("raw_source_id")
+                ev_type = obs.get("evidence_type") or ("CONTROLLED_FIXTURE" if raw_src_id and "FIXTURE" in str(raw_src_id) else "LIVE_OBSERVATION")
 
                 # Preservar historial: respaldar estado previo si la publicación ya existe con otro run_id
                 existing = c.execute("""
@@ -591,14 +596,14 @@ class AcquisitionRecoveryRunner:
                     INSERT OR REPLACE INTO mri_publications (
                         publication_id, product_id, marketplace, marketplace_product_id,
                         canonical_url, status, observed_at, run_id, position, surface,
-                        position_state, category_relationship, evidence_type,
+                        position_state, category_relationship, evidence_type, raw_source_id,
                         acquisition_status, identity_status, category_observed,
                         category_source, category_expected, category_decision, commercial_attributes
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     pub_id, p_id, mkt, pub_id, canon_url, "OBSERVED",
                     obs_at, run_id, pos, "SEARCH_OR_STORE",
-                    "EXACT", cat_dec, "LIVE_OBSERVATION",
+                    "EXACT", cat_dec, ev_type, raw_src_id,
                     acq_st, ident_st, cat_obs, cat_src, cat_exp, cat_dec, comm_attr
                 ))
                 pubs_inserted += 1

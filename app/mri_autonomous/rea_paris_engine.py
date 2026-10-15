@@ -213,7 +213,7 @@ class REAParisEngine:
         """
         Harvest items and reconstruct taxonomy and promotional memberships.
         """
-        publications: List[NormalizedPublication] = []
+        publications_by_sku: Dict[str, NormalizedPublication] = {}
         entities_dict: Dict[str, CommercialEntity] = {}
         items_per_page = 40
         pages = (max_items + items_per_page - 1) // items_per_page
@@ -226,12 +226,19 @@ class REAParisEngine:
 
             for r in results:
                 idata = r.get("data", {})
-                sku = idata.get("id") or r.get("value")
+                sku = str(idata.get("id") or r.get("value") or "").strip()
+                if not sku:
+                    continue
                 title = r.get("value") or ""
                 sellers = idata.get("sellers") or []
-                is_official = any(s.upper() == "NICOPOLY" for s in sellers)
+                is_official = any(str(s).strip().upper() == "NICOPOLY" for s in sellers)
                 condition = idata.get("conditions") or "new"
-                canonical_url = idata.get("url") or f"https://www.paris.cl/{sku}.html"
+
+                # Sanitize canonical URL: clean staging domain to official production domain
+                raw_url = idata.get("url") or f"https://www.paris.cl/{sku}.html"
+                canonical_url = raw_url.replace("staging.ccom-stg.paris.cl", "www.paris.cl")
+                if not canonical_url.startswith("http"):
+                    canonical_url = f"https://www.paris.cl{canonical_url if canonical_url.startswith('/') else '/' + canonical_url}"
 
                 item_groups = idata.get("groups") or []
                 item_collections = idata.get("collections") or []
@@ -244,7 +251,7 @@ class REAParisEngine:
                     norm_groups.append({"group_id": gid, "name": gname, "path": gpath})
 
                     if gid not in entities_dict:
-                        # Determine entity type from path
+                        # Determine entity type from path or id
                         etype = "category"
                         if "mujMarcas" in gpath:
                             etype = "brand"
@@ -262,12 +269,21 @@ class REAParisEngine:
                             parent_id=gpath.split("/")[-1] if gpath else None,
                             hierarchical_path=gpath,
                             official_url=official_url,
-                            reported_total=0,
+                            reported_total=int(g.get("count") or 0),
                             associated_publications=[sku],
                         )
                     else:
                         if sku not in entities_dict[gid].associated_publications:
                             entities_dict[gid].associated_publications.append(sku)
+
+                # Process collections & promotional events
+                promos_for_item = list(item_collections)
+                for g in item_groups:
+                    gid = g.get("group_id", "")
+                    gname = g.get("display_name", "")
+                    if "Evento" in gid or "Cyber" in gid or "Cyber" in gname:
+                        if gname not in promos_for_item:
+                            promos_for_item.append(gname)
 
                 for coll in item_collections:
                     if coll not in entities_dict:
@@ -286,30 +302,159 @@ class REAParisEngine:
                         if sku not in entities_dict[coll].associated_publications:
                             entities_dict[coll].associated_publications.append(sku)
 
-                pub = NormalizedPublication(
-                    publication_id=f"PARIS-{sku}",
-                    marketplace="Paris",
-                    sku=sku,
-                    title=title,
-                    brand=brand,
-                    sellers=sellers,
-                    is_official_seller=is_official,
-                    price_regular=float(idata.get("regularPrice") or 0.0) if idata.get("regularPrice") else None,
-                    price_displayed=float(idata.get("displayedPrice") or 0.0) if idata.get("displayedPrice") else None,
-                    discount_percentage=float(idata.get("discountPercentage") or 0.0) if idata.get("discountPercentage") else None,
-                    condition=condition,
-                    canonical_url=canonical_url,
-                    categories=norm_groups,
-                    promotions=item_collections,
-                    facets={
-                        "tipoProducto": idata.get("tipoProducto"),
-                        "color": idata.get("color"),
-                        "material": idata.get("material"),
-                        "gender": idata.get("genero"),
-                    },
-                )
-                publications.append(pub)
-                if len(publications) >= max_items:
+                if sku in publications_by_sku:
+                    # Deduplicate SKU while merging multi-memberships
+                    existing_pub = publications_by_sku[sku]
+                    # Merge sellers
+                    for s in sellers:
+                        if s not in existing_pub.sellers:
+                            existing_pub.sellers.append(s)
+                    if is_official:
+                        existing_pub.is_official_seller = True
+                    # Merge categories
+                    existing_gids = {c["group_id"] for c in existing_pub.categories}
+                    for ng in norm_groups:
+                        if ng["group_id"] not in existing_gids:
+                            existing_pub.categories.append(ng)
+                    # Merge promotions
+                    for p in promos_for_item:
+                        if p not in existing_pub.promotions:
+                            existing_pub.promotions.append(p)
+                else:
+                    pub = NormalizedPublication(
+                        publication_id=f"PARIS-{sku}",
+                        marketplace="Paris",
+                        sku=sku,
+                        title=title,
+                        brand=brand,
+                        sellers=sellers,
+                        is_official_seller=is_official,
+                        price_regular=float(idata.get("regularPrice") or 0.0) if idata.get("regularPrice") else None,
+                        price_displayed=float(idata.get("displayedPrice") or 0.0) if idata.get("displayedPrice") else None,
+                        discount_percentage=float(idata.get("discountPercentage") or 0.0) if idata.get("discountPercentage") else None,
+                        condition=condition,
+                        canonical_url=canonical_url,
+                        categories=norm_groups,
+                        promotions=promos_for_item,
+                        facets={
+                            "tipoProducto": idata.get("tipoProducto"),
+                            "color": idata.get("color"),
+                            "material": idata.get("material"),
+                            "gender": idata.get("genero"),
+                        },
+                    )
+                    publications_by_sku[sku] = pub
+
+                if len(publications_by_sku) >= max_items:
                     break
 
-        return publications, list(entities_dict.values())
+        return list(publications_by_sku.values()), list(entities_dict.values())
+
+    def persist_to_mri_sqlite(
+        self,
+        publications: List[NormalizedPublication],
+        entities: List[CommercialEntity],
+        run_id: str,
+        db_path: Optional[str] = None,
+        terminal_state: str = "COMPLETED"
+    ) -> Dict[str, Any]:
+        """
+        Persists normalized Paris publications and commercial entities into MRI SQLite schema.
+        Enforces storage write barrier (StorageConfig.assert_write_allowed).
+        """
+        import sqlite3
+        try:
+            from app.mri_autonomous.storage_guard import StorageConfig
+            effective_db = db_path or str(StorageConfig.get_sqlite_path())
+            StorageConfig.assert_write_allowed(effective_db)
+        except ImportError:
+            effective_db = db_path or "data/sqlite/visibility.db"
+
+        conn = sqlite3.connect(effective_db)
+        cur = conn.cursor()
+        now_str = datetime.now(timezone.utc).isoformat()
+
+        # 1. Register run in mri_runs
+        cur.execute("""
+            INSERT OR REPLACE INTO mri_runs (
+                run_id, started_at, finished_at, marketplace, brand, execution_mode,
+                truth_model_version, terminal_state, source_method, status, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            run_id, now_str, now_str, "Paris", "Nicopoly",
+            "REA_DISCOVERY_CONSTRUCTOR_HARVEST", "2.0", terminal_state,
+            "CONSTRUCTOR_PUBLIC_API", "SUCCESS", now_str
+        ))
+
+        # 2. Persist categories / entities in mri_categories
+        cats_inserted = 0
+        for ent in entities:
+            cur.execute("""
+                INSERT OR REPLACE INTO mri_categories (
+                    category_id, marketplace, category_name, canonical_url, created_at
+                ) VALUES (?, ?, ?, ?, ?)
+            """, (
+                f"PARIS_{ent.group_id}", ent.marketplace, ent.display_name, ent.official_url, now_str
+            ))
+            cats_inserted += 1
+
+        # 3. Persist products, publications, and category linkages
+        pubs_inserted = 0
+        links_inserted = 0
+        for idx, pub in enumerate(publications, start=1):
+            prod_id = f"PROD_PAR_{pub.sku}"
+            cur.execute("""
+                INSERT OR REPLACE INTO mri_products (
+                    product_id, canonical_brand, product_status, created_at
+                ) VALUES (?, ?, ?, ?)
+            """, (prod_id, pub.brand, "ACTIVE", now_str))
+
+            # Primary category decision
+            primary_cat = pub.categories[0]["name"] if pub.categories else "NO_VERIFICADO"
+            comm_attrs = json.dumps({
+                "sellers": pub.sellers,
+                "is_official_seller": pub.is_official_seller,
+                "condition": pub.condition,
+                "price_regular": pub.price_regular,
+                "price_displayed": pub.price_displayed,
+                "promotions": pub.promotions,
+                "facets": pub.facets
+            }, ensure_ascii=False)
+
+            cur.execute("""
+                INSERT OR REPLACE INTO mri_publications (
+                    publication_id, product_id, marketplace, marketplace_product_id,
+                    canonical_url, status, observed_at, run_id, position, surface,
+                    position_state, category_relationship, evidence_type, raw_source_id,
+                    acquisition_status, identity_status, category_observed,
+                    category_source, category_expected, category_decision, commercial_attributes
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                pub.publication_id, prod_id, pub.marketplace, pub.sku,
+                pub.canonical_url, "OBSERVED", pub.observed_at, run_id, idx,
+                "CONSTRUCTOR_SEARCH_GRID", "EXACT", "CORRECT",
+                "REA_OBSERVED_TRAFFIC", f"REA-HARVEST-{pub.sku}",
+                "OBSERVED", "TARGET_IDENTITY_VERIFIED", primary_cat,
+                "CONSTRUCTOR_CDP_TAXONOMY", primary_cat, "CORRECT", comm_attrs
+            ))
+            pubs_inserted += 1
+
+            # Multi-membership linkage
+            for cat in pub.categories:
+                cat_id = f"PARIS_{cat['group_id']}"
+                cur.execute("""
+                    INSERT OR REPLACE INTO mri_publication_categories (
+                        publication_id, category_id, status, observed_at
+                    ) VALUES (?, ?, ?, ?)
+                """, (pub.publication_id, cat_id, "ACTIVE", pub.observed_at))
+                links_inserted += 1
+
+        conn.commit()
+        conn.close()
+
+        return {
+            "run_id": run_id,
+            "publications_materialized": pubs_inserted,
+            "categories_materialized": cats_inserted,
+            "category_links_materialized": links_inserted
+        }

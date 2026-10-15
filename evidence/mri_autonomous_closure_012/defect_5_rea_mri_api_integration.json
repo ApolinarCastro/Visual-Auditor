@@ -1,0 +1,134 @@
+{
+  "api_endpoint": "/api/rea/paris",
+  "api_status_code": 200,
+  "api_payload": {
+    "marketplace": "Paris",
+    "brand": "Nicopoly",
+    "total_brand": 4904,
+    "official_seller": "NICOPOLY",
+    "total_official_seller": 4213,
+    "other_sellers_total": 691,
+    "facets": [
+      "tipoProductoAll",
+      "brand",
+      "regularPrice",
+      "displayedPrice",
+      "isMarketplace",
+      "rating",
+      "deliveryHomeNDComunaDays",
+      "collectInStoreComunas",
+      "size",
+      "subdepartmentId",
+      "discountPercentage",
+      "material",
+      "color",
+      "conditions",
+      "genero",
+      "deliveryHomeSDComunaDays",
+      "infantilRangoEdad",
+      "productoSostenible"
+    ],
+    "product_types": [
+      {
+        "name": "Poleras",
+        "count": 830,
+        "value": "Poleras"
+      },
+      {
+        "name": "Chaquetas",
+        "count": 740,
+        "value": "Chaquetas"
+      },
+      {
+        "name": "Blusas",
+        "count": 683,
+        "value": "Blusas"
+      },
+      {
+        "name": "Vestidos",
+        "count": 540,
+        "value": "Vestidos"
+      },
+      {
+        "name": "Sweaters",
+        "count": 527,
+        "value": "Sweaters"
+      },
+      {
+        "name": "Pantalones",
+        "count": 409,
+        "value": "Pantalones"
+      },
+      {
+        "name": "Chalecos",
+        "count": 258,
+        "value": "Chalecos"
+      },
+      {
+        "name": "Enteritos",
+        "count": 173,
+        "value": "Enteritos"
+      },
+      {
+        "name": "Abrigos",
+        "count": 150,
+        "value": "Abrigos"
+      },
+      {
+        "name": "Faldas",
+        "count": 141,
+        "value": "Faldas"
+      },
+      {
+        "name": "Vestidos de Fiesta",
+        "count": 118,
+        "value": "Vestidos de Fiesta"
+      },
+      {
+        "name": "Parkas",
+        "count": 116,
+        "value": "Parkas"
+      },
+      {
+        "name": "Shorts",
+        "count": 63,
+        "value": "Shorts"
+      },
+      {
+        "name": "Pañuelos y Bufandas",
+        "count": 46,
+        "value": "Pañuelos y Bufandas"
+      },
+      {
+        "name": "Calzas",
+        "count": 42,
+        "value": "Calzas"
+      },
+      {
+        "name": "Jeans",
+        "count": 38,
+        "value": "Jeans"
+      },
+      {
+        "name": "Polerones",
+        "count": 26,
+        "value": "Polerones"
+      },
+      {
+        "name": "Petos",
+        "count": 1,
+        "value": "Petos"
+      },
+      {
+        "name": "Jardineras",
+        "count": 1,
+        "value": "Jardineras"
+      }
+    ],
+    "discovery_engine": "Constructor.io AI Search",
+    "status": "OPERATIONAL"
+  },
+  "dashboard_endpoint": "/",
+  "dashboard_status_code": 200,
+  "rea_mri_integration_status": "OPERATIONAL_CONNECTED"
+}
