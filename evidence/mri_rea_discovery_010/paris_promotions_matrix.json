@@ -1,0 +1,47 @@
+[
+  {
+    "group_id": "EventoEspecialCyber",
+    "group_name": "Especial Cyber Day",
+    "total_market": 10000,
+    "total_brand": 1643,
+    "total_official_seller": 1643,
+    "other_sellers_brand": 0,
+    "hierarchical_path": "/ecommerce-root"
+  },
+  {
+    "group_id": "mujNovColeccionModa40",
+    "group_name": "New In Nicopoly",
+    "total_market": 284,
+    "total_brand": 284,
+    "total_official_seller": 284,
+    "other_sellers_brand": 0,
+    "hierarchical_path": "/ecommerce-root/modamujer/mujNovedades"
+  },
+  {
+    "group_id": "mujNovColeccionModa6",
+    "group_name": "Night Out",
+    "total_market": 182,
+    "total_brand": 81,
+    "total_official_seller": 81,
+    "other_sellers_brand": 0,
+    "hierarchical_path": "/ecommerce-root/modamujer/mujNovedades"
+  },
+  {
+    "group_id": "EventoLiquidacion",
+    "group_name": "Liquidación",
+    "total_market": 5260,
+    "total_brand": 2,
+    "total_official_seller": 2,
+    "other_sellers_brand": 0,
+    "hierarchical_path": "/ecommerce-root"
+  },
+  {
+    "group_id": "modaCircular",
+    "group_name": "Moda Circular",
+    "total_market": 10000,
+    "total_brand": 192,
+    "total_official_seller": 0,
+    "other_sellers_brand": 192,
+    "hierarchical_path": "/ecommerce-root"
+  }
+]

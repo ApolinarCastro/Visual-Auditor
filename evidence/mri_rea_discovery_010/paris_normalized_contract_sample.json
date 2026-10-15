@@ -1,0 +1,1300 @@
+{
+  "total_harvested_sample": 25,
+  "total_unique_commercial_entities": 11,
+  "publications": [
+    {
+      "publication_id": "PARIS-MKYBS8MTEG",
+      "marketplace": "Paris",
+      "sku": "MKYBS8MTEG",
+      "title": "Blazer Largo 4 Botones Rojo Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 41990.0,
+      "discount_percentage": null,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/blazer-largo-4-botones-rojo-nicopoly-MKYBS8MTEG.html",
+      "categories": [
+        {
+          "group_id": "mujModAbrigosChaquetasParkas",
+          "name": "Blazers, Chaquetas y Abrigos",
+          "path": "/ecommerce-root/modamujer/mujModa"
+        },
+        {
+          "group_id": "EventoEspecialCyber",
+          "name": "Especial Cyber Day",
+          "path": "/ecommerce-root"
+        },
+        {
+          "group_id": "mujMrcNicopoly",
+          "name": "Nicopoly",
+          "path": "/ecommerce-root/modamujer/mujMarcas"
+        }
+      ],
+      "promotions": [],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Rojo",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678308"
+    },
+    {
+      "publication_id": "PARIS-MK8FHP5M0D",
+      "marketplace": "Paris",
+      "sku": "MK8FHP5M0D",
+      "title": "Blazer Largo 4 Botones Celeste Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 41990.0,
+      "discount_percentage": null,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/blazer-largo-4-botones-celeste-nicopoly-MK8FHP5M0D.html",
+      "categories": [
+        {
+          "group_id": "EventoEspecialCyber",
+          "name": "Especial Cyber Day",
+          "path": "/ecommerce-root"
+        },
+        {
+          "group_id": "mujMrcNicopoly",
+          "name": "Nicopoly",
+          "path": "/ecommerce-root/modamujer/mujMarcas"
+        },
+        {
+          "group_id": "mujModAbrigosChaquetasParkas",
+          "name": "Blazers, Chaquetas y Abrigos",
+          "path": "/ecommerce-root/modamujer/mujModa"
+        }
+      ],
+      "promotions": [],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Celeste",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678321"
+    },
+    {
+      "publication_id": "PARIS-MK9R9LHQI5",
+      "marketplace": "Paris",
+      "sku": "MK9R9LHQI5",
+      "title": "Blazer Largo 4 Botones Khaki Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 41990.0,
+      "discount_percentage": null,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/blazer-largo-4-botones-khaki-nicopoly-MK9R9LHQI5.html",
+      "categories": [
+        {
+          "group_id": "EventoEspecialCyber",
+          "name": "Especial Cyber Day",
+          "path": "/ecommerce-root"
+        },
+        {
+          "group_id": "mujModAbrigosChaquetasParkas",
+          "name": "Blazers, Chaquetas y Abrigos",
+          "path": "/ecommerce-root/modamujer/mujModa"
+        },
+        {
+          "group_id": "mujMrcNicopoly",
+          "name": "Nicopoly",
+          "path": "/ecommerce-root/modamujer/mujMarcas"
+        }
+      ],
+      "promotions": [],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Beige",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678328"
+    },
+    {
+      "publication_id": "PARIS-MK54NVJEBV",
+      "marketplace": "Paris",
+      "sku": "MK54NVJEBV",
+      "title": "Blazer Largo 4 Botones Negro Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 41990.0,
+      "discount_percentage": null,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/blazer-largo-4-botones-negro-nicopoly-MK54NVJEBV.html",
+      "categories": [
+        {
+          "group_id": "mujMrcNicopoly",
+          "name": "Nicopoly",
+          "path": "/ecommerce-root/modamujer/mujMarcas"
+        },
+        {
+          "group_id": "EventoEspecialCyber",
+          "name": "Especial Cyber Day",
+          "path": "/ecommerce-root"
+        },
+        {
+          "group_id": "mujModAbrigosChaquetasParkas",
+          "name": "Blazers, Chaquetas y Abrigos",
+          "path": "/ecommerce-root/modamujer/mujModa"
+        }
+      ],
+      "promotions": [],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Negro",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678333"
+    },
+    {
+      "publication_id": "PARIS-MK0UFLNXMC",
+      "marketplace": "Paris",
+      "sku": "MK0UFLNXMC",
+      "title": "Blazer Largo 4 Botones Blanco Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 41990.0,
+      "discount_percentage": null,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/blazer-largo-4-botones-blanco-nicopoly-MK0UFLNXMC.html",
+      "categories": [
+        {
+          "group_id": "EventoEspecialCyber",
+          "name": "Especial Cyber Day",
+          "path": "/ecommerce-root"
+        },
+        {
+          "group_id": "mujModAbrigosChaquetasParkas",
+          "name": "Blazers, Chaquetas y Abrigos",
+          "path": "/ecommerce-root/modamujer/mujModa"
+        },
+        {
+          "group_id": "mujMrcNicopoly",
+          "name": "Nicopoly",
+          "path": "/ecommerce-root/modamujer/mujMarcas"
+        }
+      ],
+      "promotions": [],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Blanco",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678338"
+    },
+    {
+      "publication_id": "PARIS-MKO5Z50XMV",
+      "marketplace": "Paris",
+      "sku": "MKO5Z50XMV",
+      "title": "Blazer Manga Detalle Drapeado Rojo Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 21990.0,
+      "discount_percentage": 42.0,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/blazer-manga-detalle-drapeado-rojo-nicopoly-MKO5Z50XMV.html",
+      "categories": [
+        {
+          "group_id": "EventoEspecialCyber",
+          "name": "Especial Cyber Day",
+          "path": "/ecommerce-root"
+        },
+        {
+          "group_id": "mujMrcNicopoly",
+          "name": "Nicopoly",
+          "path": "/ecommerce-root/modamujer/mujMarcas"
+        },
+        {
+          "group_id": "mujModAbrigosChaquetasParkas",
+          "name": "Blazers, Chaquetas y Abrigos",
+          "path": "/ecommerce-root/modamujer/mujModa"
+        }
+      ],
+      "promotions": [],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Rojo",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678343"
+    },
+    {
+      "publication_id": "PARIS-MK8VIMFS48",
+      "marketplace": "Paris",
+      "sku": "MK8VIMFS48",
+      "title": "Blazer Manga Detalle Drapeado Celeste Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 22990.0,
+      "discount_percentage": 39.0,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/blazer-manga-detalle-drapeado-celeste-nicopoly-MK8VIMFS48.html",
+      "categories": [
+        {
+          "group_id": "mujMrcNicopoly",
+          "name": "Nicopoly",
+          "path": "/ecommerce-root/modamujer/mujMarcas"
+        },
+        {
+          "group_id": "EventoEspecialCyber",
+          "name": "Especial Cyber Day",
+          "path": "/ecommerce-root"
+        },
+        {
+          "group_id": "mujModAbrigosChaquetasParkas",
+          "name": "Blazers, Chaquetas y Abrigos",
+          "path": "/ecommerce-root/modamujer/mujModa"
+        }
+      ],
+      "promotions": [],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Celeste",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678348"
+    },
+    {
+      "publication_id": "PARIS-MK2ZBG4O99",
+      "marketplace": "Paris",
+      "sku": "MK2ZBG4O99",
+      "title": "Blazer Manga Detalle Drapeado Beige Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 21990.0,
+      "discount_percentage": 42.0,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/blazer-manga-detalle-drapeado-beige-nicopoly-MK2ZBG4O99.html",
+      "categories": [
+        {
+          "group_id": "EventoEspecialCyber",
+          "name": "Especial Cyber Day",
+          "path": "/ecommerce-root"
+        },
+        {
+          "group_id": "mujMrcNicopoly",
+          "name": "Nicopoly",
+          "path": "/ecommerce-root/modamujer/mujMarcas"
+        },
+        {
+          "group_id": "mujModAbrigosChaquetasParkas",
+          "name": "Blazers, Chaquetas y Abrigos",
+          "path": "/ecommerce-root/modamujer/mujModa"
+        }
+      ],
+      "promotions": [],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Beige",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678352"
+    },
+    {
+      "publication_id": "PARIS-MKOKRDQHFX",
+      "marketplace": "Paris",
+      "sku": "MKOKRDQHFX",
+      "title": "Blazer Manga Detalle Drapeado Negro Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 22990.0,
+      "discount_percentage": 39.0,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/blazer-manga-detalle-drapeado-negro-nicopoly-MKOKRDQHFX.html",
+      "categories": [
+        {
+          "group_id": "EventoEspecialCyber",
+          "name": "Especial Cyber Day",
+          "path": "/ecommerce-root"
+        },
+        {
+          "group_id": "mujMrcNicopoly",
+          "name": "Nicopoly",
+          "path": "/ecommerce-root/modamujer/mujMarcas"
+        },
+        {
+          "group_id": "mujModAbrigosChaquetasParkas",
+          "name": "Blazers, Chaquetas y Abrigos",
+          "path": "/ecommerce-root/modamujer/mujModa"
+        }
+      ],
+      "promotions": [],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Negro",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678357"
+    },
+    {
+      "publication_id": "PARIS-MK2OOJEQ3B",
+      "marketplace": "Paris",
+      "sku": "MK2OOJEQ3B",
+      "title": "Blazer Manga Detalle Drapeado Verde Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 21990.0,
+      "discount_percentage": 42.0,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/blazer-manga-detalle-drapeado-verde-nicopoly-MK2OOJEQ3B.html",
+      "categories": [
+        {
+          "group_id": "EventoEspecialCyber",
+          "name": "Especial Cyber Day",
+          "path": "/ecommerce-root"
+        },
+        {
+          "group_id": "mujMrcNicopoly",
+          "name": "Nicopoly",
+          "path": "/ecommerce-root/modamujer/mujMarcas"
+        },
+        {
+          "group_id": "mujModAbrigosChaquetasParkas",
+          "name": "Blazers, Chaquetas y Abrigos",
+          "path": "/ecommerce-root/modamujer/mujModa"
+        }
+      ],
+      "promotions": [],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Verde",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678361"
+    },
+    {
+      "publication_id": "PARIS-MKVMOT3YAO",
+      "marketplace": "Paris",
+      "sku": "MKVMOT3YAO",
+      "title": "Blazer Manga Detalle Drapeado Blanco Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 22990.0,
+      "discount_percentage": 39.0,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/blazer-manga-detalle-drapeado-blanco-nicopoly-MKVMOT3YAO.html",
+      "categories": [
+        {
+          "group_id": "mujModAbrigosChaquetasParkas",
+          "name": "Blazers, Chaquetas y Abrigos",
+          "path": "/ecommerce-root/modamujer/mujModa"
+        }
+      ],
+      "promotions": [],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Blanco",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678365"
+    },
+    {
+      "publication_id": "PARIS-MK122EA6K6",
+      "marketplace": "Paris",
+      "sku": "MK122EA6K6",
+      "title": "Blazer Manga 3/4 Ajustada Con Pliegues Rojo Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 39990.0,
+      "discount_percentage": 23.0,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/blazer-manga-34-ajustada-con-pliegues-rojo-nicopoly-MK122EA6K6.html",
+      "categories": [
+        {
+          "group_id": "EventoEspecialCyber",
+          "name": "Especial Cyber Day",
+          "path": "/ecommerce-root"
+        },
+        {
+          "group_id": "mujModAbrigosChaquetasParkas",
+          "name": "Blazers, Chaquetas y Abrigos",
+          "path": "/ecommerce-root/modamujer/mujModa"
+        },
+        {
+          "group_id": "mujMrcNicopoly",
+          "name": "Nicopoly",
+          "path": "/ecommerce-root/modamujer/mujMarcas"
+        }
+      ],
+      "promotions": [],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Rojo",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678369"
+    },
+    {
+      "publication_id": "PARIS-MKEBQKO1CA",
+      "marketplace": "Paris",
+      "sku": "MKEBQKO1CA",
+      "title": "Blazer Manga 3/4 Ajustada Con Pliegues Negro Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 49990.0,
+      "discount_percentage": null,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/blazer-manga-34-ajustada-con-pliegues-negro-nicopoly-MKEBQKO1CA.html",
+      "categories": [
+        {
+          "group_id": "mujMrcNicopoly",
+          "name": "Nicopoly",
+          "path": "/ecommerce-root/modamujer/mujMarcas"
+        },
+        {
+          "group_id": "mujModAbrigosChaquetasParkas",
+          "name": "Blazers, Chaquetas y Abrigos",
+          "path": "/ecommerce-root/modamujer/mujModa"
+        },
+        {
+          "group_id": "EventoEspecialCyber",
+          "name": "Especial Cyber Day",
+          "path": "/ecommerce-root"
+        }
+      ],
+      "promotions": [],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Negro",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678373"
+    },
+    {
+      "publication_id": "PARIS-MK7C4112YL",
+      "marketplace": "Paris",
+      "sku": "MK7C4112YL",
+      "title": "Blazer Manga 3/4 Ajustada Con Pliegues Blanco Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 49990.0,
+      "discount_percentage": null,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/blazer-manga-34-ajustada-con-pliegues-blanco-nicopoly-MK7C4112YL.html",
+      "categories": [
+        {
+          "group_id": "EventoEspecialCyber",
+          "name": "Especial Cyber Day",
+          "path": "/ecommerce-root"
+        },
+        {
+          "group_id": "mujMrcNicopoly",
+          "name": "Nicopoly",
+          "path": "/ecommerce-root/modamujer/mujMarcas"
+        },
+        {
+          "group_id": "mujModAbrigosChaquetasParkas",
+          "name": "Blazers, Chaquetas y Abrigos",
+          "path": "/ecommerce-root/modamujer/mujModa"
+        }
+      ],
+      "promotions": [],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Blanco",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678378"
+    },
+    {
+      "publication_id": "PARIS-MKV2E1XDPN",
+      "marketplace": "Paris",
+      "sku": "MKV2E1XDPN",
+      "title": "Blazer Manga 3/4 Ajustada Con Pliegues Beige Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 39990.0,
+      "discount_percentage": 23.0,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/blazer-manga-34-ajustada-con-pliegues-beige-nicopoly-MKV2E1XDPN.html",
+      "categories": [
+        {
+          "group_id": "EventoEspecialCyber",
+          "name": "Especial Cyber Day",
+          "path": "/ecommerce-root"
+        },
+        {
+          "group_id": "mujModAbrigosChaquetasParkas",
+          "name": "Blazers, Chaquetas y Abrigos",
+          "path": "/ecommerce-root/modamujer/mujModa"
+        },
+        {
+          "group_id": "mujMrcNicopoly",
+          "name": "Nicopoly",
+          "path": "/ecommerce-root/modamujer/mujMarcas"
+        }
+      ],
+      "promotions": [],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Beige",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678382"
+    },
+    {
+      "publication_id": "PARIS-MK9ZYVSFSV",
+      "marketplace": "Paris",
+      "sku": "MK9ZYVSFSV",
+      "title": "Blazer Manga 3/4 Ajustada Con Pliegues Rosado Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 53990.0,
+      "discount_percentage": null,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/blazer-manga-34-ajustada-con-pliegues-rosado-nicopoly-MK9ZYVSFSV.html",
+      "categories": [
+        {
+          "group_id": "EventoEspecialCyber",
+          "name": "Especial Cyber Day",
+          "path": "/ecommerce-root"
+        },
+        {
+          "group_id": "mujModAbrigosChaquetasParkas",
+          "name": "Blazers, Chaquetas y Abrigos",
+          "path": "/ecommerce-root/modamujer/mujModa"
+        },
+        {
+          "group_id": "mujMrcNicopoly",
+          "name": "Nicopoly",
+          "path": "/ecommerce-root/modamujer/mujMarcas"
+        }
+      ],
+      "promotions": [],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Rosado",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678386"
+    },
+    {
+      "publication_id": "PARIS-MKRVB2498C",
+      "marketplace": "Paris",
+      "sku": "MKRVB2498C",
+      "title": "Blazer Manga 3/4 Ajustada Con Pliegues Celeste Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 53990.0,
+      "discount_percentage": null,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/blazer-manga-34-ajustada-con-pliegues-celeste-nicopoly-MKRVB2498C.html",
+      "categories": [
+        {
+          "group_id": "mujModAbrigosChaquetasParkas",
+          "name": "Blazers, Chaquetas y Abrigos",
+          "path": "/ecommerce-root/modamujer/mujModa"
+        },
+        {
+          "group_id": "EventoEspecialCyber",
+          "name": "Especial Cyber Day",
+          "path": "/ecommerce-root"
+        },
+        {
+          "group_id": "mujMrcNicopoly",
+          "name": "Nicopoly",
+          "path": "/ecommerce-root/modamujer/mujMarcas"
+        }
+      ],
+      "promotions": [],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Celeste",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678391"
+    },
+    {
+      "publication_id": "PARIS-MKP79JGFEW",
+      "marketplace": "Paris",
+      "sku": "MKP79JGFEW",
+      "title": "Maxi Vestido Corte Imperio Floral Azul Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 39990.0,
+      "discount_percentage": 31.0,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/maxi-vestido-corte-imperio-floral-azul-nicopoly-MKP79JGFEW.html",
+      "categories": [
+        {
+          "group_id": "mujMrcNicopoly",
+          "name": "Nicopoly",
+          "path": "/ecommerce-root/modamujer/mujMarcas"
+        },
+        {
+          "group_id": "EventoEspecialCyber",
+          "name": "Especial Cyber Day",
+          "path": "/ecommerce-root"
+        },
+        {
+          "group_id": "mujModFiesta",
+          "name": "Fiesta",
+          "path": "/ecommerce-root/modamujer/mujColecciones"
+        }
+      ],
+      "promotions": [
+        "coleccion-JD",
+        "testing-mateo-perfumes-3",
+        "testing-mateo-perfumes",
+        "testing-mateo-perfumes-2"
+      ],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Azul",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678416"
+    },
+    {
+      "publication_id": "PARIS-MK4GHHNXOH",
+      "marketplace": "Paris",
+      "sku": "MK4GHHNXOH",
+      "title": "Maxi Vestido Corte Imperio Floral Fucsia Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 39990.0,
+      "discount_percentage": 31.0,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/maxi-vestido-corte-imperio-floral-fucsia-nicopoly-MK4GHHNXOH.html",
+      "categories": [
+        {
+          "group_id": "EventoEspecialCyber",
+          "name": "Especial Cyber Day",
+          "path": "/ecommerce-root"
+        },
+        {
+          "group_id": "mujModFiesta",
+          "name": "Fiesta",
+          "path": "/ecommerce-root/modamujer/mujColecciones"
+        },
+        {
+          "group_id": "mujMrcNicopoly",
+          "name": "Nicopoly",
+          "path": "/ecommerce-root/modamujer/mujMarcas"
+        }
+      ],
+      "promotions": [
+        "testing-mateo-perfumes-2",
+        "testing-mateo-perfumes",
+        "coleccion-JD",
+        "testing-mateo-perfumes-3"
+      ],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Fucsia",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678422"
+    },
+    {
+      "publication_id": "PARIS-MKLE7ITKW0",
+      "marketplace": "Paris",
+      "sku": "MKLE7ITKW0",
+      "title": "Pantalón Pinzas Tiro Alto Rojo Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 21990.0,
+      "discount_percentage": 31.0,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/pantalon-pinzas-tiro-alto-rojo-nicopoly-MKLE7ITKW0.html",
+      "categories": [
+        {
+          "group_id": "EventoEspecialCyber",
+          "name": "Especial Cyber Day",
+          "path": "/ecommerce-root"
+        },
+        {
+          "group_id": "mujModJeansPantalones",
+          "name": "Jeans y Pantalones",
+          "path": "/ecommerce-root/modamujer/mujModa"
+        },
+        {
+          "group_id": "mujColAnimal",
+          "name": "Colección Animal",
+          "path": "/ecommerce-root/modamujer/mujColecciones"
+        },
+        {
+          "group_id": "mujMrcNicopoly",
+          "name": "Nicopoly",
+          "path": "/ecommerce-root/modamujer/mujMarcas"
+        }
+      ],
+      "promotions": [
+        "mateo-test-700k"
+      ],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Rojo",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678436"
+    },
+    {
+      "publication_id": "PARIS-MKSS9XIWPP",
+      "marketplace": "Paris",
+      "sku": "MKSS9XIWPP",
+      "title": "Pantalón Pinzas Tiro Alto Negro Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 21990.0,
+      "discount_percentage": 31.0,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/pantalon-pinzas-tiro-alto-negro-nicopoly-MKSS9XIWPP.html",
+      "categories": [
+        {
+          "group_id": "mujModJeansPantalones",
+          "name": "Jeans y Pantalones",
+          "path": "/ecommerce-root/modamujer/mujModa"
+        },
+        {
+          "group_id": "mujMrcNicopoly",
+          "name": "Nicopoly",
+          "path": "/ecommerce-root/modamujer/mujMarcas"
+        },
+        {
+          "group_id": "EventoEspecialCyber",
+          "name": "Especial Cyber Day",
+          "path": "/ecommerce-root"
+        }
+      ],
+      "promotions": [
+        "mateo-test-700k"
+      ],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Negro",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678440"
+    },
+    {
+      "publication_id": "PARIS-MKAJPWS97Q",
+      "marketplace": "Paris",
+      "sku": "MKAJPWS97Q",
+      "title": "Pantalón Pinzas Tiro Alto Celeste Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 21990.0,
+      "discount_percentage": 31.0,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/pantalon-pinzas-tiro-alto-celeste-nicopoly-MKAJPWS97Q.html",
+      "categories": [
+        {
+          "group_id": "mujModJeansPantalones",
+          "name": "Jeans y Pantalones",
+          "path": "/ecommerce-root/modamujer/mujModa"
+        },
+        {
+          "group_id": "EventoEspecialCyber",
+          "name": "Especial Cyber Day",
+          "path": "/ecommerce-root"
+        },
+        {
+          "group_id": "mujMrcNicopoly",
+          "name": "Nicopoly",
+          "path": "/ecommerce-root/modamujer/mujMarcas"
+        }
+      ],
+      "promotions": [
+        "mateo-test-700k"
+      ],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Celeste",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678445"
+    },
+    {
+      "publication_id": "PARIS-MKFRVO2ZJV",
+      "marketplace": "Paris",
+      "sku": "MKFRVO2ZJV",
+      "title": "Pantalón Pinzas Tiro Alto Blanco Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 21990.0,
+      "discount_percentage": 31.0,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/pantalon-pinzas-tiro-alto-blanco-nicopoly-MKFRVO2ZJV.html",
+      "categories": [
+        {
+          "group_id": "mujMrcNicopoly",
+          "name": "Nicopoly",
+          "path": "/ecommerce-root/modamujer/mujMarcas"
+        },
+        {
+          "group_id": "EventoEspecialCyber",
+          "name": "Especial Cyber Day",
+          "path": "/ecommerce-root"
+        },
+        {
+          "group_id": "mujModJeansPantalones",
+          "name": "Jeans y Pantalones",
+          "path": "/ecommerce-root/modamujer/mujModa"
+        }
+      ],
+      "promotions": [
+        "mateo-test-700k"
+      ],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Blanco",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678450"
+    },
+    {
+      "publication_id": "PARIS-MKZZRW5ON3",
+      "marketplace": "Paris",
+      "sku": "MKZZRW5ON3",
+      "title": "Pantalón Pinzas Tiro Alto Khaki Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 21990.0,
+      "discount_percentage": 31.0,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/pantalon-pinzas-tiro-alto-khaki-nicopoly-MKZZRW5ON3.html",
+      "categories": [
+        {
+          "group_id": "EventoEspecialCyber",
+          "name": "Especial Cyber Day",
+          "path": "/ecommerce-root"
+        },
+        {
+          "group_id": "mujMrcNicopoly",
+          "name": "Nicopoly",
+          "path": "/ecommerce-root/modamujer/mujMarcas"
+        },
+        {
+          "group_id": "mujModJeansPantalones",
+          "name": "Jeans y Pantalones",
+          "path": "/ecommerce-root/modamujer/mujModa"
+        }
+      ],
+      "promotions": [
+        "mateo-test-700k"
+      ],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Beige",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678455"
+    },
+    {
+      "publication_id": "PARIS-MKOOTWVJJV",
+      "marketplace": "Paris",
+      "sku": "MKOOTWVJJV",
+      "title": "Gilet Lazo Ajustable Blanco Nicopoly",
+      "brand": "Nicopoly",
+      "sellers": [
+        "NICOPOLY"
+      ],
+      "is_official_seller": true,
+      "price_regular": null,
+      "price_displayed": 29990.0,
+      "discount_percentage": null,
+      "condition": "new",
+      "canonical_url": "https://staging.ccom-stg.paris.cl/gilet-lazo-ajustable-blanco-nicopoly-MKOOTWVJJV.html",
+      "categories": [
+        {
+          "group_id": "EventoEspecialCyber",
+          "name": "Especial Cyber Day",
+          "path": "/ecommerce-root"
+        },
+        {
+          "group_id": "mujMrcNicopoly",
+          "name": "Nicopoly",
+          "path": "/ecommerce-root/modamujer/mujMarcas"
+        },
+        {
+          "group_id": "mujModAbrigosChaquetasParkas",
+          "name": "Blazers, Chaquetas y Abrigos",
+          "path": "/ecommerce-root/modamujer/mujModa"
+        }
+      ],
+      "promotions": [],
+      "facets": {
+        "tipoProducto": null,
+        "color": "Blanco",
+        "material": "Poliéster",
+        "gender": "Mujeres"
+      },
+      "observed_at": "2026-10-15T18:46:49.678476"
+    }
+  ],
+  "commercial_entities": [
+    {
+      "marketplace": "Paris",
+      "group_id": "mujModAbrigosChaquetasParkas",
+      "display_name": "Blazers, Chaquetas y Abrigos",
+      "entity_type": "subcategory",
+      "parent_id": "mujModa",
+      "hierarchical_path": "/ecommerce-root/modamujer/mujModa",
+      "official_url": "https://www.paris.cl/ecommerce-root/modamujer/mujModa/mujModAbrigosChaquetasParkas/",
+      "reported_total": 0,
+      "associated_publications": [
+        "MKYBS8MTEG",
+        "MK8FHP5M0D",
+        "MK9R9LHQI5",
+        "MK54NVJEBV",
+        "MK0UFLNXMC",
+        "MKO5Z50XMV",
+        "MK8VIMFS48",
+        "MK2ZBG4O99",
+        "MKOKRDQHFX",
+        "MK2OOJEQ3B",
+        "MKVMOT3YAO",
+        "MK122EA6K6",
+        "MKEBQKO1CA",
+        "MK7C4112YL",
+        "MKV2E1XDPN",
+        "MK9ZYVSFSV",
+        "MKRVB2498C",
+        "MKOOTWVJJV"
+      ],
+      "acquisition_mechanism": "CONSTRUCTOR_CDP_PUBLIC_API",
+      "evidence_status": "VERIFIED_PUBLIC_TRAFFIC",
+      "updated_at": "2026-10-15T18:46:49.678274"
+    },
+    {
+      "marketplace": "Paris",
+      "group_id": "EventoEspecialCyber",
+      "display_name": "Especial Cyber Day",
+      "entity_type": "promotion",
+      "parent_id": "ecommerce-root",
+      "hierarchical_path": "/ecommerce-root",
+      "official_url": "https://www.paris.cl/ecommerce-root/EventoEspecialCyber/",
+      "reported_total": 0,
+      "associated_publications": [
+        "MKYBS8MTEG",
+        "MK8FHP5M0D",
+        "MK9R9LHQI5",
+        "MK54NVJEBV",
+        "MK0UFLNXMC",
+        "MKO5Z50XMV",
+        "MK8VIMFS48",
+        "MK2ZBG4O99",
+        "MKOKRDQHFX",
+        "MK2OOJEQ3B",
+        "MK122EA6K6",
+        "MKEBQKO1CA",
+        "MK7C4112YL",
+        "MKV2E1XDPN",
+        "MK9ZYVSFSV",
+        "MKRVB2498C",
+        "MKP79JGFEW",
+        "MK4GHHNXOH",
+        "MKLE7ITKW0",
+        "MKSS9XIWPP",
+        "MKAJPWS97Q",
+        "MKFRVO2ZJV",
+        "MKZZRW5ON3",
+        "MKOOTWVJJV"
+      ],
+      "acquisition_mechanism": "CONSTRUCTOR_CDP_PUBLIC_API",
+      "evidence_status": "VERIFIED_PUBLIC_TRAFFIC",
+      "updated_at": "2026-10-15T18:46:49.678293"
+    },
+    {
+      "marketplace": "Paris",
+      "group_id": "mujMrcNicopoly",
+      "display_name": "Nicopoly",
+      "entity_type": "brand",
+      "parent_id": "mujMarcas",
+      "hierarchical_path": "/ecommerce-root/modamujer/mujMarcas",
+      "official_url": "https://www.paris.cl/ecommerce-root/modamujer/mujMarcas/mujMrcNicopoly/",
+      "reported_total": 0,
+      "associated_publications": [
+        "MKYBS8MTEG",
+        "MK8FHP5M0D",
+        "MK9R9LHQI5",
+        "MK54NVJEBV",
+        "MK0UFLNXMC",
+        "MKO5Z50XMV",
+        "MK8VIMFS48",
+        "MK2ZBG4O99",
+        "MKOKRDQHFX",
+        "MK2OOJEQ3B",
+        "MK122EA6K6",
+        "MKEBQKO1CA",
+        "MK7C4112YL",
+        "MKV2E1XDPN",
+        "MK9ZYVSFSV",
+        "MKRVB2498C",
+        "MKP79JGFEW",
+        "MK4GHHNXOH",
+        "MKLE7ITKW0",
+        "MKSS9XIWPP",
+        "MKAJPWS97Q",
+        "MKFRVO2ZJV",
+        "MKZZRW5ON3",
+        "MKOOTWVJJV"
+      ],
+      "acquisition_mechanism": "CONSTRUCTOR_CDP_PUBLIC_API",
+      "evidence_status": "VERIFIED_PUBLIC_TRAFFIC",
+      "updated_at": "2026-10-15T18:46:49.678297"
+    },
+    {
+      "marketplace": "Paris",
+      "group_id": "mujModFiesta",
+      "display_name": "Fiesta",
+      "entity_type": "subcategory",
+      "parent_id": "mujColecciones",
+      "hierarchical_path": "/ecommerce-root/modamujer/mujColecciones",
+      "official_url": "https://www.paris.cl/ecommerce-root/modamujer/mujColecciones/mujModFiesta/",
+      "reported_total": 0,
+      "associated_publications": [
+        "MKP79JGFEW",
+        "MK4GHHNXOH"
+      ],
+      "acquisition_mechanism": "CONSTRUCTOR_CDP_PUBLIC_API",
+      "evidence_status": "VERIFIED_PUBLIC_TRAFFIC",
+      "updated_at": "2026-10-15T18:46:49.678397"
+    },
+    {
+      "marketplace": "Paris",
+      "group_id": "coleccion-JD",
+      "display_name": "Coleccion Jd",
+      "entity_type": "collection",
+      "parent_id": null,
+      "hierarchical_path": "/promociones/coleccion-JD",
+      "official_url": "https://www.paris.cl/promociones/coleccion-JD/",
+      "reported_total": 0,
+      "associated_publications": [
+        "MKP79JGFEW",
+        "MK4GHHNXOH"
+      ],
+      "acquisition_mechanism": "CONSTRUCTOR_CDP_PUBLIC_API",
+      "evidence_status": "VERIFIED_PUBLIC_TRAFFIC",
+      "updated_at": "2026-10-15T18:46:49.678405"
+    },
+    {
+      "marketplace": "Paris",
+      "group_id": "testing-mateo-perfumes-3",
+      "display_name": "Testing Mateo Perfumes 3",
+      "entity_type": "collection",
+      "parent_id": null,
+      "hierarchical_path": "/promociones/testing-mateo-perfumes-3",
+      "official_url": "https://www.paris.cl/promociones/testing-mateo-perfumes-3/",
+      "reported_total": 0,
+      "associated_publications": [
+        "MKP79JGFEW",
+        "MK4GHHNXOH"
+      ],
+      "acquisition_mechanism": "CONSTRUCTOR_CDP_PUBLIC_API",
+      "evidence_status": "VERIFIED_PUBLIC_TRAFFIC",
+      "updated_at": "2026-10-15T18:46:49.678408"
+    },
+    {
+      "marketplace": "Paris",
+      "group_id": "testing-mateo-perfumes",
+      "display_name": "Testing Mateo Perfumes",
+      "entity_type": "collection",
+      "parent_id": null,
+      "hierarchical_path": "/promociones/testing-mateo-perfumes",
+      "official_url": "https://www.paris.cl/promociones/testing-mateo-perfumes/",
+      "reported_total": 0,
+      "associated_publications": [
+        "MKP79JGFEW",
+        "MK4GHHNXOH"
+      ],
+      "acquisition_mechanism": "CONSTRUCTOR_CDP_PUBLIC_API",
+      "evidence_status": "VERIFIED_PUBLIC_TRAFFIC",
+      "updated_at": "2026-10-15T18:46:49.678411"
+    },
+    {
+      "marketplace": "Paris",
+      "group_id": "testing-mateo-perfumes-2",
+      "display_name": "Testing Mateo Perfumes 2",
+      "entity_type": "collection",
+      "parent_id": null,
+      "hierarchical_path": "/promociones/testing-mateo-perfumes-2",
+      "official_url": "https://www.paris.cl/promociones/testing-mateo-perfumes-2/",
+      "reported_total": 0,
+      "associated_publications": [
+        "MKP79JGFEW",
+        "MK4GHHNXOH"
+      ],
+      "acquisition_mechanism": "CONSTRUCTOR_CDP_PUBLIC_API",
+      "evidence_status": "VERIFIED_PUBLIC_TRAFFIC",
+      "updated_at": "2026-10-15T18:46:49.678413"
+    },
+    {
+      "marketplace": "Paris",
+      "group_id": "mujModJeansPantalones",
+      "display_name": "Jeans y Pantalones",
+      "entity_type": "subcategory",
+      "parent_id": "mujModa",
+      "hierarchical_path": "/ecommerce-root/modamujer/mujModa",
+      "official_url": "https://www.paris.cl/ecommerce-root/modamujer/mujModa/mujModJeansPantalones/",
+      "reported_total": 0,
+      "associated_publications": [
+        "MKLE7ITKW0",
+        "MKSS9XIWPP",
+        "MKAJPWS97Q",
+        "MKFRVO2ZJV",
+        "MKZZRW5ON3"
+      ],
+      "acquisition_mechanism": "CONSTRUCTOR_CDP_PUBLIC_API",
+      "evidence_status": "VERIFIED_PUBLIC_TRAFFIC",
+      "updated_at": "2026-10-15T18:46:49.678427"
+    },
+    {
+      "marketplace": "Paris",
+      "group_id": "mujColAnimal",
+      "display_name": "Colección Animal",
+      "entity_type": "subcategory",
+      "parent_id": "mujColecciones",
+      "hierarchical_path": "/ecommerce-root/modamujer/mujColecciones",
+      "official_url": "https://www.paris.cl/ecommerce-root/modamujer/mujColecciones/mujColAnimal/",
+      "reported_total": 0,
+      "associated_publications": [
+        "MKLE7ITKW0"
+      ],
+      "acquisition_mechanism": "CONSTRUCTOR_CDP_PUBLIC_API",
+      "evidence_status": "VERIFIED_PUBLIC_TRAFFIC",
+      "updated_at": "2026-10-15T18:46:49.678430"
+    },
+    {
+      "marketplace": "Paris",
+      "group_id": "mateo-test-700k",
+      "display_name": "Mateo Test 700K",
+      "entity_type": "collection",
+      "parent_id": null,
+      "hierarchical_path": "/promociones/mateo-test-700k",
+      "official_url": "https://www.paris.cl/promociones/mateo-test-700k/",
+      "reported_total": 0,
+      "associated_publications": [
+        "MKLE7ITKW0",
+        "MKSS9XIWPP",
+        "MKAJPWS97Q",
+        "MKFRVO2ZJV",
+        "MKZZRW5ON3"
+      ],
+      "acquisition_mechanism": "CONSTRUCTOR_CDP_PUBLIC_API",
+      "evidence_status": "VERIFIED_PUBLIC_TRAFFIC",
+      "updated_at": "2026-10-15T18:46:49.678433"
+    }
+  ]
+}

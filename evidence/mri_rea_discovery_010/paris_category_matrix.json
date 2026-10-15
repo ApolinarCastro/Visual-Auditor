@@ -1,0 +1,83 @@
+[
+  {
+    "group_id": "mujModChalecosSweaters",
+    "group_name": "Sweaters, Chalecos y Tejidos",
+    "total_market": 10000,
+    "total_brand": 774,
+    "total_official_seller": 740,
+    "other_sellers_brand": 34,
+    "hierarchical_path": "/ecommerce-root/modamujer/mujModa"
+  },
+  {
+    "group_id": "mujModJeansPantalones",
+    "group_name": "Jeans y Pantalones",
+    "total_market": 10000,
+    "total_brand": 429,
+    "total_official_seller": 379,
+    "other_sellers_brand": 50,
+    "hierarchical_path": "/ecommerce-root/modamujer/mujModa"
+  },
+  {
+    "group_id": "mujModAbrigosChaquetasParkas",
+    "group_name": "Blazers, Chaquetas y Abrigos",
+    "total_market": 10000,
+    "total_brand": 987,
+    "total_official_seller": 950,
+    "other_sellers_brand": 37,
+    "hierarchical_path": "/ecommerce-root/modamujer/mujModa"
+  },
+  {
+    "group_id": "mujModBlusasPoleras",
+    "group_name": "Poleras y Blusas",
+    "total_market": 10000,
+    "total_brand": 1482,
+    "total_official_seller": 1299,
+    "other_sellers_brand": 183,
+    "hierarchical_path": "/ecommerce-root/modamujer/mujModa"
+  },
+  {
+    "group_id": "mujModVestidosFaldas",
+    "group_name": "Vestidos y Faldas",
+    "total_market": 10000,
+    "total_brand": 631,
+    "total_official_seller": 482,
+    "other_sellers_brand": 149,
+    "hierarchical_path": "/ecommerce-root/modamujer/mujModa"
+  },
+  {
+    "group_id": "mujModShorts",
+    "group_name": "Shorts",
+    "total_market": 2612,
+    "total_brand": 55,
+    "total_official_seller": 43,
+    "other_sellers_brand": 12,
+    "hierarchical_path": "/ecommerce-root/modamujer/mujModa"
+  },
+  {
+    "group_id": "mujAccBufandasPanuelos",
+    "group_name": "Pañuelos y Bufandas",
+    "total_market": 4441,
+    "total_brand": 46,
+    "total_official_seller": 46,
+    "other_sellers_brand": 0,
+    "hierarchical_path": "/ecommerce-root/modamujer/mujAccesorios"
+  },
+  {
+    "group_id": "mujModEnteritosJardineras",
+    "group_name": "Enteritos y Jardineras",
+    "total_market": 1438,
+    "total_brand": 169,
+    "total_official_seller": 156,
+    "other_sellers_brand": 13,
+    "hierarchical_path": "/ecommerce-root/modamujer/mujModa"
+  },
+  {
+    "group_id": "mujModBuzosJoggersCalzas",
+    "group_name": "Buzos, Joggers y Calzas",
+    "total_market": 1449,
+    "total_brand": 59,
+    "total_official_seller": 59,
+    "other_sellers_brand": 0,
+    "hierarchical_path": "/ecommerce-root/modamujer/mujModa"
+  }
+]

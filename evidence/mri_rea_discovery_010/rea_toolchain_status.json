@@ -1,0 +1,15 @@
+{
+  "rea_agents_npm_version": "6.5.0",
+  "node_version": "v24.13.0",
+  "npm_version": "11.6.2",
+  "mcp_server": "npx rea-agents mcp",
+  "mcp_status": "READY_AVAILABLE",
+  "tools_supported": [
+    "inspect-web-page",
+    "inspect-web-network-capture",
+    "recover-javascript-sources",
+    "observe-web-session",
+    "mcp"
+  ],
+  "evidence_source": "REA reverse engineering pass over Paris.cl Next.js SSR bundle & Constructor.io beacon"
+}

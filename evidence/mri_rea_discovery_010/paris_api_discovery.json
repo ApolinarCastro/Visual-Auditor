@@ -1,0 +1,40 @@
+{
+  "marketplace": "Paris.cl",
+  "search_engine": "Constructor.io AI Search & Discovery",
+  "engine_version": "beacon v2.1481.2 / cencosud_0BmS-e.js",
+  "api_endpoints": {
+    "search": "https://ac.cnstrc.com/search/{query}",
+    "browse": "https://ac.cnstrc.com/browse/{facet_name}/{facet_value}",
+    "autocomplete": "https://ac.cnstrc.com/autocomplete/{query}"
+  },
+  "discovered_client_keys": [
+    {
+      "key": "key_6PvQHDnR0zdWgEPh",
+      "scope": "paris_production_full_catalog",
+      "status": "ACTIVE_VERIFIED"
+    },
+    {
+      "key": "key_j7ajk8vvD4T7oNEM",
+      "scope": "paris_primary_cencosud_search",
+      "status": "ACTIVE_VERIFIED"
+    }
+  ],
+  "request_parameters": {
+    "pagination": [
+      "page",
+      "num_results_per_page"
+    ],
+    "filtering": "filters[{facet_name}]={facet_value}",
+    "grouping": "filters[group_ids]={group_id}",
+    "sorting": [
+      "sort_by",
+      "sort_order"
+    ]
+  },
+  "query_coverage": {
+    "public_access": true,
+    "requires_login": false,
+    "waf_bypass_needed": false,
+    "captcha_blocked": false
+  }
+}
