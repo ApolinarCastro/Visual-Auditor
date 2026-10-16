@@ -388,12 +388,54 @@ def fetch_run_publications(run_id: str) -> List[Dict[str, Any]]:
         run_row = cur.execute("SELECT terminal_state FROM mri_runs WHERE run_id = ?", (run_id,)).fetchone()
         run_terminal_state = run_row["terminal_state"] if run_row and "terminal_state" in run_row.keys() else None
 
+        # Build run-scoped category memberships map for publications in this run
+        has_hist_pub_cat = cur.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='mri_historical_publication_categories'"
+        ).fetchone()
+
+        cat_lookup_query = """
+            SELECT pc.publication_id, pc.category_id, cat.category_name
+            FROM mri_publication_categories pc
+            INNER JOIN mri_publications p ON pc.publication_id = p.publication_id AND p.run_id = ?
+            LEFT JOIN mri_categories cat ON pc.category_id = cat.category_id
+            WHERE pc.status = 'ACTIVE'
+        """
+        cat_rows = cur.execute(cat_lookup_query, (run_id,)).fetchall()
+        
+        hist_cat_rows = []
+        if has_hist_pub_cat:
+            hist_cat_query = """
+                SELECT hpc.publication_id, hpc.category_id, cat.category_name
+                FROM mri_historical_publication_categories hpc
+                LEFT JOIN mri_categories cat ON hpc.category_id = cat.category_id
+                WHERE hpc.run_id = ?
+            """
+            hist_cat_rows = cur.execute(hist_cat_query, (run_id,)).fetchall()
+
+        # Combine categories per publication
+        run_categories_by_pub: Dict[str, List[Dict[str, str]]] = {}
+        for row_c in list(cat_rows) + list(hist_cat_rows):
+            p_id = row_c["publication_id"]
+            if p_id not in run_categories_by_pub:
+                run_categories_by_pub[p_id] = []
+            c_id = row_c["category_id"]
+            c_name = row_c["category_name"] or c_id
+            # Clean PARIS_ prefix if present for group_id
+            raw_gid = c_id.removeprefix("PARIS_") if c_id.startswith("PARIS_") else c_id
+            if not any(existing_c["group_id"] == raw_gid for existing_c in run_categories_by_pub[p_id]):
+                run_categories_by_pub[p_id].append({
+                    "group_id": raw_gid,
+                    "name": c_name,
+                    "category_id": c_id
+                })
+
         rows = cur.execute(query, (run_id, run_id)).fetchall()
         
         results = []
         for r in rows:
             mkt = r["marketplace"] or "UNKNOWN"
             sku = r["marketplace_product_id"] or r["publication_id"] or "UNKNOWN"
+            pub_id = r["publication_id"]
             url = r["canonical_url"] or ""
             title = r["product_title"]
             if not title or title.strip() == "" or "\ufffd" in title or "?" in title:
@@ -475,12 +517,15 @@ def fetch_run_publications(run_id: str) -> List[Dict[str, Any]]:
                 else:
                     exp_cat = "NO_VERIFICADO"
 
-            # Observed category: prioritize explicit column, then joined category table
-            obs_cat = r["category_observed"] or r["legacy_cat_name"] or "NO_VERIFICADO"
+            # Observed category: prioritize explicit column, then run-scoped joined category
+            pub_run_cats = run_categories_by_pub.get(pub_id, [])
+            primary_run_cat_name = pub_run_cats[0]["name"] if pub_run_cats else None
+
+            obs_cat = r["category_observed"] or primary_run_cat_name or r["legacy_cat_name"] or "NO_VERIFICADO"
             if obs_cat in ("NONE", "CATEGORY_UNKNOWN", ""):
                 obs_cat = "NO_VERIFICADO"
                 
-            cat_source = r["category_source"] or ("PUBLIC_CHANNEL_BREADCRUMBS" if r["legacy_cat_name"] else "NO_VERIFICADO")
+            cat_source = r["category_source"] or ("PUBLIC_CHANNEL_BREADCRUMBS" if primary_run_cat_name or r["legacy_cat_name"] else "NO_VERIFICADO")
             
             # Acquisition status
             acq_st = r["acquisition_status"] or ("OBSERVED" if r["status"] in ("OBSERVED", "LIVE_OBSERVATION_CONFIRMED") else r["status"])
@@ -539,6 +584,17 @@ def fetch_run_publications(run_id: str) -> List[Dict[str, Any]]:
                 ev_list.append(f"Variantes conocidas en catálogo: {', '.join(candidate_variants)}")
             if attrs:
                 ev_list.append(f"Atributos públicos: {attrs}")
+
+            # Primary HAR Provenance formatting in evidence
+            raw_src = r["raw_source_id"] or ""
+            har_sha = attrs.get("source_file_sha256") if isinstance(attrs, dict) else None
+            har_path = attrs.get("source_file_path") if isinstance(attrs, dict) else None
+            har_dt = attrs.get("source_captured_at") if isinstance(attrs, dict) else None
+
+            if har_sha and not raw_src.startswith("PROVENANCE_INCOMPLETE"):
+                ev_list.append(f"HAR SHA-256: {har_sha} | Ruta: {har_path or 'paris_search_capture.har'} | Captura: {har_dt or 'DECLARADA'}")
+            elif raw_src.startswith("PROVENANCE_INCOMPLETE"):
+                ev_list.append(f"Procedencia HAR: PROVENANCE_INCOMPLETE ({raw_src})")
                 
             motivo = f"Publicación observada en canal comercial {mkt}. {cat_reason}"
             
@@ -575,6 +631,7 @@ def fetch_run_publications(run_id: str) -> List[Dict[str, Any]]:
                 "expected_category": exp_cat,
                 "real_subcategory": "NO_VERIFICADO",
                 "category_source": cat_source,
+                "categories": pub_run_cats,
                 "decision": cat_dec,
                 "source": "PAGINATED_ADAPTER_HARVEST",
                 "observed_sku": sku

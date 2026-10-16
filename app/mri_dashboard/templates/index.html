@@ -891,9 +891,9 @@
                     <div class="detail-label">Procedencia HAR (Primaria):</div>
                     <div class="detail-value" style="font-family:monospace; font-size:0.83rem">
                         ${(() => {
-                            const evMatch = (r.evidence || []).find(e => typeof e === 'string' && e.includes('HAR SHA-256:'));
+                            const evMatch = (r.evidence || []).find(e => typeof e === 'string' && (e.includes('HAR SHA-256:') || e.includes('Procedencia HAR:') || e.includes('PROVENANCE_INCOMPLETE')));
                             if (evMatch) return evMatch;
-                            return 'EVIDENCIA PRIMARIA: CONTROLLED_REPLAY (clean_checkout/evidence/mri_rea_discovery_010/paris_search_capture.har | SHA256: 1ed56cc6a9453d6b... | Captura: 2026-10-15T18:55:57Z)';
+                            return 'PROVENANCE_INCOMPLETE (Sin correspondencia verificada en captura HAR)';
                         })()}
                     </div>
                 </div>
