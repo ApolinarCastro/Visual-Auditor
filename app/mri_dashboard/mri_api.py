@@ -370,6 +370,7 @@ def fetch_run_publications(run_id: str) -> List[Dict[str, Any]]:
             LEFT JOIN (
                 SELECT publication_id, MIN(category_id) as category_id
                 FROM mri_publication_categories
+                WHERE status = 'ACTIVE'
                 GROUP BY publication_id
             ) pc ON pub.publication_id = pc.publication_id
             LEFT JOIN mri_categories cat ON pc.category_id = cat.category_id
@@ -803,20 +804,33 @@ async def get_rea_paris_data():
         engine = REAParisEngine()
         brand_summary = engine.get_brand_summary("Nicopoly")
         seller_summary = engine.get_seller_summary("NICOPOLY")
-        tot_b = brand_summary.get("total_brand_results", 0)
-        tot_s = seller_summary.get("total_seller_results", 0)
-        
-        # Do not convert empty response to operational
-        if tot_b == 0 and tot_s == 0:
-            return JSONResponse(content={
-                "marketplace": "Paris",
-                "brand": "Nicopoly",
-                "total_brand": 0,
-                "total_official_seller": 0,
-                "other_sellers_total": 0,
-                "status": "NO_EVIDENCE_RECORDED",
-                "reason": "Sin datos persistidos en almacenamiento ni respuesta de red válida"
-            })
+        tot_b = brand_summary.get("total_brand_results")
+        tot_s = seller_summary.get("total_seller_results")
+
+        # Explicitly represent UNKNOWN/null when source does not deliver verifiable results
+        if tot_b is None or tot_s is None or (tot_b == 0 and tot_s == 0 and not brand_summary.get("product_types")):
+            # If both are verified numbers (e.g., explicit 0), distinguish from None/unverifiable
+            if tot_b is None and tot_s is None:
+                return JSONResponse(content={
+                    "marketplace": "Paris",
+                    "brand": "Nicopoly",
+                    "total_brand": None,
+                    "total_official_seller": None,
+                    "other_sellers_total": None,
+                    "status": "NO_EVIDENCE_RECORDED",
+                    "reason": "Sin datos persistidos en almacenamiento ni respuesta de red válida"
+                })
+            elif tot_b == 0 and tot_s == 0:
+                # Valid response certifying 0 results
+                return JSONResponse(content={
+                    "marketplace": "Paris",
+                    "brand": "Nicopoly",
+                    "total_brand": 0,
+                    "total_official_seller": 0,
+                    "other_sellers_total": 0,
+                    "status": "NO_EVIDENCE_RECORDED",
+                    "reason": "Respuesta válida certifica cero resultados comerciales"
+                })
 
         return JSONResponse(content={
             "marketplace": "Paris",
@@ -824,7 +838,7 @@ async def get_rea_paris_data():
             "total_brand": tot_b,
             "official_seller": "NICOPOLY",
             "total_official_seller": tot_s,
-            "other_sellers_total": max(0, tot_b - tot_s),
+            "other_sellers_total": max(0, tot_b - tot_s) if (tot_b is not None and tot_s is not None) else None,
             "facets": brand_summary.get("facets_available", []),
             "product_types": brand_summary.get("product_types", []),
             "storage_source": "LIVE_REA_ENGINE",
@@ -832,13 +846,13 @@ async def get_rea_paris_data():
             "status": "OPERATIONAL"
         })
     except Exception:
-        # When offline and no records yet, return clear NO_EVIDENCE state instead of 500 error
+        # When offline and no records yet, return clear NO_EVIDENCE state with null totals instead of fake zeros
         return JSONResponse(content={
             "marketplace": "Paris",
             "brand": "Nicopoly",
-            "total_brand": 0,
-            "total_official_seller": 0,
-            "other_sellers_total": 0,
+            "total_brand": None,
+            "total_official_seller": None,
+            "other_sellers_total": None,
             "status": "OFFLINE_NO_PERSISTED_RECORDS",
             "message": "No hay registros persistidos de Paris en almacenamiento y la red está aislada."
         })

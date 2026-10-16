@@ -18,6 +18,9 @@ from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+import hashlib
+import pathlib
+
 logger = logging.getLogger(__name__)
 
 # Verified public Constructor.io production configuration for Paris.cl
@@ -27,6 +30,39 @@ DEFAULT_USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 )
+
+
+def _resolve_har_provenance(candidate_paths: Optional[List[str]] = None) -> Optional[Dict[str, Any]]:
+    """
+    Verifies primary HAR evidence integrity via SHA-256 recalculation.
+    Never invents metadata if evidence is missing or corrupted.
+    """
+    search_paths = candidate_paths or [
+        "evidence/mri_rea_discovery_010/paris_search_capture.har",
+        "clean_checkout/evidence/mri_rea_discovery_010/paris_search_capture.har",
+        "../evidence/mri_rea_discovery_010/paris_search_capture.har",
+    ]
+    for p_str in search_paths:
+        try:
+            p = pathlib.Path(p_str).resolve()
+            if p.exists() and p.is_file():
+                raw_bytes = p.read_bytes()
+                sha = hashlib.sha256(raw_bytes).hexdigest()
+                har_data = json.loads(raw_bytes.decode("utf-8"))
+                entry = har_data.get("log", {}).get("entries", [{}])[0]
+                started_dt = entry.get("startedDateTime")
+                creator = har_data.get("log", {}).get("creator", {}).get("name")
+                src_url = entry.get("request", {}).get("url")
+                return {
+                    "path": str(p),
+                    "sha256": sha,
+                    "captured_at_declared": started_dt,
+                    "producer": creator,
+                    "source_url": src_url,
+                }
+        except Exception as e:
+            logger.debug(f"Error checking HAR candidate {p_str}: {e}")
+    return None
 
 
 @dataclass
@@ -63,6 +99,11 @@ class NormalizedPublication:
     promotions: List[str] = field(default_factory=list)
     facets: Dict[str, Any] = field(default_factory=dict)
     observed_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    evidence_type: str = "CONTROLLED_REPLAY"
+    raw_source_id: Optional[str] = None
+    source_file_path: Optional[str] = None
+    source_file_sha256: Optional[str] = None
+    source_captured_at: Optional[str] = None
 
 
 class REAParisEngine:
@@ -128,7 +169,7 @@ class REAParisEngine:
         """Retrieve total brand counts, active facets, and groups."""
         res = self.browse("brand", brand, page=1, num_results=1)
         resp_data = res.get("response", {})
-        total_brand = resp_data.get("total_num_results", 0)
+        total_brand = resp_data.get("total_num_results")
 
         facets_list = resp_data.get("facets", [])
         facets_map = {f.get("name"): f for f in facets_list}
@@ -152,7 +193,7 @@ class REAParisEngine:
         """Retrieve total seller publications and category participation."""
         res = self.browse("sellers", seller, page=1, num_results=1)
         resp_data = res.get("response", {})
-        total_seller = resp_data.get("total_num_results", 0)
+        total_seller = resp_data.get("total_num_results")
 
         facets_list = resp_data.get("facets", [])
         facets_map = {f.get("name"): f for f in facets_list}
@@ -343,6 +384,19 @@ class REAParisEngine:
                             "gender": idata.get("genero"),
                         },
                     )
+                    # Bind verifiable primary provenance from verified HAR evidence
+                    har_prov = _resolve_har_provenance()
+                    if har_prov:
+                        pub.evidence_type = "CONTROLLED_REPLAY"
+                        pub.source_file_path = har_prov["path"]
+                        pub.source_file_sha256 = har_prov["sha256"]
+                        pub.source_captured_at = har_prov["captured_at_declared"]
+                        pub.raw_source_id = f"HAR-REPLAY-SHA256:{har_prov['sha256'][:16]}:{sku}"
+                        if har_prov.get("captured_at_declared"):
+                            pub.observed_at = har_prov["captured_at_declared"]
+                    else:
+                        pub.raw_source_id = f"PROVENANCE_INCOMPLETE:{sku}"
+
                     publications_by_sku[sku] = pub
 
                 if len(publications_by_sku) >= max_items:
@@ -472,10 +526,56 @@ class REAParisEngine:
                     existing[10], existing[11], existing[12], existing[13], existing[14], existing[15],
                     existing[16], existing[17], existing[18], existing[19], existing[20]
                 ))
+                # F2: Archive previous run category links so stale categories do not stay ACTIVE for the new run
+                has_hist_pub_cat = cur.execute(
+                    "SELECT 1 FROM sqlite_master WHERE type='table' AND name='mri_historical_publication_categories'"
+                ).fetchone()
+                if has_hist_pub_cat:
+                    old_links = cur.execute(
+                        "SELECT category_id, observed_at FROM mri_publication_categories WHERE publication_id = ?",
+                        (pub.publication_id,)
+                    ).fetchall()
+                    for o_cat, o_obs in old_links:
+                        cur.execute("""
+                            INSERT OR REPLACE INTO mri_historical_publication_categories (
+                                history_id, publication_id, category_id, run_id, observed_at
+                            ) VALUES (?, ?, ?, ?, ?)
+                        """, (f"hist_{existing[7]}_{pub.publication_id}_{o_cat}", pub.publication_id, o_cat, existing[7], o_obs))
+                # Delete old active links for this publication to enforce run isolation
+                cur.execute("DELETE FROM mri_publication_categories WHERE publication_id = ?", (pub.publication_id,))
 
             # Preserve real provenance: REPLAY / FIXTURE vs LIVE_OBSERVATION
             ev_type = getattr(pub, "evidence_type", None) or "CONTROLLED_REPLAY"
-            raw_src = getattr(pub, "raw_source_id", None) or f"HAR-REPLAY-{pub.sku}"
+            raw_src = getattr(pub, "raw_source_id", None)
+            if not raw_src:
+                har_prov = _resolve_har_provenance()
+                if har_prov:
+                    raw_src = f"HAR-REPLAY-SHA256:{har_prov['sha256'][:16]}:{pub.sku}"
+                    if not getattr(pub, "source_file_path", None):
+                        pub.source_file_path = har_prov["path"]
+                        pub.source_file_sha256 = har_prov["sha256"]
+                        pub.source_captured_at = har_prov["captured_at_declared"]
+                else:
+                    raw_src = f"PROVENANCE_INCOMPLETE:{pub.sku}"
+
+            # If publication has explicit source_captured_at, preserve it in attributes & observed_at
+            pub_attrs_dict = {
+                "sellers": pub.sellers,
+                "is_official_seller": pub.is_official_seller,
+                "condition": pub.condition,
+                "price_regular": pub.price_regular,
+                "price_displayed": pub.price_displayed,
+                "promotions": pub.promotions,
+                "facets": pub.facets,
+            }
+            if getattr(pub, "source_file_path", None):
+                pub_attrs_dict["source_file_path"] = pub.source_file_path
+            if getattr(pub, "source_file_sha256", None):
+                pub_attrs_dict["source_file_sha256"] = pub.source_file_sha256
+            if getattr(pub, "source_captured_at", None):
+                pub_attrs_dict["source_captured_at"] = pub.source_captured_at
+
+            comm_attrs = json.dumps(pub_attrs_dict, ensure_ascii=False)
 
             cur.execute("""
                 INSERT OR REPLACE INTO mri_publications (
