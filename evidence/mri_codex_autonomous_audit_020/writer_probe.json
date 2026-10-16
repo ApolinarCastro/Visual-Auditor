@@ -1,0 +1,7 @@
+{
+  "production_target_reached_sqlite_connect_without_guard": [
+    "C:\\Users\\ASUS Zenbook\\Documents\\Visibility Auditor\\data\\sqlite\\visibility.db"
+  ],
+  "actual_sqlite_io": false,
+  "method": "exact AST prefix through first with; sqlite connect replaced by raising sentinel"
+}
