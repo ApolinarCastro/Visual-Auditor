@@ -292,6 +292,7 @@
         <div class="nav-item active" id="tab-ops" onclick="switchTab('ops')">A. Operaciones y Resultados</div>
         <div class="nav-item" id="tab-hist" onclick="switchTab('hist')">B. Historial de Ejecuciones</div>
         <div class="nav-item" id="tab-learn" onclick="switchTab('learn')">C. Aprendizaje y Experiencia</div>
+        <div class="nav-item" id="tab-multi" onclick="switchTab('multi')">D. Inteligencia Multimarketplace</div>
     </aside>
     
     <main>
@@ -502,6 +503,29 @@
                 <h3>No hay registros de experiencia disponibles</h3>
             </div>
         </div>
+
+        <!-- D. Inteligencia Multimarketplace -->
+        <div id="multi" class="panel">
+            <h2>D. Inteligencia Multimarketplace Nicopoly</h2>
+            <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom: 20px;">
+                Consolidación multimarketplace en vivo: Paris (Constructor.io REA), Falabella (Next.js SSR), Mercado Libre (Taxonomía y Tienda Oficial), y Ripley (Facets).
+            </p>
+
+            <div class="controls">
+                <select id="multiMktSelect" onchange="renderMultiMarketplaceView()">
+                    <option value="ALL">Vista Comparativa Estratégica (4 Marketplaces)</option>
+                    <option value="Falabella">Falabella (SSR __NEXT_DATA__)</option>
+                    <option value="Mercado Libre">Mercado Libre (Catálogo Oficial & Taxonomía)</option>
+                    <option value="Paris">Paris (Constructor.io AI Search)</option>
+                    <option value="Ripley">Ripley (Facets & Catálogo)</option>
+                </select>
+                <button class="btn-primary" onclick="loadMultiMarketplaceData()">Actualizar Multimarketplace</button>
+            </div>
+
+            <div id="multiDetailContainer" style="margin-top:20px;">
+                <!-- Dinámicamente poblado con tablas de Falabella, Meli, Paris, Ripley o Comparativa -->
+            </div>
+        </div>
     </main>
 
     <!-- Modal Detalle Verificable de Publicación -->
@@ -534,6 +558,160 @@
             
             if(tabId === 'learn') loadLearning();
             if(tabId === 'hist') loadHistory();
+            if(tabId === 'multi') loadMultiMarketplaceData();
+        }
+
+        let multiMarketplaceData = {
+            fala: null,
+            meli: null,
+            paris: null,
+            ripley: null,
+            summary: null
+        };
+
+        async function loadMultiMarketplaceData() {
+            try {
+                const [resFala, resMeli, resParis, resRipley, resSumm] = await Promise.all([
+                    fetch('/api/falabella/nicopoly').then(r => r.json()).catch(() => null),
+                    fetch('/api/meli/nicopoly').then(r => r.json()).catch(() => null),
+                    fetch('/api/rea/paris').then(r => r.json()).catch(() => null),
+                    fetch('/api/ripley/nicopoly').then(r => r.json()).catch(() => null),
+                    fetch('/api/multimarketplace/summary').then(r => r.json()).catch(() => null)
+                ]);
+                multiMarketplaceData.fala = resFala;
+                multiMarketplaceData.meli = resMeli;
+                multiMarketplaceData.paris = resParis;
+                multiMarketplaceData.ripley = resRipley;
+                multiMarketplaceData.summary = resSumm;
+                renderMultiMarketplaceView();
+            } catch (err) {
+                console.error('Error loading multimarketplace data:', err);
+            }
+        }
+
+        function renderMultiMarketplaceView() {
+            const mkt = document.getElementById('multiMktSelect').value;
+            const container = document.getElementById('multiDetailContainer');
+            if (!container) return;
+
+            if (mkt === 'Falabella') {
+                const fala = multiMarketplaceData.fala;
+                if (!fala) { container.innerHTML = '<div class="empty-state"><h3>Cargando datos de Falabella...</h3></div>'; return; }
+                let rows = '';
+                (fala.l2_subcategories || []).forEach(cat => {
+                    rows += `<tr>
+                        <td><strong>L2</strong></td>
+                        <td>${cat.name}</td>
+                        <td><code>${cat.id}</code></td>
+                        <td><strong>${cat.count}</strong></td>
+                        <td><span class="badge badge-success">EXACT_SSR_MATCH</span></td>
+                    </tr>`;
+                });
+                container.innerHTML = `
+                    <h3 style="color:#fff; margin-bottom:12px;">Falabella.cl — Estructura de Categorías L2 Nicopoly (SSR __NEXT_DATA__)</h3>
+                    <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:15px;">
+                        Departamento: <strong>${fala.l0_department?.name} (${fala.l0_department?.id})</strong> | 
+                        Subcategoría L1: <strong>${fala.l1_subcategory?.name} (${fala.l1_subcategory?.id})</strong> | 
+                        Total Publicaciones de Marca: <strong>${fala.total_brand_publications}</strong> | 
+                        Total Vendedor Oficial: <strong>${fala.total_seller_publications} (Seller ID: ${fala.seller_id})</strong>
+                    </p>
+                    <table>
+                        <thead>
+                            <tr><th>Nivel</th><th>Categoría L2</th><th>ID Oficial</th><th>Publicaciones</th><th>Verificación</th></tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                `;
+            } else if (mkt === 'Mercado Libre') {
+                const meli = multiMarketplaceData.meli;
+                if (!meli) { container.innerHTML = '<div class="empty-state"><h3>Cargando datos de Mercado Libre...</h3></div>'; return; }
+                let rows = '';
+                (meli.product_categories || []).forEach(cat => {
+                    rows += `<tr>
+                        <td><code>${cat.category_id}</code></td>
+                        <td><strong>${cat.name}</strong></td>
+                        <td><code>${cat.parent_id}</code></td>
+                        <td><code>${cat.domain_name}</code></td>
+                        <td><span class="badge badge-info">${cat.entity_type.toUpperCase()}</span></td>
+                    </tr>`;
+                });
+                container.innerHTML = `
+                    <h3 style="color:#fff; margin-bottom:12px;">Mercado Libre Chile (MLC) — 14 Categorías Oficiales Descubiertas</h3>
+                    <div style="background:var(--panel-bg); padding:12px; border-radius:6px; border:1px solid var(--border); margin-bottom:15px; font-size:0.9rem;">
+                        <div><strong>Tienda Oficial:</strong> ${meli.brand} (ID: ${meli.official_store_id}) | <strong>Seller ID:</strong> ${meli.seller_id}</div>
+                        <div><strong>Estado OAuth:</strong> <span class="badge badge-warning">${meli.oauth_status}</span> | <strong>Clips Audiovisuales:</strong> <span class="badge badge-success">${meli.audiovisual_clips?.status}</span></div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr><th>ID Categoría</th><th>Nombre de Categoría</th><th>ID Padre</th><th>Dominio Predictivo</th><th>Tipo</th></tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                `;
+            } else if (mkt === 'Paris') {
+                const paris = multiMarketplaceData.paris;
+                if (!paris) { container.innerHTML = '<div class="empty-state"><h3>Cargando datos de Paris...</h3></div>'; return; }
+                container.innerHTML = `
+                    <h3 style="color:#fff; margin-bottom:12px;">Paris.cl — Inteligencia Comercial (Constructor.io AI Search)</h3>
+                    <div style="background:var(--panel-bg); padding:15px; border-radius:6px; border:1px solid var(--border); margin-bottom:15px; font-size:0.95rem;">
+                        <div><strong>Marca Nicopoly (Catálogo Total):</strong> ${paris.total_brand} publicaciones</div>
+                        <div><strong>Vendedor Oficial (NICOPOLY):</strong> ${paris.total_official_seller} publicaciones</div>
+                        <div><strong>Vendido por Terceros / Reventa:</strong> ${paris.other_sellers_total} publicaciones</div>
+                        <div style="margin-top:8px;"><strong>Mecanismo:</strong> ${paris.discovery_engine} | <strong>Estado:</strong> <span class="badge badge-success">${paris.status}</span></div>
+                    </div>
+                `;
+            } else if (mkt === 'Ripley') {
+                const rip = multiMarketplaceData.ripley;
+                if (!rip) { container.innerHTML = '<div class="empty-state"><h3>Cargando datos de Ripley...</h3></div>'; return; }
+                let rows = '';
+                (rip.categories || []).forEach(cat => {
+                    rows += `<tr>
+                        <td><strong>${cat.name}</strong></td>
+                        <td><code>${cat.group_id}</code></td>
+                        <td>${cat.path}</td>
+                        <td><strong>${cat.count}</strong></td>
+                        <td><span class="badge badge-success">VERIFIED_FACET</span></td>
+                    </tr>`;
+                });
+                container.innerHTML = `
+                    <h3 style="color:#fff; margin-bottom:12px;">Ripley.cl — Categorías Verificadas y Facets Nicopoly</h3>
+                    <div style="background:var(--panel-bg); padding:12px; border-radius:6px; border:1px solid var(--border); margin-bottom:15px; font-size:0.9rem;">
+                        <div><strong>Marca:</strong> ${rip.brand} | <strong>Vendedor Oficial:</strong> ${rip.official_seller}</div>
+                        <div><strong>Total Publicaciones de Marca:</strong> <strong>${rip.total_brand_publications}</strong> | <strong>Total Categorías:</strong> ${rip.total_categories}</div>
+                        <div style="margin-top:6px;"><strong>Mecanismo:</strong> ${rip.mechanism} | <strong>Estado:</strong> <span class="badge badge-success">${rip.status}</span></div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr><th>Categoría</th><th>ID / Slug</th><th>Ruta Jerárquica</th><th>Publicaciones</th><th>Verificación</th></tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                `;
+            } else {
+                // ALL (Cross-marketplace summary table)
+                const summ = multiMarketplaceData.summary;
+                const mkts = summ?.marketplaces || {};
+                let rows = '';
+                for (const [mname, mdata] of Object.entries(mkts)) {
+                    rows += `<tr>
+                        <td><strong>${mname}</strong></td>
+                        <td>${mdata.mechanism}</td>
+                        <td><strong>${mdata.brand_publications || '-'}</strong></td>
+                        <td>${mdata.official_seller_publications || '-'}</td>
+                        <td>${mdata.categories_count || mdata.product_categories_count || '-'}</td>
+                        <td><span class="badge badge-success">${mdata.status}</span></td>
+                    </tr>`;
+                }
+                container.innerHTML = `
+                    <h3 style="color:#fff; margin-bottom:12px;">Comparativa Estratégica 360° — 4 Marketplaces de Chile</h3>
+                    <table>
+                        <thead>
+                            <tr><th>Marketplace</th><th>Mecanismo de Descubrimiento</th><th>Pubs Marca</th><th>Pubs Seller Oficial</th><th>Categorías</th><th>Estado Operativo</th></tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                `;
+            }
         }
         
         const SPANISH_LABELS = {
