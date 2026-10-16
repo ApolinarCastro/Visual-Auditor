@@ -1,0 +1,168 @@
+{
+  "checked_at": "2026-10-16T17:41:14.970Z",
+  "repository": "ApolinarCastro/Visual-Auditor",
+  "initial": [
+    {
+      "status": "fulfilled",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Action completed."
+          }
+        ],
+        "structuredContent": {
+          "branches": [],
+          "cursor": null
+        },
+        "isError": false
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "tool call error: tool call failed for `github/get_file_contents`\n\nCaused by:\n    Mcp error: -32603: Not Found: Resource not found: No commit found for the ref feature/mri-autonomous-operation-019"
+          }
+        ],
+        "isError": true
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "content": [
+          {
+            "type": "text",
+            "text": "tool call error: tool call failed for `github/list_commits`\n\nCaused by:\n    Mcp error: -32603: Not Found: Resource not found: Not Found"
+          }
+        ],
+        "isError": true
+      }
+    }
+  ],
+  "searches": [
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "branches",
+        "value": {
+          "content": [
+            {
+              "type": "text",
+              "text": "Action completed."
+            }
+          ],
+          "structuredContent": {
+            "branches": [],
+            "cursor": null
+          },
+          "isError": false
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "commits",
+        "value": {
+          "content": [
+            {
+              "type": "text",
+              "text": "Action completed."
+            }
+          ],
+          "structuredContent": {
+            "commits": []
+          },
+          "isError": false
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "prs",
+        "value": {
+          "content": [
+            {
+              "type": "text",
+              "text": "Action completed."
+            }
+          ],
+          "structuredContent": {
+            "issues": []
+          },
+          "isError": false
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "code",
+        "value": {
+          "content": [
+            {
+              "type": "text",
+              "text": "tool call error: tool call failed for `github/search_code`\n\nCaused by:\n    Mcp error: -32603: Authentication Failed: Requires authentication"
+            }
+          ],
+          "isError": true
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "main",
+        "value": {
+          "content": [
+            {
+              "type": "text",
+              "text": "[\n  {\n    \"sha\": \"3e5d058aa3c0b9b388bab990b14d8cc134627d2e\",\n    \"node_id\": \"C_kwDOUxQjqNoAKDNlNWQwNThhYTNjMGI5YjM4OGJhYjk5MGIxNGQ4Y2MxMzQ2MjdkMmU\",\n    \"commit\": {\n      \"author\": {\n        \"name\": \"ApolinarCastro\",\n        \"email\": \"apolinarcastro@gmail.com\",\n        \"date\": \"2026-10-09T14:23:46Z\"\n      },\n      \"committer\": {\n        \"name\": \"ApolinarCastro\",\n        \"email\": \"apolinarcastro@gmail.com\",\n        \"date\": \"2026-10-09T14:23:46Z\"\n      },\n      \"message\": \"docs: Add forensic evidence verification report\",\n      \"tree\": {\n        \"sha\": \"374e4493176b41611d610fc4fbdc3af18d0f1174\",\n        \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/git/trees/374e4493176b41611d610fc4fbdc3af18d0f1174\"\n      },\n      \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/git/commits/3e5d058aa3c0b9b388bab990b14d8cc134627d2e\",\n      \"comment_count\": 0,\n      \"verification\": {\n        \"verified\": false,\n        \"reason\": \"unsigned\",\n        \"signature\": null,\n        \"payload\": null,\n        \"verified_at\": null\n      }\n    },\n    \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/commits/3e5d058aa3c0b9b388bab990b14d8cc134627d2e\",\n    \"html_url\": \"https://github.com/ApolinarCastro/Visual-Auditor/commit/3e5d058aa3c0b9b388bab990b14d8cc134627d2e\",\n    \"comments_url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/commits/3e5d058aa3c0b9b388bab990b14d8cc134627d2e/comments\",\n    \"author\": {\n      \"login\": \"ApolinarCastro\",\n      \"id\": 209847753,\n      \"node_id\": \"U_kgDODIIFyQ\",\n      \"avatar_url\": \"https://avatars.githubusercontent.com/u/209847753?v=4\",\n      \"gravatar_id\": \"\",\n      \"url\": \"https://api.github.com/users/ApolinarCastro\",\n      \"html_url\": \"https://github.com/ApolinarCastro\",\n      \"followers_url\": \"https://api.github.com/users/ApolinarCastro/followers\",\n      \"following_url\": \"https://api.github.com/users/ApolinarCastro/following{/other_user}\",\n      \"gists_url\": \"https://api.github.com/users/ApolinarCastro/gists{/gist_id}\",\n      \"starred_url\": \"https://api.github.com/users/ApolinarCastro/starred{/owner}{/repo}\",\n      \"subscriptions_url\": \"https://api.github.com/users/ApolinarCastro/subscriptions\",\n      \"organizations_url\": \"https://api.github.com/users/ApolinarCastro/orgs\",\n      \"repos_url\": \"https://api.github.com/users/ApolinarCastro/repos\",\n      \"events_url\": \"https://api.github.com/users/ApolinarCastro/events{/privacy}\",\n      \"received_events_url\": \"https://api.github.com/users/ApolinarCastro/received_events\",\n      \"type\": \"User\",\n      \"user_view_type\": \"public\",\n      \"site_admin\": false\n    },\n    \"committer\": {\n      \"login\": \"ApolinarCastro\",\n      \"id\": 209847753,\n      \"node_id\": \"U_kgDODIIFyQ\",\n      \"avatar_url\": \"https://avatars.githubusercontent.com/u/209847753?v=4\",\n      \"gravatar_id\": \"\",\n      \"url\": \"https://api.github.com/users/ApolinarCastro\",\n      \"html_url\": \"https://github.com/ApolinarCastro\",\n      \"followers_url\": \"https://api.github.com/users/ApolinarCastro/followers\",\n      \"following_url\": \"https://api.github.com/users/ApolinarCastro/following{/other_user}\",\n      \"gists_url\": \"https://api.github.com/users/ApolinarCastro/gists{/gist_id}\",\n      \"starred_url\": \"https://api.github.com/users/ApolinarCastro/starred{/owner}{/repo}\",\n      \"subscriptions_url\": \"https://api.github.com/users/ApolinarCastro/subscriptions\",\n      \"organizations_url\": \"https://api.github.com/users/ApolinarCastro/orgs\",\n      \"repos_url\": \"https://api.github.com/users/ApolinarCastro/repos\",\n      \"events_url\": \"https://api.github.com/users/ApolinarCastro/events{/privacy}\",\n      \"received_events_url\": \"https://api.github.com/users/ApolinarCastro/received_events\",\n      \"type\": \"User\",\n      \"user_view_type\": \"public\",\n      \"site_admin\": false\n    },\n    \"parents\": [\n      {\n        \"sha\": \"902861b26de0ec89eefa2c76b0f13a7b54e762e0\",\n        \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/commits/902861b26de0ec89eefa2c76b0f13a7b54e762e0\",\n        \"html_url\": \"https://github.com/ApolinarCastro/Visual-Auditor/commit/902861b26de0ec89eefa2c76b0f13a7b54e762e0\"\n      }\n    ]\n  }\n]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "name": "evidence",
+        "value": {
+          "content": [
+            {
+              "type": "text",
+              "text": "[\n  {\n    \"type\": \"dir\",\n    \"size\": 0,\n    \"name\": \"mri_4mp_e2e_cert_001\",\n    \"path\": \"evidence/mri_4mp_e2e_cert_001\",\n    \"sha\": \"cf793a0531d8ac7c97d155ae3821df60729182cf\",\n    \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/contents/evidence/mri_4mp_e2e_cert_001?ref=main\",\n    \"git_url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/git/trees/cf793a0531d8ac7c97d155ae3821df60729182cf\",\n    \"html_url\": \"https://github.com/ApolinarCastro/Visual-Auditor/tree/main/evidence/mri_4mp_e2e_cert_001\",\n    \"download_url\": null\n  },\n  {\n    \"type\": \"dir\",\n    \"size\": 0,\n    \"name\": \"mri_4mp_e2e_cert_002\",\n    \"path\": \"evidence/mri_4mp_e2e_cert_002\",\n    \"sha\": \"5a11169678a7e5451d4a58d339ee95c395b8cfaf\",\n    \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/contents/evidence/mri_4mp_e2e_cert_002?ref=main\",\n    \"git_url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/git/trees/5a11169678a7e5451d4a58d339ee95c395b8cfaf\",\n    \"html_url\": \"https://github.com/ApolinarCastro/Visual-Auditor/tree/main/evidence/mri_4mp_e2e_cert_002\",\n    \"download_url\": null\n  },\n  {\n    \"type\": \"dir\",\n    \"size\": 0,\n    \"name\": \"mri_4mp_final_e2e_cert_001\",\n    \"path\": \"evidence/mri_4mp_final_e2e_cert_001\",\n    \"sha\": \"c5abf5affcb6a9767f2d9ce3347201aadd88e90a\",\n    \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/contents/evidence/mri_4mp_final_e2e_cert_001?ref=main\",\n    \"git_url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/git/trees/c5abf5affcb6a9767f2d9ce3347201aadd88e90a\",\n    \"html_url\": \"https://github.com/ApolinarCastro/Visual-Auditor/tree/main/evidence/mri_4mp_final_e2e_cert_001\",\n    \"download_url\": null\n  },\n  {\n    \"type\": \"dir\",\n    \"size\": 0,\n    \"name\": \"mri_autoclaw_001\",\n    \"path\": \"evidence/mri_autoclaw_001\",\n    \"sha\": \"f5b5ab2087b1985d0a177422cda602bbbd029dc8\",\n    \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/contents/evidence/mri_autoclaw_001?ref=main\",\n    \"git_url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/git/trees/f5b5ab2087b1985d0a177422cda602bbbd029dc8\",\n    \"html_url\": \"https://github.com/ApolinarCastro/Visual-Auditor/tree/main/evidence/mri_autoclaw_001\",\n    \"download_url\": null\n  },\n  {\n    \"type\": \"dir\",\n    \"size\": 0,\n    \"name\": \"mri_crossmarket_blockers_001\",\n    \"path\": \"evidence/mri_crossmarket_blockers_001\",\n    \"sha\": \"9fb0b11280319957dfd32bd949cba0dbd022b6d2\",\n    \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/contents/evidence/mri_crossmarket_blockers_001?ref=main\",\n    \"git_url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/git/trees/9fb0b11280319957dfd32bd949cba0dbd022b6d2\",\n    \"html_url\": \"https://github.com/ApolinarCastro/Visual-Auditor/tree/main/evidence/mri_crossmarket_blockers_001\",\n    \"download_url\": null\n  },\n  {\n    \"type\": \"dir\",\n    \"size\": 0,\n    \"name\": \"mri_dashboard_live_materialization_001\",\n    \"path\": \"evidence/mri_dashboard_live_materialization_001\",\n    \"sha\": \"9a72f79679afe4f9f5abcd1b13b1f439d4c077b2\",\n    \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/contents/evidence/mri_dashboard_live_materialization_001?ref=main\",\n    \"git_url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/git/trees/9a72f79679afe4f9f5abcd1b13b1f439d4c077b2\",\n    \"html_url\": \"https://github.com/ApolinarCastro/Visual-Auditor/tree/main/evidence/mri_dashboard_live_materialization_001\",\n    \"download_url\": null\n  },\n  {\n    \"type\": \"dir\",\n    \"size\": 0,\n    \"name\": \"mri_falabella_brand_routing_001\",\n    \"path\": \"evidence/mri_falabella_brand_routing_001\",\n    \"sha\": \"ce2cbd8caf0591eff36b6abdfc9332411a170e6a\",\n    \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/contents/evidence/mri_falabella_brand_routing_001?ref=main\",\n    \"git_url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/git/trees/ce2cbd8caf0591eff36b6abdfc9332411a170e6a\",\n    \"html_url\": \"https://github.com/ApolinarCastro/Visual-Auditor/tree/main/evidence/mri_falabella_brand_routing_001\",\n    \"download_url\": null\n  },\n  {\n    \"type\": \"dir\",\n    \"size\": 0,\n    \"name\": \"mri_falabella_entry_001\",\n    \"path\": \"evidence/mri_falabella_entry_001\",\n    \"sha\": \"14834018958c5704f5857e4b9d93d1b1e2ee26bb\",\n    \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/contents/evidence/mri_falabella_entry_001?ref=main\",\n    \"git_url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/git/trees/14834018958c5704f5857e4b9d93d1b1e2ee26bb\",\n    \"html_url\": \"https://github.com/ApolinarCastro/Visual-Auditor/tree/main/evidence/mri_falabella_entry_001\",\n    \"download_url\": null\n  },\n  {\n    \"type\": \"dir\",\n    \"size\": 0,\n    \"name\": \"mri_full_autonomous_audit_and_dashboard_001\",\n    \"path\": \"evidence/mri_full_autonomous_audit_and_dashboard_001\",\n    \"sha\": \"c03022456cc7005ee76691593fdf4d72354320d5\",\n    \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/contents/evidence/mri_full_autonomous_audit_and_dashboard_001?ref=main\",\n    \"git_url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/git/trees/c03022456cc7005ee76691593fdf4d72354320d5\",\n    \"html_url\": \"https://github.com/ApolinarCastro/Visual-Auditor/tree/main/evidence/mri_full_autonomous_audit_and_dashboard_001\",\n    \"download_url\": null\n  },\n  {\n    \"type\": \"dir\",\n    \"size\": 0,\n    \"name\": \"mri_ml_brand_routing_001\",\n    \"path\": \"evidence/mri_ml_brand_routing_001\",\n    \"sha\": \"cd9386c17bce12b662c8967f88d3f0f03610d3ff\",\n    \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/contents/evidence/mri_ml_brand_routing_001?ref=main\",\n    \"git_url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/git/trees/cd9386c17bce12b662c8967f88d3f0f03610d3ff\",\n    \"html_url\": \"https://github.com/ApolinarCastro/Visual-Auditor/tree/main/evidence/mri_ml_brand_routing_001\",\n    \"download_url\": null\n  },\n  {\n    \"type\": \"dir\",\n    \"size\": 0,\n    \"name\": \"mri_ml_pagination_block_001\",\n    \"path\": \"evidence/mri_ml_pagination_block_001\",\n    \"sha\": \"8be1d34f74eef6f8cfd4c8c2826fe92a847c9b21\",\n    \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/contents/evidence/mri_ml_pagination_block_001?ref=main\",\n    \"git_url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/git/trees/8be1d34f74eef6f8cfd4c8c2826fe92a847c9b21\",\n    \"html_url\": \"https://github.com/ApolinarCastro/Visual-Auditor/tree/main/evidence/mri_ml_pagination_block_001\",\n    \"download_url\": null\n  },\n  {\n    \"type\": \"dir\",\n    \"size\": 0,\n    \"name\": \"mri_paris_brand_routing_001\",\n    \"path\": \"evidence/mri_paris_brand_routing_001\",\n    \"sha\": \"22f323c33fc593ac5e9135064acd45962444cf3c\",\n    \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/contents/evidence/mri_paris_brand_routing_001?ref=main\",\n    \"git_url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/git/trees/22f323c33fc593ac5e9135064acd45962444cf3c\",\n    \"html_url\": \"https://github.com/ApolinarCastro/Visual-Auditor/tree/main/evidence/mri_paris_brand_routing_001\",\n    \"download_url\": null\n  },\n  {\n    \"type\": \"dir\",\n    \"size\": 0,\n    \"name\": \"mri_ripley_frontier_validation_001\",\n    \"path\": \"evidence/mri_ripley_frontier_validation_001\",\n    \"sha\": \"f7f1d17aa15f59535e83bc54629c7d5dd4480c91\",\n    \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/contents/evidence/mri_ripley_frontier_validation_001?ref=main\",\n    \"git_url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/git/trees/f7f1d17aa15f59535e83bc54629c7d5dd4480c91\",\n    \"html_url\": \"https://github.com/ApolinarCastro/Visual-Auditor/tree/main/evidence/mri_ripley_frontier_validation_001\",\n    \"download_url\": null\n  },\n  {\n    \"type\": \"dir\",\n    \"size\": 0,\n    \"name\": \"mri_ripley_rate_limit_and_brand_filter_001\",\n    \"path\": \"evidence/mri_ripley_rate_limit_and_brand_filter_001\",\n    \"sha\": \"815cf63a3507a0548741465c11b8a9adf408b5b0\",\n    \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/contents/evidence/mri_ripley_rate_limit_and_brand_filter_001?ref=main\",\n    \"git_url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/git/trees/815cf63a3507a0548741465c11b8a9adf408b5b0\",\n    \"html_url\": \"https://github.com/ApolinarCastro/Visual-Auditor/tree/main/evidence/mri_ripley_rate_limit_and_brand_filter_001\",\n    \"download_url\": null\n  },\n  {\n    \"type\": \"dir\",\n    \"size\": 0,\n    \"name\": \"va_controlled_production_maintenance_001\",\n    \"path\": \"evidence/va_controlled_production_maintenance_001\",\n    \"sha\": \"3c2978839f8bc12a211a87b0f62ecc8077ca998f\",\n    \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/contents/evidence/va_controlled_production_maintenance_001?ref=main\",\n    \"git_url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/git/trees/3c2978839f8bc12a211a87b0f62ecc8077ca998f\",\n    \"html_url\": \"https://github.com/ApolinarCastro/Visual-Auditor/tree/main/evidence/va_controlled_production_maintenance_001\",\n    \"download_url\": null\n  },\n  {\n    \"type\": \"dir\",\n    \"size\": 0,\n    \"name\": \"va_executive_dashboard_semantic_audit_001\",\n    \"path\": \"evidence/va_executive_dashboard_semantic_audit_001\",\n    \"sha\": \"be587d5cbcbaa82f0af299a9150c1a9ba18aa6a1\",\n    \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/contents/evidence/va_executive_dashboard_semantic_audit_001?ref=main\",\n    \"git_url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/git/trees/be587d5cbcbaa82f0af299a9150c1a9ba18aa6a1\",\n    \"html_url\": \"https://github.com/ApolinarCastro/Visual-Auditor/tree/main/evidence/va_executive_dashboard_semantic_audit_001\",\n    \"download_url\": null\n  },\n  {\n    \"type\": \"dir\",\n    \"size\": 0,\n    \"name\": \"va_history_routes_taxonomy_forensic_cert_001\",\n    \"path\": \"evidence/va_history_routes_taxonomy_forensic_cert_001\",\n    \"sha\": \"5d22cde4dcffa7f77a817cc8cb72497738ceebe0\",\n    \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/contents/evidence/va_history_routes_taxonomy_forensic_cert_001?ref=main\",\n    \"git_url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/git/trees/5d22cde4dcffa7f77a817cc8cb72497738ceebe0\",\n    \"html_url\": \"https://github.com/ApolinarCastro/Visual-Auditor/tree/main/evidence/va_history_routes_taxonomy_forensic_cert_001\",\n    \"download_url\": null\n  },\n  {\n    \"type\": \"dir\",\n    \"size\": 0,\n    \"name\": \"va_history_routes_taxonomy_readiness_001\",\n    \"path\": \"evidence/va_history_routes_taxonomy_readiness_001\",\n    \"sha\": \"814f9c3f145a87dbc926242f55c388d1c804d330\",\n    \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/contents/evidence/va_history_routes_taxonomy_readiness_001?ref=main\",\n    \"git_url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/git/trees/814f9c3f145a87dbc926242f55c388d1c804d330\",\n    \"html_url\": \"https://github.com/ApolinarCastro/Visual-Auditor/tree/main/evidence/va_history_routes_taxonomy_readiness_001\",\n    \"download_url\": null\n  },\n  {\n    \"type\": \"dir\",\n    \"size\": 0,\n    \"name\": \"va_mri_brand_first_close_001\",\n    \"path\": \"evidence/va_mri_brand_first_close_001\",\n    \"sha\": \"36cf93dfc33f9fc70e174d099c6ea55d912e4b5e\",\n    \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/contents/evidence/va_mri_brand_first_close_001?ref=main\",\n    \"git_url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/git/trees/36cf93dfc33f9fc70e174d099c6ea55d912e4b5e\",\n    \"html_url\": \"https://github.com/ApolinarCastro/Visual-Auditor/tree/main/evidence/va_mri_brand_first_close_001\",\n    \"download_url\": null\n  },\n  {\n    \"type\": \"dir\",\n    \"size\": 0,\n    \"name\": \"va_product_taxonomy_capability_001\",\n    \"path\": \"evidence/va_product_taxonomy_capability_001\",\n    \"sha\": \"03bfa70d5bfd72e5888e35f1d0b319e67fc03e89\",\n    \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/contents/evidence/va_product_taxonomy_capability_001?ref=main\",\n    \"git_url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/git/trees/03bfa70d5bfd72e5888e35f1d0b319e67fc03e89\",\n    \"html_url\": \"https://github.com/ApolinarCastro/Visual-Auditor/tree/main/evidence/va_product_taxonomy_capability_001\",\n    \"download_url\": null\n  },\n  {\n    \"type\": \"dir\",\n    \"size\": 0,\n    \"name\": \"va_search_intent_season_minimal_implementation_001\",\n    \"path\": \"evidence/va_search_intent_season_minimal_implementation_001\",\n    \"sha\": \"8538b67695595f1f0c7d0a30589505edcbd64ecf\",\n    \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/contents/evidence/va_search_intent_season_minimal_implementation_001?ref=main\",\n    \"git_url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/git/trees/8538b67695595f1f0c7d0a30589505edcbd64ecf\",\n    \"html_url\": \"https://github.com/ApolinarCastro/Visual-Auditor/tree/main/evidence/va_search_intent_season_minimal_implementation_001\",\n    \"download_url\": null\n  },\n  {\n    \"type\": \"dir\",\n    \"size\": 0,\n    \"name\": \"va_svmp_category_sync_001\",\n    \"path\": \"evidence/va_svmp_category_sync_001\",\n    \"sha\": \"e6112b74826c470336155ae19501ee275db45759\",\n    \"url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/contents/evidence/va_svmp_category_sync_001?ref=main\",\n    \"git_url\": \"https://api.github.com/repos/ApolinarCastro/Visual-Auditor/git/trees/e6112b74826c470336155ae19501ee275db45759\",\n    \"html_url\": \"https://github.com/ApolinarCastro/Visual-Auditor/tree/main/evidence/va_svmp_category_sync_001\",\n    \"download_url\": null\n  }\n]"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "branch_page2": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Action completed."
+      }
+    ],
+    "structuredContent": {
+      "branches": [],
+      "cursor": null
+    },
+    "isError": false
+  },
+  "remote_main": "3e5d058aa3c0b9b388bab990b14d8cc134627d2e",
+  "local_head": "fb0d62a08abc21c427059355fb271c02feaf4327",
+  "local_branch": "feature/mri-autonomous-operation-019",
+  "observed_staged_files": [
+    "app/mri_autonomous/falabella_ssr_engine.py",
+    "app/mri_autonomous/meli_taxonomy_engine.py",
+    "tests/test_mri_multimarketplace_014.py"
+  ],
+  "note": "No runs attributed to MRI-019 identified. GitHub code search unavailable: authentication required. Other GitHub reads succeeded."
+}
