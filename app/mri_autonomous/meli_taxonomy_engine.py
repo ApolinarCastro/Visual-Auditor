@@ -251,15 +251,33 @@ class MeliTaxonomyEngine:
         # 2. Process items
         items_to_process = fixture_items or []
         for idx, item in enumerate(items_to_process[:max_items], start=1):
-            item_id = str(item.get("id") or f"MLC{1000000000 + idx}")
-            title = item.get("title") or "Prenda Nicopoly Oficial"
+            # Extract real SKU from id, marketplace_sku, or url
+            item_id = str(item.get("id") or item.get("marketplace_sku") or item.get("sku") or "").strip()
+            title = str(item.get("title") or item.get("name") or "").strip()
+            permalink = str(item.get("permalink") or item.get("url") or "").strip()
+            
+            if not item_id and permalink:
+                import re
+                m = re.search(r"(MLC-?\d+)", permalink, re.IGNORECASE)
+                if m:
+                    item_id = m.group(1).replace("-", "").upper()
+            
+            if not item_id:
+                logger.warning(f"[Mercado Libre] Skipping item without verifiable MLC SKU: {title}")
+                continue
+
             seller_id = str(item.get("seller_id") or NICOPOLY_SELLER_ID)
-            is_official = (seller_id == NICOPOLY_SELLER_ID or item.get("official_store_id") == int(NICOPOLY_OFFICIAL_STORE_ID))
-            price = float(item.get("price") or 29990.0)
+            vendor = str(item.get("vendor") or "Nicopoly").strip()
+            is_official = (
+                vendor.lower() == brand.lower() or
+                seller_id == NICOPOLY_SELLER_ID or
+                item.get("official_store_id") == int(NICOPOLY_OFFICIAL_STORE_ID)
+            )
+            price = float(item.get("price") or 0.0)
             orig_price = float(item.get("original_price") or price)
-            disc_pct = round(((orig_price - price) / orig_price) * 100.0, 1) if orig_price > price else None
-            cat_id = item.get("category_id") or "MLC158425"
-            cat_name = item.get("category_name") or "Vestidos"
+            disc_pct = round(((orig_price - price) / orig_price) * 100.0, 1) if orig_price > price and orig_price > 0 else None
+            cat_id = item.get("category_id") or "MLC1430"
+            cat_name = item.get("category_name") or "Ropa y Accesorios"
 
             cats = [{"group_id": cat_id, "name": cat_name, "path": f"/categorias/{cat_id}"}]
             promos = item.get("promotions", [])
@@ -274,18 +292,20 @@ class MeliTaxonomyEngine:
                     publication_id=f"MELI_{item_id}",
                     marketplace="Mercado Libre",
                     sku=item_id,
-                    title=title,
+                    title=title or f"Prenda Nicopoly {item_id}",
                     brand=brand,
-                    sellers=["Nicopoly Oficial" if is_official else "ThirdParty"],
+                    sellers=[vendor] if vendor else ["Nicopoly"],
                     is_official_seller=is_official,
-                    price_regular=orig_price,
-                    price_displayed=price,
+                    price_regular=orig_price if orig_price > 0 else None,
+                    price_displayed=price if price > 0 else None,
                     discount_percentage=disc_pct,
                     condition="NEW",
-                    canonical_url=item.get("permalink") or f"https://articulo.mercadolibre.cl/{item_id}",
+                    canonical_url=permalink or f"https://articulo.mercadolibre.cl/{item_id}",
                     categories=cats,
                     promotions=promos,
-                    facets={"official_store_id": NICOPOLY_OFFICIAL_STORE_ID, "seller_id": seller_id}
+                    facets={"official_store_id": NICOPOLY_OFFICIAL_STORE_ID, "seller_id": seller_id},
+                    evidence_type="LIVE_OBSERVATION",
+                    raw_source_id=f"MELI-OBS-{item_id}"
                 )
 
         return list(publications_by_sku.values()), list(entities_dict.values())

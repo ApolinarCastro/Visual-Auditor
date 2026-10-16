@@ -703,15 +703,20 @@ def fetch_run_publications(run_id: str, db_path: Optional[str] = None) -> List[D
                 cov_val = "PARTIAL"
 
             results.append({
+                "publication_id": pub_id,
                 "producto_id": sku,
+                "sku": sku,
+                "marketplace_product_id": sku,
                 "producto_nombre": title,
                 "marketplace": mkt,
+                "canonical_url": url,
                 "url_encontrada": url,
                 "url": url,
                 "fecha_observacion": r["observed_at"] or "NO_VERIFICADO",
                 "timestamp": r["observed_at"] or "NO_VERIFICADO",
                 "evidencia_identidad": ev_list if ev_list else ["NO_VERIFICADO"],
                 "evidence": ev_list if ev_list else ["NO_VERIFICADO"],
+                "evidence_type": r["evidence_type"] or "LIVE_OBSERVATION",
                 "estado_final": cat_dec,
                 "status": cat_dec,
                 "acquisition_status": acq_st,
@@ -730,7 +735,8 @@ def fetch_run_publications(run_id: str, db_path: Optional[str] = None) -> List[D
                 "categories": pub_run_cats,
                 "decision": cat_dec,
                 "source": "PAGINATED_ADAPTER_HARVEST",
-                "observed_sku": sku
+                "observed_sku": sku,
+                "commercial_attributes": attrs
             })
         return results
     finally:
@@ -1087,49 +1093,141 @@ async def get_ripley_nicopoly_data():
 
 
 @app.get("/api/multimarketplace/summary")
-async def get_multimarketplace_summary():
+async def get_multimarketplace_summary(run_id: str = None):
     """
-    Returns comprehensive cross-marketplace comparative summary for Nicopoly across
+    Returns dynamic cross-marketplace comparative summary for Nicopoly across
     all four active marketplaces (Paris, Falabella, Mercado Libre, Ripley).
+    Queries real execution data from SQLite associated with run_id (or latest run).
     """
-    return JSONResponse(content={
-        "brand": "Nicopoly",
-        "marketplaces": {
-            "Paris": {
-                "mechanism": "Constructor.io JSON API",
-                "brand_publications": 4902,
-                "official_seller_publications": 4211,
-                "categories_count": 43,
-                "status": "OPERATIONAL"
-            },
-            "Falabella": {
-                "mechanism": "Next.js SSR __NEXT_DATA__",
-                "brand_publications": 368,
-                "official_seller_publications": 368,
-                "seller_id": "SC75ABC",
-                "categories_count": 9,
-                "status": "OPERATIONAL"
-            },
-            "Mercado Libre": {
-                "mechanism": "Official REST API / Taxonomy",
-                "official_store_id": "56574",
-                "seller_id": "386329223",
-                "product_categories_count": 14,
-                "clips_segregated": True,
-                "oauth_readiness": "AUTH_REQUIRED",
-                "status": "OPERATIONAL"
-            },
-            "Ripley": {
-                "mechanism": "Facets SSR + Counter Verification",
-                "brand_publications": 772,
-                "categories_count": 3,
-                "status": "OPERATIONAL"
-            }
+    effective_db = DB_PATH
+    try:
+        from app.mri_autonomous.storage_guard import StorageConfig
+        effective_db = StorageConfig.get_sqlite_path()
+    except Exception:
+        pass
+
+    marketplaces_data = {
+        "Paris": {
+            "mechanism": "Constructor.io API / Controlled HAR Replay",
+            "brand_publications": 0,
+            "official_seller_publications": 0,
+            "categories_count": 0,
+            "status": "NOT_EXECUTED"
         },
-        "total_active_marketplaces": 4,
-        "shared_mri_contract_version": "2.0",
-        "status": "ALL_MARKETPLACES_OPERATIONAL"
-    })
+        "Falabella": {
+            "mechanism": "Next.js SSR __NEXT_DATA__",
+            "brand_publications": 0,
+            "official_seller_publications": 0,
+            "categories_count": 0,
+            "status": "NOT_EXECUTED"
+        },
+        "Mercado Libre": {
+            "mechanism": "Official Corridor Scraper & Taxonomy Discovery",
+            "brand_publications": 0,
+            "official_seller_publications": 0,
+            "categories_count": 0,
+            "status": "NOT_EXECUTED"
+        },
+        "Ripley": {
+            "mechanism": "Catalog Scraper & Facets Verification",
+            "brand_publications": 0,
+            "official_seller_publications": 0,
+            "categories_count": 0,
+            "status": "NOT_EXECUTED"
+        }
+    }
+
+    if not Path(effective_db).exists():
+        return JSONResponse(content={
+            "brand": "Nicopoly",
+            "marketplaces": marketplaces_data,
+            "total_active_marketplaces": 4,
+            "shared_mri_contract_version": "2.0",
+            "status": "NO_RUN_DATA"
+        })
+
+    try:
+        conn = sqlite3.connect(effective_db)
+        cur = conn.cursor()
+
+        # Check if mri_runs table exists
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='mri_runs'")
+        if not cur.fetchone():
+            conn.close()
+            return JSONResponse(content={
+                "brand": "Nicopoly",
+                "marketplaces": marketplaces_data,
+                "total_active_marketplaces": 4,
+                "shared_mri_contract_version": "2.0",
+                "status": "NO_RUN_DATA"
+            })
+
+        # Find run_id if not provided
+        target_run_id = run_id
+        if not target_run_id:
+            # Check for latest multi-marketplace run
+            cur.execute("SELECT run_id FROM mri_runs ORDER BY started_at DESC LIMIT 1")
+            row = cur.fetchone()
+            if row:
+                target_run_id = row[0]
+
+        if target_run_id:
+            # Check runs for this run_id
+            cur.execute("""
+                SELECT marketplace, execution_mode, terminal_state, status
+                FROM mri_runs WHERE run_id = ?
+            """, (target_run_id,))
+            runs = cur.fetchall()
+            for mkt, mode, state, st in runs:
+                if mkt in marketplaces_data:
+                    marketplaces_data[mkt]["status"] = state or st or "COMPLETED"
+                    marketplaces_data[mkt]["mechanism"] = mode or marketplaces_data[mkt]["mechanism"]
+
+            # Query distinct publications count per marketplace in mri_publications
+            cur.execute("""
+                SELECT marketplace, COUNT(DISTINCT marketplace_product_id)
+                FROM mri_publications WHERE run_id = ?
+                GROUP BY marketplace
+            """, (target_run_id,))
+            pub_counts = cur.fetchall()
+            for mkt, total_pubs in pub_counts:
+                if mkt in marketplaces_data:
+                    marketplaces_data[mkt]["brand_publications"] = total_pubs
+                    marketplaces_data[mkt]["official_seller_publications"] = total_pubs
+                    if total_pubs > 0:
+                        marketplaces_data[mkt]["status"] = "OPERATIONAL"
+
+            # Query categories count per marketplace in mri_categories if table exists
+            try:
+                cur.execute("""
+                    SELECT marketplace, COUNT(DISTINCT category_id)
+                    FROM mri_categories
+                    GROUP BY marketplace
+                """)
+                cat_counts = cur.fetchall()
+                for mkt, num_cats in cat_counts:
+                    if mkt in marketplaces_data:
+                        marketplaces_data[mkt]["categories_count"] = num_cats
+            except Exception:
+                pass
+
+        conn.close()
+
+        # Determine overall status
+        operational_count = sum(1 for m in marketplaces_data.values() if m["status"] in ("OPERATIONAL", "COMPLETED"))
+        overall_status = "ALL_MARKETPLACES_OPERATIONAL" if operational_count == 4 else ("PARTIALLY_OPERATIONAL" if operational_count > 0 else "NO_OPERATIONAL_DATA")
+
+        return JSONResponse(content={
+            "brand": "Nicopoly",
+            "run_id": target_run_id,
+            "marketplaces": marketplaces_data,
+            "total_active_marketplaces": 4,
+            "operational_marketplaces_count": operational_count,
+            "shared_mri_contract_version": "2.0",
+            "status": overall_status
+        })
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e), "brand": "Nicopoly", "marketplaces": marketplaces_data})
 
 
 if __name__ == "__main__":

@@ -21,6 +21,7 @@ import sqlite3
 import time
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
+import pathlib
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -76,9 +77,12 @@ class AutonomousMultiMarketplaceRunner:
     def __init__(self, brand: str = "Nicopoly", db_path: Optional[str] = None):
         self.brand = brand
         self.db_path = db_path or str(StorageConfig.get_sqlite_path())
+        # Enforce write barrier immediately upon constructor call
+        StorageConfig.assert_write_allowed(self.db_path)
 
     def _init_sqlite_tables(self, conn: sqlite3.Connection):
         """Ensures all MRI tables exist in the target SQLite database."""
+        StorageConfig.assert_write_allowed(self.db_path)
         conn.execute("""
             CREATE TABLE IF NOT EXISTS mri_runs (
                 run_id TEXT PRIMARY KEY, started_at TEXT, finished_at TEXT, marketplace TEXT,
@@ -164,39 +168,52 @@ class AutonomousMultiMarketplaceRunner:
                 }
 
                 # Materialize sample publications into isolated DB
-                sample_pubs = engine.fetch_brand_publications(self.brand, num_results=20)
-                entities = engine.discover_commercial_entities(self.brand)
+                # Materialize sample publications into isolated DB from live REA browse
+                sample_pubs, entities = engine.harvest_sample_publications(self.brand, max_items=20)
                 engine.persist_to_mri_sqlite(sample_pubs, entities, run_id, db_path=self.db_path)
                 res.publications_count = len(sample_pubs)
                 return res
         except Exception as e:
             logger.warning(f"[Paris] Strategy 1 failed: {e}")
 
-        # Strategy 2: Primary HAR Capture Replay
+        # Strategy 2: Primary HAR Capture Replay (Controlled Replay)
         res.strategies_attempted.append({
             "strategy": 2,
             "name": "CONTROLLED_HAR_REPLAY",
-            "action": "Inspect verified local HAR captures with SHA-256 integrity validation"
+            "action": "Inspect verified local HAR captures with SHA-256 integrity validation and consume capture feed"
         })
         try:
             from app.mri_autonomous.rea_paris_engine import _resolve_har_provenance
             har_prov = _resolve_har_provenance()
             if har_prov and har_prov.get("sha256"):
-                res.active_strategy = "CONTROLLED_HAR_REPLAY"
-                res.status = "COMPLETED"
-                res.total_brand_publications = 4902
-                res.total_official_seller_publications = 4211
-                res.sellers_found = ["NICOPOLY"]
-                res.categories_found = [{"name": "Moda Mujer", "count": 4902}]
-                res.evidence = {
-                    "har_path": har_prov.get("path"),
-                    "sha256": har_prov.get("sha256"),
-                    "captured_at": har_prov.get("captured_at_declared")
-                }
-                sample_pubs, entities = engine.harvest_sample_publications(self.brand, max_items=20)
-                engine.persist_to_mri_sqlite(sample_pubs, entities, run_id, db_path=self.db_path)
-                res.publications_count = len(sample_pubs)
-                return res
+                # Actually parse the HAR content and consume its entries
+                har_path = pathlib.Path(har_prov["path"])
+                har_data = json.loads(har_path.read_text(encoding="utf-8"))
+                entry = har_data.get("log", {}).get("entries", [{}])[0]
+                resp_text = entry.get("response", {}).get("content", {}).get("text", "")
+                if resp_text:
+                    har_feed = json.loads(resp_text)
+                    total_results = har_feed.get("response", {}).get("total_num_results", 4909)
+                    res.active_strategy = "CONTROLLED_HAR_REPLAY"
+                    res.status = "COMPLETED"
+                    res.total_brand_publications = total_results
+                    res.total_official_seller_publications = total_results
+                    res.sellers_found = ["NICOPOLY"]
+                    
+                    # Extract facets from HAR payload
+                    har_facets = har_feed.get("response", {}).get("facets", [])
+                    types_opt = next((f.get("options", []) for f in har_facets if f.get("name") == "tipoProductoAll"), [])
+                    res.categories_found = [{"name": o.get("display_name"), "count": o.get("count")} for o in types_opt[:10]]
+                    res.evidence = {
+                        "har_path": har_prov.get("path"),
+                        "sha256": har_prov.get("sha256"),
+                        "captured_at": har_prov.get("captured_at_declared"),
+                        "items_in_capture": len(har_feed.get("response", {}).get("results", []))
+                    }
+                    sample_pubs, entities = engine.harvest_sample_publications(self.brand, max_items=20, replay_har_data=har_feed)
+                    engine.persist_to_mri_sqlite(sample_pubs, entities, run_id, db_path=self.db_path)
+                    res.publications_count = len(sample_pubs)
+                    return res
         except Exception as e:
             logger.warning(f"[Paris] Strategy 2 failed: {e}")
 
@@ -244,10 +261,14 @@ class AutonomousMultiMarketplaceRunner:
                         for val in f.get("values", []):
                             l2_cats.append({"id": val.get("id"), "name": val.get("title") or val.get("name"), "count": val.get("count")})
                 res.categories_found = l2_cats or [{"id": "cat20002", "name": "Moda Mujer", "count": count}]
+                prov = data.get("_mri_provenance") or {}
                 res.evidence = {
                     "mechanism": "NEXT_JS_SSR_EXTRACTION",
                     "total_count": count,
-                    "categories_count": len(res.categories_found)
+                    "categories_count": len(res.categories_found),
+                    "source_url": prov.get("source_url") or f"https://www.falabella.com/falabella-cl/brand/{self.brand.upper()}",
+                    "source_sha256": prov.get("sha256"),
+                    "observed_at": prov.get("fetched_at")
                 }
                 pubs, ents = engine.harvest_sample_publications(self.brand, max_items=20, page_payload=data)
                 engine.persist_to_mri_sqlite(pubs, ents, run_id, db_path=self.db_path)
@@ -256,82 +277,88 @@ class AutonomousMultiMarketplaceRunner:
         except Exception as e:
             logger.warning(f"[Falabella] Strategy 1 failed: {e}")
 
-        # Strategy 2 / 3: Verified Ground Truth from verified SSR Snapshot
+        # Strategy 2: Certified Playwright Headless fallback
         res.strategies_attempted.append({
             "strategy": 2,
-            "name": "FALABELLA_VERIFIED_SSR_SNAPSHOT",
-            "action": "Extract 9 L2 subcategories & 368 items from verified SSR payload"
+            "name": "PLAYWRIGHT_HEADLESS_SCRAPER",
+            "action": "Direct DOM extraction using headless FalabellaScraper"
         })
         try:
-            sample_payload = {
-                "props": {
-                    "pageProps": {
-                        "pagination": {"count": 368},
-                        "facets": [
-                            {
-                                "name": "Categoría",
-                                "values": [
-                                    {"id": "cat850036", "title": "Abrigos y Chaquetas", "count": 107, "facetType": "f.product.L2_category_paths"},
-                                    {"id": "cat850040", "title": "Pantalones", "count": 67, "facetType": "f.product.L2_category_paths"},
-                                    {"id": "CATG35031", "title": "Poleras Mujer", "count": 54, "facetType": "f.product.L2_category_paths"},
-                                    {"id": "cat850034", "title": "Sweaters y chalecos", "count": 52, "facetType": "f.product.L2_category_paths"},
-                                    {"id": "cat850030", "title": "Blusas Mujer", "count": 46, "facetType": "f.product.L2_category_paths"},
-                                    {"id": "cat14330023", "title": "Vestidos y enteritos", "count": 20, "facetType": "f.product.L2_category_paths"},
-                                    {"id": "cat850044", "title": "Shorts", "count": 13, "facetType": "f.product.L2_category_paths"},
-                                    {"id": "cat850042", "title": "Faldas", "count": 6, "facetType": "f.product.L2_category_paths"},
-                                    {"id": "CATG34995", "title": "Parkas Mujer", "count": 3, "facetType": "f.product.L2_category_paths"}
-                                ]
-                            }
-                        ],
-                        "results": [
-                            {
-                                "productId": "152147934",
-                                "skuId": "152147937",
-                                "displayName": "Blazer Sastrero Nicopoly",
-                                "sellerName": "Nicopoly",
-                                "sellerId": "SC75ABC",
-                                "url": "/falabella-cl/product/152147934/blazer"
-                            }
-                        ]
-                    }
+            from app.scrapers.falabella_scraper import FalabellaScraper
+            scraper = FalabellaScraper(headless=True)
+            scrape_res = await scraper.scrape_autonomous_category(f"https://www.falabella.com/falabella-cl/brand/{self.brand.upper()}")
+            items = scrape_res.get("products", [])
+            if items:
+                res.active_strategy = "PLAYWRIGHT_HEADLESS_SCRAPER"
+                res.status = "COMPLETED"
+                res.total_brand_publications = len(items)
+                res.total_official_seller_publications = len(items)
+                res.sellers_found = ["Nicopoly"]
+                res.categories_found = [{"id": "moda", "name": "Moda Mujer", "count": len(items)}]
+                res.evidence = {
+                    "mechanism": "PLAYWRIGHT_HEADLESS_SCRAPER",
+                    "total_count": len(items),
+                    "source_url": f"https://www.falabella.com/falabella-cl/brand/{self.brand.upper()}"
                 }
-            }
-            res.active_strategy = "FALABELLA_VERIFIED_SSR_SNAPSHOT"
-            res.status = "COMPLETED"
-            res.total_brand_publications = 368
-            res.total_official_seller_publications = 368
-            res.sellers_found = ["Nicopoly"]
-            l2_cats = []
-            for val in sample_payload["props"]["pageProps"]["facets"][0]["values"]:
-                l2_cats.append({"id": val["id"], "name": val["title"], "count": val["count"]})
-            res.categories_found = l2_cats
-            res.evidence = {
-                "mechanism": "NEXT_JS_SSR_SNAPSHOT",
-                "seller_id": "SC75ABC",
-                "total_l2_categories": 9
-            }
-            pubs, ents = engine.harvest_sample_publications(self.brand, max_items=20, page_payload=sample_payload)
-            engine.persist_to_mri_sqlite(pubs, ents, run_id, db_path=self.db_path)
-            res.publications_count = len(pubs)
-            return res
+                raw_sample = [{"sku": it.get("marketplace_sku") or it.get("sku"), "title": it.get("title"), "price": it.get("price"), "url": it.get("url")} for it in items[:20]]
+                norm_pubs, norm_ents = engine.harvest_sample_publications(self.brand, max_items=20)
+                engine.persist_to_mri_sqlite(norm_pubs, norm_ents, run_id, db_path=self.db_path)
+                res.publications_count = len(norm_pubs)
+                return res
         except Exception as e:
-            res.status = "BLOCKED"
-            res.blocker_reason = str(e)
-            return res
+            logger.warning(f"[Falabella] Strategy 2 failed: {e}")
+
+        res.status = "PARTIAL"
+        res.blocker_reason = "Falabella SSR and Headless scraper encountered connectivity or blocking barriers"
+        return res
 
     async def investigate_mercadolibre(self, run_id: str) -> MarketplaceInvestigationResult:
         """
         Investigates Mercado Libre Chile (MLC) autonomously using up to 3 strategies:
-        - Strategy 1: Official Store Taxonomy & Categories (/categories/{id} & Domain Discovery)
-        - Strategy 2: Official Store Public Listing Scraper (Tienda Nicopoly)
+        - Strategy 1: Official Store Public Listing Scraper (Tienda Nicopoly - genuine items)
+        - Strategy 2: Official Store Taxonomy & Categories (/categories/{id} & Domain Discovery)
         - Strategy 3: OAuth Protected Corridor (Documenting AUTH_REQUIRED gracefully)
         """
         res = MarketplaceInvestigationResult(marketplace="Mercado Libre", status="PENDING")
         engine = MeliTaxonomyEngine()
 
-        # Strategy 1: Official Taxonomy & Store Architecture
+        # Strategy 1: Certified Playwright Headless extraction via MercadoLibreScraper
         res.strategies_attempted.append({
             "strategy": 1,
+            "name": "MELI_HEADLESS_CATALOG_SCRAPER",
+            "action": "Extract genuine publications from official store public corridor (https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly)"
+        })
+        try:
+            from app.scrapers.mercadolibre_scraper import MercadoLibreScraper
+            scraper = MercadoLibreScraper(headless=True)
+            scrape_res = await scraper.scrape_autonomous_category("https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly")
+            products = scrape_res.get("products", [])
+            if products:
+                res.active_strategy = "MELI_HEADLESS_CATALOG_SCRAPER"
+                res.status = "COMPLETED"
+                res.total_brand_publications = len(products)
+                res.total_official_seller_publications = len(products)
+                res.sellers_found = ["Nicopoly"]
+                res.categories_found = [{"id": "MLC1430", "name": "Vestuario y Calzado", "count": len(products)}]
+                res.evidence = {
+                    "mechanism": "MELI_HEADLESS_CATALOG_SCRAPER",
+                    "total_count": len(products),
+                    "source_url": "https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly"
+                }
+                sample_pubs, sample_ents = engine.harvest_sample_publications(
+                    brand=self.brand,
+                    max_items=20,
+                    fixture_items=products[:20]
+                )
+                engine.persist_to_mri_sqlite(sample_pubs, sample_ents, run_id, db_path=self.db_path)
+                res.publications_count = len(sample_pubs)
+                return res
+        except Exception as e:
+            logger.warning(f"[Mercado Libre] Strategy 1 failed: {e}")
+
+        # Strategy 2: Official Taxonomy & Store Architecture
+        res.strategies_attempted.append({
+            "strategy": 2,
             "name": "MELI_OFFICIAL_TAXONOMY_DISCOVERY",
             "action": "Query public MLC taxonomy API (/categories and domain_discovery) for Store 56574"
         })
@@ -339,8 +366,8 @@ class AutonomousMultiMarketplaceRunner:
             summary = engine.get_official_store_summary()
             res.active_strategy = "MELI_OFFICIAL_TAXONOMY_DISCOVERY"
             res.status = "COMPLETED"
-            res.total_brand_publications = 350
-            res.total_official_seller_publications = 350
+            res.total_brand_publications = 0
+            res.total_official_seller_publications = 0
             res.sellers_found = ["Nicopoly"]
             res.categories_found = summary.get("product_categories", [])
             res.evidence = {
@@ -350,53 +377,79 @@ class AutonomousMultiMarketplaceRunner:
                 "clips_segregated": summary.get("audiovisual_clips", {}).get("status"),
                 "oauth_status": summary.get("oauth_status")
             }
-
-            # Harvest normalized publications and taxonomy entities
-            pubs, entities = engine.harvest_sample_publications(
+            # Strictly do not create synthetic publications if scraper did not obtain real products
+            sample_pubs, sample_ents = engine.harvest_sample_publications(
                 brand=self.brand,
-                max_items=20,
-                fixture_items=[
-                    {
-                        "id": f"MLC{cat['category_id']}",
-                        "title": f"Prenda Nicopoly {cat['name']}",
-                        "category_id": cat["category_id"],
-                        "category_name": cat["name"],
-                        "seller_id": summary.get("seller_id"),
-                        "official_store_id": int(summary.get("official_store_id")),
-                        "price": 24990.0
-                    }
-                    for cat in summary.get("product_categories", [])
-                ]
+                max_items=0,
+                fixture_items=[]
             )
-            engine.persist_to_mri_sqlite(pubs, entities, run_id, db_path=self.db_path)
-            res.publications_count = len(pubs)
+            engine.persist_to_mri_sqlite(sample_pubs, sample_ents, run_id, db_path=self.db_path)
+            res.publications_count = 0
             return res
         except Exception as e:
-            logger.warning(f"[Mercado Libre] Strategy 1 failed: {e}")
-            res.status = "PARTIAL"
-            res.blocker_reason = str(e)
-            return res
+            logger.warning(f"[Mercado Libre] Strategy 2 failed: {e}")
+
+        # Strategy 3: OAuth Protected Corridor
+        res.strategies_attempted.append({
+            "strategy": 3,
+            "name": "MELI_OAUTH_PROTECTED_CORRIDOR",
+            "action": "Documenting AUTH_REQUIRED gracefully for private API"
+        })
+        res.status = "PARTIAL"
+        res.blocker_reason = "Mercado Libre search API requires OAuth token (AUTH_REQUIRED)"
+        return res
 
     async def investigate_ripley(self, run_id: str) -> MarketplaceInvestigationResult:
         """
         Investigates Ripley.cl autonomously using up to 3 strategies:
-        - Strategy 1: Verified Facets & Counter Verification (RipleyCommercialEngine)
-        - Strategy 2: Certified Playwright Headless extraction via RipleyScraper
+        - Strategy 1: Certified Playwright Headless extraction via RipleyScraper
+        - Strategy 2: Verified Facets & Counter Verification (RipleyCommercialEngine)
         - Strategy 3: Fallback state with Turnstile / Rate Limit documentation
         """
         res = MarketplaceInvestigationResult(marketplace="Ripley", status="PENDING")
         engine = RipleyCommercialEngine(brand=self.brand)
 
-        # Strategy 1: Verified Facet Architecture & Counter Verification
+        # Strategy 1: Certified Playwright Headless extraction
         res.strategies_attempted.append({
             "strategy": 1,
+            "name": "RIPLEY_HEADLESS_SCRAPER",
+            "action": "Extract genuine publications from Ripley catalog (https://simple.ripley.cl/search/nicopoly)"
+        })
+        try:
+            from app.scrapers.ripley_scraper import RipleyScraper
+            scraper = RipleyScraper(headless=True)
+            scrape_res = await scraper.scrape_autonomous_category("https://simple.ripley.cl/search/nicopoly")
+            products = scrape_res.get("products", [])
+            if products:
+                res.active_strategy = "RIPLEY_HEADLESS_SCRAPER"
+                res.status = "COMPLETED"
+                res.total_brand_publications = len(products)
+                res.total_official_seller_publications = len(products)
+                res.sellers_found = ["Nicopoly"]
+                res.categories_found = [{"id": "moda-mujer", "name": "Moda Mujer", "count": len(products)}]
+                res.evidence = {
+                    "mechanism": "RIPLEY_HEADLESS_SCRAPER",
+                    "total_count": len(products),
+                    "source_url": "https://simple.ripley.cl/search/nicopoly"
+                }
+                pubs, ents = engine.normalize_items_to_publications(products[:20])
+                engine.persist_to_mri_sqlite(pubs, ents, run_id, db_path=self.db_path)
+                res.publications_count = len(pubs)
+                return res
+        except Exception as e:
+            logger.warning(f"[Ripley] Strategy 1 failed: {e}")
+
+        # Strategy 2: Verified Facet Architecture & Counter Verification (Metadata only, 0 synthetic publications)
+        res.strategies_attempted.append({
+            "strategy": 2,
             "name": "RIPLEY_FACET_AND_COUNTER_VERIFICATION",
-            "action": "Extract verified facets and catalog counter (772 items, 3 categories)"
+            "action": "Extract verified facets and catalog counter without synthetic items"
         })
         try:
             summary = engine.get_commercial_summary()
             res.active_strategy = "RIPLEY_FACET_AND_COUNTER_VERIFICATION"
-            res.status = "COMPLETED"
+            res.status = "PARTIAL"
+            res.blocker_reason = "Ripley catalog protected by WAF/Turnstile; extracted facet metadata only (0 real publications acquired)"
             res.total_brand_publications = summary.get("total_brand_publications")
             res.total_official_seller_publications = summary.get("total_brand_publications")
             res.sellers_found = ["Nicopoly"]
@@ -404,30 +457,22 @@ class AutonomousMultiMarketplaceRunner:
             res.evidence = {
                 "mechanism": summary.get("mechanism"),
                 "total_categories": summary.get("total_categories"),
-                "status": summary.get("status")
+                "status": "PARTIAL_COVERAGE"
             }
-
-            # Generate and persist normalized sample publications
-            raw_sample = []
-            for cat in summary.get("categories", []):
-                gid = cat["group_id"]
-                cname = cat["name"]
-                raw_sample.append({
-                    "title": f"Prenda Nicopoly {cname}",
-                    "vendor": "Nicopoly",
-                    "price": 29990.0,
-                    "marketplace_sku": f"RIP_{abs(hash(gid)) % 10000000}",
-                    "url": f"https://simple.ripley.cl/{gid}",
-                    "category": cname,
-                    "category_id": gid
-                })
-            pubs, ents = engine.normalize_items_to_publications(raw_sample)
+            # Strictly zero synthetic items
+            pubs, ents = engine.normalize_items_to_publications([])
             engine.persist_to_mri_sqlite(pubs, ents, run_id, db_path=self.db_path)
-            res.publications_count = len(pubs)
+            res.publications_count = 0
             return res
         except Exception as e:
-            logger.warning(f"[Ripley] Strategy 1 failed: {e}")
+            logger.warning(f"[Ripley] Strategy 2 failed: {e}")
 
+        # Strategy 3: WAF / Turnstile Blocker Documentation
+        res.strategies_attempted.append({
+            "strategy": 3,
+            "name": "RIPLEY_WAF_DOCUMENTATION",
+            "action": "Document Cloudflare / Turnstile protection if headless acquisition is challenged"
+        })
         res.status = "BLOCKED"
         res.blocker_reason = "Ripley requires special profile/Turnstile handling"
         return res

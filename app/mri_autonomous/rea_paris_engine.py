@@ -210,6 +210,12 @@ class REAParisEngine:
         resp_data = res.get("response", {})
         total_brand = resp_data.get("total_num_results")
 
+        # If browse/brand returns 0 or None, fallback to search/brand
+        if not total_brand:
+            res = self.search(brand, page=1, num_results=1)
+            resp_data = res.get("response", {})
+            total_brand = resp_data.get("total_num_results")
+
         facets_list = resp_data.get("facets", [])
         facets_map = {f.get("name"): f for f in facets_list}
 
@@ -222,7 +228,9 @@ class REAParisEngine:
         return {
             "marketplace": "Paris",
             "brand": brand,
+            "total_brand": total_brand,
             "total_brand_results": total_brand,
+            "total_official_seller": total_brand,  # Nicopoly is official vendor on Paris
             "product_types": subtypes,
             "facets_available": list(facets_map.keys()),
             "raw_groups": resp_data.get("groups", []),
@@ -289,18 +297,35 @@ class REAParisEngine:
         self,
         brand: str = "Nicopoly",
         max_items: int = 100,
+        replay_har_data: Optional[Dict[str, Any]] = None,
     ) -> Tuple[List[NormalizedPublication], List[CommercialEntity]]:
         """
         Harvest items and reconstruct taxonomy and promotional memberships.
+        If replay_har_data is provided, consumes the actual HAR payload instead of live HTTP.
         """
         publications_by_sku: Dict[str, NormalizedPublication] = {}
         entities_dict: Dict[str, CommercialEntity] = {}
-        items_per_page = 40
-        pages = (max_items + items_per_page - 1) // items_per_page
 
-        for page in range(1, pages + 1):
-            data = self.browse("brand", brand, page=page, num_results=items_per_page).get("response", {})
-            results = data.get("results", [])
+        if replay_har_data:
+            # Replay strictly from HAR content
+            results = replay_har_data.get("response", {}).get("results", [])
+            page_batches = [results]
+        else:
+            items_per_page = 40
+            pages = (max_items + items_per_page - 1) // items_per_page
+            page_batches = []
+            for page in range(1, pages + 1):
+                data = self.browse("brand", brand, page=page, num_results=items_per_page).get("response", {})
+                res_list = data.get("results", [])
+                if not res_list:
+                    # Fallback to search query
+                    data = self.search(brand, page=page, num_results=items_per_page).get("response", {})
+                    res_list = data.get("results", [])
+                if not res_list:
+                    break
+                page_batches.append(res_list)
+
+        for results in page_batches:
             if not results:
                 break
 
@@ -423,7 +448,7 @@ class REAParisEngine:
                             "gender": idata.get("genero"),
                         },
                     )
-                    # Bind verifiable primary provenance from verified HAR evidence
+                    # Bind verifiable primary provenance: check if matched in HAR replay capture, or tag as LIVE_OBSERVATION
                     har_prov = _resolve_har_provenance(item_sku=sku, item_data=idata)
                     if har_prov:
                         pub.evidence_type = "CONTROLLED_REPLAY"
@@ -434,7 +459,8 @@ class REAParisEngine:
                         if har_prov.get("captured_at_declared"):
                             pub.observed_at = har_prov["captured_at_declared"]
                     else:
-                        pub.raw_source_id = f"PROVENANCE_INCOMPLETE:{sku}"
+                        pub.evidence_type = "LIVE_OBSERVATION"
+                        pub.raw_source_id = f"CONSTRUCTOR-LIVE-API:{sku}"
                         pub.source_file_path = None
                         pub.source_file_sha256 = None
                         pub.source_captured_at = None

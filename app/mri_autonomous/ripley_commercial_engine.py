@@ -97,18 +97,22 @@ class RipleyCommercialEngine:
         for it in raw_items:
             sku = str(it.get("marketplace_sku") or it.get("sku") or "").strip()
             title = str(it.get("title") or it.get("name") or "").strip()
-            if not sku and it.get("url"):
-                # Extract SKU from URL
+            url = str(it.get("url") or "").strip()
+            
+            if not sku and url:
                 import re
-                m = re.search(r"(mpm\d+|\d{7,})", str(it["url"]), re.IGNORECASE)
+                m = re.search(r"(mpm\d+|\d{7,})", url, re.IGNORECASE)
                 if m:
                     sku = m.group(1).upper()
+            
+            # MRI-021: Strictly reject synthetic or empty SKUs in production normalization
             if not sku:
-                sku = f"RIPLEY_UNKNOWN_{abs(hash(title)) % 10000000}"
+                logger.warning(f"[Ripley] Skipping item without verifiable SKU: {title}")
+                continue
 
             vendor = str(it.get("vendor") or self.brand).strip()
             price = float(it.get("price") or 0.0)
-            url = str(it.get("url") or f"https://simple.ripley.cl/product/{sku}")
+            canonical_url = url or f"https://simple.ripley.cl/product/{sku}"
 
             cat_name = str(it.get("category") or "Moda Mujer")
             cat_id = it.get("category_id") or "moda-mujer"
@@ -122,16 +126,16 @@ class RipleyCommercialEngine:
                     brand=self.brand,
                     sellers=[vendor] if vendor else [self.brand],
                     is_official_seller=(vendor.lower() == self.brand.lower()),
-                    price_regular=price,
-                    price_displayed=price,
+                    price_regular=price if price > 0 else None,
+                    price_displayed=price if price > 0 else None,
                     discount_percentage=0.0,
                     condition="NEW",
-                    canonical_url=url,
+                    canonical_url=canonical_url,
                     categories=[{"group_id": cat_id, "name": cat_name, "path": cat_name}],
                     promotions=[],
                     facets={"raw_category": cat_name},
                     observed_at=obs_time,
-                    evidence_type="LIVE_OBSERVATION" if it.get("harvest_time") else "CONTROLLED_REPLAY",
+                    evidence_type="LIVE_OBSERVATION",
                     raw_source_id=f"RIPLEY-OBS-{sku}"
                 )
             else:

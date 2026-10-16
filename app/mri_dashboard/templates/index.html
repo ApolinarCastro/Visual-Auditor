@@ -693,17 +693,24 @@
                 const mkts = summ?.marketplaces || {};
                 let rows = '';
                 for (const [mname, mdata] of Object.entries(mkts)) {
+                    let badgeClass = 'badge-info';
+                    if (mdata.status === 'OPERATIONAL' || mdata.status === 'COMPLETED') badgeClass = 'badge-success';
+                    else if (mdata.status === 'PARTIAL' || mdata.status === 'PARTIALLY_OPERATIONAL') badgeClass = 'badge-warning';
+                    else if (mdata.status === 'BLOCKED' || mdata.status === 'FAILED') badgeClass = 'badge-danger';
+                    else if (mdata.status === 'AUTH_REQUIRED') badgeClass = 'badge-purple';
+
                     rows += `<tr>
                         <td><strong>${mname}</strong></td>
                         <td>${mdata.mechanism}</td>
-                        <td><strong>${mdata.brand_publications || '-'}</strong></td>
-                        <td>${mdata.official_seller_publications || '-'}</td>
+                        <td><strong>${mdata.brand_publications ?? '-'}</strong></td>
+                        <td>${mdata.official_seller_publications ?? '-'}</td>
                         <td>${mdata.categories_count || mdata.product_categories_count || '-'}</td>
-                        <td><span class="badge badge-success">${mdata.status}</span></td>
+                        <td><span class="badge ${badgeClass}">${mdata.status}</span></td>
                     </tr>`;
                 }
+                const runInfo = summ?.run_id ? `<span style="font-size:0.8rem; color:var(--text-muted); font-weight:normal;"> (Run ID: <code>${summ.run_id}</code>)</span>` : '';
                 container.innerHTML = `
-                    <h3 style="color:#fff; margin-bottom:12px;">Comparativa Estratégica 360° — 4 Marketplaces de Chile</h3>
+                    <h3 style="color:#fff; margin-bottom:12px;">Comparativa Estratégica 360° — 4 Marketplaces de Chile${runInfo}</h3>
                     <table>
                         <thead>
                             <tr><th>Marketplace</th><th>Mecanismo de Descubrimiento</th><th>Pubs Marca</th><th>Pubs Seller Oficial</th><th>Categorías</th><th>Estado Operativo</th></tr>

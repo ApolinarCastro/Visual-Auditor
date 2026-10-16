@@ -17,6 +17,7 @@ Deduplicates publications while merging multi-memberships.
 Outputs to shared MRI NormalizedPublication / CommercialEntity contracts.
 """
 
+import hashlib
 import json
 import logging
 import re
@@ -90,7 +91,9 @@ class FalabellaSSREngine:
         try:
             with urllib.request.urlopen(req, timeout=15) as res:
                 html = res.read().decode("utf-8", errors="replace")
-                return self.extract_next_data(html, full_url)
+                fetch_time = datetime.now(timezone.utc).isoformat()
+                html_sha = hashlib.sha256(html.encode("utf-8")).hexdigest()
+                return self.extract_next_data(html, full_url, fetch_time=fetch_time, fetch_sha256=html_sha)
         except Exception as e:
             logger.error(f"Falabella SSR fetch failed for {full_url}: {e}")
             return {
@@ -100,7 +103,7 @@ class FalabellaSSREngine:
             }
 
     @staticmethod
-    def extract_next_data(html: str, source_url: str = "") -> Dict[str, Any]:
+    def extract_next_data(html: str, source_url: str = "", fetch_time: Optional[str] = None, fetch_sha256: Optional[str] = None) -> Dict[str, Any]:
         """
         Parses __NEXT_DATA__ JSON tag from raw HTML string.
         """
@@ -117,6 +120,12 @@ class FalabellaSSREngine:
 
         try:
             data = json.loads(match.group(1))
+            if fetch_time or fetch_sha256:
+                data["_mri_provenance"] = {
+                    "source_url": source_url,
+                    "fetched_at": fetch_time or datetime.now(timezone.utc).isoformat(),
+                    "sha256": fetch_sha256 or hashlib.sha256(html.encode("utf-8")).hexdigest()
+                }
             return data
         except Exception as err:
             logger.error(f"Failed to parse __NEXT_DATA__ JSON: {err}")
@@ -319,6 +328,11 @@ class FalabellaSSREngine:
             specs = item.get("topSpecifications", {})
             facets = {"topSpecifications": specs, "sellerId": sellerId if (sellerId := item.get("sellerId")) else None}
 
+            prov = data.get("_mri_provenance") or {}
+            prov_sha = prov.get("sha256")
+            prov_url = prov.get("source_url") or canonical_url
+            prov_time = prov.get("fetched_at")
+
             if sku_id in publications_by_sku:
                 # Merge multi-membership
                 existing = publications_by_sku[sku_id]
@@ -331,7 +345,7 @@ class FalabellaSSREngine:
                     if pr not in existing.promotions:
                         existing.promotions.append(pr)
             else:
-                publications_by_sku[sku_id] = NormalizedPublication(
+                pub = NormalizedPublication(
                     publication_id=f"FALA_{sku_id}",
                     marketplace="Falabella",
                     sku=sku_id,
@@ -348,6 +362,17 @@ class FalabellaSSREngine:
                     promotions=promos,
                     facets=facets
                 )
+                if prov_sha:
+                    pub.evidence_type = "LIVE_OBSERVATION"
+                    pub.source_file_path = prov_url
+                    pub.source_file_sha256 = prov_sha
+                    pub.source_captured_at = prov_time
+                    pub.raw_source_id = f"FALA-SSR-SHA256:{prov_sha[:16]}:{sku_id}"
+                else:
+                    pub.evidence_type = "LIVE_OBSERVATION"
+                    pub.raw_source_id = f"FALA-SSR-{sku_id}"
+
+                publications_by_sku[sku_id] = pub
 
         return list(publications_by_sku.values()), list(entities_dict.values())
 
@@ -411,7 +436,7 @@ class FalabellaSSREngine:
             """, (prod_id, pub.brand, "ACTIVE", now_str))
 
             primary_cat = pub.categories[0]["name"] if pub.categories else "NO_VERIFICADO"
-            comm_attrs = json.dumps({
+            pub_attrs = {
                 "sellers": pub.sellers,
                 "is_official_seller": pub.is_official_seller,
                 "condition": pub.condition,
@@ -419,7 +444,15 @@ class FalabellaSSREngine:
                 "price_displayed": pub.price_displayed,
                 "promotions": pub.promotions,
                 "facets": pub.facets
-            }, ensure_ascii=False)
+            }
+            if getattr(pub, "source_file_path", None):
+                pub_attrs["source_file_path"] = pub.source_file_path
+            if getattr(pub, "source_file_sha256", None):
+                pub_attrs["source_file_sha256"] = pub.source_file_sha256
+            if getattr(pub, "source_captured_at", None):
+                pub_attrs["source_captured_at"] = pub.source_captured_at
+
+            comm_attrs = json.dumps(pub_attrs, ensure_ascii=False)
 
             # Check for existing publication to archive into historical table (018R pattern)
             existing = cur.execute("""
@@ -495,6 +528,9 @@ class FalabellaSSREngine:
                 # Delete old active links for this publication to enforce run isolation
                 cur.execute("DELETE FROM mri_publication_categories WHERE publication_id = ?", (pub.publication_id,))
 
+            ev_type = getattr(pub, "evidence_type", None) or "SSR_PAGE_PROPS_RECORD"
+            raw_src = getattr(pub, "raw_source_id", None) or f"FALA-SSR-{pub.sku}"
+
             cur.execute("""
                 INSERT OR REPLACE INTO mri_publications (
                     publication_id, product_id, marketplace, marketplace_product_id,
@@ -507,7 +543,7 @@ class FalabellaSSREngine:
                 pub.publication_id, prod_id, pub.marketplace, pub.sku,
                 pub.canonical_url, "OBSERVED", pub.observed_at, run_id, idx,
                 "FALABELLA_SSR_GRID", "EXACT", "CORRECT",
-                "SSR_PAGE_PROPS_RECORD", f"FALA-SSR-{pub.sku}",
+                ev_type, raw_src,
                 "OBSERVED", "TARGET_IDENTITY_VERIFIED", primary_cat,
                 "FALABELLA_TAXONOMY", primary_cat, "CORRECT", comm_attrs
             ))
