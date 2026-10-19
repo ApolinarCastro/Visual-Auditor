@@ -503,6 +503,7 @@ def fetch_run_publications(run_id: str, db_path: Optional[str] = None) -> List[D
             hist_cat_query = """
                 SELECT hpc.publication_id, hpc.category_id, cat.category_name
                 FROM mri_historical_publication_categories hpc
+                INNER JOIN mri_historical_publications hp ON hpc.publication_id = hp.publication_id AND hpc.run_id = hp.run_id
                 LEFT JOIN mri_categories cat ON hpc.category_id = cat.category_id
                 WHERE hpc.run_id = ?
             """
@@ -1233,30 +1234,44 @@ async def get_multimarketplace_summary(run_id: str = None):
                         pass
 
 
-            # Query categories count per marketplace SCOPED to target_run_id
+            # Query categories count per marketplace SCOPED strictly to target_run_id
             try:
+                has_active_for_run = cur.execute(
+                    "SELECT 1 FROM mri_publications WHERE run_id = ? LIMIT 1", (target_run_id,)
+                ).fetchone()
                 has_hist_cat = cur.execute(
                     "SELECT 1 FROM sqlite_master WHERE type='table' AND name='mri_historical_publication_categories'"
                 ).fetchone()
-                cat_query = """
-                    SELECT p.marketplace, COUNT(DISTINCT pc.category_id)
-                    FROM (
-                        SELECT publication_id, marketplace FROM mri_publications WHERE run_id = ?
-                        """ + ("UNION ALL SELECT publication_id, marketplace FROM mri_historical_publications WHERE run_id = ?" if has_hist else "") + """
-                    ) p
-                    JOIN (
-                        SELECT publication_id, category_id FROM mri_publication_categories
-                        """ + ("UNION ALL SELECT publication_id, category_id FROM mri_historical_publication_categories WHERE run_id = ?" if has_hist_cat else "") + """
-                    ) pc ON p.publication_id = pc.publication_id
-                    GROUP BY p.marketplace
-                """
-                cat_params = [target_run_id]
-                if has_hist: cat_params.append(target_run_id)
-                if has_hist_cat: cat_params.append(target_run_id)
-                cat_counts = cur.execute(cat_query, tuple(cat_params)).fetchall()
-                for mkt, num_cats in cat_counts:
-                    if mkt in marketplaces_data:
-                        marketplaces_data[mkt]["categories_count"] = num_cats
+
+                cat_parts = []
+                cat_params = []
+                if has_active_for_run:
+                    cat_parts.append("""
+                        SELECT p.publication_id, p.marketplace, pc.category_id
+                        FROM mri_publications p
+                        JOIN mri_publication_categories pc ON p.publication_id = pc.publication_id
+                        WHERE p.run_id = ? AND pc.status = 'ACTIVE'
+                    """)
+                    cat_params.append(target_run_id)
+                if has_hist_cat:
+                    cat_parts.append("""
+                        SELECT hp.publication_id, hp.marketplace, hpc.category_id
+                        FROM mri_historical_publications hp
+                        JOIN mri_historical_publication_categories hpc ON hp.publication_id = hpc.publication_id AND hp.run_id = hpc.run_id
+                        WHERE hp.run_id = ?
+                    """)
+                    cat_params.append(target_run_id)
+
+                if cat_parts:
+                    cat_query = f"""
+                        SELECT pc.marketplace, COUNT(DISTINCT pc.category_id)
+                        FROM ({' UNION ALL '.join(cat_parts)}) pc
+                        GROUP BY pc.marketplace
+                    """
+                    cat_counts = cur.execute(cat_query, tuple(cat_params)).fetchall()
+                    for mkt, num_cats in cat_counts:
+                        if mkt in marketplaces_data:
+                            marketplaces_data[mkt]["categories_count"] = num_cats
             except Exception:
                 pass
 
