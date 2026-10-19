@@ -83,6 +83,8 @@ class AutonomousMultiMarketplaceRunner:
     def _init_sqlite_tables(self, conn: sqlite3.Connection):
         """Ensures all MRI tables exist in the target SQLite database."""
         StorageConfig.assert_write_allowed(self.db_path)
+
+
         conn.execute("""
             CREATE TABLE IF NOT EXISTS mri_runs (
                 run_id TEXT PRIMARY KEY, started_at TEXT, finished_at TEXT, marketplace TEXT,
@@ -350,9 +352,17 @@ class AutonomousMultiMarketplaceRunner:
                     max_items=20,
                     fixture_items=products[:20]
                 )
-                engine.persist_to_mri_sqlite(sample_pubs, sample_ents, run_id, db_path=self.db_path)
+                engine.persist_to_mri_sqlite(
+                    sample_pubs,
+                    sample_ents,
+                    run_id,
+                    db_path=self.db_path,
+                    execution_mode="MELI_HEADLESS_CATALOG_SCRAPER",
+                    source_method="MELI_HEADLESS_CATALOG_SCRAPER"
+                )
                 res.publications_count = len(sample_pubs)
                 return res
+
         except Exception as e:
             logger.warning(f"[Mercado Libre] Strategy 1 failed: {e}")
 
@@ -435,33 +445,41 @@ class AutonomousMultiMarketplaceRunner:
                 pubs, ents = engine.normalize_items_to_publications(products[:20])
                 engine.persist_to_mri_sqlite(pubs, ents, run_id, db_path=self.db_path)
                 res.publications_count = len(pubs)
-                return res
         except Exception as e:
-            logger.warning(f"[Ripley] Strategy 1 failed: {e}")
+            err_str = str(e)
+            logger.warning(f"[Ripley] Strategy 1 failed: {err_str}")
+            import re
+            is_waf = bool(re.search(r"\b(waf|turnstile|challenge|403|captcha|cloudflare)\b", err_str, re.IGNORECASE)) and "not_waf" not in err_str.lower()
+            if is_waf:
+                blocker = f"Ripley catalog protected by WAF/Turnstile: {err_str}"
+            else:
+                blocker = f"Ripley acquisition failed ({type(e).__name__}): {err_str}"
 
-        # Strategy 2: Verified Facet Architecture & Counter Verification (Metadata only, 0 synthetic publications)
+
+        # Strategy 2: Facet & Category Fallback (Documented without attributing synthetic commercial counts)
         res.strategies_attempted.append({
             "strategy": 2,
             "name": "RIPLEY_FACET_AND_COUNTER_VERIFICATION",
-            "action": "Extract verified facets and catalog counter without synthetic items"
+            "action": "Document verified taxonomy structure without attributing unacquired publications"
         })
         try:
             summary = engine.get_commercial_summary()
             res.active_strategy = "RIPLEY_FACET_AND_COUNTER_VERIFICATION"
-            res.status = "PARTIAL"
-            res.blocker_reason = "Ripley catalog protected by WAF/Turnstile; extracted facet metadata only (0 real publications acquired)"
-            res.total_brand_publications = summary.get("total_brand_publications")
-            res.total_official_seller_publications = summary.get("total_brand_publications")
-            res.sellers_found = ["Nicopoly"]
-            res.categories_found = summary.get("categories", [])
+            res.status = "SOURCE_BLOCKED" if is_waf else "PARTIAL"
+            res.blocker_reason = blocker
+            # Do not assert unverified catalog publications when acquisition failed
+            res.total_brand_publications = 0
+            res.total_official_seller_publications = 0
+            res.sellers_found = []
+            res.categories_found = []
             res.evidence = {
-                "mechanism": summary.get("mechanism"),
-                "total_categories": summary.get("total_categories"),
-                "status": "PARTIAL_COVERAGE"
+                "mechanism": "Ripley Scraper Failure / Unverified Facets",
+                "failure_cause": blocker,
+                "status": "UNVERIFIED_DUE_TO_ACQUISITION_FAILURE"
             }
             # Strictly zero synthetic items
             pubs, ents = engine.normalize_items_to_publications([])
-            engine.persist_to_mri_sqlite(pubs, ents, run_id, db_path=self.db_path)
+            engine.persist_to_mri_sqlite(pubs, ents, run_id, db_path=self.db_path, terminal_state=res.status)
             res.publications_count = 0
             return res
         except Exception as e:
@@ -474,8 +492,9 @@ class AutonomousMultiMarketplaceRunner:
             "action": "Document Cloudflare / Turnstile protection if headless acquisition is challenged"
         })
         res.status = "BLOCKED"
-        res.blocker_reason = "Ripley requires special profile/Turnstile handling"
+        res.blocker_reason = blocker if 'blocker' in locals() else "Ripley requires special profile/Turnstile handling"
         return res
+
 
     async def execute_autonomous_order(
         self,
@@ -485,14 +504,19 @@ class AutonomousMultiMarketplaceRunner:
         """
         Executes the mandatory natural language order across all 4 marketplaces.
         """
+        # Enforce write barrier immediately before any operation or connection
+        StorageConfig.assert_write_allowed(self.db_path)
         run_id = f"{run_id_prefix}_{int(time.time())}"
         started_at = datetime.now(timezone.utc).isoformat()
         logger.info(f"=== Starting Autonomous Multi-Marketplace Investigation [{run_id}] ===")
         logger.info(f"Order: {instruction}")
 
-        # Initialize SQLite schema
+        # Initialize SQLite schema - enforce barrier immediately prior to connection
+        StorageConfig.assert_write_allowed(self.db_path)
         with sqlite3.connect(self.db_path) as conn:
             self._init_sqlite_tables(conn)
+
+
 
         decisions_log = []
 

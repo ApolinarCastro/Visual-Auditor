@@ -151,6 +151,14 @@ Durante la auditoría semántica de seguridad en VA-EXECUTIVE-DASHBOARD-SEMANTIC
    - Suite de regresión pasando (13/13 guardrails, 2/2 materialización).
 Status: RESOLVED_AND_VERIFIED (PASS).
 
+## F-021 — Defectos materiales de validación de verdad (MRI-CODEX-TRUTH-VALIDATION-022)
+Durante la auditoría independiente de Codex sobre MRI-021, se identificaron defectos en la barrera pre-connect, procedencia de fuentes y conteos en fallas:
+1. `db_path` validado solo en constructor: Una reasignación posterior a la instanciación podía alcanzar `sqlite3.connect`. Resuelto agregando `StorageConfig.assert_write_allowed(self.db_path)` inmediatamente antes de cada llamada de conexión.
+2. Atribución de conteos estáticos en falla de Ripley: Cuando el scraper fallaba, se persistían 772 publicaciones y 3 categorías estáticas. Resuelto estableciendo 0 publicaciones y documentando la causa de falla real.
+3. Procedencia de Mercado Libre declarada como API oficial: Scraper headless registraba `OFFICIAL_MELI_API`. Corregido para registrar fidedignamente `MELI_HEADLESS_CATALOG_SCRAPER` y `LIVE_OBSERVATION`.
+4. Alcance no delimitado de categorías en API: `/api/multimarketplace/summary` leía totales globales de `mri_categories`. Corregido para limitar las consultas al `target_run_id`.
+Status: RESOLVED_AND_VERIFIED (PASS).
+
 F o r e n s i c   c e r t i f i c a t i o n   f a i l e d   d u e   t o   G I T _ S H A _ M I S M A T C H   ( l o c a l   a h e a d   o f   r e m o t e ) .   T h e   o r i g i n a l   i m p l e m e n t a t i o n   t a s k   V A - H I S T O R Y - R O U T E S - T A X O N O M Y - R E A D I N E S S - 0 0 1   d i d   n o t   p u s h   t o   o r i g i n .  
  V A - H I S T O R Y - R O U T E S - T A X O N O M Y - F O R E N S I C - C E R T - 0 0 1 :   F o r e n s i c   c e r t i f i c a t i o n   f a i l e d   b e c a u s e   t h e   p r i o r   i m p l e m e n t a t i o n   t a s k   c o m m i t t e d   4 0 0 +   t e m p o r a r y   s c r a t c h   f i l e s   i n t o   t h e   b a s e l i n e   r e p o s i t o r y   w i t h o u t   j u s t i f i c a t i o n .  
  

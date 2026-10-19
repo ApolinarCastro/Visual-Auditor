@@ -163,4 +163,15 @@ class StorageConfig:
                     f"Execution blocked under Controlled Maintenance policy."
                 )
 
+    @classmethod
+    def connect_sqlite(cls, target_path: Union[str, Path], **kwargs):
+        """
+        Validates target_path against the production write barrier immediately
+        before opening an SQLite connection.
+        """
+        cls.assert_write_allowed(target_path)
+        import sqlite3
+        return sqlite3.connect(target_path, **kwargs)
+
 storage_guard = StorageConfig
+

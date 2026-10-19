@@ -1183,28 +1183,77 @@ async def get_multimarketplace_summary(run_id: str = None):
                     marketplaces_data[mkt]["status"] = state or st or "COMPLETED"
                     marketplaces_data[mkt]["mechanism"] = mode or marketplaces_data[mkt]["mechanism"]
 
-            # Query distinct publications count per marketplace in mri_publications
-            cur.execute("""
-                SELECT marketplace, COUNT(DISTINCT marketplace_product_id)
+            # Query publications and official seller counts per marketplace scoped to target_run_id
+            has_hist = cur.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='mri_historical_publications'").fetchone()
+            pub_query = """
+                SELECT marketplace, marketplace_product_id, commercial_attributes
                 FROM mri_publications WHERE run_id = ?
-                GROUP BY marketplace
-            """, (target_run_id,))
-            pub_counts = cur.fetchall()
-            for mkt, total_pubs in pub_counts:
-                if mkt in marketplaces_data:
-                    marketplaces_data[mkt]["brand_publications"] = total_pubs
-                    marketplaces_data[mkt]["official_seller_publications"] = total_pubs
-                    if total_pubs > 0:
-                        marketplaces_data[mkt]["status"] = "OPERATIONAL"
+            """
+            if has_hist:
+                pub_query += """
+                    UNION ALL
+                    SELECT marketplace, marketplace_product_id, commercial_attributes
+                    FROM mri_historical_publications WHERE run_id = ?
+                """
+                params = (target_run_id, target_run_id)
+            else:
+                params = (target_run_id,)
 
-            # Query categories count per marketplace in mri_categories if table exists
+            pub_rows = cur.execute(pub_query, params).fetchall()
+            mkt_items = {}
+            for r in pub_rows:
+                mkt = r[0]
+                sku = r[1]
+                attrs_raw = r[2] or "{}"
+                if mkt not in mkt_items:
+                    mkt_items[mkt] = {"skus": set(), "official_count": 0}
+                if sku not in mkt_items[mkt]["skus"]:
+                    mkt_items[mkt]["skus"].add(sku)
+                    try:
+                        attrs = json.loads(attrs_raw) if isinstance(attrs_raw, str) else attrs_raw
+                    except Exception:
+                        attrs = {}
+                    sellers = [str(s).lower() for s in attrs.get("sellers", [])]
+                    is_official = attrs.get("is_official_seller") or ("nicopoly" in sellers)
+                    if is_official:
+                        mkt_items[mkt]["official_count"] += 1
+
+            for mkt, data in mkt_items.items():
+                if mkt in marketplaces_data:
+                    total_pubs = len(data["skus"])
+                    marketplaces_data[mkt]["brand_publications"] = total_pubs
+                    marketplaces_data[mkt]["official_seller_publications"] = data["official_count"]
+                    # If marketplace has publications, default to OPERATIONAL unless an explicit terminal state was persisted
+                    curr_st = marketplaces_data[mkt]["status"]
+                    if curr_st in ("NOT_EXECUTED", "COMPLETED", "SUCCESS", "PENDING"):
+                        if total_pubs > 0:
+                            marketplaces_data[mkt]["status"] = "OPERATIONAL"
+                    elif curr_st in ("BLOCKED", "SOURCE_BLOCKED", "PARTIAL", "FAILED", "ERROR"):
+                        # Strictly respect persisted terminal failure state
+                        pass
+
+
+            # Query categories count per marketplace SCOPED to target_run_id
             try:
-                cur.execute("""
-                    SELECT marketplace, COUNT(DISTINCT category_id)
-                    FROM mri_categories
-                    GROUP BY marketplace
-                """)
-                cat_counts = cur.fetchall()
+                has_hist_cat = cur.execute(
+                    "SELECT 1 FROM sqlite_master WHERE type='table' AND name='mri_historical_publication_categories'"
+                ).fetchone()
+                cat_query = """
+                    SELECT p.marketplace, COUNT(DISTINCT pc.category_id)
+                    FROM (
+                        SELECT publication_id, marketplace FROM mri_publications WHERE run_id = ?
+                        """ + ("UNION ALL SELECT publication_id, marketplace FROM mri_historical_publications WHERE run_id = ?" if has_hist else "") + """
+                    ) p
+                    JOIN (
+                        SELECT publication_id, category_id FROM mri_publication_categories
+                        """ + ("UNION ALL SELECT publication_id, category_id FROM mri_historical_publication_categories WHERE run_id = ?" if has_hist_cat else "") + """
+                    ) pc ON p.publication_id = pc.publication_id
+                    GROUP BY p.marketplace
+                """
+                cat_params = [target_run_id]
+                if has_hist: cat_params.append(target_run_id)
+                if has_hist_cat: cat_params.append(target_run_id)
+                cat_counts = cur.execute(cat_query, tuple(cat_params)).fetchall()
                 for mkt, num_cats in cat_counts:
                     if mkt in marketplaces_data:
                         marketplaces_data[mkt]["categories_count"] = num_cats
@@ -1212,6 +1261,7 @@ async def get_multimarketplace_summary(run_id: str = None):
                 pass
 
         conn.close()
+
 
         # Determine overall status
         operational_count = sum(1 for m in marketplaces_data.values() if m["status"] in ("OPERATIONAL", "COMPLETED"))

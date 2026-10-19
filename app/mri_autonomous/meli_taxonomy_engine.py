@@ -316,7 +316,9 @@ class MeliTaxonomyEngine:
         entities: List[Any],
         run_id: str,
         db_path: Optional[str] = None,
-        terminal_state: str = "COMPLETED"
+        terminal_state: str = "COMPLETED",
+        execution_mode: str = "MELI_HEADLESS_CATALOG_SCRAPER",
+        source_method: str = "MELI_HEADLESS_CATALOG_SCRAPER"
     ) -> Dict[str, Any]:
         """
         Persists normalized Mercado Libre publications and taxonomy entities into MRI SQLite.
@@ -342,9 +344,10 @@ class MeliTaxonomyEngine:
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             run_id, now_str, now_str, "Mercado Libre", "Nicopoly",
-            "MELI_OFFICIAL_TAXONOMY_DISCOVERY", "2.0", terminal_state,
-            "OFFICIAL_MELI_API", "SUCCESS", now_str
+            execution_mode, "2.0", terminal_state,
+            source_method, "SUCCESS", now_str
         ))
+
 
         # 2. Persist categories in mri_categories
         cats_inserted = 0
@@ -466,10 +469,11 @@ class MeliTaxonomyEngine:
                 pub.publication_id, prod_id, pub.marketplace, pub.sku,
                 pub.canonical_url, "OBSERVED", pub.observed_at, run_id, idx,
                 "MELI_STORE_SEARCH", "EXACT", "CORRECT",
-                "OFFICIAL_API_RECORD", f"MELI-API-{pub.sku}",
+                pub.evidence_type or "LIVE_OBSERVATION", pub.raw_source_id or f"MELI-OBS-{pub.sku}",
                 "OBSERVED", "TARGET_IDENTITY_VERIFIED", primary_cat,
                 "MELI_TAXONOMY", primary_cat, "CORRECT", comm_attrs
             ))
+
             pubs_inserted += 1
 
             for cat in pub.categories:
