@@ -285,11 +285,15 @@ def get_master_catalog():
 
 
 def fetch_run_publications(run_id: str, db_path: Optional[str] = None) -> List[Dict[str, Any]]:
-    if db_path:
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row
-    else:
-        conn = get_sqlite_conn()
+    effective_db = db_path
+    if not effective_db:
+        try:
+            from app.mri_autonomous.storage_guard import StorageConfig
+            effective_db = str(StorageConfig.get_sqlite_path())
+        except Exception:
+            effective_db = str(DB_PATH)
+    conn = sqlite3.connect(effective_db)
+    conn.row_factory = sqlite3.Row
     child_to_cat, parent_to_cat, title_to_cat, token_to_entries = get_master_catalog()
     
     try:
@@ -754,8 +758,16 @@ async def get_history():
     history_items = []
     seen_runs = set()
     
-    if DB_PATH.exists():
-        conn = get_sqlite_conn()
+    effective_db = DB_PATH
+    try:
+        from app.mri_autonomous.storage_guard import StorageConfig
+        effective_db = pathlib.Path(StorageConfig.get_sqlite_path())
+    except Exception:
+        pass
+
+    if effective_db.exists():
+        conn = sqlite3.connect(effective_db)
+        conn.row_factory = sqlite3.Row
         try:
             cur = conn.cursor()
             # Runs from unified mri_publications + mri_historical_publications grouped by run_id
@@ -764,6 +776,11 @@ async def get_history():
                     SELECT run_id, observed_at, marketplace, publication_id, status FROM mri_publications
                     UNION ALL
                     SELECT run_id, observed_at, marketplace, publication_id, status FROM mri_historical_publications
+                ),
+                runs_summary AS (
+                    SELECT run_id, MIN(execution_mode) as execution_mode
+                    FROM mri_runs
+                    GROUP BY run_id
                 )
                 SELECT 
                     p.run_id,
@@ -773,7 +790,7 @@ async def get_history():
                     SUM(CASE WHEN p.status IN ('OBSERVED', 'CONFIRMED', 'NICOPOLY_CONFIRMED') THEN 1 ELSE 0 END) as confirmed,
                     COALESCE(r.execution_mode, 'SQLITE_PERSISTED') as mode
                 FROM all_pubs p
-                LEFT JOIN mri_runs r ON p.run_id = r.run_id
+                LEFT JOIN runs_summary r ON p.run_id = r.run_id
                 GROUP BY p.run_id
                 ORDER BY started_at DESC
             """
@@ -1080,15 +1097,21 @@ async def get_meli_nicopoly_data():
 @app.get("/api/ripley/nicopoly")
 async def get_ripley_nicopoly_data():
     """
-    Returns normalized Ripley commercial intelligence discovered via verified facets and catalog counter:
-    - 3 verified categories (Sweaters y Chalecos, Chaquetas y Blazers, Pantalones)
-    - 772 verified brand publications
-    - Status: OPERATIONAL
+    Returns normalized Ripley commercial intelligence:
+    - Queries verified persisted SQLite observations first (publications, categories)
+    - If unacquired or offline without records, returns explicit NO_EVIDENCE_RECORDED (0 publications)
+    - Never serves hardcoded constants (284+256+232=772) as live acquired observations
     """
     try:
         from app.mri_autonomous.ripley_commercial_engine import RipleyCommercialEngine
+        from app.mri_autonomous.storage_guard import StorageConfig
         engine = RipleyCommercialEngine()
-        return JSONResponse(content=engine.get_commercial_summary())
+        effective_db = None
+        try:
+            effective_db = str(StorageConfig.get_sqlite_path())
+        except Exception:
+            effective_db = str(DB_PATH)
+        return JSONResponse(content=engine.get_commercial_summary(db_path=effective_db))
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
@@ -1224,13 +1247,14 @@ async def get_multimarketplace_summary(run_id: str = None):
                     total_pubs = len(data["skus"])
                     marketplaces_data[mkt]["brand_publications"] = total_pubs
                     marketplaces_data[mkt]["official_seller_publications"] = data["official_count"]
-                    # If marketplace has publications, default to OPERATIONAL unless an explicit terminal state was persisted
+                    # Do not invent OPERATIONAL status merely because publications exist.
+                    # Strictly preserve the marketplace terminal_state or status recorded in mri_runs.
                     curr_st = marketplaces_data[mkt]["status"]
-                    if curr_st in ("NOT_EXECUTED", "COMPLETED", "SUCCESS", "PENDING"):
+                    if curr_st in ("NOT_EXECUTED", "PENDING"):
                         if total_pubs > 0:
-                            marketplaces_data[mkt]["status"] = "OPERATIONAL"
-                    elif curr_st in ("BLOCKED", "SOURCE_BLOCKED", "PARTIAL", "FAILED", "ERROR"):
-                        # Strictly respect persisted terminal failure state
+                            marketplaces_data[mkt]["status"] = "COMPLETED"
+                    elif curr_st in ("BLOCKED", "SOURCE_BLOCKED", "PARTIAL", "FAILED", "ERROR", "COMPLETED", "OPERATIONAL"):
+                        # Strictly respect persisted terminal state
                         pass
 
 

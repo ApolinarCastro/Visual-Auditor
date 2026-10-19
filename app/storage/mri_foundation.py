@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS mri_truth_versions (
 );
 
 CREATE TABLE IF NOT EXISTS mri_runs (
-    run_id TEXT PRIMARY KEY,
+    run_id TEXT NOT NULL,
     started_at TEXT NOT NULL,
     finished_at TEXT,
     marketplace TEXT NOT NULL,
@@ -77,7 +77,8 @@ CREATE TABLE IF NOT EXISTS mri_runs (
     terminal_state TEXT,
     source_method TEXT,
     status TEXT NOT NULL,
-    created_at TEXT NOT NULL
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (run_id, marketplace)
 );
 
 CREATE TABLE IF NOT EXISTS mri_evidence_ledger (

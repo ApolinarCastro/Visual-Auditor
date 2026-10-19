@@ -12,6 +12,7 @@ Reuses certified Ripley headless scraper and counter verification capabilities.
 
 import json
 import logging
+import pathlib
 import sqlite3
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -21,12 +22,16 @@ from app.mri_autonomous.rea_paris_engine import CommercialEntity, NormalizedPubl
 
 logger = logging.getLogger(__name__)
 
-# Ground truth categories / facets discovered on Ripley for Nicopoly
-RIPLEY_VERIFIED_CATEGORIES = [
-    {"group_id": "moda-mujer/tops-y-chaquetas/sweaters-y-chalecos", "name": "Sweaters y Chalecos", "count": 284},
-    {"group_id": "moda-mujer/tops-y-chaquetas/chaquetas-y-blazers", "name": "Chaquetas y Blazers", "count": 256},
-    {"group_id": "moda-mujer/jeans-y-pantalones/pantalones", "name": "Pantalones", "count": 232},
+# Static reference categories discovered historically on Ripley for Nicopoly.
+# NOTE: These are REFERENCE KNOWLEDGE ONLY and must NEVER be attributed as live observations
+# or persisted to mri_categories / mri_publications without actual scraper acquisition evidence.
+RIPLEY_REFERENCE_CATEGORIES = [
+    {"group_id": "moda-mujer/tops-y-chaquetas/sweaters-y-chalecos", "name": "Sweaters y Chalecos", "reference_count": 284},
+    {"group_id": "moda-mujer/tops-y-chaquetas/chaquetas-y-blazers", "name": "Chaquetas y Blazers", "reference_count": 256},
+    {"group_id": "moda-mujer/jeans-y-pantalones/pantalones", "name": "Pantalones", "reference_count": 232},
 ]
+# Retained as reference alias without presenting counts as acquired observations
+RIPLEY_VERIFIED_CATEGORIES = RIPLEY_REFERENCE_CATEGORIES
 
 
 class RipleyCommercialEngine:
@@ -38,30 +43,83 @@ class RipleyCommercialEngine:
         self.brand = brand
         self.marketplace = "Ripley"
 
-    def get_commercial_summary(self) -> Dict[str, Any]:
+    def get_commercial_summary(self, db_path: Optional[str] = None) -> Dict[str, Any]:
         """
-        Returns structured commercial summary for Ripley Nicopoly presence.
+        Returns structured commercial summary for Ripley Nicopoly presence based strictly
+        on verified persisted evidence in SQLite, or explicit unacquired status if empty.
+        Never generates publications or counts from internal constants.
         """
-        categories = []
-        tot = 0
-        for cat in RIPLEY_VERIFIED_CATEGORIES:
-            categories.append({
-                "group_id": cat["group_id"],
-                "name": cat["name"],
-                "count": cat["count"],
-                "path": f"Moda Mujer > {cat['name']}"
-            })
-            tot += cat["count"]
+        try:
+            from app.mri_autonomous.storage_guard import StorageConfig
+            effective_db = db_path or str(StorageConfig.get_sqlite_path())
+        except Exception:
+            effective_db = db_path or "data/sqlite/visibility.db"
 
+        # Check SQLite for real persisted records
+        rows = []
+        cat_rows = []
+        try:
+            if pathlib.Path(effective_db).exists():
+                conn = sqlite3.connect(effective_db)
+                conn.row_factory = sqlite3.Row
+                try:
+                    cur = conn.cursor()
+                    rows = cur.execute("""
+                        SELECT publication_id, marketplace_product_id, commercial_attributes, category_observed
+                        FROM mri_publications
+                        WHERE marketplace = 'Ripley'
+                    """).fetchall()
+                    cat_rows = cur.execute("""
+                        SELECT category_id, category_name, canonical_url
+                        FROM mri_categories
+                        WHERE marketplace = 'Ripley'
+                    """).fetchall()
+                finally:
+                    conn.close()
+        except Exception as e:
+            logger.debug(f"[Ripley] SQLite inspection error: {e}")
+
+        if rows:
+            official_seller_count = 0
+            for r in rows:
+                attrs = {}
+                try:
+                    attrs = json.loads(r["commercial_attributes"] or "{}")
+                except Exception:
+                    pass
+                sellers = attrs.get("sellers", [])
+                if attrs.get("is_official_seller") or any("nicopoly" in str(s).lower() for s in sellers):
+                    official_seller_count += 1
+
+            total_pubs = len(rows)
+            categories = [{"group_id": c["category_id"], "name": c["category_name"]} for c in cat_rows]
+            return {
+                "marketplace": "Ripley",
+                "brand": self.brand,
+                "official_seller": self.brand,
+                "total_brand_publications": total_pubs,
+                "total_official_seller_publications": official_seller_count,
+                "categories": categories,
+                "total_categories": len(categories),
+                "mechanism": "Ripley Headless Catalog Scraper",
+                "storage_source": "SQLITE_MRI_PERSISTENCE",
+                "status": "OPERATIONAL"
+            }
+
+        # If no verified evidence recorded, return explicit unacquired state with 0 publications
         return {
             "marketplace": "Ripley",
             "brand": self.brand,
             "official_seller": self.brand,
-            "total_brand_publications": tot,
-            "categories": categories,
-            "total_categories": len(categories),
-            "mechanism": "Ripley Facets + Counter Verification",
-            "status": "OPERATIONAL"
+            "total_brand_publications": 0,
+            "total_official_seller_publications": 0,
+            "categories": [],
+            "total_categories": 0,
+            "reference_categories": RIPLEY_REFERENCE_CATEGORIES,
+            "mechanism": "Ripley Scraper & Verified Facets",
+            "storage_source": "NONE",
+            "status": "NO_EVIDENCE_RECORDED",
+            "message": "Sin publicaciones verificadas adquiridas en la corrida actual."
         }
 
     def normalize_items_to_publications(
@@ -72,27 +130,14 @@ class RipleyCommercialEngine:
         """
         Normalizes raw Ripley scraper items or live captures into MRI common contract.
         Deduplicates publications while aggregating sellers, promotions, and categories.
+        Categories and entities are derived strictly from raw_items; never from static constants.
         """
+        if not raw_items:
+            return [], []
+
         obs_time = observed_at or datetime.now(timezone.utc).isoformat()
         pubs_map: Dict[str, NormalizedPublication] = {}
         entities_map: Dict[str, CommercialEntity] = {}
-
-        # Initialize base category entities
-        for cat in RIPLEY_VERIFIED_CATEGORIES:
-            gid = cat["group_id"]
-            if gid not in entities_map:
-                entities_map[gid] = CommercialEntity(
-                    marketplace="Ripley",
-                    group_id=gid,
-                    display_name=cat["name"],
-                    entity_type="category",
-                    parent_id="moda-mujer",
-                    hierarchical_path=f"Moda Mujer > {cat['name']}",
-                    official_url=f"https://simple.ripley.cl/{gid}",
-                    reported_total=cat["count"],
-                    acquisition_mechanism="RIPLEY_FACET_VERIFICATION",
-                    evidence_status="VERIFIED_PUBLIC_TRAFFIC"
-                )
 
         for it in raw_items:
             sku = str(it.get("marketplace_sku") or it.get("sku") or "").strip()
@@ -115,7 +160,21 @@ class RipleyCommercialEngine:
             canonical_url = url or f"https://simple.ripley.cl/product/{sku}"
 
             cat_name = str(it.get("category") or "Moda Mujer")
-            cat_id = it.get("category_id") or "moda-mujer"
+            cat_id = str(it.get("category_id") or "moda-mujer")
+
+            if cat_id not in entities_map:
+                entities_map[cat_id] = CommercialEntity(
+                    marketplace="Ripley",
+                    group_id=cat_id,
+                    display_name=cat_name,
+                    entity_type="category",
+                    parent_id="moda-mujer",
+                    hierarchical_path=f"Moda Mujer > {cat_name}",
+                    official_url=f"https://simple.ripley.cl/{cat_id}",
+                    reported_total=1,
+                    acquisition_mechanism="RIPLEY_LIVE_ITEM_TAXONOMY",
+                    evidence_status="LIVE_OBSERVATION"
+                )
 
             if sku not in pubs_map:
                 pubs_map[sku] = NormalizedPublication(

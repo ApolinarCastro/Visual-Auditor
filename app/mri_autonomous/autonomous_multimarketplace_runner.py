@@ -85,11 +85,43 @@ class AutonomousMultiMarketplaceRunner:
         StorageConfig.assert_write_allowed(self.db_path)
 
 
+        # Auto-migrate legacy mri_runs table if it still has single-column primary key
+        try:
+            cur = conn.cursor()
+            cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='mri_runs'")
+            if cur.fetchone():
+                cur.execute("PRAGMA table_info(mri_runs)")
+                pk_cols = [r[1] for r in cur.fetchall() if r[5] > 0]
+                if pk_cols == ["run_id"]:
+                    conn.execute("PRAGMA foreign_keys = OFF")
+                    conn.execute("""
+                        CREATE TABLE IF NOT EXISTS mri_runs_new (
+                            run_id TEXT NOT NULL,
+                            started_at TEXT,
+                            finished_at TEXT,
+                            marketplace TEXT NOT NULL,
+                            brand TEXT,
+                            execution_mode TEXT,
+                            truth_model_version TEXT,
+                            terminal_state TEXT,
+                            source_method TEXT,
+                            status TEXT,
+                            created_at TEXT,
+                            PRIMARY KEY (run_id, marketplace)
+                        )
+                    """)
+                    conn.execute("INSERT OR IGNORE INTO mri_runs_new SELECT * FROM mri_runs")
+                    conn.execute("DROP TABLE mri_runs")
+                    conn.execute("ALTER TABLE mri_runs_new RENAME TO mri_runs")
+        except Exception as e:
+            logger.debug(f"[Runner] mri_runs migration notice: {e}")
+
         conn.execute("""
             CREATE TABLE IF NOT EXISTS mri_runs (
-                run_id TEXT PRIMARY KEY, started_at TEXT, finished_at TEXT, marketplace TEXT,
+                run_id TEXT NOT NULL, started_at TEXT, finished_at TEXT, marketplace TEXT NOT NULL,
                 brand TEXT, execution_mode TEXT, truth_model_version TEXT, terminal_state TEXT,
-                source_method TEXT, status TEXT, created_at TEXT
+                source_method TEXT, status TEXT, created_at TEXT,
+                PRIMARY KEY (run_id, marketplace)
             )
         """)
         conn.execute("""
@@ -463,7 +495,7 @@ class AutonomousMultiMarketplaceRunner:
             "action": "Document verified taxonomy structure without attributing unacquired publications"
         })
         try:
-            summary = engine.get_commercial_summary()
+            summary = engine.get_commercial_summary(db_path=self.db_path)
             res.active_strategy = "RIPLEY_FACET_AND_COUNTER_VERIFICATION"
             res.status = "SOURCE_BLOCKED" if is_waf else "PARTIAL"
             res.blocker_reason = blocker
