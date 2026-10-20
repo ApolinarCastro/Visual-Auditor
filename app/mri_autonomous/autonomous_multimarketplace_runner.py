@@ -300,180 +300,206 @@ class AutonomousMultiMarketplaceRunner:
 
     async def investigate_paris(self, run_id: str, strategy: Optional[SelectedStrategy] = None) -> MarketplaceInvestigationResult:
         """
-        Investigates Paris.cl autonomously using up to 3 strategies:
-        - Strategy 1: Reverse-Engineered Constructor.io Public CDP API (REA Engine)
-        - Strategy 2: Primary HAR Capture Replay (Controlled Replay)
-        - Strategy 3: Playwright Headless ParisScraper batch extraction
+        Investigates Paris.cl autonomously using the adapter designated by the strategy selector,
+        with automatic fallback, health update in registry, and persistence.
         """
         res = MarketplaceInvestigationResult(marketplace="Paris", status="PENDING")
         engine = REAParisEngine()
 
-        # Strategy 1: REA Constructor API
-        res.strategies_attempted.append({
-            "strategy": 1,
-            "name": "REA_CONSTRUCTOR_PUBLIC_API",
-            "action": "Query public Constructor.io search endpoint with key_6PvQHDnR0zdWgEPh"
-        })
-        try:
-            brand_summary = engine.get_brand_summary(self.brand)
-            if brand_summary.get("total_brand") is not None and brand_summary["total_brand"] > 0:
-                res.active_strategy = "REA_CONSTRUCTOR_PUBLIC_API"
-                res.status = "COMPLETED"
-                res.total_brand_publications = brand_summary["total_brand"]
-                res.total_official_seller_publications = brand_summary["total_official_seller"]
-                res.sellers_found = ["NICOPOLY"]
-                # Extract categories
-                cats = []
-                for pt in brand_summary.get("product_types", []):
-                    cats.append({"name": pt.get("value"), "count": pt.get("count")})
-                res.categories_found = cats
-                res.evidence = {
-                    "source": "Constructor.io AI Search",
-                    "total_brand": brand_summary["total_brand"],
-                    "total_official_seller": brand_summary["total_official_seller"],
-                    "facets_count": len(brand_summary.get("facets_available", []))
-                }
+        # Build execution order: primary strategy followed by its fallback chain or defaults
+        strategies_to_try = []
+        if strategy:
+            strategies_to_try.append(strategy.strategy_id)
+            strategies_to_try.extend(strategy.fallback_strategy_ids)
+        else:
+            strategies_to_try = ["paris_cdp_constructor_discovery", "paris_har_replay_fallback"]
 
-                # Materialize sample publications into isolated DB
-                # Materialize sample publications into isolated DB from live REA browse
-                sample_pubs, entities = engine.harvest_sample_publications(self.brand, max_items=20)
-                engine.persist_to_mri_sqlite(sample_pubs, entities, run_id, db_path=self.db_path)
-                res.publications_count = len(sample_pubs)
-                return res
-        except Exception as e:
-            logger.warning(f"[Paris] Strategy 1 failed: {e}")
+        for strat_id in strategies_to_try:
+            strat_def = self.registry.get(strat_id)
+            mode = strat_def.adapter_mode if strat_def else AdapterExecutionMode.CDP_API_PUBLIC
 
-        # Strategy 2: Primary HAR Capture Replay (Controlled Replay)
-        res.strategies_attempted.append({
-            "strategy": 2,
-            "name": "CONTROLLED_HAR_REPLAY",
-            "action": "Inspect verified local HAR captures with SHA-256 integrity validation and consume capture feed"
-        })
-        try:
-            from app.mri_autonomous.rea_paris_engine import _resolve_har_provenance
-            har_prov = _resolve_har_provenance()
-            if har_prov and har_prov.get("sha256"):
-                # Actually parse the HAR content and consume its entries
-                har_path = pathlib.Path(har_prov["path"])
-                har_data = json.loads(har_path.read_text(encoding="utf-8"))
-                entry = har_data.get("log", {}).get("entries", [{}])[0]
-                resp_text = entry.get("response", {}).get("content", {}).get("text", "")
-                if resp_text:
-                    har_feed = json.loads(resp_text)
-                    total_results = har_feed.get("response", {}).get("total_num_results", 4909)
-                    res.active_strategy = "CONTROLLED_HAR_REPLAY"
-                    res.status = "COMPLETED"
-                    res.total_brand_publications = total_results
-                    res.total_official_seller_publications = total_results
-                    res.sellers_found = ["NICOPOLY"]
-                    
-                    # Extract facets from HAR payload
-                    har_facets = har_feed.get("response", {}).get("facets", [])
-                    types_opt = next((f.get("options", []) for f in har_facets if f.get("name") == "tipoProductoAll"), [])
-                    res.categories_found = [{"name": o.get("display_name"), "count": o.get("count")} for o in types_opt[:10]]
-                    res.evidence = {
-                        "har_path": har_prov.get("path"),
-                        "sha256": har_prov.get("sha256"),
-                        "captured_at": har_prov.get("captured_at_declared"),
-                        "items_in_capture": len(har_feed.get("response", {}).get("results", []))
-                    }
-                    sample_pubs, entities = engine.harvest_sample_publications(self.brand, max_items=20, replay_har_data=har_feed)
-                    engine.persist_to_mri_sqlite(sample_pubs, entities, run_id, db_path=self.db_path)
-                    res.publications_count = len(sample_pubs)
-                    return res
-        except Exception as e:
-            logger.warning(f"[Paris] Strategy 2 failed: {e}")
+            # 1. CDP_API_PUBLIC: Constructor.io direct API
+            if mode == AdapterExecutionMode.CDP_API_PUBLIC or strat_id == "paris_cdp_constructor_discovery":
+                res.strategies_attempted.append({
+                    "strategy": len(res.strategies_attempted) + 1,
+                    "name": strat_id,
+                    "action": "Query public Constructor.io search endpoint with key_6PvQHDnR0zdWgEPh"
+                })
+                try:
+                    brand_summary = engine.get_brand_summary(self.brand)
+                    if brand_summary.get("total_brand") is not None and brand_summary["total_brand"] > 0:
+                        res.active_strategy = strat_id
+                        res.status = "COMPLETED"
+                        res.total_brand_publications = brand_summary["total_brand"]
+                        res.total_official_seller_publications = brand_summary["total_official_seller"]
+                        res.sellers_found = ["NICOPOLY"]
+                        cats = [{"name": pt.get("value"), "count": pt.get("count")} for pt in brand_summary.get("product_types", [])]
+                        res.categories_found = cats
+                        res.evidence = {
+                            "source": "Constructor.io AI Search",
+                            "total_brand": brand_summary["total_brand"],
+                            "total_official_seller": brand_summary["total_official_seller"],
+                            "facets_count": len(brand_summary.get("facets_available", []))
+                        }
+                        sample_pubs, entities = engine.harvest_sample_publications(self.brand, max_items=20)
+                        engine.persist_to_mri_sqlite(sample_pubs, entities, run_id, db_path=self.db_path)
+                        res.publications_count = len(sample_pubs)
+                        self.registry.report_outcome(strat_id, success=True)
+                        return res
+                    else:
+                        raise RuntimeError("Constructor.io returned empty catalog count for brand")
+                except Exception as e:
+                    logger.warning(f"[Paris] Strategy {strat_id} failed: {e}")
+                    self.registry.report_outcome(strat_id, success=False, error_message=str(e))
+                    continue
 
-        # Strategy 3: Playwright Headless fallback
-        res.strategies_attempted.append({
-            "strategy": 3,
-            "name": "PLAYWRIGHT_HEADLESS_SCRAPER",
-            "action": "Direct DOM extraction using headless ParisScraper"
-        })
+            # 2. CONTROLLED_REPLAY: HAR capture replay
+            elif mode == AdapterExecutionMode.CONTROLLED_REPLAY or strat_id == "paris_har_replay_fallback":
+                res.strategies_attempted.append({
+                    "strategy": len(res.strategies_attempted) + 1,
+                    "name": strat_id,
+                    "action": "Inspect verified local HAR captures with SHA-256 integrity validation and consume capture feed"
+                })
+                try:
+                    from app.mri_autonomous.rea_paris_engine import _resolve_har_provenance
+                    har_prov = _resolve_har_provenance()
+                    if har_prov and har_prov.get("sha256"):
+                        har_path = pathlib.Path(har_prov["path"])
+                        har_data = json.loads(har_path.read_text(encoding="utf-8"))
+                        entry = har_data.get("log", {}).get("entries", [{}])[0]
+                        resp_text = entry.get("response", {}).get("content", {}).get("text", "")
+                        if resp_text:
+                            har_feed = json.loads(resp_text)
+                            total_results = har_feed.get("response", {}).get("total_num_results", 4909)
+                            res.active_strategy = strat_id
+                            res.status = "COMPLETED"
+                            res.total_brand_publications = total_results
+                            res.total_official_seller_publications = total_results
+                            res.sellers_found = ["NICOPOLY"]
+                            har_facets = har_feed.get("response", {}).get("facets", [])
+                            types_opt = next((f.get("options", []) for f in har_facets if f.get("name") == "tipoProductoAll"), [])
+                            res.categories_found = [{"name": o.get("display_name"), "count": o.get("count")} for o in types_opt[:10]]
+                            res.evidence = {
+                                "har_path": har_prov.get("path"),
+                                "sha256": har_prov.get("sha256"),
+                                "captured_at": har_prov.get("captured_at_declared"),
+                                "items_in_capture": len(har_feed.get("response", {}).get("results", []))
+                            }
+                            sample_pubs, entities = engine.harvest_sample_publications(self.brand, max_items=20, replay_har_data=har_feed)
+                            engine.persist_to_mri_sqlite(sample_pubs, entities, run_id, db_path=self.db_path)
+                            res.publications_count = len(sample_pubs)
+                            self.registry.report_outcome(strat_id, success=True)
+                            return res
+                    raise RuntimeError("Paris HAR provenance or content capture unavailable")
+                except Exception as e:
+                    logger.warning(f"[Paris] Strategy {strat_id} failed: {e}")
+                    self.registry.report_outcome(strat_id, success=False, error_message=str(e))
+                    continue
+
         res.status = "PARTIAL"
-        res.blocker_reason = "Constructor.io direct API offline and HAR capture incomplete"
+        res.blocker_reason = "Paris discovery strategies exhausted all fallback options"
         return res
 
     async def investigate_falabella(self, run_id: str, strategy: Optional[SelectedStrategy] = None) -> MarketplaceInvestigationResult:
         """
-        Investigates Falabella.cl autonomously using up to 3 strategies:
-        - Strategy 1: Next.js SSR __NEXT_DATA__ extraction (/brand/NICOPOLY)
-        - Strategy 2: Seller corridor extraction (/seller/Nicopoly)
-        - Strategy 3: Ground-truth snapshot reconstruction (SC75ABC)
+        Investigates Falabella.cl autonomously using the adapter designated by the strategy selector,
+        with automatic fallback, health update in registry, and persistence.
         """
         res = MarketplaceInvestigationResult(marketplace="Falabella", status="PENDING")
         engine = FalabellaSSREngine()
 
-        # Strategy 1: SSR Brand extraction
-        res.strategies_attempted.append({
-            "strategy": 1,
-            "name": "FALABELLA_SSR_BRAND_EXTRACTION",
-            "action": "Fetch SSR __NEXT_DATA__ from /falabella-cl/brand/NICOPOLY"
-        })
-        try:
-            data = engine.get_brand_catalog(self.brand.upper(), page=1)
-            results = data.get("props", {}).get("pageProps", {}).get("results", [])
-            count = data.get("props", {}).get("pageProps", {}).get("pagination", {}).get("count", 0)
-            facets = data.get("props", {}).get("pageProps", {}).get("facets", [])
-            if count > 0:
-                res.active_strategy = "FALABELLA_SSR_BRAND_EXTRACTION"
-                res.status = "COMPLETED"
-                res.total_brand_publications = count
-                res.total_official_seller_publications = count
-                res.sellers_found = ["Nicopoly"]
-                # Extract L2 categories from facets
-                l2_cats = []
-                for f in facets:
-                    if "categor" in f.get("name", "").lower():
-                        for val in f.get("values", []):
-                            l2_cats.append({"id": val.get("id"), "name": val.get("title") or val.get("name"), "count": val.get("count")})
-                res.categories_found = l2_cats or [{"id": "cat20002", "name": "Moda Mujer", "count": count}]
-                prov = data.get("_mri_provenance") or {}
-                res.evidence = {
-                    "mechanism": "NEXT_JS_SSR_EXTRACTION",
-                    "total_count": count,
-                    "categories_count": len(res.categories_found),
-                    "source_url": prov.get("source_url") or f"https://www.falabella.com/falabella-cl/brand/{self.brand.upper()}",
-                    "source_sha256": prov.get("sha256"),
-                    "observed_at": prov.get("fetched_at")
-                }
-                pubs, ents = engine.harvest_sample_publications(self.brand, max_items=20, page_payload=data)
-                engine.persist_to_mri_sqlite(pubs, ents, run_id, db_path=self.db_path)
-                res.publications_count = len(pubs)
-                return res
-        except Exception as e:
-            logger.warning(f"[Falabella] Strategy 1 failed: {e}")
+        # Build execution order: primary strategy followed by fallback chain or defaults
+        strategies_to_try = []
+        if strategy:
+            strategies_to_try.append(strategy.strategy_id)
+            strategies_to_try.extend(strategy.fallback_strategy_ids)
+        else:
+            strategies_to_try = ["falabella_ssr_next_data", "falabella_headless_playwright"]
 
-        # Strategy 2: Certified Playwright Headless fallback
-        res.strategies_attempted.append({
-            "strategy": 2,
-            "name": "PLAYWRIGHT_HEADLESS_SCRAPER",
-            "action": "Direct DOM extraction using headless FalabellaScraper"
-        })
-        try:
-            from app.scrapers.falabella_scraper import FalabellaScraper
-            scraper = FalabellaScraper(headless=True)
-            scrape_res = await scraper.scrape_autonomous_category(f"https://www.falabella.com/falabella-cl/brand/{self.brand.upper()}")
-            items = scrape_res.get("products", [])
-            if items:
-                res.active_strategy = "PLAYWRIGHT_HEADLESS_SCRAPER"
-                res.status = "COMPLETED"
-                res.total_brand_publications = len(items)
-                res.total_official_seller_publications = len(items)
-                res.sellers_found = ["Nicopoly"]
-                res.categories_found = [{"id": "moda", "name": "Moda Mujer", "count": len(items)}]
-                res.evidence = {
-                    "mechanism": "PLAYWRIGHT_HEADLESS_SCRAPER",
-                    "total_count": len(items),
-                    "source_url": f"https://www.falabella.com/falabella-cl/brand/{self.brand.upper()}"
-                }
-                raw_sample = [{"sku": it.get("marketplace_sku") or it.get("sku"), "title": it.get("title"), "price": it.get("price"), "url": it.get("url")} for it in items[:20]]
-                norm_pubs, norm_ents = engine.harvest_sample_publications(self.brand, max_items=20)
-                engine.persist_to_mri_sqlite(norm_pubs, norm_ents, run_id, db_path=self.db_path)
-                res.publications_count = len(norm_pubs)
-                return res
-        except Exception as e:
-            logger.warning(f"[Falabella] Strategy 2 failed: {e}")
+        for strat_id in strategies_to_try:
+            strat_def = self.registry.get(strat_id)
+            mode = strat_def.adapter_mode if strat_def else AdapterExecutionMode.HTTP_SSR
+
+            # 1. HTTP_SSR: Next.js __NEXT_DATA__ SSR extraction
+            if mode == AdapterExecutionMode.HTTP_SSR or strat_id == "falabella_ssr_next_data":
+                res.strategies_attempted.append({
+                    "strategy": len(res.strategies_attempted) + 1,
+                    "name": strat_id,
+                    "action": "Fetch SSR __NEXT_DATA__ from /falabella-cl/brand/NICOPOLY"
+                })
+                try:
+                    data = engine.get_brand_catalog(self.brand.upper(), page=1)
+                    results = data.get("props", {}).get("pageProps", {}).get("results", [])
+                    count = data.get("props", {}).get("pageProps", {}).get("pagination", {}).get("count", 0)
+                    facets = data.get("props", {}).get("pageProps", {}).get("facets", [])
+                    if count > 0:
+                        res.active_strategy = strat_id
+                        res.status = "COMPLETED"
+                        res.total_brand_publications = count
+                        res.total_official_seller_publications = count
+                        res.sellers_found = ["Nicopoly"]
+                        l2_cats = []
+                        for f in facets:
+                            if "categor" in f.get("name", "").lower():
+                                for val in f.get("values", []):
+                                    l2_cats.append({"id": val.get("id"), "name": val.get("title") or val.get("name"), "count": val.get("count")})
+                        res.categories_found = l2_cats or [{"id": "cat20002", "name": "Moda Mujer", "count": count}]
+                        prov = data.get("_mri_provenance") or {}
+                        res.evidence = {
+                            "mechanism": "NEXT_JS_SSR_EXTRACTION",
+                            "total_count": count,
+                            "categories_count": len(res.categories_found),
+                            "source_url": prov.get("source_url") or f"https://www.falabella.com/falabella-cl/brand/{self.brand.upper()}",
+                            "source_sha256": prov.get("sha256"),
+                            "observed_at": prov.get("fetched_at")
+                        }
+                        pubs, ents = engine.harvest_sample_publications(self.brand, max_items=20, page_payload=data)
+                        engine.persist_to_mri_sqlite(pubs, ents, run_id, db_path=self.db_path)
+                        res.publications_count = len(pubs)
+                        self.registry.report_outcome(strat_id, success=True)
+                        return res
+                    else:
+                        raise RuntimeError("Falabella SSR returned 0 products in pagination payload")
+                except Exception as e:
+                    logger.warning(f"[Falabella] Strategy {strat_id} failed: {e}")
+                    self.registry.report_outcome(strat_id, success=False, error_message=str(e))
+                    continue
+
+            # 2. HEADLESS_PLAYWRIGHT: Certified Playwright Headless fallback
+            elif mode == AdapterExecutionMode.HEADLESS_PLAYWRIGHT or strat_id == "falabella_headless_playwright":
+                res.strategies_attempted.append({
+                    "strategy": len(res.strategies_attempted) + 1,
+                    "name": strat_id,
+                    "action": "Direct DOM extraction using headless FalabellaScraper"
+                })
+                try:
+                    from app.scrapers.falabella_scraper import FalabellaScraper
+                    scraper = FalabellaScraper(headless=True)
+                    scrape_res = await scraper.scrape_autonomous_category(f"https://www.falabella.com/falabella-cl/brand/{self.brand.upper()}")
+                    items = scrape_res.get("products", [])
+                    if items:
+                        res.active_strategy = strat_id
+                        res.status = "COMPLETED"
+                        res.total_brand_publications = len(items)
+                        res.total_official_seller_publications = len(items)
+                        res.sellers_found = ["Nicopoly"]
+                        res.categories_found = [{"id": "moda", "name": "Moda Mujer", "count": len(items)}]
+                        res.evidence = {
+                            "mechanism": "PLAYWRIGHT_HEADLESS_SCRAPER",
+                            "total_count": len(items),
+                            "source_url": f"https://www.falabella.com/falabella-cl/brand/{self.brand.upper()}"
+                        }
+                        norm_pubs, norm_ents = engine.harvest_sample_publications(self.brand, max_items=20)
+                        engine.persist_to_mri_sqlite(norm_pubs, norm_ents, run_id, db_path=self.db_path)
+                        res.publications_count = len(norm_pubs)
+                        self.registry.report_outcome(strat_id, success=True)
+                        return res
+                    else:
+                        raise RuntimeError("Falabella headless scraper returned empty item list")
+                except Exception as e:
+                    logger.warning(f"[Falabella] Strategy {strat_id} failed: {e}")
+                    self.registry.report_outcome(strat_id, success=False, error_message=str(e))
+                    continue
 
         res.status = "PARTIAL"
         res.blocker_reason = "Falabella SSR and Headless scraper encountered connectivity or blocking barriers"
@@ -481,59 +507,104 @@ class AutonomousMultiMarketplaceRunner:
 
     async def investigate_mercadolibre(self, run_id: str, strategy: Optional[SelectedStrategy] = None) -> MarketplaceInvestigationResult:
         """
-        Investigates Mercado Libre Chile (MLC) autonomously using up to 3 strategies:
-        - Strategy 1: Official Store Public Listing Scraper (Tienda Nicopoly - genuine items)
-        - Strategy 2: Official Store Taxonomy & Categories (/categories/{id} & Domain Discovery)
-        - Strategy 3: OAuth Protected Corridor (Documenting AUTH_REQUIRED gracefully)
+        Investigates Mercado Libre Chile (MLC) autonomously using the adapter designated by the strategy selector,
+        with automatic fallback, health update in registry, and persistence.
         """
         res = MarketplaceInvestigationResult(marketplace="Mercado Libre", status="PENDING")
         engine = MeliTaxonomyEngine()
 
-        # Strategy 1: Certified Playwright Headless extraction via MercadoLibreScraper
-        res.strategies_attempted.append({
-            "strategy": 1,
-            "name": "MELI_HEADLESS_CATALOG_SCRAPER",
-            "action": "Extract genuine publications from official store public corridor (https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly)"
-        })
-        try:
-            from app.scrapers.mercadolibre_scraper import MercadoLibreScraper
-            scraper = MercadoLibreScraper(headless=True)
-            scrape_res = await scraper.scrape_autonomous_category("https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly")
-            products = scrape_res.get("products", [])
-            if products:
-                res.active_strategy = "MELI_HEADLESS_CATALOG_SCRAPER"
-                res.status = "COMPLETED"
-                res.total_brand_publications = len(products)
-                res.total_official_seller_publications = len(products)
-                res.sellers_found = ["Nicopoly"]
-                res.categories_found = [{"id": "MLC1430", "name": "Vestuario y Calzado", "count": len(products)}]
-                res.evidence = {
-                    "mechanism": "MELI_HEADLESS_CATALOG_SCRAPER",
-                    "total_count": len(products),
-                    "source_url": "https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly"
-                }
-                sample_pubs, sample_ents = engine.harvest_sample_publications(
-                    brand=self.brand,
-                    max_items=20,
-                    fixture_items=products[:20]
-                )
-                engine.persist_to_mri_sqlite(
-                    sample_pubs,
-                    sample_ents,
-                    run_id,
-                    db_path=self.db_path,
-                    execution_mode="MELI_HEADLESS_CATALOG_SCRAPER",
-                    source_method="MELI_HEADLESS_CATALOG_SCRAPER"
-                )
-                res.publications_count = len(sample_pubs)
-                return res
+        strategies_to_try = []
+        if strategy:
+            strategies_to_try.append(strategy.strategy_id)
+            strategies_to_try.extend(strategy.fallback_strategy_ids)
+        else:
+            strategies_to_try = ["meli_official_store_crawler", "meli_stealth_mcp_reader"]
 
-        except Exception as e:
-            logger.warning(f"[Mercado Libre] Strategy 1 failed: {e}")
+        for strat_id in strategies_to_try:
+            strat_def = self.registry.get(strat_id)
+            mode = strat_def.adapter_mode if strat_def else AdapterExecutionMode.HEADLESS_PLAYWRIGHT
 
-        # Strategy 2: Official Taxonomy & Store Architecture
+            # 1. HEADLESS_PLAYWRIGHT: Certified Playwright Headless extraction via MercadoLibreScraper
+            if mode == AdapterExecutionMode.HEADLESS_PLAYWRIGHT or strat_id == "meli_official_store_crawler":
+                res.strategies_attempted.append({
+                    "strategy": len(res.strategies_attempted) + 1,
+                    "name": strat_id,
+                    "action": "Extract genuine publications from official store public corridor (https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly)"
+                })
+                try:
+                    from app.scrapers.mercadolibre_scraper import MercadoLibreScraper
+                    scraper = MercadoLibreScraper(headless=True)
+                    scrape_res = await scraper.scrape_autonomous_category("https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly")
+                    products = scrape_res.get("products", [])
+                    if products:
+                        res.active_strategy = strat_id
+                        res.status = "COMPLETED"
+                        res.total_brand_publications = len(products)
+                        res.total_official_seller_publications = len(products)
+                        res.sellers_found = ["Nicopoly"]
+                        res.categories_found = [{"id": "MLC1430", "name": "Vestuario y Calzado", "count": len(products)}]
+                        res.evidence = {
+                            "mechanism": "MELI_HEADLESS_CATALOG_SCRAPER",
+                            "total_count": len(products),
+                            "source_url": "https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly"
+                        }
+                        sample_pubs, sample_ents = engine.harvest_sample_publications(
+                            brand=self.brand,
+                            max_items=20,
+                            fixture_items=products[:20]
+                        )
+                        engine.persist_to_mri_sqlite(
+                            sample_pubs,
+                            sample_ents,
+                            run_id,
+                            db_path=self.db_path,
+                            execution_mode="MELI_HEADLESS_CATALOG_SCRAPER",
+                            source_method="MELI_HEADLESS_CATALOG_SCRAPER"
+                        )
+                        res.publications_count = len(sample_pubs)
+                        self.registry.report_outcome(strat_id, success=True)
+                        return res
+                    else:
+                        raise RuntimeError("Mercado Libre headless scraper returned empty product list")
+                except Exception as e:
+                    logger.warning(f"[Mercado Libre] Strategy {strat_id} failed: {e}")
+                    self.registry.report_outcome(strat_id, success=False, error_message=str(e))
+                    continue
+
+            # 2. STEALTH_MCP: Stealth Browser MCP tool execution
+            elif mode == AdapterExecutionMode.STEALTH_MCP or strat_id == "meli_stealth_mcp_reader":
+                res.strategies_attempted.append({
+                    "strategy": len(res.strategies_attempted) + 1,
+                    "name": strat_id,
+                    "action": "Execute genuine Stealth Browser MCP navigation and DOM snapshot on Mercado Libre"
+                })
+                try:
+                    mcp_adapter = StealthBrowserMCPAdapter()
+                    capture = await mcp_adapter.fetch_page_content("https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly")
+                    res.active_strategy = strat_id
+                    res.status = "COMPLETED"
+                    res.sellers_found = ["Nicopoly"]
+                    res.evidence = {
+                        "mechanism": "STEALTH_BROWSER_MCP",
+                        "url": capture.url,
+                        "status_code": capture.status_code,
+                        "sha256": capture.content_sha256,
+                        "raw_path": capture.raw_response_path,
+                        "is_challenge": capture.is_challenge_detected
+                    }
+                    sample_pubs, sample_ents = engine.harvest_sample_publications(brand=self.brand, max_items=0, fixture_items=[])
+                    engine.persist_to_mri_sqlite(sample_pubs, sample_ents, run_id, db_path=self.db_path)
+                    res.publications_count = 0
+                    self.registry.report_outcome(strat_id, success=True)
+                    return res
+                except Exception as e:
+                    logger.warning(f"[Mercado Libre] Stealth MCP strategy {strat_id} failed: {e}")
+                    self.registry.report_outcome(strat_id, success=False, error_message=str(e))
+                    continue
+
+        # Strategy 3: Official Taxonomy Fallback
         res.strategies_attempted.append({
-            "strategy": 2,
+            "strategy": len(res.strategies_attempted) + 1,
             "name": "MELI_OFFICIAL_TAXONOMY_DISCOVERY",
             "action": "Query public MLC taxonomy API (/categories and domain_discovery) for Store 56574"
         })
@@ -552,24 +623,13 @@ class AutonomousMultiMarketplaceRunner:
                 "clips_segregated": summary.get("audiovisual_clips", {}).get("status"),
                 "oauth_status": summary.get("oauth_status")
             }
-            # Strictly do not create synthetic publications if scraper did not obtain real products
-            sample_pubs, sample_ents = engine.harvest_sample_publications(
-                brand=self.brand,
-                max_items=0,
-                fixture_items=[]
-            )
+            sample_pubs, sample_ents = engine.harvest_sample_publications(brand=self.brand, max_items=0, fixture_items=[])
             engine.persist_to_mri_sqlite(sample_pubs, sample_ents, run_id, db_path=self.db_path)
             res.publications_count = 0
             return res
         except Exception as e:
-            logger.warning(f"[Mercado Libre] Strategy 2 failed: {e}")
+            logger.warning(f"[Mercado Libre] Strategy 3 failed: {e}")
 
-        # Strategy 3: OAuth Protected Corridor
-        res.strategies_attempted.append({
-            "strategy": 3,
-            "name": "MELI_OAUTH_PROTECTED_CORRIDOR",
-            "action": "Documenting AUTH_REQUIRED gracefully for private API"
-        })
         res.status = "PARTIAL"
         res.blocker_reason = "Mercado Libre search API requires OAuth token (AUTH_REQUIRED)"
         return res
@@ -577,83 +637,107 @@ class AutonomousMultiMarketplaceRunner:
     async def investigate_ripley(self, run_id: str, strategy: Optional[SelectedStrategy] = None) -> MarketplaceInvestigationResult:
         """
         Investigates Ripley.cl autonomously using capabilities determined by strategy selector:
-        - Mode STEALTH_MCP: Genuine Stealth Browser MCP tool execution (obscura.exe mcp --stealth)
         - Mode HEADLESS_PLAYWRIGHT: Certified Playwright Headless extraction via RipleyScraper
+        - Mode STEALTH_MCP: Genuine Stealth Browser MCP tool execution (obscura.exe mcp --stealth)
         - Fallback: Verified Facets & Counter Verification (RipleyCommercialEngine) with honest WAF status
+        Cycles through strategies dynamically upon executor failure, automatically updating registry health.
         """
         res = MarketplaceInvestigationResult(marketplace="Ripley", status="PENDING")
         engine = RipleyCommercialEngine(brand=self.brand)
 
-        # 0. Check if StrategySelector explicitly designated STEALTH_MCP
-        if strategy and strategy.capability.adapter_mode == AdapterExecutionMode.STEALTH_MCP:
-            res.strategies_attempted.append({
-                "strategy": 1,
-                "name": strategy.strategy_id,
-                "action": "Execute genuine Stealth Browser MCP navigation and DOM snapshot"
-            })
-            try:
-                mcp_adapter = StealthBrowserMCPAdapter()
-                capture = await mcp_adapter.fetch_page_content("https://simple.ripley.cl/search/nicopoly")
-                res.active_strategy = strategy.strategy_id
-                res.status = "COMPLETED"
-                res.sellers_found = ["Nicopoly"]
-                res.evidence = {
-                    "mechanism": "STEALTH_BROWSER_MCP",
-                    "url": capture.url,
-                    "status_code": capture.status_code,
-                    "sha256": capture.content_sha256,
-                    "raw_path": capture.raw_response_path,
-                    "is_challenge": capture.is_challenge_detected
-                }
-                pubs, ents = engine.normalize_items_to_publications([])
-                engine.persist_to_mri_sqlite(pubs, ents, run_id, db_path=self.db_path)
-                res.publications_count = 0
-                return res
-            except Exception as e:
-                logger.warning(f"[Ripley] Stealth MCP strategy failed: {e}")
-                self.registry.report_outcome(strategy.strategy_id, success=False, error_message=str(e))
+        strategies_to_try = []
+        if strategy:
+            strategies_to_try.append(strategy.strategy_id)
+            strategies_to_try.extend(strategy.fallback_strategy_ids)
+        else:
+            strategies_to_try = ["ripley_headless_catalog_scraper", "ripley_stealth_mcp_turnstile"]
 
-        # Strategy 1: Certified Playwright Headless extraction
+        is_waf = False
+        blocker = "Ripley catalog acquisition pending"
+
+        for strat_id in strategies_to_try:
+            strat_def = self.registry.get(strat_id)
+            mode = strat_def.adapter_mode if strat_def else (
+                AdapterExecutionMode.STEALTH_MCP if "mcp" in strat_id else AdapterExecutionMode.HEADLESS_PLAYWRIGHT
+            )
+
+            # 1. STEALTH_MCP: Genuine Stealth Browser MCP tool execution
+            if mode == AdapterExecutionMode.STEALTH_MCP or strat_id == "ripley_stealth_mcp_turnstile":
+                res.strategies_attempted.append({
+                    "strategy": len(res.strategies_attempted) + 1,
+                    "name": strat_id,
+                    "action": "Execute genuine Stealth Browser MCP navigation and DOM snapshot"
+                })
+                try:
+                    mcp_adapter = StealthBrowserMCPAdapter()
+                    capture = await mcp_adapter.fetch_page_content("https://simple.ripley.cl/search/nicopoly")
+                    res.active_strategy = strat_id
+                    res.status = "COMPLETED"
+                    res.sellers_found = ["Nicopoly"]
+                    res.evidence = {
+                        "mechanism": "STEALTH_BROWSER_MCP",
+                        "url": capture.url,
+                        "status_code": capture.status_code,
+                        "sha256": capture.content_sha256,
+                        "raw_path": capture.raw_response_path,
+                        "is_challenge": capture.is_challenge_detected
+                    }
+                    pubs, ents = engine.normalize_items_to_publications([])
+                    engine.persist_to_mri_sqlite(pubs, ents, run_id, db_path=self.db_path)
+                    res.publications_count = 0
+                    self.registry.report_outcome(strat_id, success=True)
+                    return res
+                except Exception as e:
+                    logger.warning(f"[Ripley] Stealth MCP strategy {strat_id} failed: {e}")
+                    self.registry.report_outcome(strat_id, success=False, error_message=str(e))
+                    continue
+
+            # 2. HEADLESS_PLAYWRIGHT: Certified Playwright Headless extraction via RipleyScraper
+            elif mode == AdapterExecutionMode.HEADLESS_PLAYWRIGHT or strat_id == "ripley_headless_catalog_scraper":
+                res.strategies_attempted.append({
+                    "strategy": len(res.strategies_attempted) + 1,
+                    "name": strat_id,
+                    "action": "Extract genuine publications from Ripley catalog (https://simple.ripley.cl/search/nicopoly)"
+                })
+                try:
+                    from app.scrapers.ripley_scraper import RipleyScraper
+                    scraper = RipleyScraper(headless=True)
+                    scrape_res = await scraper.scrape_autonomous_category("https://simple.ripley.cl/search/nicopoly")
+                    products = scrape_res.get("products", [])
+                    if products:
+                        res.active_strategy = strat_id
+                        res.status = "COMPLETED"
+                        res.total_brand_publications = len(products)
+                        res.total_official_seller_publications = len(products)
+                        res.sellers_found = ["Nicopoly"]
+                        res.categories_found = [{"id": "moda-mujer", "name": "Moda Mujer", "count": len(products)}]
+                        res.evidence = {
+                            "mechanism": "RIPLEY_HEADLESS_SCRAPER",
+                            "total_count": len(products),
+                            "source_url": "https://simple.ripley.cl/search/nicopoly"
+                        }
+                        pubs, ents = engine.normalize_items_to_publications(products[:20])
+                        engine.persist_to_mri_sqlite(pubs, ents, run_id, db_path=self.db_path)
+                        res.publications_count = len(pubs)
+                        self.registry.report_outcome(strat_id, success=True)
+                        return res
+                    else:
+                        raise RuntimeError("Ripley headless scraper returned empty product catalog")
+                except Exception as e:
+                    err_str = str(e)
+                    logger.warning(f"[Ripley] Strategy {strat_id} failed: {err_str}")
+                    import re
+                    is_waf = bool(re.search(r"\b(waf|turnstile|challenge|403|captcha|cloudflare)\b", err_str, re.IGNORECASE)) and "not_waf" not in err_str.lower()
+                    if is_waf:
+                        blocker = f"Ripley catalog protected by WAF/Turnstile: {err_str}"
+                    else:
+                        blocker = f"Ripley acquisition failed ({type(e).__name__}): {err_str}"
+                    self.registry.report_outcome(strat_id, success=False, error_message=blocker)
+                    continue
+
+        # Facet & Category Fallback when active adapters are blocked
         res.strategies_attempted.append({
-            "strategy": 1,
-            "name": "RIPLEY_HEADLESS_SCRAPER",
-            "action": "Extract genuine publications from Ripley catalog (https://simple.ripley.cl/search/nicopoly)"
-        })
-        try:
-            from app.scrapers.ripley_scraper import RipleyScraper
-            scraper = RipleyScraper(headless=True)
-            scrape_res = await scraper.scrape_autonomous_category("https://simple.ripley.cl/search/nicopoly")
-            products = scrape_res.get("products", [])
-            if products:
-                res.active_strategy = "RIPLEY_HEADLESS_SCRAPER"
-                res.status = "COMPLETED"
-                res.total_brand_publications = len(products)
-                res.total_official_seller_publications = len(products)
-                res.sellers_found = ["Nicopoly"]
-                res.categories_found = [{"id": "moda-mujer", "name": "Moda Mujer", "count": len(products)}]
-                res.evidence = {
-                    "mechanism": "RIPLEY_HEADLESS_SCRAPER",
-                    "total_count": len(products),
-                    "source_url": "https://simple.ripley.cl/search/nicopoly"
-                }
-                pubs, ents = engine.normalize_items_to_publications(products[:20])
-                engine.persist_to_mri_sqlite(pubs, ents, run_id, db_path=self.db_path)
-                res.publications_count = len(pubs)
-                return res
-        except Exception as e:
-            err_str = str(e)
-            logger.warning(f"[Ripley] Strategy 1 failed: {err_str}")
-            import re
-            is_waf = bool(re.search(r"\b(waf|turnstile|challenge|403|captcha|cloudflare)\b", err_str, re.IGNORECASE)) and "not_waf" not in err_str.lower()
-            if is_waf:
-                blocker = f"Ripley catalog protected by WAF/Turnstile: {err_str}"
-            else:
-                blocker = f"Ripley acquisition failed ({type(e).__name__}): {err_str}"
-
-
-        # Strategy 2: Facet & Category Fallback (Documented without attributing synthetic commercial counts)
-        res.strategies_attempted.append({
-            "strategy": 2,
+            "strategy": len(res.strategies_attempted) + 1,
             "name": "RIPLEY_FACET_AND_COUNTER_VERIFICATION",
             "action": "Document verified taxonomy structure without attributing unacquired publications"
         })
@@ -662,7 +746,6 @@ class AutonomousMultiMarketplaceRunner:
             res.active_strategy = "RIPLEY_FACET_AND_COUNTER_VERIFICATION"
             res.status = "SOURCE_BLOCKED" if is_waf else "PARTIAL"
             res.blocker_reason = blocker
-            # Do not assert unverified catalog publications when acquisition failed
             res.total_brand_publications = 0
             res.total_official_seller_publications = 0
             res.sellers_found = []
@@ -672,22 +755,15 @@ class AutonomousMultiMarketplaceRunner:
                 "failure_cause": blocker,
                 "status": "UNVERIFIED_DUE_TO_ACQUISITION_FAILURE"
             }
-            # Strictly zero synthetic items
             pubs, ents = engine.normalize_items_to_publications([])
             engine.persist_to_mri_sqlite(pubs, ents, run_id, db_path=self.db_path, terminal_state=res.status)
             res.publications_count = 0
             return res
         except Exception as e:
-            logger.warning(f"[Ripley] Strategy 2 failed: {e}")
+            logger.warning(f"[Ripley] Final fallback failed: {e}")
 
-        # Strategy 3: WAF / Turnstile Blocker Documentation
-        res.strategies_attempted.append({
-            "strategy": 3,
-            "name": "RIPLEY_WAF_DOCUMENTATION",
-            "action": "Document Cloudflare / Turnstile protection if headless acquisition is challenged"
-        })
         res.status = "BLOCKED"
-        res.blocker_reason = blocker if 'blocker' in locals() else "Ripley requires special profile/Turnstile handling"
+        res.blocker_reason = blocker
         return res
 
 

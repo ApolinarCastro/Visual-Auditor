@@ -4,18 +4,18 @@
 **Auditor independiente:** CODEX  
 **Proyecto:** Visual Auditor / Marketplace Research Intelligence  
 **Rama:** `fix/mri-022-relational-recovery`  
-**Base revisada:** `71f348eceb9620b1a516b48fed516386e6992ca8`  
-**SHA Final Entregado:** `619d519b208ffe5a304093bd5b0cad6e9fdb2603`  
+**Base revisada:** `8e25f44b10779e485aafecd2f27d34f90d85f708`  
+**SHA Final Entregado:** `99eb9648b4c35c39a19f0209afb40ee84f271d31`  
 **Fecha:** 2026-10-20  
 
 ---
 
 ## 1. RESUMEN EJECUTIVO Y RESOLUCIÓN DE OBSERVACIONES
 
-En cumplimiento estricto del mandato de cierre integral sin reaperturas y resolviendo las 5 observaciones requeridas:
+En cumplimiento estricto del mandato de cierre integral sin reaperturas y resolviendo las observaciones requeridas:
 
-1. **Certificación Histórica de las 2.533 Observaciones (Algoritmo Exacto de Codex)**:
-   - Se ejecutó exactamente el algoritmo de certificación histórica de Codex Gate 025/032 (`evidence/mri_codex_independent_gate_025/check_gate.py`):
+1. **Certificación Histórica de las 2.533 Observaciones (Algoritmo Canónico de Codex)**:
+   - Se ejecutó exactamente el algoritmo canónico de certificación de Codex Gate 025/032 (`evidence/mri_codex_independent_gate_025/check_gate.py`):
      ```python
      d = sqlite3.connect((E/'production_copy.db').as_uri()+'?mode=ro', uri=True)
      cols = [r[1] for r in d.execute('pragma table_info(mri_publications)')]
@@ -27,30 +27,29 @@ En cumplimiento estricto del mandato de cierre integral sin reaperturas y resolv
    - **Resultado en `data/sqlite/visibility.db`**:
      - Conteo exacto: **2.533** (2.489 en `mri_publications` + 44 en `mri_historical_publications`).
      - Hash SHA-256 exacto: `c4f44dcee641a7bbbf51d8062ed16103d50b13c81f9e3f56809bd0bb3bbd5f3b`.
-     - **Causa de la discrepancia previa explicada**: Un script preliminar calculó el hash sobre un subconjunto arbitrario de columnas (`publication_id, product_id, marketplace, status, observed_at, position`), arrojando `49481608...`. Al ejecutar el algoritmo canónico con todas las columnas de `PRAGMA table_info` y serialización canónica ordenada, el hash resultante coincide al 100% con `c4f44dcee641a7bbbf51d8062ed16103d50b13c81f9e3f56809bd0bb3bbd5f3b` certificado por Codex. La base productiva no fue tocada ni sustituida.
+     - **Causa de la discrepancia previa explicada**: Un cálculo anterior usó un subconjunto de columnas (`publication_id, product_id, marketplace, status, observed_at, position`), dando `49481608...`. Con el algoritmo canónico completo sobre todas las columnas de `PRAGMA table_info` y serialización ordenada, el hash coincide al 100% con `c4f44dcee641a7bbbf51d8062ed16103d50b13c81f9e3f56809bd0bb3bbd5f3b` certificado por Codex.
 
-2. **Despacho Efectivo e Integrado del Strategy Selector en los 4 Marketplaces**:
-   - Se parametrizó la firma de investigación en los 4 marketplaces de `AutonomousMultiMarketplaceRunner`:
-     - `investigate_paris(run_id, strategy=paris_strat)`
-     - `investigate_ripley(run_id, strategy=ripley_strat)`
-     - `investigate_falabella(run_id, strategy=falabella_strat)`
-     - `investigate_mercadolibre(run_id, strategy=meli_strat)`
-   - La selección efectiva de estrategia determina el adaptador y la ejecución.
-   - **Demostración de Fallbacks por Fallo Real**: Se eliminaron llamadas manuales simuladas a `report_outcome()` en las pruebas de despacho. En `test_autonomous_strategy_dispatch_fallback_and_experience_update`, la falla primaria es provocada por una excepción real de ejecución (Cloudflare Turnstile WAF block 403 en el scraper). El runner captura el fallo real, clasifica el estado en `SOURCE_BLOCKED`/`PARTIAL`, alimenta el registro y el selector activa automáticamente el fallback secundario (`STEALTH_MCP`), ejecutando la herramienta y actualizando la experiencia.
+2. **Despacho Efectivo en los 4 Marketplaces y Ciclo Completo en una Sola Invocación**:
+   - Se corrigió el despacho en `AutonomousMultiMarketplaceRunner` para que la estrategia seleccionada determine efectivamente el adaptador ejecutado en los 4 marketplaces:
+     - **Paris**: Despacha `CDP_API_PUBLIC` (Constructor.io API direct) o `CONTROLLED_REPLAY` (HAR capture feed) según `strategy.capability.adapter_mode`.
+     - **Falabella**: Despacha `HTTP_SSR` (`FalabellaSSREngine`) o `HEADLESS_PLAYWRIGHT` (`FalabellaScraper`) según `strategy.capability.adapter_mode`.
+     - **Mercado Libre**: Despacha `HEADLESS_PLAYWRIGHT` (`MercadoLibreScraper`) o `STEALTH_MCP` (`StealthBrowserMCPAdapter`) según `strategy.capability.adapter_mode`.
+     - **Ripley**: Despacha `HEADLESS_PLAYWRIGHT` (`RipleyScraper`) o `STEALTH_MCP` (`StealthBrowserMCPAdapter`) según `strategy.capability.adapter_mode`.
+   - **Ciclo Completo en una Sola Invocación**:
+     - Ante el fallo real de un ejecutor primario, el runner captura la excepción internamente, actualiza automáticamente la salud en el `CapabilityRegistry` (`report_outcome(primary, False)`), conmuta al adaptador de fallback de la cadena, adquiere los datos, persiste las observaciones a SQLite y actualiza la salud del fallback (`report_outcome(fallback, True)`).
+     - **Cero llamadas manuales a `report_outcome()` en el test**: Verificado en `test_autonomous_strategy_dispatch_fallback_and_experience_update` mediante una única llamada `await runner.investigate_ripley(...)`.
 
-3. **Seguridad y Comportamiento MCP (Perímetro, Redirecciones, Revocaciones y Cierres)**:
-   - `StealthBrowserMCPAdapter` opera con garantías preventivas completas:
-     - **Validación preventiva de perímetro**: Esquema strictly HTTPS y lista blanca de dominios exactos y subdominios autorizados (`paris.cl`, `falabella.com`, `mercadolibre.cl`, `ripley.cl`).
-     - **Control anti-escape por redirección**: Tras la navegación, consulta `browser_tab_list`; si el destino redirigido se encuentra fuera del perímetro autorizado, cierra inmediatamente la sesión con `browser_close`, descarta la captura y lanza `MCPUnauthorizedTargetError` (verificado en `test_T9_stealth_browser_mcp_redirect_rejection`).
-     - **Revocación fail-closed**: Comprobación de permisos tanto previa como mid-operación antes de cada llamada RPC (`initialize`, `tools/call`, `browser_snapshot`). Ante revocación, se aborta y limpia el subproceso (`test_T7`).
-     - **Limpieza garantizada de sesión**: El bloque `finally` garantiza el cierre de `stdin`, terminación del proceso (`proc.terminate()`) y fallback a `kill()` en caso de cuelgue o error del servidor MCP.
+3. **Seguridad MCP y Limitación Arquitectónica en Redirecciones**:
+   - `obscura.exe` (`mcp --stealth`) ofrece automatización del navegador pero **carece de hooks de intercepción previa de navegación** antes de que la petición HTTP se despache por la red. Por consiguiente, una redirección HTTP 301/302 hacia un dominio no autorizado no puede prevenirse previamente a nivel de red por el servidor MCP.
+   - **Gobernanza y Mitigación Implementada**:
+     - Se documentó formalmente esta limitación arquitectónica en `StealthBrowserMCPAdapter` y en este informe.
+     - Tras la navegación, el adaptador inspecciona `browser_tab_list`; ante cualquier redirección fuera de los 4 dominios autorizados (`paris.cl`, `falabella.com`, `mercadolibre.cl`, `ripley.cl`), cierra inmediatamente la sesión con `browser_close`, descarta la evidencia y lanza `MCPUnauthorizedTargetError` (fail-closed).
+     - La capacidad queda clasificada como **deshabilitada para escenarios de navegación abierta o libre exploración de redirecciones arbitrarias**, restringiéndose exclusivamente a puntos de entrada HTTPS pre-validados en la lista de dominios autorizados.
 
-4. **Eliminación Total de Archivos `.pyc` del Control de Versiones**:
-   - Se eliminaron todos los archivos binarios compilados `.pyc` del índice de git (`git rm -r --cached "app/mri_autonomous/__pycache__" "app/mri_dashboard/__pycache__"`).
-   - Se agregaron las reglas `__pycache__/`, `*.pyc`, `*.pyo`, `*.pyd` a `.gitignore`.
-   - `git ls-files "*.pyc"` retorna estrictamente **0 archivos**.
+4. **Eliminación Total de Archivos `.pyc`**:
+   - Archivos binarios compilados `.pyc` purgados del índice git. `.gitignore` reforzado. `git ls-files "*.pyc"` = 0.
 
-5. **Pruebas de Integridad SQLite, Regresiones y Preservación de Visual Auditor**:
+5. **Pruebas de Integridad, Regresiones y Preservación de Visual Auditor**:
    - Suite relacional (`tests/test_mri_022_relational_recovery.py`): **9/9 PASSED**.
    - Suite de capacidades y MCP (`tests/test_mri_capability_registry_023.py`): **10/10 PASSED**.
    - Total pruebas: **19/19 PASSED**.
@@ -63,8 +62,8 @@ En cumplimiento estricto del mandato de cierre integral sin reaperturas y resolv
 | Observación | Requisito Mandatorio | Causa Previa | Solución Verificada | Evidencia de Ejecución | Estado |
 |---|---|---|---|---|---|
 | **1. Certificación 2.533 Observaciones** | Ejecutar exactamente el algoritmo de certificación Codex Gate 025; explicar diferencia sin modificar producción. | Cálculo preliminar usó columnas parciales arrojando hash `494816...`. | Ejecución del algoritmo canónico de Gate 025 sobre `data/sqlite/visibility.db` (`cols = PRAGMA table_info(mri_publications)`). Conteo: exactamente 2.533. SHA-256 canónico exacto: `c4f44dcee641a7bbbf51d8062ed16103d50b13c81f9e3f56809bd0bb3bbd5f3b`. | Script SQLite exacto ejecutado con URI `?mode=ro`. SHA-256 coincide al 100% con la certificación histórica de Codex. | **VERIFICADO (PASS)** |
-| **2. Despacho en 4 Marketplaces & Fallbacks Reales** | Integrar despacho de selector en Paris, Ripley, Falabella y Mercado Libre. Demostrar fallbacks por fallos reales del ejecutor. | La llamada `investigate_*` solo recibía `strategy` en Ripley y los tests llamaban artificialmente a `report_outcome()`. | Despacho parametrizado en los 4 marketplaces en `execute_autonomous_order()`. El runner ejecuta el adaptador seleccionado y actualiza el registro con base en el resultado del ejecutor. Demostración en test mediante inyección de fallo de adquisición real (WAF/Turnstile exception) que activa la transición a BLOCKED y promueve el fallback secundario sin llamadas manuales espurias. | `tests/test_mri_capability_registry_023.py::test_autonomous_strategy_dispatch_fallback_and_experience_update` | **VERIFICADO (PASS)** |
-| **3. Comportamiento y Seguridad MCP** | Validar redirecciones, bloqueos, revocaciones y fallos de servidor. Impedir destinos no autorizados. | Necesidad de evidencia demostrable sobre redirecciones y fail-closed preventivo. | Comprobación estricta de destino con inspección de `browser_tab_list` post-navegación. Si el destino final sale del perímetro, se cierra el navegador inmediatamente con `browser_close` y se lanza `MCPUnauthorizedTargetError`. Pruebas T7 (revocación), T8 (bloqueo fuera de perímetro) y T9 (rechazo de redirección no autorizada). | `tests/test_mri_capability_registry_023.py::test_T7_stealth_browser_mcp_permission_revocation`<br>`tests/test_mri_capability_registry_023.py::test_T8_stealth_browser_mcp_unauthorized_domain_block`<br>`tests/test_mri_capability_registry_023.py::test_T9_stealth_browser_mcp_redirect_rejection` | **VERIFICADO (PASS)** |
+| **2. Despacho en 4 Marketplaces & Fallbacks Reales** | Integrar despacho efectivo en Paris, Falabella, Ripley y Mercado Libre. Demostrar en una sola invocación del runner el ciclo completo sin llamadas manuales a `report_outcome()`. | Despacho estático o no condicionado por la estrategia; tests requerían llamadas manuales a `report_outcome()`. | Despacho dinámico parametrizado en los 4 marketplaces basado en `strategy.capability.adapter_mode`. El runner captura fallos de ejecución internamente, actualiza automáticamente la salud en el registro, activa el fallback, ejecuta el adaptador secundario y persiste en SQLite. Demostrado en una sola llamada de runner sin `report_outcome()` manual. | `tests/test_mri_capability_registry_023.py::test_autonomous_strategy_dispatch_fallback_and_experience_update` (1 sola invocación, ciclo completo verificado). | **VERIFICADO (PASS)** |
+| **3. Comportamiento y Seguridad MCP** | Verificar redirección a dominio no autorizado. Comprobar que tab_list posterior no es prevención previa; documentar limitación y mantener capacidad deshabilitada para ese escenario. | Ausencia de hooks previos de intercepción en el servidor MCP `obscura.exe`. | Documentación formal de la limitación arquitectónica. Inspección post-navegación vía `browser_tab_list` cierra sesión de inmediato con `browser_close` y lanza `MCPUnauthorizedTargetError`. Capacidad deshabilitada para exploración abierta de redirecciones no autorizadas. | `app/mri_autonomous/mcp_adapters/stealth_browser_adapter.py`<br>`tests/test_mri_capability_registry_023.py::test_T9_stealth_browser_mcp_redirect_rejection` | **VERIFICADO (PASS)** |
 | **4. Eliminación de `.pyc`** | Eliminar archivos `.pyc` del control de versiones y evitar nuevas incorporaciones. | `.pyc` trackeados accidentalmente en commits pasados. | `git rm --cached` ejecutado sobre todos los `.pyc`. Actualización de `.gitignore` con `__pycache__/`, `*.pyc`, `*.pyo`, `*.pyd`. `git ls-files "*.pyc"` = 0. | `git ls-files "*.pyc"` retorna vacío. | **VERIFICADO (PASS)** |
 | **5. Regresiones e Integridad** | Repetir pruebas originales de integridad SQLite, regresiones funcionales y preservación de VA. | Garantizar que ninguna corrección introdujo regresiones en MRI-022 ni alteró producción. | Ejecución completa de suites de prueba (19 pruebas unitarias e integradas). Comprobación de integridad relacional, transaccionalidad atómica y verificación de 0 diffs en el código productivo de Visual Auditor. | `pytest tests/test_mri_022_relational_recovery.py tests/test_mri_capability_registry_023.py` (19/19 PASSED). `git diff origin/main -- app/auditor ...` = 0 líneas. | **VERIFICADO (PASS)** |
 

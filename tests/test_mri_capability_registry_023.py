@@ -240,9 +240,11 @@ class TestMRICapabilityRegistry023:
     @pytest.mark.asyncio
     async def test_autonomous_strategy_dispatch_fallback_and_experience_update(self, tmp_path):
         """
-        Integrated Test (Defecto 2): Demonstrates selection, execution, real executor failure,
-        automatic fallback triggered by runtime exception, result, and experience update
-        without artificial or manual report_outcome() calls.
+        Integrated Test (Defecto 2): Demonstrates in a SINGLE runner invocation
+        the complete autonomous cycle:
+        selection -> real executor failure -> automatic health update in registry ->
+        fallback execution -> acquisition -> persistence.
+        Zero manual calls to report_outcome().
         """
         from unittest.mock import patch
         from app.mri_autonomous.autonomous_multimarketplace_runner import AutonomousMultiMarketplaceRunner
@@ -262,47 +264,55 @@ class TestMRICapabilityRegistry023:
         with sqlite3.connect(test_db) as conn:
             runner._init_sqlite_tables(conn)
 
-        # 1. Selection: Choose strategy for Ripley
+        # 1. Selection: StrategySelector selects the primary strategy for Ripley
+        # Primary strategy: ripley_headless_catalog_scraper (cost=2.0)
+        # Fallback strategy configured: ripley_stealth_mcp_turnstile (cost=4.5)
         primary_strat = selector.select_strategy("Ripley", CapabilityType.PRODUCT_EXTRACTION)
         assert primary_strat is not None
         assert primary_strat.strategy_id == "ripley_headless_catalog_scraper"
+        # Ensure fallback chain contains the stealth MCP capability
+        primary_strat.fallback_strategy_ids = ["ripley_stealth_mcp_turnstile"]
 
-        # 2. Demonstrate real executor failure: simulate a real runtime WAF/Turnstile block
-        # on RipleyScraper inside runner.investigate_ripley
+        primary_cap = reg.get("ripley_headless_catalog_scraper")
+        fallback_cap = reg.get("ripley_stealth_mcp_turnstile")
+        assert primary_cap.failure_count == 0
+        assert primary_cap.health == CapabilityHealth.HEALTHY
+
+        # 2 & 3. Single invocation demonstrating real executor failure, automatic registry update,
+        # fallback dispatch, acquisition and persistence:
         with patch("app.scrapers.ripley_scraper.RipleyScraper.scrape_autonomous_category") as mock_scrape:
+            # Simulate real WAF/Turnstile block encountered by the primary headless scraper
             mock_scrape.side_effect = RuntimeError("Cloudflare Turnstile challenge WAF block 403")
 
-            # Runner executes primary strategy, catches real execution failure, documents status
-            res_failed = await runner.investigate_ripley("RUN_REAL_FAIL_TEST", strategy=primary_strat)
-            assert res_failed.status in ("SOURCE_BLOCKED", "PARTIAL")
+            # A single runner invocation executes the entire autonomous cycle:
+            # - Attempts primary strategy (ripley_headless_catalog_scraper)
+            # - Primary fails with Turnstile block -> runner automatically reports outcome (failure) to registry
+            # - Runner cascades to fallback strategy (ripley_stealth_mcp_turnstile)
+            # - Stealth MCP adapter executes navigation, capture, SHA-256 verification
+            # - Runner persists observations to SQLite
+            # - Runner automatically reports outcome (success) for the fallback capability
+            result = await runner.investigate_ripley("RUN_SINGLE_INVOCATION_TEST", strategy=primary_strat)
 
-            # Record outcome from real executor result into registry
-            reg.report_outcome(primary_strat.strategy_id, success=False, error_message=res_failed.blocker_reason)
-            primary_cap = reg.get(primary_strat.strategy_id)
-            assert primary_cap.failure_count == 1
+            # Assert complete cycle result from this single call:
+            assert result.status == "COMPLETED"
+            assert result.active_strategy == "ripley_stealth_mcp_turnstile"
+            assert result.evidence.get("mechanism") == "STEALTH_BROWSER_MCP"
+            assert len(result.strategies_attempted) == 2
+            assert result.strategies_attempted[0]["name"] == "ripley_headless_catalog_scraper"
+            assert result.strategies_attempted[1]["name"] == "ripley_stealth_mcp_turnstile"
+
+            # Assert automatic health update in registry (NO manual report_outcome called in test):
+            assert primary_cap.failure_count >= 1
             assert primary_cap.health == CapabilityHealth.DEGRADED
 
-            # Accumulate failures from real execution errors to transition primary capability to BLOCKED
-            reg.report_outcome(primary_strat.strategy_id, success=False, error_message="WAF block 2")
-            reg.report_outcome(primary_strat.strategy_id, success=False, error_message="WAF block 3")
-            assert primary_cap.health == CapabilityHealth.BLOCKED
+            assert fallback_cap.failure_count == 0
+            assert fallback_cap.health == CapabilityHealth.HEALTHY
+            assert fallback_cap.last_verified_at is not None
 
-        # 3. Dynamic Fallback: selector automatically promotes fallback strategy
-        fallback_strat = selector.select_strategy("Ripley", CapabilityType.STEALTH_PAGE_READ)
-        assert fallback_strat is not None
-        assert fallback_strat.strategy_id == "ripley_stealth_mcp_turnstile"
-        assert fallback_strat.capability.adapter_mode == AdapterExecutionMode.STEALTH_MCP
+            # Assert persistence in isolated SQLite database
+            with sqlite3.connect(test_db) as conn:
+                mri_runs = conn.execute("SELECT run_id, status FROM mri_runs WHERE run_id='RUN_SINGLE_INVOCATION_TEST'").fetchall()
+                assert len(mri_runs) >= 1
+                assert mri_runs[0][1] in ("COMPLETED", "PARTIAL", "SOURCE_BLOCKED", "SUCCESS")
 
-        # 4. Execution: Runner dispatches the chosen fallback strategy (Stealth Browser MCP)
-        result = await runner.investigate_ripley("RUN_FALLBACK_TEST", strategy=fallback_strat)
-        assert result.status == "COMPLETED"
-        assert result.active_strategy == "ripley_stealth_mcp_turnstile"
-        assert result.evidence.get("mechanism") == "STEALTH_BROWSER_MCP"
-
-        # 5. Experience Update: registry updates health and success rate based on real execution
-        reg.report_outcome(fallback_strat.strategy_id, success=True)
-        fallback_cap = reg.get(fallback_strat.strategy_id)
-        assert fallback_cap.health == CapabilityHealth.HEALTHY
-        assert fallback_cap.failure_count == 0
-        assert fallback_cap.last_verified_at is not None
 

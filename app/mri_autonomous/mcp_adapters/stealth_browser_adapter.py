@@ -50,6 +50,18 @@ class StealthBrowserMCPAdapter:
     """
     Adapter interfacing Visual Auditor MRI with the genuine Stealth Browser MCP server (RG-13 to RG-16).
     Communicates via real stdio JSON-RPC MCP protocol (initialize, tools/list, tools/call).
+
+    ARCHITECTURAL LIMITATION & REDIRECT BOUNDARY GOVERNANCE:
+    The underlying Stealth Browser MCP server (obscura.exe) provides browser automation tools
+    (browser_navigate, browser_tab_list, browser_snapshot, etc.) but lacks pre-navigation request-interception
+    hooks or pre-redirect filtering events. As a consequence:
+    1. Navigation to external/unauthorized destinations cannot be prevented *prior* to network dispatch.
+    2. Post-navigation inspection via `browser_tab_list` verifies the final loaded URL, closing the session
+       and raising `MCPUnauthorizedTargetError` immediately if an unauthorized redirect occurs.
+    3. However, because post-navigation inspection does not demonstrate prior prevention, Stealth Browser MCP
+       capability is marked as DISABLED for open/unconstrained redirect exploration or non-perimeter navigation,
+       and is strictly confined to pre-validated HTTPS entrypoints on the authorized domain allowlist.
+
     Enforces:
     - RG-13: Real request/response capture with SHA-256 verification and isolated evidence storage.
     - RG-14: Explicit authorized domain allowlist (exact hostname / authorized subdomains, HTTPS-only, redirect validation).
