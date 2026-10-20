@@ -330,26 +330,30 @@ class RipleyCommercialEngine:
             """)
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS mri_publications (
-                    publication_id TEXT PRIMARY KEY, product_id TEXT, marketplace TEXT, marketplace_product_id TEXT,
-                    canonical_url TEXT, status TEXT, observed_at TEXT, run_id TEXT, position INTEGER, surface TEXT,
+                    publication_id TEXT PRIMARY KEY, product_id TEXT NOT NULL, marketplace TEXT NOT NULL, marketplace_product_id TEXT,
+                    canonical_url TEXT, status TEXT NOT NULL, observed_at TEXT NOT NULL, run_id TEXT, position INTEGER, surface TEXT,
                     position_state TEXT, category_relationship TEXT, evidence_type TEXT, raw_source_id TEXT,
                     acquisition_status TEXT, identity_status TEXT, category_observed TEXT,
-                    category_source TEXT, category_expected TEXT, category_decision TEXT, commercial_attributes TEXT
+                    category_source TEXT, category_expected TEXT, category_decision TEXT, commercial_attributes TEXT,
+                    FOREIGN KEY (product_id) REFERENCES mri_products(product_id)
                 )
             """)
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS mri_products (
-                    product_id TEXT PRIMARY KEY, canonical_brand TEXT, product_status TEXT, created_at TEXT
+                    product_id TEXT PRIMARY KEY, canonical_brand TEXT NOT NULL, product_status TEXT NOT NULL, created_at TEXT NOT NULL
                 )
             """)
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS mri_categories (
-                    category_id TEXT PRIMARY KEY, marketplace TEXT, category_name TEXT, canonical_url TEXT, created_at TEXT
+                    category_id TEXT PRIMARY KEY, marketplace TEXT NOT NULL, category_name TEXT NOT NULL, canonical_url TEXT, created_at TEXT NOT NULL
                 )
             """)
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS mri_publication_categories (
-                    publication_id TEXT, category_id TEXT, status TEXT, observed_at TEXT, PRIMARY KEY(publication_id, category_id)
+                    publication_id TEXT NOT NULL, category_id TEXT NOT NULL, status TEXT NOT NULL, observed_at TEXT NOT NULL,
+                    PRIMARY KEY(publication_id, category_id),
+                    FOREIGN KEY (publication_id) REFERENCES mri_publications(publication_id),
+                    FOREIGN KEY (category_id) REFERENCES mri_categories(category_id)
                 )
             """)
 

@@ -143,7 +143,8 @@ class AutonomousMultiMarketplaceRunner:
                 category_source TEXT,
                 category_expected TEXT,
                 category_decision TEXT,
-                commercial_attributes TEXT
+                commercial_attributes TEXT,
+                FOREIGN KEY (product_id) REFERENCES mri_products(product_id)
             )
             """,
             """
@@ -169,7 +170,9 @@ class AutonomousMultiMarketplaceRunner:
                 category_id TEXT NOT NULL,
                 status TEXT NOT NULL,
                 observed_at TEXT NOT NULL,
-                PRIMARY KEY(publication_id, category_id)
+                PRIMARY KEY (publication_id, category_id),
+                FOREIGN KEY (publication_id) REFERENCES mri_publications(publication_id),
+                FOREIGN KEY (category_id) REFERENCES mri_categories(category_id)
             )
             """,
             """
@@ -195,7 +198,8 @@ class AutonomousMultiMarketplaceRunner:
                 category_source TEXT,
                 category_expected TEXT,
                 category_decision TEXT,
-                commercial_attributes TEXT
+                commercial_attributes TEXT,
+                FOREIGN KEY (publication_id) REFERENCES mri_publications(publication_id)
             )
             """,
             """
@@ -204,25 +208,46 @@ class AutonomousMultiMarketplaceRunner:
                 publication_id TEXT NOT NULL,
                 category_id TEXT NOT NULL,
                 run_id TEXT,
-                observed_at TEXT NOT NULL
+                observed_at TEXT NOT NULL,
+                FOREIGN KEY (publication_id) REFERENCES mri_publications(publication_id),
+                FOREIGN KEY (category_id) REFERENCES mri_categories(category_id)
             )
             """
         ]
 
         caller_owns_tx = conn.in_transaction
-        conn.execute("SAVEPOINT mri_init_sqlite_tables;")
+        sp_active = False
         try:
+            conn.execute("SAVEPOINT mri_init_sqlite_tables;")
+            sp_active = True
             for ddl in table_ddls:
                 conn.execute(ddl)
             conn.execute("RELEASE SAVEPOINT mri_init_sqlite_tables;")
+            sp_active = False
             if not caller_owns_tx:
                 conn.commit()
-        except Exception:
-            try:
-                conn.execute("ROLLBACK TO SAVEPOINT mri_init_sqlite_tables;")
-                conn.execute("RELEASE SAVEPOINT mri_init_sqlite_tables;")
-            except Exception:
-                pass
+        except Exception as ex:
+            if sp_active:
+                cleanup_err = None
+                try:
+                    conn.execute("ROLLBACK TO SAVEPOINT mri_init_sqlite_tables;")
+                except Exception as rbe:
+                    cleanup_err = rbe
+                try:
+                    conn.execute("RELEASE SAVEPOINT mri_init_sqlite_tables;")
+                    sp_active = False
+                except Exception as rle:
+                    if cleanup_err is None:
+                        cleanup_err = rle
+
+                if cleanup_err is not None:
+                    if not caller_owns_tx:
+                        try:
+                            conn.rollback()
+                        except Exception:
+                            pass
+                    else:
+                        raise cleanup_err from ex
             raise
 
     async def investigate_paris(self, run_id: str) -> MarketplaceInvestigationResult:

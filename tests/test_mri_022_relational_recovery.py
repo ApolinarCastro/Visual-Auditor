@@ -327,7 +327,7 @@ def test_initialization_atomicity_and_caller_transaction(sandbox_db):
     assert remaining == [], f"Expected uncommitted row to be rolled back, found: {remaining}"
     conn.close()
 
-    # 2. Fresh schema constraint parity
+    # 2. Fresh schema constraint parity & Foreign Key enforcement
     fresh_db = sandbox_db + "_fresh.db"
     conn_fresh = sqlite3.connect(fresh_db)
     conn_fresh.execute("PRAGMA foreign_keys = ON;")
@@ -336,6 +336,11 @@ def test_initialization_atomicity_and_caller_transaction(sandbox_db):
 
     with pytest.raises(sqlite3.IntegrityError):
         conn_fresh.execute("INSERT INTO mri_runs (run_id) VALUES ('INCOMPLETE_ROW')")
+
+    # Orphan publication must be rejected by foreign key constraint
+    with pytest.raises(sqlite3.IntegrityError, match="FOREIGN KEY constraint failed"):
+        conn_fresh.execute("INSERT INTO mri_publications(publication_id, product_id, marketplace, status, observed_at) VALUES ('ORPHAN', 'MISSING_PRODUCT', 'TEST', 'ACTIVE', '2026')")
+
     conn_fresh.close()
 
     # 3. Initialization atomicity under injected fault
@@ -353,6 +358,23 @@ def test_initialization_atomicity_and_caller_transaction(sandbox_db):
     tables = conn_fault.execute("SELECT name FROM sqlite_master WHERE type = 'table'").fetchall()
     assert tables == [], f"Expected 0 durable tables after initialization failure, found: {tables}"
     conn_fault.close()
+
+    # 4. Savepoint cleanup failure handling (when RELEASE fails)
+    rel_fail_db = sandbox_db + "_rel_fail.db"
+    conn_rf = sqlite3.connect(rel_fail_db)
+    def deny_release(action, a, b, db, trigger):
+        if action == sqlite3.SQLITE_SAVEPOINT and a == 'RELEASE':
+            return sqlite3.SQLITE_DENY
+        return sqlite3.SQLITE_OK
+    conn_rf.set_authorizer(deny_release)
+    runner_rf = AutonomousMultiMarketplaceRunner(db_path=rel_fail_db)
+    with pytest.raises(sqlite3.DatabaseError):
+        runner_rf._init_sqlite_tables(conn_rf)
+    conn_rf.set_authorizer(None)
+    assert conn_rf.in_transaction is False
+    rf_tables = conn_rf.execute("SELECT name FROM sqlite_master WHERE type = 'table'").fetchall()
+    assert rf_tables == [], f"Expected 0 tables after release failure cleanup, found: {rf_tables}"
+    conn_rf.close()
 
 
 def test_persistor_atomicity_and_connection_lifecycle(sandbox_db):
