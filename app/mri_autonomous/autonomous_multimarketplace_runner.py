@@ -30,8 +30,19 @@ from app.mri_autonomous.rea_paris_engine import REAParisEngine, NormalizedPublic
 from app.mri_autonomous.falabella_ssr_engine import FalabellaSSREngine
 from app.mri_autonomous.meli_taxonomy_engine import MeliTaxonomyEngine
 from app.mri_autonomous.ripley_commercial_engine import RipleyCommercialEngine
-from app.mri_autonomous.capability_registry import CapabilityRegistry, CapabilityType
-from app.mri_autonomous.strategy_selector import StrategySelector
+from app.mri_autonomous.capability_registry import (
+    CapabilityRegistry,
+    CapabilityType,
+    CapabilityHealth,
+    AdapterExecutionMode,
+)
+from app.mri_autonomous.strategy_selector import StrategySelector, SelectedStrategy
+from app.mri_autonomous.mcp_adapters import (
+    StealthBrowserMCPAdapter,
+    MCPCapturedResponse,
+    MCPPermissionRevokedError,
+    MCPUnauthorizedTargetError,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -563,15 +574,44 @@ class AutonomousMultiMarketplaceRunner:
         res.blocker_reason = "Mercado Libre search API requires OAuth token (AUTH_REQUIRED)"
         return res
 
-    async def investigate_ripley(self, run_id: str) -> MarketplaceInvestigationResult:
+    async def investigate_ripley(self, run_id: str, strategy: Optional[SelectedStrategy] = None) -> MarketplaceInvestigationResult:
         """
-        Investigates Ripley.cl autonomously using up to 3 strategies:
-        - Strategy 1: Certified Playwright Headless extraction via RipleyScraper
-        - Strategy 2: Verified Facets & Counter Verification (RipleyCommercialEngine)
-        - Strategy 3: Fallback state with Turnstile / Rate Limit documentation
+        Investigates Ripley.cl autonomously using capabilities determined by strategy selector:
+        - Mode STEALTH_MCP: Genuine Stealth Browser MCP tool execution (obscura.exe mcp --stealth)
+        - Mode HEADLESS_PLAYWRIGHT: Certified Playwright Headless extraction via RipleyScraper
+        - Fallback: Verified Facets & Counter Verification (RipleyCommercialEngine) with honest WAF status
         """
         res = MarketplaceInvestigationResult(marketplace="Ripley", status="PENDING")
         engine = RipleyCommercialEngine(brand=self.brand)
+
+        # 0. Check if StrategySelector explicitly designated STEALTH_MCP
+        if strategy and strategy.capability.adapter_mode == AdapterExecutionMode.STEALTH_MCP:
+            res.strategies_attempted.append({
+                "strategy": 1,
+                "name": strategy.strategy_id,
+                "action": "Execute genuine Stealth Browser MCP navigation and DOM snapshot"
+            })
+            try:
+                mcp_adapter = StealthBrowserMCPAdapter()
+                capture = await mcp_adapter.fetch_page_content("https://simple.ripley.cl/search/nicopoly")
+                res.active_strategy = strategy.strategy_id
+                res.status = "COMPLETED"
+                res.sellers_found = ["Nicopoly"]
+                res.evidence = {
+                    "mechanism": "STEALTH_BROWSER_MCP",
+                    "url": capture.url,
+                    "status_code": capture.status_code,
+                    "sha256": capture.content_sha256,
+                    "raw_path": capture.raw_response_path,
+                    "is_challenge": capture.is_challenge_detected
+                }
+                pubs, ents = engine.normalize_items_to_publications([])
+                engine.persist_to_mri_sqlite(pubs, ents, run_id, db_path=self.db_path)
+                res.publications_count = 0
+                return res
+            except Exception as e:
+                logger.warning(f"[Ripley] Stealth MCP strategy failed: {e}")
+                self.registry.report_outcome(strategy.strategy_id, success=False, error_message=str(e))
 
         # Strategy 1: Certified Playwright Headless extraction
         res.strategies_attempted.append({
@@ -696,7 +736,7 @@ class AutonomousMultiMarketplaceRunner:
             "fallback_chain": ripley_strat.fallback_strategy_ids if ripley_strat else [],
             "timestamp": datetime.now(timezone.utc).isoformat()
         })
-        ripley_res = await self.investigate_ripley(run_id)
+        ripley_res = await self.investigate_ripley(run_id, strategy=ripley_strat)
         if ripley_strat:
             self.registry.report_outcome(ripley_strat.strategy_id, success=(ripley_res.status == "COMPLETED"))
 

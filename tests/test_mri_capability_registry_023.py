@@ -10,6 +10,7 @@ import hashlib
 import json
 import os
 import pathlib
+import sqlite3
 import pytest
 
 from app.mri_autonomous.capability_registry import (
@@ -34,7 +35,8 @@ class TestMRICapabilityRegistry023:
     def test_T1_registry_initialization_and_matrix_completeness(self):
         """
         T1 (RG-01, RG-05): Verifies that CapabilityRegistry initializes with
-        complete canonical capabilities across all 4 marketplaces.
+        complete canonical capabilities across all 4 marketplaces in UNKNOWN state,
+        and transitions to verified states only upon probing.
         """
         reg = CapabilityRegistry()
         matrix = reg.get_marketplace_matrix()
@@ -44,13 +46,21 @@ class TestMRICapabilityRegistry023:
         assert "Ripley" in matrix
 
         # Every marketplace must have at least one registered capability
+        # Initially, unprobed capabilities must be UNKNOWN (no fictitious HEALTHY values)
         for mkt, caps in matrix.items():
             assert len(caps) >= 2, f"{mkt} must have at least primary and fallback capabilities"
             for cap in caps:
                 assert cap["capability_id"]
                 assert cap["capability_type"]
                 assert cap["adapter_mode"]
-                assert cap["health"] in ("HEALTHY", "DEGRADED", "BLOCKED")
+                assert cap["health"] == "UNKNOWN", "Unverified capabilities must initialize as UNKNOWN"
+
+        # Upon probing, capabilities transition to verified states
+        reg.probe_all_capabilities()
+        probed_matrix = reg.get_marketplace_matrix()
+        for mkt, caps in probed_matrix.items():
+            for cap in caps:
+                assert cap["health"] in ("HEALTHY", "DEGRADED", "BLOCKED", "DISABLED")
 
     def test_T2_capability_registration_and_lookup(self):
         """
@@ -83,7 +93,7 @@ class TestMRICapabilityRegistry023:
         T3 (RG-04): Verifies that successive reported failures transition
         capabilities from HEALTHY -> DEGRADED -> BLOCKED.
         """
-        reg = CapabilityRegistry()
+        reg = CapabilityRegistry(auto_probe=True)
         cap_id = "paris_cdp_constructor_discovery"
         cap = reg.get(cap_id)
         assert cap.health == CapabilityHealth.HEALTHY
@@ -116,7 +126,7 @@ class TestMRICapabilityRegistry023:
         T4 (RG-09, RG-10): Verifies StrategySelector picks the lowest-cost healthy capability
         and properly configures fallbacks.
         """
-        reg = CapabilityRegistry()
+        reg = CapabilityRegistry(auto_probe=True)
         selector = StrategySelector(reg)
 
         # For Paris discovery: constructor API (cost=1.0) should beat HAR replay (cost=3.0)
@@ -145,7 +155,7 @@ class TestMRICapabilityRegistry023:
         T5 (RG-11, RG-12): Verifies that capabilities requiring Stealth MCP
         are strictly excluded when allow_mcp=False.
         """
-        reg = CapabilityRegistry()
+        reg = CapabilityRegistry(auto_probe=True)
         selector = StrategySelector(reg)
 
         # With MCP enabled
@@ -216,3 +226,62 @@ class TestMRICapabilityRegistry023:
         adapter = StealthBrowserMCPAdapter(evidence_dir=tmp_path / "mcp_evidence")
         with pytest.raises(MCPUnauthorizedTargetError):
             asyncio.run(adapter.fetch_page_content("https://unauthorized-competitor.com/catalog"))
+
+    @pytest.mark.asyncio
+    async def test_autonomous_strategy_dispatch_fallback_and_experience_update(self, tmp_path):
+        """
+        Integrated Test (Defecto 2): Demonstrates selection, execution, failure,
+        fallback, result, and experience update in an authentic execution workflow.
+        """
+        from app.mri_autonomous.autonomous_multimarketplace_runner import AutonomousMultiMarketplaceRunner
+        from app.mri_autonomous.storage_guard import StorageConfig
+
+        test_db = str(tmp_path / "test_selector_dispatch.db")
+        StorageConfig.set_test_mode(True, str(tmp_path))
+
+        reg = CapabilityRegistry(auto_probe=True)
+        selector = StrategySelector(reg)
+        runner = AutonomousMultiMarketplaceRunner(
+            db_path=test_db,
+            capability_registry=reg,
+            strategy_selector=selector
+        )
+
+        with sqlite3.connect(test_db) as conn:
+            runner._init_sqlite_tables(conn)
+
+        # 1. Selection: Choose strategy for Ripley
+        primary_strat = selector.select_strategy("Ripley", CapabilityType.PRODUCT_EXTRACTION)
+        assert primary_strat is not None
+        assert primary_strat.strategy_id == "ripley_headless_catalog_scraper"
+
+        # 2. Simulate execution failure on primary strategy -> failure recorded
+        reg.report_outcome(primary_strat.strategy_id, success=False, error_message="WAF block")
+        primary_cap = reg.get(primary_strat.strategy_id)
+        assert primary_cap.failure_count == 1
+        assert primary_cap.health == CapabilityHealth.DEGRADED
+
+        # Repeat failure to transition primary capability to BLOCKED
+        reg.report_outcome(primary_strat.strategy_id, success=False, error_message="WAF block 2")
+        reg.report_outcome(primary_strat.strategy_id, success=False, error_message="WAF block 3")
+        assert primary_cap.health == CapabilityHealth.BLOCKED
+
+        # 3. Dynamic Fallback: selector automatically promotes fallback strategy
+        fallback_strat = selector.select_strategy("Ripley", CapabilityType.STEALTH_PAGE_READ)
+        assert fallback_strat is not None
+        assert fallback_strat.strategy_id == "ripley_stealth_mcp_turnstile"
+        assert fallback_strat.capability.adapter_mode == AdapterExecutionMode.STEALTH_MCP
+
+        # 4. Execution: Runner dispatches the chosen fallback strategy (Stealth Browser MCP)
+        result = await runner.investigate_ripley("RUN_FALLBACK_TEST", strategy=fallback_strat)
+        assert result.status == "COMPLETED"
+        assert result.active_strategy == "ripley_stealth_mcp_turnstile"
+        assert result.evidence.get("mechanism") == "STEALTH_BROWSER_MCP"
+
+        # 5. Experience Update: registry updates health and success rate based on real execution
+        reg.report_outcome(fallback_strat.strategy_id, success=True)
+        fallback_cap = reg.get(fallback_strat.strategy_id)
+        assert fallback_cap.health == CapabilityHealth.HEALTHY
+        assert fallback_cap.failure_count == 0
+        assert fallback_cap.last_verified_at is not None
+
