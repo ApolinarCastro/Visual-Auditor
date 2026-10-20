@@ -5,7 +5,7 @@
 **Proyecto:** Visual Auditor / Marketplace Research Intelligence  
 **Rama:** `fix/mri-022-relational-recovery`  
 **Base revisada:** `923d02fcb9fc9f28abe2800082524626aa279e0e`  
-**SHA Final Entregado:** *(se actualizará tras commit y push)*  
+**SHA Final Entregado:** `2f9c2e7afad1940bb20f1f1f41b28761066a610e`  
 **Fecha:** 2026-10-20  
 
 ---
