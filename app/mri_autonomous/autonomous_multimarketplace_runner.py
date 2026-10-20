@@ -298,7 +298,7 @@ class AutonomousMultiMarketplaceRunner:
                     raise cleanup_err from ex
             raise
 
-    async def investigate_paris(self, run_id: str) -> MarketplaceInvestigationResult:
+    async def investigate_paris(self, run_id: str, strategy: Optional[SelectedStrategy] = None) -> MarketplaceInvestigationResult:
         """
         Investigates Paris.cl autonomously using up to 3 strategies:
         - Strategy 1: Reverse-Engineered Constructor.io Public CDP API (REA Engine)
@@ -394,7 +394,7 @@ class AutonomousMultiMarketplaceRunner:
         res.blocker_reason = "Constructor.io direct API offline and HAR capture incomplete"
         return res
 
-    async def investigate_falabella(self, run_id: str) -> MarketplaceInvestigationResult:
+    async def investigate_falabella(self, run_id: str, strategy: Optional[SelectedStrategy] = None) -> MarketplaceInvestigationResult:
         """
         Investigates Falabella.cl autonomously using up to 3 strategies:
         - Strategy 1: Next.js SSR __NEXT_DATA__ extraction (/brand/NICOPOLY)
@@ -479,7 +479,7 @@ class AutonomousMultiMarketplaceRunner:
         res.blocker_reason = "Falabella SSR and Headless scraper encountered connectivity or blocking barriers"
         return res
 
-    async def investigate_mercadolibre(self, run_id: str) -> MarketplaceInvestigationResult:
+    async def investigate_mercadolibre(self, run_id: str, strategy: Optional[SelectedStrategy] = None) -> MarketplaceInvestigationResult:
         """
         Investigates Mercado Libre Chile (MLC) autonomously using up to 3 strategies:
         - Strategy 1: Official Store Public Listing Scraper (Tienda Nicopoly - genuine items)
@@ -639,6 +639,7 @@ class AutonomousMultiMarketplaceRunner:
                 pubs, ents = engine.normalize_items_to_publications(products[:20])
                 engine.persist_to_mri_sqlite(pubs, ents, run_id, db_path=self.db_path)
                 res.publications_count = len(pubs)
+                return res
         except Exception as e:
             err_str = str(e)
             logger.warning(f"[Ripley] Strategy 1 failed: {err_str}")
@@ -723,7 +724,7 @@ class AutonomousMultiMarketplaceRunner:
             "fallback_chain": paris_strat.fallback_strategy_ids if paris_strat else [],
             "timestamp": datetime.now(timezone.utc).isoformat()
         })
-        paris_res = await self.investigate_paris(run_id)
+        paris_res = await self.investigate_paris(run_id, strategy=paris_strat)
         if paris_strat:
             self.registry.report_outcome(paris_strat.strategy_id, success=(paris_res.status == "COMPLETED"))
 
@@ -749,7 +750,7 @@ class AutonomousMultiMarketplaceRunner:
             "fallback_chain": falabella_strat.fallback_strategy_ids if falabella_strat else [],
             "timestamp": datetime.now(timezone.utc).isoformat()
         })
-        falabella_res = await self.investigate_falabella(run_id)
+        falabella_res = await self.investigate_falabella(run_id, strategy=falabella_strat)
         if falabella_strat:
             self.registry.report_outcome(falabella_strat.strategy_id, success=(falabella_res.status == "COMPLETED"))
 
@@ -762,7 +763,7 @@ class AutonomousMultiMarketplaceRunner:
             "fallback_chain": meli_strat.fallback_strategy_ids if meli_strat else [],
             "timestamp": datetime.now(timezone.utc).isoformat()
         })
-        meli_res = await self.investigate_mercadolibre(run_id)
+        meli_res = await self.investigate_mercadolibre(run_id, strategy=meli_strat)
         if meli_strat:
             self.registry.report_outcome(meli_strat.strategy_id, success=(meli_res.status == "COMPLETED"))
 
