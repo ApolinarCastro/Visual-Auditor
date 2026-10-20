@@ -142,6 +142,28 @@ class StealthBrowserMCPAdapter:
                 f"Unauthorized destination '{hostname}'. Stealth Browser MCP is strictly restricted to authorized marketplaces: {self.AUTHORIZED_DOMAINS}."
             )
 
+        # Preventive perimeter enforcement: prevent navigation to endpoints designed to forward to arbitrary external targets
+        # Reject URLs containing redirect parameters with non-authorized targets before any network dispatch
+        if parsed.query:
+            from urllib.parse import parse_qs
+            query_params = parse_qs(parsed.query, keep_blank_values=True)
+            for param_key, param_vals in query_params.items():
+                if any(k in param_key.lower() for k in ("url", "redirect", "dest", "target", "link", "next", "goto")):
+                    for val in param_vals:
+                        if val.startswith("http://") or val.startswith("https://") or val.startswith("//"):
+                            target_url = ("https:" + val) if val.startswith("//") else val
+                            try:
+                                target_parsed = urlparse(target_url)
+                                target_host = (target_parsed.hostname or "").lower()
+                                if target_host and not any(target_host == auth or target_host.endswith("." + auth) for auth in self.AUTHORIZED_DOMAINS):
+                                    raise MCPUnauthorizedTargetError(
+                                        f"Preventive perimeter violation: navigation target '{url}' contains unvetted redirect target '{target_host}' outside authorized perimeter."
+                                    )
+                            except MCPUnauthorizedTargetError:
+                                raise
+                            except Exception:
+                                pass
+
     def _assert_allowed(self, url: str) -> None:
         """Enforces permission check and destination allowlist before starting operations."""
         if not self._permission_active:

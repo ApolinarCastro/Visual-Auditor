@@ -289,15 +289,18 @@ class TestMRICapabilityRegistry023:
             # - Primary fails with Turnstile block -> runner automatically reports outcome (failure) to registry
             # - Runner cascades to fallback strategy (ripley_stealth_mcp_turnstile)
             # - Stealth MCP adapter executes navigation, capture, SHA-256 verification
-            # - Runner persists observations to SQLite
-            # - Runner automatically reports outcome (success) for the fallback capability
+            # - Veracity contract: HTML capture with 0 verified products does NOT claim COMPLETED commercial acquisition
+            # - Runner persists observations/terminal state to SQLite
+            # - Runner reports failure outcome for the fallback capability because 0 publications were acquired
             result = await runner.investigate_ripley("RUN_SINGLE_INVOCATION_TEST", strategy=primary_strat)
 
-            # Assert complete cycle result from this single call:
-            assert result.status == "COMPLETED"
-            assert result.active_strategy == "ripley_stealth_mcp_turnstile"
+            # Assert veracity contract across technical and commercial states:
+            assert result.status in ("SOURCE_BLOCKED", "PARTIAL")
+            assert result.publications_count == 0
             assert result.evidence.get("mechanism") == "STEALTH_BROWSER_MCP"
-            assert len(result.strategies_attempted) == 2
+            assert result.evidence.get("technical_navigation_success") is True
+            assert result.evidence.get("verified_publications_acquired") == 0
+            assert len(result.strategies_attempted) >= 2
             assert result.strategies_attempted[0]["name"] == "ripley_headless_catalog_scraper"
             assert result.strategies_attempted[1]["name"] == "ripley_stealth_mcp_turnstile"
 
@@ -305,14 +308,137 @@ class TestMRICapabilityRegistry023:
             assert primary_cap.failure_count >= 1
             assert primary_cap.health == CapabilityHealth.DEGRADED
 
-            assert fallback_cap.failure_count == 0
-            assert fallback_cap.health == CapabilityHealth.HEALTHY
-            assert fallback_cap.last_verified_at is not None
+            # Fallback capability must also register failure because 0 commercial publications were acquired (veracity contract)
+            assert fallback_cap.failure_count >= 1
+            assert fallback_cap.health in (CapabilityHealth.DEGRADED, CapabilityHealth.HEALTHY)
 
             # Assert persistence in isolated SQLite database
             with sqlite3.connect(test_db) as conn:
                 mri_runs = conn.execute("SELECT run_id, status FROM mri_runs WHERE run_id='RUN_SINGLE_INVOCATION_TEST'").fetchall()
                 assert len(mri_runs) >= 1
                 assert mri_runs[0][1] in ("COMPLETED", "PARTIAL", "SOURCE_BLOCKED", "SUCCESS")
+
+    @pytest.mark.asyncio
+    async def test_T10_negative_empty_capture_no_false_positive_commercial_success(self, tmp_path):
+        """
+        T10 (Veracity Contract): Demonstrates with negative tests that an empty page or capture
+        without products does NOT produce false positive commercial success:
+        - Technical capture succeeds (evidence recorded, sha256 computed)
+        - But verified publications == 0
+        - Run status must NOT be 'COMPLETED'
+        - CapabilityRegistry must NOT register commercial success
+        """
+        from unittest.mock import patch, MagicMock
+        from app.mri_autonomous.autonomous_multimarketplace_runner import AutonomousMultiMarketplaceRunner
+        from app.mri_autonomous.storage_guard import StorageConfig
+
+        test_db = str(tmp_path / "test_veracity_empty.db")
+        StorageConfig.set_test_mode(True, str(tmp_path))
+
+        reg = CapabilityRegistry(auto_probe=True)
+        selector = StrategySelector(reg)
+        runner = AutonomousMultiMarketplaceRunner(
+            db_path=test_db,
+            capability_registry=reg,
+            strategy_selector=selector
+        )
+
+        with sqlite3.connect(test_db) as conn:
+            runner._init_sqlite_tables(conn)
+
+        # Mock mock_capture with empty page (200 OK, HTML captured, but 0 products)
+        mock_cap = MCPCapturedResponse(
+            url="https://simple.ripley.cl/search/nicopoly",
+            status_code=200,
+            content_sha256="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            body_length=150,
+            captured_at="2026-10-20T17:00:00Z",
+            raw_response_path=str(tmp_path / "empty_page.html"),
+            is_challenge_detected=False
+        )
+
+        with patch("app.mri_autonomous.mcp_adapters.StealthBrowserMCPAdapter.fetch_page_content", return_value=mock_cap):
+            strat = selector.select_strategy("Ripley", CapabilityType.PRODUCT_EXTRACTION)
+            strat.strategy_id = "ripley_stealth_mcp_turnstile"
+            strat.fallback_strategy_ids = []
+
+            cap_def = reg.get("ripley_stealth_mcp_turnstile")
+            initial_failures = cap_def.failure_count
+
+            res = await runner.investigate_ripley("RUN_VERACITY_EMPTY_TEST", strategy=strat)
+
+            # Assert technical success is recorded in evidence
+            assert res.evidence.get("technical_navigation_success") is True
+            assert res.evidence.get("sha256") == mock_cap.content_sha256
+
+            # Assert commercial status is NOT COMPLETED and publications count is 0
+            assert res.publications_count == 0
+            assert res.status != "COMPLETED"
+            assert res.status == "PARTIAL"
+
+            # Assert registry does NOT register commercial success
+            assert cap_def.failure_count == initial_failures + 1
+
+    @pytest.mark.asyncio
+    async def test_T11_negative_waf_challenge_no_false_positive_commercial_success(self, tmp_path):
+        """
+        T11 (Veracity Contract): Demonstrates with negative tests that a WAF / Turnstile challenge
+        (403 status or challenge page) does NOT produce false positive commercial success:
+        - Evidence captures is_challenge=True and status_code=403
+        - Publications count == 0
+        - Run status must be 'SOURCE_BLOCKED'
+        - CapabilityRegistry reports failure and increments circuit breaker
+        """
+        from unittest.mock import patch
+        from app.mri_autonomous.autonomous_multimarketplace_runner import AutonomousMultiMarketplaceRunner
+        from app.mri_autonomous.storage_guard import StorageConfig
+
+        test_db = str(tmp_path / "test_veracity_waf.db")
+        StorageConfig.set_test_mode(True, str(tmp_path))
+
+        reg = CapabilityRegistry(auto_probe=True)
+        selector = StrategySelector(reg)
+        runner = AutonomousMultiMarketplaceRunner(
+            db_path=test_db,
+            capability_registry=reg,
+            strategy_selector=selector
+        )
+
+        with sqlite3.connect(test_db) as conn:
+            runner._init_sqlite_tables(conn)
+
+        # Mock WAF response (403 Cloudflare Turnstile challenge)
+        mock_waf = MCPCapturedResponse(
+            url="https://simple.ripley.cl/search/nicopoly",
+            status_code=403,
+            content_sha256="a1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0",
+            body_length=2048,
+            captured_at="2026-10-20T17:00:00Z",
+            raw_response_path=str(tmp_path / "waf_block.html"),
+            is_challenge_detected=True
+        )
+
+        with patch("app.mri_autonomous.mcp_adapters.StealthBrowserMCPAdapter.fetch_page_content", return_value=mock_waf):
+            strat = selector.select_strategy("Ripley", CapabilityType.PRODUCT_EXTRACTION)
+            strat.strategy_id = "ripley_stealth_mcp_turnstile"
+            strat.fallback_strategy_ids = []
+
+            cap_def = reg.get("ripley_stealth_mcp_turnstile")
+            initial_failures = cap_def.failure_count
+
+            res = await runner.investigate_ripley("RUN_VERACITY_WAF_TEST", strategy=strat)
+
+            # Assert technical evidence records the challenge
+            assert res.evidence.get("technical_navigation_success") is True
+            assert res.evidence.get("is_challenge") is True
+            assert res.evidence.get("status_code") == 403
+
+            # Assert commercial status is SOURCE_BLOCKED and zero publications acquired
+            assert res.publications_count == 0
+            assert res.status == "SOURCE_BLOCKED"
+            assert "0 verified commercial publications" in (res.blocker_reason or "")
+
+            # Assert registry reports failure
+            assert cap_def.failure_count == initial_failures + 1
 
 

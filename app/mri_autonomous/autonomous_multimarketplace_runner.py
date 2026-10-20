@@ -344,8 +344,27 @@ class AutonomousMultiMarketplaceRunner:
                         sample_pubs, entities = engine.harvest_sample_publications(self.brand, max_items=20)
                         engine.persist_to_mri_sqlite(sample_pubs, entities, run_id, db_path=self.db_path)
                         res.publications_count = len(sample_pubs)
-                        self.registry.report_outcome(strat_id, success=True)
-                        return res
+                        # Veracity contract: commercial success requires verified publications acquired
+                        if res.publications_count > 0:
+                            res.active_strategy = strat_id
+                            res.status = "COMPLETED"
+                            res.total_brand_publications = brand_summary["total_brand"]
+                            res.total_official_seller_publications = brand_summary["total_official_seller"]
+                            res.sellers_found = ["NICOPOLY"]
+                            cats = [{"name": pt.get("value"), "count": pt.get("count")} for pt in brand_summary.get("product_types", [])]
+                            res.categories_found = cats
+                            res.evidence = {
+                                "source": "Constructor.io AI Search",
+                                "total_brand": brand_summary["total_brand"],
+                                "total_official_seller": brand_summary["total_official_seller"],
+                                "facets_count": len(brand_summary.get("facets_available", [])),
+                                "technical_navigation_success": True,
+                                "verified_publications_acquired": res.publications_count
+                            }
+                            self.registry.report_outcome(strat_id, success=True)
+                            return res
+                        else:
+                            raise RuntimeError("Constructor.io returned 0 verified publications harvested")
                     else:
                         raise RuntimeError("Constructor.io returned empty catalog count for brand")
                 except Exception as e:
@@ -371,25 +390,31 @@ class AutonomousMultiMarketplaceRunner:
                         if resp_text:
                             har_feed = json.loads(resp_text)
                             total_results = har_feed.get("response", {}).get("total_num_results", 4909)
-                            res.active_strategy = strat_id
-                            res.status = "COMPLETED"
-                            res.total_brand_publications = total_results
-                            res.total_official_seller_publications = total_results
-                            res.sellers_found = ["NICOPOLY"]
-                            har_facets = har_feed.get("response", {}).get("facets", [])
-                            types_opt = next((f.get("options", []) for f in har_facets if f.get("name") == "tipoProductoAll"), [])
-                            res.categories_found = [{"name": o.get("display_name"), "count": o.get("count")} for o in types_opt[:10]]
-                            res.evidence = {
-                                "har_path": har_prov.get("path"),
-                                "sha256": har_prov.get("sha256"),
-                                "captured_at": har_prov.get("captured_at_declared"),
-                                "items_in_capture": len(har_feed.get("response", {}).get("results", []))
-                            }
                             sample_pubs, entities = engine.harvest_sample_publications(self.brand, max_items=20, replay_har_data=har_feed)
                             engine.persist_to_mri_sqlite(sample_pubs, entities, run_id, db_path=self.db_path)
                             res.publications_count = len(sample_pubs)
-                            self.registry.report_outcome(strat_id, success=True)
-                            return res
+                            # Veracity contract: commercial success requires verified publications acquired
+                            if res.publications_count > 0:
+                                res.active_strategy = strat_id
+                                res.status = "COMPLETED"
+                                res.total_brand_publications = total_results
+                                res.total_official_seller_publications = total_results
+                                res.sellers_found = ["NICOPOLY"]
+                                har_facets = har_feed.get("response", {}).get("facets", [])
+                                types_opt = next((f.get("options", []) for f in har_facets if f.get("name") == "tipoProductoAll"), [])
+                                res.categories_found = [{"name": o.get("display_name"), "count": o.get("count")} for o in types_opt[:10]]
+                                res.evidence = {
+                                    "har_path": har_prov.get("path"),
+                                    "sha256": har_prov.get("sha256"),
+                                    "captured_at": har_prov.get("captured_at_declared"),
+                                    "items_in_capture": len(har_feed.get("response", {}).get("results", [])),
+                                    "technical_navigation_success": True,
+                                    "verified_publications_acquired": res.publications_count
+                                }
+                                self.registry.report_outcome(strat_id, success=True)
+                                return res
+                            else:
+                                raise RuntimeError("Paris HAR replay yielded 0 verified publications")
                     raise RuntimeError("Paris HAR provenance or content capture unavailable")
                 except Exception as e:
                     logger.warning(f"[Paris] Strategy {strat_id} failed: {e}")
@@ -433,31 +458,37 @@ class AutonomousMultiMarketplaceRunner:
                     count = data.get("props", {}).get("pageProps", {}).get("pagination", {}).get("count", 0)
                     facets = data.get("props", {}).get("pageProps", {}).get("facets", [])
                     if count > 0:
-                        res.active_strategy = strat_id
-                        res.status = "COMPLETED"
-                        res.total_brand_publications = count
-                        res.total_official_seller_publications = count
-                        res.sellers_found = ["Nicopoly"]
-                        l2_cats = []
-                        for f in facets:
-                            if "categor" in f.get("name", "").lower():
-                                for val in f.get("values", []):
-                                    l2_cats.append({"id": val.get("id"), "name": val.get("title") or val.get("name"), "count": val.get("count")})
-                        res.categories_found = l2_cats or [{"id": "cat20002", "name": "Moda Mujer", "count": count}]
-                        prov = data.get("_mri_provenance") or {}
-                        res.evidence = {
-                            "mechanism": "NEXT_JS_SSR_EXTRACTION",
-                            "total_count": count,
-                            "categories_count": len(res.categories_found),
-                            "source_url": prov.get("source_url") or f"https://www.falabella.com/falabella-cl/brand/{self.brand.upper()}",
-                            "source_sha256": prov.get("sha256"),
-                            "observed_at": prov.get("fetched_at")
-                        }
                         pubs, ents = engine.harvest_sample_publications(self.brand, max_items=20, page_payload=data)
                         engine.persist_to_mri_sqlite(pubs, ents, run_id, db_path=self.db_path)
                         res.publications_count = len(pubs)
-                        self.registry.report_outcome(strat_id, success=True)
-                        return res
+                        # Veracity contract: commercial success requires verified publications acquired
+                        if res.publications_count > 0:
+                            res.active_strategy = strat_id
+                            res.status = "COMPLETED"
+                            res.total_brand_publications = count
+                            res.total_official_seller_publications = count
+                            res.sellers_found = ["Nicopoly"]
+                            l2_cats = []
+                            for f in facets:
+                                if "categor" in f.get("name", "").lower():
+                                    for val in f.get("values", []):
+                                        l2_cats.append({"id": val.get("id"), "name": val.get("title") or val.get("name"), "count": val.get("count")})
+                            res.categories_found = l2_cats or [{"id": "cat20002", "name": "Moda Mujer", "count": count}]
+                            prov = data.get("_mri_provenance") or {}
+                            res.evidence = {
+                                "mechanism": "NEXT_JS_SSR_EXTRACTION",
+                                "total_count": count,
+                                "categories_count": len(res.categories_found),
+                                "source_url": prov.get("source_url") or f"https://www.falabella.com/falabella-cl/brand/{self.brand.upper()}",
+                                "source_sha256": prov.get("sha256"),
+                                "observed_at": prov.get("fetched_at"),
+                                "technical_navigation_success": True,
+                                "verified_publications_acquired": res.publications_count
+                            }
+                            self.registry.report_outcome(strat_id, success=True)
+                            return res
+                        else:
+                            raise RuntimeError("Falabella SSR returned 0 verified publications")
                     else:
                         raise RuntimeError("Falabella SSR returned 0 products in pagination payload")
                 except Exception as e:
@@ -478,22 +509,28 @@ class AutonomousMultiMarketplaceRunner:
                     scrape_res = await scraper.scrape_autonomous_category(f"https://www.falabella.com/falabella-cl/brand/{self.brand.upper()}")
                     items = scrape_res.get("products", [])
                     if items:
-                        res.active_strategy = strat_id
-                        res.status = "COMPLETED"
-                        res.total_brand_publications = len(items)
-                        res.total_official_seller_publications = len(items)
-                        res.sellers_found = ["Nicopoly"]
-                        res.categories_found = [{"id": "moda", "name": "Moda Mujer", "count": len(items)}]
-                        res.evidence = {
-                            "mechanism": "PLAYWRIGHT_HEADLESS_SCRAPER",
-                            "total_count": len(items),
-                            "source_url": f"https://www.falabella.com/falabella-cl/brand/{self.brand.upper()}"
-                        }
                         norm_pubs, norm_ents = engine.harvest_sample_publications(self.brand, max_items=20)
                         engine.persist_to_mri_sqlite(norm_pubs, norm_ents, run_id, db_path=self.db_path)
                         res.publications_count = len(norm_pubs)
-                        self.registry.report_outcome(strat_id, success=True)
-                        return res
+                        # Veracity contract: commercial success requires verified publications acquired
+                        if res.publications_count > 0:
+                            res.active_strategy = strat_id
+                            res.status = "COMPLETED"
+                            res.total_brand_publications = len(items)
+                            res.total_official_seller_publications = len(items)
+                            res.sellers_found = ["Nicopoly"]
+                            res.categories_found = [{"id": "moda", "name": "Moda Mujer", "count": len(items)}]
+                            res.evidence = {
+                                "mechanism": "PLAYWRIGHT_HEADLESS_SCRAPER",
+                                "total_count": len(items),
+                                "source_url": f"https://www.falabella.com/falabella-cl/brand/{self.brand.upper()}",
+                                "technical_navigation_success": True,
+                                "verified_publications_acquired": res.publications_count
+                            }
+                            self.registry.report_outcome(strat_id, success=True)
+                            return res
+                        else:
+                            raise RuntimeError("Falabella headless scraper returned 0 verified publications")
                     else:
                         raise RuntimeError("Falabella headless scraper returned empty item list")
                 except Exception as e:
@@ -537,17 +574,6 @@ class AutonomousMultiMarketplaceRunner:
                     scrape_res = await scraper.scrape_autonomous_category("https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly")
                     products = scrape_res.get("products", [])
                     if products:
-                        res.active_strategy = strat_id
-                        res.status = "COMPLETED"
-                        res.total_brand_publications = len(products)
-                        res.total_official_seller_publications = len(products)
-                        res.sellers_found = ["Nicopoly"]
-                        res.categories_found = [{"id": "MLC1430", "name": "Vestuario y Calzado", "count": len(products)}]
-                        res.evidence = {
-                            "mechanism": "MELI_HEADLESS_CATALOG_SCRAPER",
-                            "total_count": len(products),
-                            "source_url": "https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly"
-                        }
                         sample_pubs, sample_ents = engine.harvest_sample_publications(
                             brand=self.brand,
                             max_items=20,
@@ -562,8 +588,25 @@ class AutonomousMultiMarketplaceRunner:
                             source_method="MELI_HEADLESS_CATALOG_SCRAPER"
                         )
                         res.publications_count = len(sample_pubs)
-                        self.registry.report_outcome(strat_id, success=True)
-                        return res
+                        # Veracity contract: commercial success requires verified publications acquired
+                        if res.publications_count > 0:
+                            res.active_strategy = strat_id
+                            res.status = "COMPLETED"
+                            res.total_brand_publications = len(products)
+                            res.total_official_seller_publications = len(products)
+                            res.sellers_found = ["Nicopoly"]
+                            res.categories_found = [{"id": "MLC1430", "name": "Vestuario y Calzado", "count": len(products)}]
+                            res.evidence = {
+                                "mechanism": "MELI_HEADLESS_CATALOG_SCRAPER",
+                                "total_count": len(products),
+                                "source_url": "https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly",
+                                "technical_navigation_success": True,
+                                "verified_publications_acquired": res.publications_count
+                            }
+                            self.registry.report_outcome(strat_id, success=True)
+                            return res
+                        else:
+                            raise RuntimeError("Mercado Libre headless scraper returned 0 verified publications")
                     else:
                         raise RuntimeError("Mercado Libre headless scraper returned empty product list")
                 except Exception as e:
@@ -582,7 +625,6 @@ class AutonomousMultiMarketplaceRunner:
                     mcp_adapter = StealthBrowserMCPAdapter()
                     capture = await mcp_adapter.fetch_page_content("https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly")
                     res.active_strategy = strat_id
-                    res.status = "COMPLETED"
                     res.sellers_found = ["Nicopoly"]
                     res.evidence = {
                         "mechanism": "STEALTH_BROWSER_MCP",
@@ -590,13 +632,25 @@ class AutonomousMultiMarketplaceRunner:
                         "status_code": capture.status_code,
                         "sha256": capture.content_sha256,
                         "raw_path": capture.raw_response_path,
-                        "is_challenge": capture.is_challenge_detected
+                        "is_challenge": capture.is_challenge_detected,
+                        "technical_navigation_success": True,
+                        "verified_publications_acquired": 0
                     }
                     sample_pubs, sample_ents = engine.harvest_sample_publications(brand=self.brand, max_items=0, fixture_items=[])
                     engine.persist_to_mri_sqlite(sample_pubs, sample_ents, run_id, db_path=self.db_path)
-                    res.publications_count = 0
-                    self.registry.report_outcome(strat_id, success=True)
-                    return res
+                    res.publications_count = len(sample_pubs)
+
+                    # Veracity contract: HTML capture != acquired publications. With 0 verified products, do NOT declare COMPLETED
+                    if res.publications_count > 0:
+                        res.status = "COMPLETED"
+                        self.registry.report_outcome(strat_id, success=True)
+                        return res
+                    else:
+                        is_challenge = capture.is_challenge_detected or capture.status_code == 403
+                        res.status = "SOURCE_BLOCKED" if is_challenge else "PARTIAL"
+                        res.blocker_reason = "Mercado Libre MCP capture yielded 0 verified commercial publications"
+                        self.registry.report_outcome(strat_id, success=False, error_message=res.blocker_reason)
+                        continue
                 except Exception as e:
                     logger.warning(f"[Mercado Libre] Stealth MCP strategy {strat_id} failed: {e}")
                     self.registry.report_outcome(strat_id, success=False, error_message=str(e))
@@ -611,7 +665,6 @@ class AutonomousMultiMarketplaceRunner:
         try:
             summary = engine.get_official_store_summary()
             res.active_strategy = "MELI_OFFICIAL_TAXONOMY_DISCOVERY"
-            res.status = "COMPLETED"
             res.total_brand_publications = 0
             res.total_official_seller_publications = 0
             res.sellers_found = ["Nicopoly"]
@@ -621,11 +674,16 @@ class AutonomousMultiMarketplaceRunner:
                 "seller_id": summary.get("seller_id"),
                 "product_categories_count": summary.get("total_product_categories"),
                 "clips_segregated": summary.get("audiovisual_clips", {}).get("status"),
-                "oauth_status": summary.get("oauth_status")
+                "oauth_status": summary.get("oauth_status"),
+                "technical_navigation_success": True,
+                "verified_publications_acquired": 0
             }
             sample_pubs, sample_ents = engine.harvest_sample_publications(brand=self.brand, max_items=0, fixture_items=[])
-            engine.persist_to_mri_sqlite(sample_pubs, sample_ents, run_id, db_path=self.db_path)
+            engine.persist_to_mri_sqlite(sample_pubs, sample_ents, run_id, db_path=self.db_path, terminal_state="PARTIAL")
             res.publications_count = 0
+            # Veracity contract: 0 verified publications -> PARTIAL commercial run state, not COMPLETED
+            res.status = "PARTIAL"
+            res.blocker_reason = "Official store taxonomy verified but 0 verified product publications acquired (OAuth required for search API)"
             return res
         except Exception as e:
             logger.warning(f"[Mercado Libre] Strategy 3 failed: {e}")
@@ -672,7 +730,6 @@ class AutonomousMultiMarketplaceRunner:
                     mcp_adapter = StealthBrowserMCPAdapter()
                     capture = await mcp_adapter.fetch_page_content("https://simple.ripley.cl/search/nicopoly")
                     res.active_strategy = strat_id
-                    res.status = "COMPLETED"
                     res.sellers_found = ["Nicopoly"]
                     res.evidence = {
                         "mechanism": "STEALTH_BROWSER_MCP",
@@ -680,13 +737,27 @@ class AutonomousMultiMarketplaceRunner:
                         "status_code": capture.status_code,
                         "sha256": capture.content_sha256,
                         "raw_path": capture.raw_response_path,
-                        "is_challenge": capture.is_challenge_detected
+                        "is_challenge": capture.is_challenge_detected,
+                        "technical_navigation_success": True,
+                        "verified_publications_acquired": 0
                     }
                     pubs, ents = engine.normalize_items_to_publications([])
                     engine.persist_to_mri_sqlite(pubs, ents, run_id, db_path=self.db_path)
-                    res.publications_count = 0
-                    self.registry.report_outcome(strat_id, success=True)
-                    return res
+                    res.publications_count = len(pubs)
+
+                    # Operational veracity contract: an HTML capture != acquired publications.
+                    # With 0 verified products, do NOT declare COMPLETED nor commercial success in registry.
+                    if res.publications_count > 0:
+                        res.status = "COMPLETED"
+                        self.registry.report_outcome(strat_id, success=True)
+                        return res
+                    else:
+                        is_challenge = capture.is_challenge_detected or capture.status_code == 403
+                        res.status = "SOURCE_BLOCKED" if is_challenge else "PARTIAL"
+                        res.blocker_reason = "Ripley MCP HTML captured successfully but 0 verified commercial publications acquired"
+                        self.registry.report_outcome(strat_id, success=False, error_message=res.blocker_reason)
+                        # Technical capture succeeded and evidence was preserved; return truthful commercial state
+                        return res
                 except Exception as e:
                     logger.warning(f"[Ripley] Stealth MCP strategy {strat_id} failed: {e}")
                     self.registry.report_outcome(strat_id, success=False, error_message=str(e))
@@ -705,22 +776,28 @@ class AutonomousMultiMarketplaceRunner:
                     scrape_res = await scraper.scrape_autonomous_category("https://simple.ripley.cl/search/nicopoly")
                     products = scrape_res.get("products", [])
                     if products:
-                        res.active_strategy = strat_id
-                        res.status = "COMPLETED"
-                        res.total_brand_publications = len(products)
-                        res.total_official_seller_publications = len(products)
-                        res.sellers_found = ["Nicopoly"]
-                        res.categories_found = [{"id": "moda-mujer", "name": "Moda Mujer", "count": len(products)}]
-                        res.evidence = {
-                            "mechanism": "RIPLEY_HEADLESS_SCRAPER",
-                            "total_count": len(products),
-                            "source_url": "https://simple.ripley.cl/search/nicopoly"
-                        }
                         pubs, ents = engine.normalize_items_to_publications(products[:20])
                         engine.persist_to_mri_sqlite(pubs, ents, run_id, db_path=self.db_path)
                         res.publications_count = len(pubs)
-                        self.registry.report_outcome(strat_id, success=True)
-                        return res
+                        # Veracity contract: commercial success requires verified publications acquired
+                        if res.publications_count > 0:
+                            res.active_strategy = strat_id
+                            res.status = "COMPLETED"
+                            res.total_brand_publications = len(products)
+                            res.total_official_seller_publications = len(products)
+                            res.sellers_found = ["Nicopoly"]
+                            res.categories_found = [{"id": "moda-mujer", "name": "Moda Mujer", "count": len(products)}]
+                            res.evidence = {
+                                "mechanism": "RIPLEY_HEADLESS_SCRAPER",
+                                "total_count": len(products),
+                                "source_url": "https://simple.ripley.cl/search/nicopoly",
+                                "technical_navigation_success": True,
+                                "verified_publications_acquired": res.publications_count
+                            }
+                            self.registry.report_outcome(strat_id, success=True)
+                            return res
+                        else:
+                            raise RuntimeError("Ripley headless scraper returned 0 verified publications")
                     else:
                         raise RuntimeError("Ripley headless scraper returned empty product catalog")
                 except Exception as e:
@@ -753,7 +830,9 @@ class AutonomousMultiMarketplaceRunner:
             res.evidence = {
                 "mechanism": "Ripley Scraper Failure / Unverified Facets",
                 "failure_cause": blocker,
-                "status": "UNVERIFIED_DUE_TO_ACQUISITION_FAILURE"
+                "status": "UNVERIFIED_DUE_TO_ACQUISITION_FAILURE",
+                "technical_navigation_success": False,
+                "verified_publications_acquired": 0
             }
             pubs, ents = engine.normalize_items_to_publications([])
             engine.persist_to_mri_sqlite(pubs, ents, run_id, db_path=self.db_path, terminal_state=res.status)
