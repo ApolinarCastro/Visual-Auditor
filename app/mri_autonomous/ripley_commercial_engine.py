@@ -12,6 +12,7 @@ Reuses certified Ripley headless scraper and counter verification capabilities.
 
 import json
 import logging
+import pathlib
 import sqlite3
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -21,11 +22,12 @@ from app.mri_autonomous.rea_paris_engine import CommercialEntity, NormalizedPubl
 
 logger = logging.getLogger(__name__)
 
-# Ground truth categories / facets discovered on Ripley for Nicopoly
-RIPLEY_VERIFIED_CATEGORIES = [
-    {"group_id": "moda-mujer/tops-y-chaquetas/sweaters-y-chalecos", "name": "Sweaters y Chalecos", "count": 284},
-    {"group_id": "moda-mujer/tops-y-chaquetas/chaquetas-y-blazers", "name": "Chaquetas y Blazers", "count": 256},
-    {"group_id": "moda-mujer/jeans-y-pantalones/pantalones", "name": "Pantalones", "count": 232},
+# Documentary reference categories / facets discovered on Ripley for Nicopoly
+# Separated from operational observations (reference_count prevents false operational assertions)
+RIPLEY_REFERENCE_CATEGORIES = [
+    {"group_id": "moda-mujer/tops-y-chaquetas/sweaters-y-chalecos", "name": "Sweaters y Chalecos", "reference_count": 284},
+    {"group_id": "moda-mujer/tops-y-chaquetas/chaquetas-y-blazers", "name": "Chaquetas y Blazers", "reference_count": 256},
+    {"group_id": "moda-mujer/jeans-y-pantalones/pantalones", "name": "Pantalones", "reference_count": 232},
 ]
 
 
@@ -38,30 +40,180 @@ class RipleyCommercialEngine:
         self.brand = brand
         self.marketplace = "Ripley"
 
-    def get_commercial_summary(self) -> Dict[str, Any]:
+    def get_commercial_summary(self, db_path: Optional[str] = None, run_id: Optional[str] = None) -> Dict[str, Any]:
         """
-        Returns structured commercial summary for Ripley Nicopoly presence.
+        Returns structured commercial summary for Ripley Nicopoly presence based strictly
+        on verified persisted evidence in SQLite for the specified run (or latest run),
+        or explicit unacquired status if empty.
+        Never generates publications or counts from internal constants.
         """
-        categories = []
-        tot = 0
-        for cat in RIPLEY_VERIFIED_CATEGORIES:
-            categories.append({
-                "group_id": cat["group_id"],
-                "name": cat["name"],
-                "count": cat["count"],
-                "path": f"Moda Mujer > {cat['name']}"
-            })
-            tot += cat["count"]
+        try:
+            from app.mri_autonomous.storage_guard import StorageConfig
+            effective_db = db_path or str(StorageConfig.get_sqlite_path())
+        except Exception:
+            effective_db = db_path or "data/sqlite/visibility.db"
 
+        rows = []
+        cat_rows = []
+        target_run_id = run_id
+        target_terminal_state = None
+
+        if not pathlib.Path(effective_db).exists():
+            return {
+                "marketplace": "Ripley",
+                "brand": self.brand,
+                "official_seller": self.brand,
+                "total_brand_publications": 0,
+                "total_official_seller_publications": 0,
+                "categories": [],
+                "total_categories": 0,
+                "reference_categories": RIPLEY_REFERENCE_CATEGORIES,
+                "mechanism": "Ripley Scraper & Verified Facets",
+                "storage_source": "NONE",
+                "status": "NO_EVIDENCE_RECORDED",
+                "message": "Sin publicaciones verificadas adquiridas en la corrida actual."
+            }
+
+        conn = sqlite3.connect(effective_db)
+        conn.row_factory = sqlite3.Row
+        try:
+            cur = conn.cursor()
+            # If run_id not provided, resolve the latest run that executed Ripley
+            if not target_run_id:
+                # Check mri_run_marketplace_states first
+                try:
+                    state_row = cur.execute("""
+                        SELECT run_id, terminal_state, status
+                        FROM mri_run_marketplace_states
+                        WHERE marketplace = 'Ripley'
+                        ORDER BY rowid DESC LIMIT 1
+                    """).fetchone()
+                    if state_row:
+                        target_run_id = state_row["run_id"]
+                        target_terminal_state = state_row["terminal_state"] or state_row["status"]
+                except sqlite3.OperationalError:
+                    pass
+
+                # Fallback to mri_runs
+                if not target_run_id:
+                    try:
+                        r_row = cur.execute("""
+                            SELECT run_id, terminal_state, status
+                            FROM mri_runs
+                            WHERE marketplace = 'Ripley'
+                            ORDER BY rowid DESC LIMIT 1
+                        """).fetchone()
+                        if r_row:
+                            target_run_id = r_row["run_id"]
+                            target_terminal_state = r_row["terminal_state"] or r_row["status"]
+                    except sqlite3.OperationalError:
+                        pass
+            else:
+                # Fetch terminal state of requested run
+                try:
+                    s_row = cur.execute("""
+                        SELECT terminal_state, status
+                        FROM mri_run_marketplace_states
+                        WHERE run_id = ? AND marketplace = 'Ripley'
+                    """, (target_run_id,)).fetchone()
+                    if s_row:
+                        target_terminal_state = s_row["terminal_state"] or s_row["status"]
+                    else:
+                        r_row = cur.execute("""
+                            SELECT terminal_state, status
+                            FROM mri_runs
+                            WHERE run_id = ?
+                        """, (target_run_id,)).fetchone()
+                        if r_row:
+                            target_terminal_state = r_row["terminal_state"] or r_row["status"]
+                except sqlite3.OperationalError:
+                    pass
+
+            # Query publications scoped strictly to target_run_id (or none if no run found)
+            if target_run_id:
+                rows = cur.execute("""
+                    SELECT publication_id, marketplace_product_id, commercial_attributes, category_observed
+                    FROM mri_publications
+                    WHERE marketplace = 'Ripley' AND run_id = ?
+                """, (target_run_id,)).fetchall()
+
+                # If not in active publications, check historical publications
+                if not rows:
+                    try:
+                        rows = cur.execute("""
+                            SELECT publication_id, marketplace_product_id, commercial_attributes, category_observed
+                            FROM mri_historical_publications
+                            WHERE marketplace = 'Ripley' AND run_id = ?
+                        """, (target_run_id,)).fetchall()
+                    except sqlite3.OperationalError:
+                        rows = []
+
+                # Scoped categories for target_run_id
+                cat_rows = []
+                try:
+                    cat_rows = cur.execute("""
+                        SELECT DISTINCT c.category_id, c.category_name, c.canonical_url
+                        FROM mri_categories c
+                        JOIN mri_publication_categories pc ON c.category_id = pc.category_id
+                        JOIN mri_publications p ON pc.publication_id = p.publication_id
+                        WHERE p.marketplace = 'Ripley' AND p.run_id = ?
+                    """, (target_run_id,)).fetchall()
+                    if not cat_rows:
+                        cat_rows = cur.execute("""
+                            SELECT DISTINCT c.category_id, c.category_name, c.canonical_url
+                            FROM mri_categories c
+                            JOIN mri_historical_publication_categories hpc ON c.category_id = hpc.category_id
+                            WHERE hpc.run_id = ?
+                        """, (target_run_id,)).fetchall()
+                except sqlite3.OperationalError:
+                    cat_rows = []
+        finally:
+            conn.close()
+
+        if rows:
+            official_seller_count = 0
+            for r in rows:
+                attrs = {}
+                try:
+                    attrs = json.loads(r["commercial_attributes"] or "{}")
+                except Exception:
+                    pass
+                sellers = attrs.get("sellers", [])
+                if attrs.get("is_official_seller") or any("nicopoly" in str(s).lower() for s in sellers):
+                    official_seller_count += 1
+
+            total_pubs = len(rows)
+            categories = [{"group_id": c["category_id"], "name": c["category_name"]} for c in cat_rows]
+            return {
+                "marketplace": "Ripley",
+                "run_id": target_run_id,
+                "brand": self.brand,
+                "official_seller": self.brand,
+                "total_brand_publications": total_pubs,
+                "total_official_seller_publications": official_seller_count,
+                "categories": categories,
+                "total_categories": len(categories),
+                "mechanism": "Ripley Headless Catalog Scraper",
+                "storage_source": "SQLITE_MRI_PERSISTENCE",
+                "status": "OPERATIONAL"
+            }
+
+        # If no verified evidence recorded in the target run
+        unacquired_status = target_terminal_state or "NO_EVIDENCE_RECORDED"
         return {
             "marketplace": "Ripley",
+            "run_id": target_run_id,
             "brand": self.brand,
             "official_seller": self.brand,
-            "total_brand_publications": tot,
-            "categories": categories,
-            "total_categories": len(categories),
-            "mechanism": "Ripley Facets + Counter Verification",
-            "status": "OPERATIONAL"
+            "total_brand_publications": 0,
+            "total_official_seller_publications": 0,
+            "categories": [],
+            "total_categories": 0,
+            "reference_categories": RIPLEY_REFERENCE_CATEGORIES,
+            "mechanism": "Ripley Scraper & Verified Facets",
+            "storage_source": "NONE" if not target_run_id else "SQLITE_EMPTY_RUN",
+            "status": unacquired_status,
+            "message": f"Sin publicaciones verificadas adquiridas en la corrida {target_run_id or 'actual'}."
         }
 
     def normalize_items_to_publications(
@@ -72,27 +224,14 @@ class RipleyCommercialEngine:
         """
         Normalizes raw Ripley scraper items or live captures into MRI common contract.
         Deduplicates publications while aggregating sellers, promotions, and categories.
+        Strictly derives categories solely from raw item attributes, producing ([], []) for empty input.
         """
+        if not raw_items:
+            return [], []
+
         obs_time = observed_at or datetime.now(timezone.utc).isoformat()
         pubs_map: Dict[str, NormalizedPublication] = {}
         entities_map: Dict[str, CommercialEntity] = {}
-
-        # Initialize base category entities
-        for cat in RIPLEY_VERIFIED_CATEGORIES:
-            gid = cat["group_id"]
-            if gid not in entities_map:
-                entities_map[gid] = CommercialEntity(
-                    marketplace="Ripley",
-                    group_id=gid,
-                    display_name=cat["name"],
-                    entity_type="category",
-                    parent_id="moda-mujer",
-                    hierarchical_path=f"Moda Mujer > {cat['name']}",
-                    official_url=f"https://simple.ripley.cl/{gid}",
-                    reported_total=cat["count"],
-                    acquisition_mechanism="RIPLEY_FACET_VERIFICATION",
-                    evidence_status="VERIFIED_PUBLIC_TRAFFIC"
-                )
 
         for it in raw_items:
             sku = str(it.get("marketplace_sku") or it.get("sku") or "").strip()
@@ -171,9 +310,51 @@ class RipleyCommercialEngine:
         cur = conn.cursor()
         now_str = datetime.now(timezone.utc).isoformat()
 
-        # 1. Register run in mri_runs
+        # Ensure base schema exists
         cur.execute("""
-            INSERT OR REPLACE INTO mri_runs (
+            CREATE TABLE IF NOT EXISTS mri_runs (
+                run_id TEXT PRIMARY KEY, started_at TEXT, finished_at TEXT, marketplace TEXT,
+                brand TEXT, execution_mode TEXT, truth_model_version TEXT, terminal_state TEXT,
+                source_method TEXT, status TEXT, created_at TEXT
+            )
+        """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS mri_run_marketplace_states (
+                run_id TEXT NOT NULL, marketplace TEXT NOT NULL, terminal_state TEXT,
+                source_method TEXT, execution_mode TEXT, started_at TEXT, finished_at TEXT,
+                status TEXT NOT NULL, created_at TEXT,
+                PRIMARY KEY (run_id, marketplace),
+                FOREIGN KEY (run_id) REFERENCES mri_runs(run_id)
+            )
+        """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS mri_publications (
+                publication_id TEXT PRIMARY KEY, product_id TEXT, marketplace TEXT, marketplace_product_id TEXT,
+                canonical_url TEXT, status TEXT, observed_at TEXT, run_id TEXT, position INTEGER, surface TEXT,
+                position_state TEXT, category_relationship TEXT, evidence_type TEXT, raw_source_id TEXT,
+                acquisition_status TEXT, identity_status TEXT, category_observed TEXT,
+                category_source TEXT, category_expected TEXT, category_decision TEXT, commercial_attributes TEXT
+            )
+        """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS mri_products (
+                product_id TEXT PRIMARY KEY, canonical_brand TEXT, product_status TEXT, created_at TEXT
+            )
+        """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS mri_categories (
+                category_id TEXT PRIMARY KEY, marketplace TEXT, category_name TEXT, canonical_url TEXT, created_at TEXT
+            )
+        """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS mri_publication_categories (
+                publication_id TEXT, category_id TEXT, status TEXT, observed_at TEXT, PRIMARY KEY(publication_id, category_id)
+            )
+        """)
+
+        # 1. Register run in mri_runs (safe parent row, never replace to protect child FKs)
+        cur.execute("""
+            INSERT OR IGNORE INTO mri_runs (
                 run_id, started_at, finished_at, marketplace, brand, execution_mode,
                 truth_model_version, terminal_state, source_method, status, created_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -181,6 +362,31 @@ class RipleyCommercialEngine:
             run_id, now_str, now_str, "Ripley", self.brand,
             "RIPLEY_FACET_AND_CATALOG_EXTRACTION", "2.0", terminal_state,
             "PLAYWRIGHT_HEADLESS_FACET", "SUCCESS", now_str
+        ))
+
+        # Check if multiple marketplaces are auditing this run
+        existing_mkt = cur.execute("SELECT marketplace FROM mri_runs WHERE run_id = ?", (run_id,)).fetchone()
+        if existing_mkt and existing_mkt[0] not in ("Ripley", "MULTI_MARKETPLACE"):
+            cur.execute("UPDATE mri_runs SET marketplace = 'MULTI_MARKETPLACE' WHERE run_id = ?", (run_id,))
+
+        # Register state in mri_run_marketplace_states
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS mri_run_marketplace_states (
+                run_id TEXT NOT NULL, marketplace TEXT NOT NULL, terminal_state TEXT,
+                source_method TEXT, execution_mode TEXT, started_at TEXT, finished_at TEXT,
+                status TEXT NOT NULL, created_at TEXT,
+                PRIMARY KEY (run_id, marketplace),
+                FOREIGN KEY (run_id) REFERENCES mri_runs(run_id)
+            )
+        """)
+        cur.execute("""
+            INSERT OR REPLACE INTO mri_run_marketplace_states (
+                run_id, marketplace, terminal_state, source_method, execution_mode,
+                started_at, finished_at, status, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            run_id, "Ripley", terminal_state, "PLAYWRIGHT_HEADLESS_FACET",
+            "RIPLEY_FACET_AND_CATALOG_EXTRACTION", now_str, now_str, "SUCCESS", now_str
         ))
 
         # 2. Persist categories

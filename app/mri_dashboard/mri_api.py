@@ -56,12 +56,15 @@ def get_recovery_runner():
     return _recovery_runner
 
 
-def get_sqlite_conn():
-    try:
-        from app.mri_autonomous.storage_guard import StorageConfig
-        current_db = StorageConfig.get_sqlite_path()
-    except Exception:
-        current_db = DB_PATH
+def get_sqlite_conn(db_path: Optional[str] = None):
+    if db_path:
+        current_db = db_path
+    else:
+        try:
+            from app.mri_autonomous.storage_guard import StorageConfig
+            current_db = StorageConfig.get_sqlite_path()
+        except Exception:
+            current_db = DB_PATH
     conn = sqlite3.connect(current_db)
     conn.row_factory = sqlite3.Row
     return conn
@@ -297,84 +300,44 @@ def fetch_run_publications(run_id: str, db_path: Optional[str] = None) -> List[D
         has_product_snapshots = cur.execute(
             "SELECT 1 FROM sqlite_master WHERE type='table' AND name='product_snapshots'"
         ).fetchone()
+        has_hist_pubs = cur.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='mri_historical_publications'"
+        ).fetchone()
+
+        hist_union = ""
+        if has_hist_pubs:
+            hist_union = """
+                UNION ALL
+                SELECT 
+                    hp.publication_id, hp.product_id, hp.marketplace, hp.marketplace_product_id,
+                    hp.canonical_url, hp.status, hp.observed_at, hp.run_id, hp.position, hp.surface,
+                    hp.position_state, hp.category_relationship, hp.evidence_type, hp.raw_source_id,
+                    hp.acquisition_status, hp.identity_status, hp.category_observed,
+                    hp.category_source, hp.category_expected, hp.category_decision, hp.commercial_attributes
+                FROM mri_historical_publications hp
+                WHERE hp.run_id = ?
+            """
 
         if has_product_snapshots:
-            query = """
+            query = f"""
                 WITH unified_pubs AS (
                     SELECT 
-                        pub.publication_id,
-                        pub.product_id,
-                        pub.marketplace,
-                        pub.marketplace_product_id,
-                        pub.canonical_url,
-                        pub.status,
-                        pub.observed_at,
-                        pub.run_id,
-                        pub.position,
-                        pub.surface,
-                        pub.position_state,
-                        pub.category_relationship,
-                        pub.evidence_type,
-                        pub.raw_source_id,
-                        pub.acquisition_status,
-                        pub.identity_status,
-                        pub.category_observed,
-                        pub.category_source,
-                        pub.category_expected,
-                        pub.category_decision,
-                        pub.commercial_attributes
+                        pub.publication_id, pub.product_id, pub.marketplace, pub.marketplace_product_id,
+                        pub.canonical_url, pub.status, pub.observed_at, pub.run_id, pub.position, pub.surface,
+                        pub.position_state, pub.category_relationship, pub.evidence_type, pub.raw_source_id,
+                        pub.acquisition_status, pub.identity_status, pub.category_observed,
+                        pub.category_source, pub.category_expected, pub.category_decision, pub.commercial_attributes
                     FROM mri_publications pub
                     WHERE pub.run_id = ?
-                    UNION ALL
-                    SELECT 
-                        hp.publication_id,
-                        hp.product_id,
-                        hp.marketplace,
-                        hp.marketplace_product_id,
-                        hp.canonical_url,
-                        hp.status,
-                        hp.observed_at,
-                        hp.run_id,
-                        hp.position,
-                        hp.surface,
-                        hp.position_state,
-                        hp.category_relationship,
-                        hp.evidence_type,
-                        hp.raw_source_id,
-                        hp.acquisition_status,
-                        hp.identity_status,
-                        hp.category_observed,
-                        hp.category_source,
-                        hp.category_expected,
-                        hp.category_decision,
-                        hp.commercial_attributes
-                    FROM mri_historical_publications hp
-                    WHERE hp.run_id = ?
+                    {hist_union}
                 )
                 SELECT 
-                    pub.publication_id,
-                    pub.product_id,
-                    pub.marketplace,
-                    pub.marketplace_product_id,
-                    pub.canonical_url,
-                    pub.status,
-                    pub.observed_at,
-                    pub.position,
-                    pub.surface,
-                    pub.position_state,
-                    pub.category_relationship,
-                    pub.evidence_type,
-                    pub.raw_source_id,
-                    pub.acquisition_status,
-                    pub.identity_status,
-                    pub.category_observed,
-                    pub.category_source,
-                    pub.category_expected,
-                    pub.category_decision,
-                    pub.commercial_attributes,
-                    cat.category_name as legacy_cat_name,
-                    ps.product_title,
-                    ps.sku_master
+                    pub.publication_id, pub.product_id, pub.marketplace, pub.marketplace_product_id,
+                    pub.canonical_url, pub.status, pub.observed_at, pub.position, pub.surface,
+                    pub.position_state, pub.category_relationship, pub.evidence_type, pub.raw_source_id,
+                    pub.acquisition_status, pub.identity_status, pub.category_observed,
+                    pub.category_source, pub.category_expected, pub.category_decision, pub.commercial_attributes,
+                    cat.category_name as legacy_cat_name, ps.product_title, ps.sku_master
                 FROM unified_pubs pub
                 LEFT JOIN (
                     SELECT publication_id, MIN(category_id) as category_id
@@ -395,82 +358,25 @@ def fetch_run_publications(run_id: str, db_path: Optional[str] = None) -> List[D
                 ORDER BY pub.marketplace, pub.position ASC
             """
         else:
-            query = """
+            query = f"""
                 WITH unified_pubs AS (
                     SELECT 
-                        pub.publication_id,
-                        pub.product_id,
-                        pub.marketplace,
-                        pub.marketplace_product_id,
-                        pub.canonical_url,
-                        pub.status,
-                        pub.observed_at,
-                        pub.run_id,
-                        pub.position,
-                        pub.surface,
-                        pub.position_state,
-                        pub.category_relationship,
-                        pub.evidence_type,
-                        pub.raw_source_id,
-                        pub.acquisition_status,
-                        pub.identity_status,
-                        pub.category_observed,
-                        pub.category_source,
-                        pub.category_expected,
-                        pub.category_decision,
-                        pub.commercial_attributes
+                        pub.publication_id, pub.product_id, pub.marketplace, pub.marketplace_product_id,
+                        pub.canonical_url, pub.status, pub.observed_at, pub.run_id, pub.position, pub.surface,
+                        pub.position_state, pub.category_relationship, pub.evidence_type, pub.raw_source_id,
+                        pub.acquisition_status, pub.identity_status, pub.category_observed,
+                        pub.category_source, pub.category_expected, pub.category_decision, pub.commercial_attributes
                     FROM mri_publications pub
                     WHERE pub.run_id = ?
-                    UNION ALL
-                    SELECT 
-                        hp.publication_id,
-                        hp.product_id,
-                        hp.marketplace,
-                        hp.marketplace_product_id,
-                        hp.canonical_url,
-                        hp.status,
-                        hp.observed_at,
-                        hp.run_id,
-                        hp.position,
-                        hp.surface,
-                        hp.position_state,
-                        hp.category_relationship,
-                        hp.evidence_type,
-                        hp.raw_source_id,
-                        hp.acquisition_status,
-                        hp.identity_status,
-                        hp.category_observed,
-                        hp.category_source,
-                        hp.category_expected,
-                        hp.category_decision,
-                        hp.commercial_attributes
-                    FROM mri_historical_publications hp
-                    WHERE hp.run_id = ?
+                    {hist_union}
                 )
                 SELECT 
-                    pub.publication_id,
-                    pub.product_id,
-                    pub.marketplace,
-                    pub.marketplace_product_id,
-                    pub.canonical_url,
-                    pub.status,
-                    pub.observed_at,
-                    pub.position,
-                    pub.surface,
-                    pub.position_state,
-                    pub.category_relationship,
-                    pub.evidence_type,
-                    pub.raw_source_id,
-                    pub.acquisition_status,
-                    pub.identity_status,
-                    pub.category_observed,
-                    pub.category_source,
-                    pub.category_expected,
-                    pub.category_decision,
-                    pub.commercial_attributes,
-                    cat.category_name as legacy_cat_name,
-                    NULL as product_title,
-                    NULL as sku_master
+                    pub.publication_id, pub.product_id, pub.marketplace, pub.marketplace_product_id,
+                    pub.canonical_url, pub.status, pub.observed_at, pub.position, pub.surface,
+                    pub.position_state, pub.category_relationship, pub.evidence_type, pub.raw_source_id,
+                    pub.acquisition_status, pub.identity_status, pub.category_observed,
+                    pub.category_source, pub.category_expected, pub.category_decision, pub.commercial_attributes,
+                    cat.category_name as legacy_cat_name, NULL as product_title, NULL as sku_master
                 FROM unified_pubs pub
                 LEFT JOIN (
                     SELECT publication_id, MIN(category_id) as category_id
@@ -526,7 +432,8 @@ def fetch_run_publications(run_id: str, db_path: Optional[str] = None) -> List[D
                     "category_id": c_id
                 })
 
-        rows = cur.execute(query, (run_id, run_id)).fetchall()
+        params = (run_id, run_id) if has_hist_pubs else (run_id,)
+        rows = cur.execute(query, params).fetchall()
         
         results = []
         for r in rows:
@@ -750,44 +657,86 @@ async def get_history():
     Returns unified runs history:
     1. Reads all persisted runs from mri_runs and mri_publications in SQLite.
     2. Merges with in-memory orchestrator runs.
+    Ensures runs with zero publications are preserved and visible.
     """
     history_items = []
     seen_runs = set()
     
-    if DB_PATH.exists():
-        conn = get_sqlite_conn()
+    effective_db = DB_PATH
+    try:
+        from app.mri_autonomous.storage_guard import StorageConfig
+        effective_db = StorageConfig.get_sqlite_path()
+    except Exception:
+        pass
+
+    if Path(effective_db).exists():
+        conn = get_sqlite_conn(str(effective_db))
         try:
             cur = conn.cursor()
-            # Runs from unified mri_publications + mri_historical_publications grouped by run_id
-            query = """
-                WITH all_pubs AS (
-                    SELECT run_id, observed_at, marketplace, publication_id, status FROM mri_publications
-                    UNION ALL
-                    SELECT run_id, observed_at, marketplace, publication_id, status FROM mri_historical_publications
-                )
-                SELECT 
-                    p.run_id,
-                    MIN(p.observed_at) as started_at,
-                    p.marketplace,
-                    COUNT(p.publication_id) as total,
-                    SUM(CASE WHEN p.status IN ('OBSERVED', 'CONFIRMED', 'NICOPOLY_CONFIRMED') THEN 1 ELSE 0 END) as confirmed,
-                    COALESCE(r.execution_mode, 'SQLITE_PERSISTED') as mode
-                FROM all_pubs p
-                LEFT JOIN mri_runs r ON p.run_id = r.run_id
-                GROUP BY p.run_id
-                ORDER BY started_at DESC
-            """
-            for r in cur.execute(query).fetchall():
-                run_id = r["run_id"]
-                seen_runs.add(run_id)
-                history_items.append({
-                    "run_id": run_id,
-                    "timestamp": r["started_at"] or "2026-10-14T00:00:00",
-                    "marketplace": r["marketplace"] if r["marketplace"] else "MULTI_MARKETPLACE",
-                    "total": r["total"] or 0,
-                    "confirmed": r["confirmed"] or 0,
-                    "mode": r["mode"]
-                })
+            # Runs starting from mri_runs so empty/blocked runs are never lost
+            has_mri_runs = cur.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='mri_runs'").fetchone()
+            has_mri_pubs = cur.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='mri_publications'").fetchone()
+            has_hist_pubs = cur.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='mri_historical_publications'").fetchone()
+
+            union_parts = []
+            if has_mri_pubs:
+                union_parts.append("SELECT run_id, observed_at, marketplace, publication_id, status FROM mri_publications")
+            if has_hist_pubs:
+                union_parts.append("SELECT run_id, observed_at, marketplace, publication_id, status FROM mri_historical_publications")
+
+            if not union_parts:
+                union_sql = "SELECT NULL as run_id, NULL as observed_at, NULL as marketplace, NULL as publication_id, NULL as status WHERE 1=0"
+            else:
+                union_sql = " UNION ALL ".join(union_parts)
+
+            if has_mri_runs:
+                query = f"""
+                    WITH all_pubs AS (
+                        {union_sql}
+                    )
+                    SELECT 
+                        r.run_id,
+                        COALESCE(r.started_at, MIN(p.observed_at)) as started_at,
+                        r.marketplace,
+                        COUNT(p.publication_id) as total,
+                        SUM(CASE WHEN p.status IN ('OBSERVED', 'CONFIRMED', 'NICOPOLY_CONFIRMED') THEN 1 ELSE 0 END) as confirmed,
+                        COALESCE(r.execution_mode, 'SQLITE_PERSISTED') as mode
+                    FROM mri_runs r
+                    LEFT JOIN all_pubs p ON r.run_id = p.run_id
+                    GROUP BY r.run_id
+                    ORDER BY started_at DESC
+                """
+            elif has_mri_pubs or has_hist_pubs:
+                query = f"""
+                    WITH all_pubs AS (
+                        {union_sql}
+                    )
+                    SELECT 
+                        p.run_id,
+                        MIN(p.observed_at) as started_at,
+                        p.marketplace,
+                        COUNT(p.publication_id) as total,
+                        SUM(CASE WHEN p.status IN ('OBSERVED', 'CONFIRMED', 'NICOPOLY_CONFIRMED') THEN 1 ELSE 0 END) as confirmed,
+                        'SQLITE_PERSISTED' as mode
+                    FROM all_pubs p
+                    GROUP BY p.run_id
+                    ORDER BY started_at DESC
+                """
+            else:
+                query = None
+
+            if query:
+                for r in cur.execute(query).fetchall():
+                    run_id = r["run_id"]
+                    seen_runs.add(run_id)
+                    history_items.append({
+                        "run_id": run_id,
+                        "timestamp": r["started_at"] or "2026-10-14T00:00:00",
+                        "marketplace": r["marketplace"] if r["marketplace"] else "MULTI_MARKETPLACE",
+                        "total": r["total"] or 0,
+                        "confirmed": r["confirmed"] or 0,
+                        "mode": r["mode"]
+                    })
         finally:
             conn.close()
             
@@ -805,11 +754,41 @@ async def get_history():
 async def get_history_run_publications(run_id: str):
     """
     Retrieves verifiable publication details for any historical run without re-harvesting.
+    If a run exists in SQLite but has 0 publications (e.g. blocked or empty run),
+    returns 200 with empty publications list instead of 404.
     """
+    effective_db = DB_PATH
+    try:
+        from app.mri_autonomous.storage_guard import StorageConfig
+        effective_db = StorageConfig.get_sqlite_path()
+    except Exception:
+        pass
+
     # 1. Check SQLite mri_publications
-    pubs = fetch_run_publications(run_id)
+    pubs = fetch_run_publications(run_id, db_path=str(effective_db))
     if pubs:
         return JSONResponse(content={"run_id": run_id, "publications": pubs, "count": len(pubs), "source": "SQLITE"})
+
+    # Check if run exists in mri_runs with 0 publications
+    if Path(effective_db).exists():
+        conn = get_sqlite_conn(str(effective_db))
+        try:
+            cur = conn.cursor()
+            has_mri_runs = cur.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='mri_runs'").fetchone()
+            if has_mri_runs:
+                run_row = cur.execute("SELECT run_id, terminal_state, status FROM mri_runs WHERE run_id = ?", (run_id,)).fetchone()
+                if run_row:
+                    return JSONResponse(content={
+                        "run_id": run_id,
+                        "publications": [],
+                        "count": 0,
+                        "source": "SQLITE_EMPTY_RUN",
+                        "status": run_row["terminal_state"] or run_row["status"] or "COMPLETED"
+                    })
+        except Exception:
+            pass
+        finally:
+            conn.close()
     
     # 2. Check orchestrator history
     for h in orchestrator.history:
@@ -1078,17 +1057,23 @@ async def get_meli_nicopoly_data():
 
 
 @app.get("/api/ripley/nicopoly")
-async def get_ripley_nicopoly_data():
+async def get_ripley_nicopoly_data(run_id: Optional[str] = None):
     """
     Returns normalized Ripley commercial intelligence discovered via verified facets and catalog counter:
-    - 3 verified categories (Sweaters y Chalecos, Chaquetas y Blazers, Pantalones)
-    - 772 verified brand publications
-    - Status: OPERATIONAL
+    - 3 reference categories (Sweaters y Chalecos, Chaquetas y Blazers, Pantalones)
+    - Persisted brand publications strictly scoped to run_id (or latest run)
+    - Status: OPERATIONAL if publications acquired, otherwise verified unacquired terminal state
     """
     try:
         from app.mri_autonomous.ripley_commercial_engine import RipleyCommercialEngine
+        effective_db = DB_PATH
+        try:
+            from app.mri_autonomous.storage_guard import StorageConfig
+            effective_db = StorageConfig.get_sqlite_path()
+        except Exception:
+            pass
         engine = RipleyCommercialEngine()
-        return JSONResponse(content=engine.get_commercial_summary())
+        return JSONResponse(content=engine.get_commercial_summary(db_path=str(effective_db), run_id=run_id))
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
@@ -1173,16 +1158,33 @@ async def get_multimarketplace_summary(run_id: str = None):
                 target_run_id = row[0]
 
         if target_run_id:
-            # Check runs for this run_id
-            cur.execute("""
-                SELECT marketplace, execution_mode, terminal_state, status
-                FROM mri_runs WHERE run_id = ?
-            """, (target_run_id,))
-            runs = cur.fetchall()
-            for mkt, mode, state, st in runs:
-                if mkt in marketplaces_data:
-                    marketplaces_data[mkt]["status"] = state or st or "COMPLETED"
-                    marketplaces_data[mkt]["mechanism"] = mode or marketplaces_data[mkt]["mechanism"]
+            # Check secondary table mri_run_marketplace_states first
+            has_mkt_states = cur.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='mri_run_marketplace_states'").fetchone()
+            states_loaded = False
+            if has_mkt_states:
+                cur.execute("""
+                    SELECT marketplace, execution_mode, terminal_state, status
+                    FROM mri_run_marketplace_states WHERE run_id = ?
+                """, (target_run_id,))
+                mkt_states = cur.fetchall()
+                if mkt_states:
+                    states_loaded = True
+                    for mkt, mode, state, st in mkt_states:
+                        if mkt in marketplaces_data:
+                            marketplaces_data[mkt]["status"] = state or st or "COMPLETED"
+                            marketplaces_data[mkt]["mechanism"] = mode or marketplaces_data[mkt]["mechanism"]
+
+            # Fallback to mri_runs if no states in secondary table
+            if not states_loaded:
+                cur.execute("""
+                    SELECT marketplace, execution_mode, terminal_state, status
+                    FROM mri_runs WHERE run_id = ?
+                """, (target_run_id,))
+                runs = cur.fetchall()
+                for mkt, mode, state, st in runs:
+                    if mkt in marketplaces_data:
+                        marketplaces_data[mkt]["status"] = state or st or "COMPLETED"
+                        marketplaces_data[mkt]["mechanism"] = mode or marketplaces_data[mkt]["mechanism"]
 
             # Query publications and official seller counts per marketplace scoped to target_run_id
             has_hist = cur.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='mri_historical_publications'").fetchone()

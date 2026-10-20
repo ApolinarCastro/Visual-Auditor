@@ -496,9 +496,9 @@ class REAParisEngine:
         cur = conn.cursor()
         now_str = datetime.now(timezone.utc).isoformat()
 
-        # 1. Register run in mri_runs
+        # 1. Register run in mri_runs (safe parent row, never replace to protect child FKs)
         cur.execute("""
-            INSERT OR REPLACE INTO mri_runs (
+            INSERT OR IGNORE INTO mri_runs (
                 run_id, started_at, finished_at, marketplace, brand, execution_mode,
                 truth_model_version, terminal_state, source_method, status, created_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -506,6 +506,31 @@ class REAParisEngine:
             run_id, now_str, now_str, "Paris", "Nicopoly",
             "REA_DISCOVERY_CONSTRUCTOR_HARVEST", "2.0", terminal_state,
             "CONSTRUCTOR_PUBLIC_API", "SUCCESS", now_str
+        ))
+
+        # Check if multiple marketplaces are auditing this run
+        existing_mkt = cur.execute("SELECT marketplace FROM mri_runs WHERE run_id = ?", (run_id,)).fetchone()
+        if existing_mkt and existing_mkt[0] not in ("Paris", "MULTI_MARKETPLACE"):
+            cur.execute("UPDATE mri_runs SET marketplace = 'MULTI_MARKETPLACE' WHERE run_id = ?", (run_id,))
+
+        # Register state in mri_run_marketplace_states
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS mri_run_marketplace_states (
+                run_id TEXT NOT NULL, marketplace TEXT NOT NULL, terminal_state TEXT,
+                source_method TEXT, execution_mode TEXT, started_at TEXT, finished_at TEXT,
+                status TEXT NOT NULL, created_at TEXT,
+                PRIMARY KEY (run_id, marketplace),
+                FOREIGN KEY (run_id) REFERENCES mri_runs(run_id)
+            )
+        """)
+        cur.execute("""
+            INSERT OR REPLACE INTO mri_run_marketplace_states (
+                run_id, marketplace, terminal_state, source_method, execution_mode,
+                started_at, finished_at, status, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            run_id, "Paris", terminal_state, "CONSTRUCTOR_PUBLIC_API",
+            "REA_DISCOVERY_CONSTRUCTOR_HARVEST", now_str, now_str, "SUCCESS", now_str
         ))
 
         # 2. Persist categories / entities in mri_categories
