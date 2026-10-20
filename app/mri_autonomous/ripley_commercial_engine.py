@@ -307,229 +307,237 @@ class RipleyCommercialEngine:
             effective_db = db_path or "data/sqlite/visibility.db"
 
         conn = sqlite3.connect(effective_db)
-        cur = conn.cursor()
-        now_str = datetime.now(timezone.utc).isoformat()
+        try:
+            cur = conn.cursor()
+            now_str = datetime.now(timezone.utc).isoformat()
 
-        # Ensure base schema exists
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS mri_runs (
-                run_id TEXT PRIMARY KEY, started_at TEXT, finished_at TEXT, marketplace TEXT,
-                brand TEXT, execution_mode TEXT, truth_model_version TEXT, terminal_state TEXT,
-                source_method TEXT, status TEXT, created_at TEXT
-            )
-        """)
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS mri_run_marketplace_states (
-                run_id TEXT NOT NULL, marketplace TEXT NOT NULL, terminal_state TEXT,
-                source_method TEXT, execution_mode TEXT, started_at TEXT, finished_at TEXT,
-                status TEXT NOT NULL, created_at TEXT,
-                PRIMARY KEY (run_id, marketplace),
-                FOREIGN KEY (run_id) REFERENCES mri_runs(run_id)
-            )
-        """)
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS mri_publications (
-                publication_id TEXT PRIMARY KEY, product_id TEXT, marketplace TEXT, marketplace_product_id TEXT,
-                canonical_url TEXT, status TEXT, observed_at TEXT, run_id TEXT, position INTEGER, surface TEXT,
-                position_state TEXT, category_relationship TEXT, evidence_type TEXT, raw_source_id TEXT,
-                acquisition_status TEXT, identity_status TEXT, category_observed TEXT,
-                category_source TEXT, category_expected TEXT, category_decision TEXT, commercial_attributes TEXT
-            )
-        """)
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS mri_products (
-                product_id TEXT PRIMARY KEY, canonical_brand TEXT, product_status TEXT, created_at TEXT
-            )
-        """)
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS mri_categories (
-                category_id TEXT PRIMARY KEY, marketplace TEXT, category_name TEXT, canonical_url TEXT, created_at TEXT
-            )
-        """)
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS mri_publication_categories (
-                publication_id TEXT, category_id TEXT, status TEXT, observed_at TEXT, PRIMARY KEY(publication_id, category_id)
-            )
-        """)
-
-        # 1. Register run in mri_runs (safe parent row, never replace to protect child FKs)
-        cur.execute("""
-            INSERT OR IGNORE INTO mri_runs (
-                run_id, started_at, finished_at, marketplace, brand, execution_mode,
-                truth_model_version, terminal_state, source_method, status, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            run_id, now_str, now_str, "Ripley", self.brand,
-            "RIPLEY_FACET_AND_CATALOG_EXTRACTION", "2.0", terminal_state,
-            "PLAYWRIGHT_HEADLESS_FACET", "SUCCESS", now_str
-        ))
-
-        # Check if multiple marketplaces are auditing this run
-        existing_mkt = cur.execute("SELECT marketplace FROM mri_runs WHERE run_id = ?", (run_id,)).fetchone()
-        if existing_mkt and existing_mkt[0] not in ("Ripley", "MULTI_MARKETPLACE"):
-            cur.execute("UPDATE mri_runs SET marketplace = 'MULTI_MARKETPLACE' WHERE run_id = ?", (run_id,))
-
-        # Register state in mri_run_marketplace_states
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS mri_run_marketplace_states (
-                run_id TEXT NOT NULL, marketplace TEXT NOT NULL, terminal_state TEXT,
-                source_method TEXT, execution_mode TEXT, started_at TEXT, finished_at TEXT,
-                status TEXT NOT NULL, created_at TEXT,
-                PRIMARY KEY (run_id, marketplace),
-                FOREIGN KEY (run_id) REFERENCES mri_runs(run_id)
-            )
-        """)
-        cur.execute("""
-            INSERT OR REPLACE INTO mri_run_marketplace_states (
-                run_id, marketplace, terminal_state, source_method, execution_mode,
-                started_at, finished_at, status, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            run_id, "Ripley", terminal_state, "PLAYWRIGHT_HEADLESS_FACET",
-            "RIPLEY_FACET_AND_CATALOG_EXTRACTION", now_str, now_str, "SUCCESS", now_str
-        ))
-
-        # 2. Persist categories
-        cats_inserted = 0
-        for ent in entities:
+            # Ensure base schema exists
             cur.execute("""
-                INSERT OR REPLACE INTO mri_categories (
-                    category_id, marketplace, category_name, canonical_url, created_at
-                ) VALUES (?, ?, ?, ?, ?)
+                CREATE TABLE IF NOT EXISTS mri_runs (
+                    run_id TEXT PRIMARY KEY, started_at TEXT, finished_at TEXT, marketplace TEXT,
+                    brand TEXT, execution_mode TEXT, truth_model_version TEXT, terminal_state TEXT,
+                    source_method TEXT, status TEXT, created_at TEXT
+                )
+            """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS mri_run_marketplace_states (
+                    run_id TEXT NOT NULL, marketplace TEXT NOT NULL, terminal_state TEXT,
+                    source_method TEXT, execution_mode TEXT, started_at TEXT, finished_at TEXT,
+                    status TEXT NOT NULL, created_at TEXT,
+                    PRIMARY KEY (run_id, marketplace),
+                    FOREIGN KEY (run_id) REFERENCES mri_runs(run_id)
+                )
+            """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS mri_publications (
+                    publication_id TEXT PRIMARY KEY, product_id TEXT, marketplace TEXT, marketplace_product_id TEXT,
+                    canonical_url TEXT, status TEXT, observed_at TEXT, run_id TEXT, position INTEGER, surface TEXT,
+                    position_state TEXT, category_relationship TEXT, evidence_type TEXT, raw_source_id TEXT,
+                    acquisition_status TEXT, identity_status TEXT, category_observed TEXT,
+                    category_source TEXT, category_expected TEXT, category_decision TEXT, commercial_attributes TEXT
+                )
+            """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS mri_products (
+                    product_id TEXT PRIMARY KEY, canonical_brand TEXT, product_status TEXT, created_at TEXT
+                )
+            """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS mri_categories (
+                    category_id TEXT PRIMARY KEY, marketplace TEXT, category_name TEXT, canonical_url TEXT, created_at TEXT
+                )
+            """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS mri_publication_categories (
+                    publication_id TEXT, category_id TEXT, status TEXT, observed_at TEXT, PRIMARY KEY(publication_id, category_id)
+                )
+            """)
+
+            # 1. Register run in mri_runs (safe parent row, never replace to protect child FKs)
+            cur.execute("""
+                INSERT OR IGNORE INTO mri_runs (
+                    run_id, started_at, finished_at, marketplace, brand, execution_mode,
+                    truth_model_version, terminal_state, source_method, status, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
-                ent.group_id, ent.marketplace, ent.display_name, ent.official_url, now_str
+                run_id, now_str, now_str, "Ripley", self.brand,
+                "RIPLEY_FACET_AND_CATALOG_EXTRACTION", "2.0", terminal_state,
+                "PLAYWRIGHT_HEADLESS_FACET", "SUCCESS", now_str
             ))
-            cats_inserted += 1
 
-        # 3. Persist products and publications
-        pubs_inserted = 0
-        links_inserted = 0
-        for idx, pub in enumerate(publications, start=1):
-            prod_id = f"PROD_RIPLEY_{pub.sku}"
+            # Check if multiple marketplaces are auditing this run
+            existing_mkt = cur.execute("SELECT marketplace FROM mri_runs WHERE run_id = ?", (run_id,)).fetchone()
+            if existing_mkt and existing_mkt[0] not in ("Ripley", "MULTI_MARKETPLACE"):
+                cur.execute("UPDATE mri_runs SET marketplace = 'MULTI_MARKETPLACE' WHERE run_id = ?", (run_id,))
+
+            # Register state in mri_run_marketplace_states
             cur.execute("""
-                INSERT OR REPLACE INTO mri_products (
-                    product_id, canonical_brand, product_status, created_at
-                ) VALUES (?, ?, ?, ?)
-            """, (prod_id, pub.brand, "ACTIVE", now_str))
+                CREATE TABLE IF NOT EXISTS mri_run_marketplace_states (
+                    run_id TEXT NOT NULL, marketplace TEXT NOT NULL, terminal_state TEXT,
+                    source_method TEXT, execution_mode TEXT, started_at TEXT, finished_at TEXT,
+                    status TEXT NOT NULL, created_at TEXT,
+                    PRIMARY KEY (run_id, marketplace),
+                    FOREIGN KEY (run_id) REFERENCES mri_runs(run_id)
+                )
+            """)
+            cur.execute("""
+                INSERT OR REPLACE INTO mri_run_marketplace_states (
+                    run_id, marketplace, terminal_state, source_method, execution_mode,
+                    started_at, finished_at, status, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                run_id, "Ripley", terminal_state, "PLAYWRIGHT_HEADLESS_FACET",
+                "RIPLEY_FACET_AND_CATALOG_EXTRACTION", now_str, now_str, "SUCCESS", now_str
+            ))
 
-            primary_cat = pub.categories[0]["name"] if pub.categories else "NO_VERIFICADO"
-            comm_attrs = json.dumps({
-                "sellers": pub.sellers,
-                "is_official_seller": pub.is_official_seller,
-                "condition": pub.condition,
-                "price_regular": pub.price_regular,
-                "price_displayed": pub.price_displayed,
-                "promotions": pub.promotions,
-                "facets": pub.facets
-            }, ensure_ascii=False)
-
-            # Check for existing publication to archive into historical table (018R pattern)
-            existing = cur.execute("""
-                SELECT publication_id, product_id, marketplace, marketplace_product_id,
-                       canonical_url, status, observed_at, run_id, position, surface,
-                       position_state, category_relationship, evidence_type, raw_source_id,
-                       acquisition_status, identity_status, category_observed,
-                       category_source, category_expected, category_decision, commercial_attributes
-                FROM mri_publications WHERE publication_id = ?
-            """, (pub.publication_id,)).fetchone()
-
-            if existing and existing[7] and existing[7] != run_id:
+            # 2. Persist categories
+            cats_inserted = 0
+            for ent in entities:
                 cur.execute("""
-                    CREATE TABLE IF NOT EXISTS mri_historical_publications (
-                        history_id TEXT PRIMARY KEY,
-                        publication_id TEXT NOT NULL,
-                        product_id TEXT NOT NULL,
-                        marketplace TEXT NOT NULL,
-                        marketplace_product_id TEXT,
-                        canonical_url TEXT,
-                        status TEXT,
-                        observed_at TEXT NOT NULL,
-                        run_id TEXT,
-                        position INTEGER,
-                        surface TEXT,
-                        position_state TEXT,
-                        category_relationship TEXT,
-                        evidence_type TEXT,
-                        raw_source_id TEXT,
-                        acquisition_status TEXT,
-                        identity_status TEXT,
-                        category_observed TEXT,
-                        category_source TEXT,
-                        category_expected TEXT,
-                        category_decision TEXT,
-                        commercial_attributes TEXT
-                    )
-                """)
+                    INSERT OR REPLACE INTO mri_categories (
+                        category_id, marketplace, category_name, canonical_url, created_at
+                    ) VALUES (?, ?, ?, ?, ?)
+                """, (
+                    ent.group_id, ent.marketplace, ent.display_name, ent.official_url, now_str
+                ))
+                cats_inserted += 1
+
+            # 3. Persist products and publications
+            pubs_inserted = 0
+            links_inserted = 0
+            for idx, pub in enumerate(publications, start=1):
+                prod_id = f"PROD_RIPLEY_{pub.sku}"
                 cur.execute("""
-                    INSERT OR REPLACE INTO mri_historical_publications (
-                        history_id, publication_id, product_id, marketplace, marketplace_product_id,
+                    INSERT OR REPLACE INTO mri_products (
+                        product_id, canonical_brand, product_status, created_at
+                    ) VALUES (?, ?, ?, ?)
+                """, (prod_id, pub.brand, "ACTIVE", now_str))
+
+                primary_cat = pub.categories[0]["name"] if pub.categories else "NO_VERIFICADO"
+                comm_attrs = json.dumps({
+                    "sellers": pub.sellers,
+                    "is_official_seller": pub.is_official_seller,
+                    "condition": pub.condition,
+                    "price_regular": pub.price_regular,
+                    "price_displayed": pub.price_displayed,
+                    "promotions": pub.promotions,
+                    "facets": pub.facets
+                }, ensure_ascii=False)
+
+                # Check for existing publication to archive into historical table (018R pattern)
+                existing = cur.execute("""
+                    SELECT publication_id, product_id, marketplace, marketplace_product_id,
+                           canonical_url, status, observed_at, run_id, position, surface,
+                           position_state, category_relationship, evidence_type, raw_source_id,
+                           acquisition_status, identity_status, category_observed,
+                           category_source, category_expected, category_decision, commercial_attributes
+                    FROM mri_publications WHERE publication_id = ?
+                """, (pub.publication_id,)).fetchone()
+
+                if existing and existing[7] and existing[7] != run_id:
+                    cur.execute("""
+                        CREATE TABLE IF NOT EXISTS mri_historical_publications (
+                            history_id TEXT PRIMARY KEY,
+                            publication_id TEXT NOT NULL,
+                            product_id TEXT NOT NULL,
+                            marketplace TEXT NOT NULL,
+                            marketplace_product_id TEXT,
+                            canonical_url TEXT,
+                            status TEXT,
+                            observed_at TEXT NOT NULL,
+                            run_id TEXT,
+                            position INTEGER,
+                            surface TEXT,
+                            position_state TEXT,
+                            category_relationship TEXT,
+                            evidence_type TEXT,
+                            raw_source_id TEXT,
+                            acquisition_status TEXT,
+                            identity_status TEXT,
+                            category_observed TEXT,
+                            category_source TEXT,
+                            category_expected TEXT,
+                            category_decision TEXT,
+                            commercial_attributes TEXT
+                        )
+                    """)
+                    cur.execute("""
+                        INSERT OR REPLACE INTO mri_historical_publications (
+                            history_id, publication_id, product_id, marketplace, marketplace_product_id,
+                            canonical_url, status, observed_at, run_id, position, surface,
+                            position_state, category_relationship, evidence_type, raw_source_id,
+                            acquisition_status, identity_status, category_observed,
+                            category_source, category_expected, category_decision, commercial_attributes
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        f"hist_{existing[7]}_{pub.publication_id}", existing[0], existing[1], existing[2], existing[3],
+                        existing[4], existing[5], existing[6], existing[7], existing[8], existing[9],
+                        existing[10], existing[11], existing[12], existing[13], existing[14], existing[15],
+                        existing[16], existing[17], existing[18], existing[19], existing[20]
+                    ))
+                    # Ensure historical publication categories table exists before archiving
+                    cur.execute("""
+                        CREATE TABLE IF NOT EXISTS mri_historical_publication_categories (
+                            history_id TEXT PRIMARY KEY,
+                            publication_id TEXT NOT NULL,
+                            category_id TEXT NOT NULL,
+                            run_id TEXT,
+                            observed_at TEXT NOT NULL
+                        )
+                    """)
+                    old_links = cur.execute(
+                        "SELECT category_id, observed_at FROM mri_publication_categories WHERE publication_id = ?",
+                        (pub.publication_id,)
+                    ).fetchall()
+                    for o_cat, o_obs in old_links:
+                        cur.execute("""
+                            INSERT OR REPLACE INTO mri_historical_publication_categories (
+                                history_id, publication_id, category_id, run_id, observed_at
+                            ) VALUES (?, ?, ?, ?, ?)
+                        """, (f"hist_{existing[7]}_{pub.publication_id}_{o_cat}", pub.publication_id, o_cat, existing[7], o_obs))
+                    # Delete old active links for this publication to enforce run isolation
+                    cur.execute("DELETE FROM mri_publication_categories WHERE publication_id = ?", (pub.publication_id,))
+
+                cur.execute("""
+                    INSERT OR REPLACE INTO mri_publications (
+                        publication_id, product_id, marketplace, marketplace_product_id,
                         canonical_url, status, observed_at, run_id, position, surface,
                         position_state, category_relationship, evidence_type, raw_source_id,
                         acquisition_status, identity_status, category_observed,
                         category_source, category_expected, category_decision, commercial_attributes
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
-                    f"hist_{existing[7]}_{pub.publication_id}", existing[0], existing[1], existing[2], existing[3],
-                    existing[4], existing[5], existing[6], existing[7], existing[8], existing[9],
-                    existing[10], existing[11], existing[12], existing[13], existing[14], existing[15],
-                    existing[16], existing[17], existing[18], existing[19], existing[20]
+                    pub.publication_id, prod_id, pub.marketplace, pub.sku,
+                    pub.canonical_url, "OBSERVED", pub.observed_at, run_id, idx,
+                    "RIPLEY_FACET_GRID", "EXACT", "CORRECT",
+                    "FACET_COUNTER_RECORD", f"RIPLEY-OBS-{pub.sku}",
+                    "OBSERVED", "TARGET_IDENTITY_VERIFIED", primary_cat,
+                    "RIPLEY_TAXONOMY", primary_cat, "CORRECT", comm_attrs
                 ))
-                # Ensure historical publication categories table exists before archiving
-                cur.execute("""
-                    CREATE TABLE IF NOT EXISTS mri_historical_publication_categories (
-                        history_id TEXT PRIMARY KEY,
-                        publication_id TEXT NOT NULL,
-                        category_id TEXT NOT NULL,
-                        run_id TEXT,
-                        observed_at TEXT NOT NULL
-                    )
-                """)
-                old_links = cur.execute(
-                    "SELECT category_id, observed_at FROM mri_publication_categories WHERE publication_id = ?",
-                    (pub.publication_id,)
-                ).fetchall()
-                for o_cat, o_obs in old_links:
+                pubs_inserted += 1
+
+                for cat in pub.categories:
+                    cat_id = f"RIPLEY_CAT_{cat['group_id']}"
                     cur.execute("""
-                        INSERT OR REPLACE INTO mri_historical_publication_categories (
-                            history_id, publication_id, category_id, run_id, observed_at
-                        ) VALUES (?, ?, ?, ?, ?)
-                    """, (f"hist_{existing[7]}_{pub.publication_id}_{o_cat}", pub.publication_id, o_cat, existing[7], o_obs))
-                # Delete old active links for this publication to enforce run isolation
-                cur.execute("DELETE FROM mri_publication_categories WHERE publication_id = ?", (pub.publication_id,))
+                        INSERT OR REPLACE INTO mri_publication_categories (
+                            publication_id, category_id, status, observed_at
+                        ) VALUES (?, ?, ?, ?)
+                    """, (pub.publication_id, cat_id, "ACTIVE", pub.observed_at))
+                    links_inserted += 1
 
-            cur.execute("""
-                INSERT OR REPLACE INTO mri_publications (
-                    publication_id, product_id, marketplace, marketplace_product_id,
-                    canonical_url, status, observed_at, run_id, position, surface,
-                    position_state, category_relationship, evidence_type, raw_source_id,
-                    acquisition_status, identity_status, category_observed,
-                    category_source, category_expected, category_decision, commercial_attributes
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                pub.publication_id, prod_id, pub.marketplace, pub.sku,
-                pub.canonical_url, "OBSERVED", pub.observed_at, run_id, idx,
-                "RIPLEY_FACET_GRID", "EXACT", "CORRECT",
-                "FACET_COUNTER_RECORD", f"RIPLEY-OBS-{pub.sku}",
-                "OBSERVED", "TARGET_IDENTITY_VERIFIED", primary_cat,
-                "RIPLEY_TAXONOMY", primary_cat, "CORRECT", comm_attrs
-            ))
-            pubs_inserted += 1
+            conn.commit()
+            return {
 
-            for cat in pub.categories:
-                cat_id = f"RIPLEY_CAT_{cat['group_id']}"
-                cur.execute("""
-                    INSERT OR REPLACE INTO mri_publication_categories (
-                        publication_id, category_id, status, observed_at
-                    ) VALUES (?, ?, ?, ?)
-                """, (pub.publication_id, cat_id, "ACTIVE", pub.observed_at))
-                links_inserted += 1
-
-        conn.commit()
-        conn.close()
-
-        return {
-            "run_id": run_id,
-            "publications_materialized": pubs_inserted,
-            "categories_materialized": cats_inserted,
-            "category_links_materialized": links_inserted
-        }
+                "run_id": run_id,
+                "publications_materialized": pubs_inserted,
+                "categories_materialized": cats_inserted,
+                "category_links_materialized": links_inserted
+            }
+        except Exception:
+            try:
+                conn.rollback()
+            except Exception:
+                pass
+            raise
+        finally:
+            conn.close()

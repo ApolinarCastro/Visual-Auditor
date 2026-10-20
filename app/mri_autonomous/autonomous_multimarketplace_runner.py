@@ -81,66 +81,149 @@ class AutonomousMultiMarketplaceRunner:
         StorageConfig.assert_write_allowed(self.db_path)
 
     def _init_sqlite_tables(self, conn: sqlite3.Connection):
-        """Ensures all MRI tables exist in the target SQLite database."""
+        """
+        Ensures all MRI tables exist in the target SQLite database atomically.
+        Adheres to caller transaction boundaries: uses a savepoint so any DDL error
+        reverts all partial schema without leaving dangling tables or transactions,
+        and does NOT commit if the caller owns an active transaction.
+        Schema matches legacy ADDITIVE_SCHEMA_SQL constraints (NOT NULL constraints).
+        """
         StorageConfig.assert_write_allowed(self.db_path)
 
-
-        conn.execute("""
+        table_ddls = [
+            """
             CREATE TABLE IF NOT EXISTS mri_runs (
-                run_id TEXT PRIMARY KEY, started_at TEXT, finished_at TEXT, marketplace TEXT,
-                brand TEXT, execution_mode TEXT, truth_model_version TEXT, terminal_state TEXT,
-                source_method TEXT, status TEXT, created_at TEXT
+                run_id TEXT PRIMARY KEY,
+                started_at TEXT NOT NULL,
+                finished_at TEXT,
+                marketplace TEXT NOT NULL,
+                brand TEXT NOT NULL,
+                execution_mode TEXT NOT NULL,
+                truth_model_version TEXT NOT NULL,
+                terminal_state TEXT,
+                source_method TEXT,
+                status TEXT NOT NULL,
+                created_at TEXT NOT NULL
             )
-        """)
-        conn.execute("""
+            """,
+            """
             CREATE TABLE IF NOT EXISTS mri_run_marketplace_states (
-                run_id TEXT NOT NULL, marketplace TEXT NOT NULL, terminal_state TEXT,
-                source_method TEXT, execution_mode TEXT, started_at TEXT, finished_at TEXT,
-                status TEXT NOT NULL, created_at TEXT,
+                run_id TEXT NOT NULL,
+                marketplace TEXT NOT NULL,
+                terminal_state TEXT,
+                source_method TEXT,
+                execution_mode TEXT,
+                started_at TEXT,
+                finished_at TEXT,
+                status TEXT NOT NULL,
+                created_at TEXT,
                 PRIMARY KEY (run_id, marketplace),
                 FOREIGN KEY (run_id) REFERENCES mri_runs(run_id)
             )
-        """)
-        conn.execute("""
+            """,
+            """
             CREATE TABLE IF NOT EXISTS mri_publications (
-                publication_id TEXT PRIMARY KEY, product_id TEXT, marketplace TEXT, marketplace_product_id TEXT,
-                canonical_url TEXT, status TEXT, observed_at TEXT, run_id TEXT, position INTEGER, surface TEXT,
-                position_state TEXT, category_relationship TEXT, evidence_type TEXT, raw_source_id TEXT,
-                acquisition_status TEXT, identity_status TEXT, category_observed TEXT,
-                category_source TEXT, category_expected TEXT, category_decision TEXT, commercial_attributes TEXT
-            )
-        """)
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS mri_products (
-                product_id TEXT PRIMARY KEY, canonical_brand TEXT, product_status TEXT, created_at TEXT
-            )
-        """)
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS mri_categories (
-                category_id TEXT PRIMARY KEY, marketplace TEXT, category_name TEXT, canonical_url TEXT, created_at TEXT
-            )
-        """)
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS mri_publication_categories (
-                publication_id TEXT, category_id TEXT, status TEXT, observed_at TEXT, PRIMARY KEY(publication_id, category_id)
-            )
-        """)
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS mri_historical_publications (
-                history_id TEXT PRIMARY KEY, publication_id TEXT, product_id TEXT, marketplace TEXT,
-                marketplace_product_id TEXT, canonical_url TEXT, status TEXT, observed_at TEXT, run_id TEXT,
-                position INTEGER, surface TEXT, position_state TEXT, category_relationship TEXT,
-                evidence_type TEXT, raw_source_id TEXT, acquisition_status TEXT, identity_status TEXT,
-                category_observed TEXT, category_source TEXT, category_expected TEXT, category_decision TEXT,
+                publication_id TEXT PRIMARY KEY,
+                product_id TEXT NOT NULL,
+                marketplace TEXT NOT NULL,
+                marketplace_product_id TEXT,
+                canonical_url TEXT,
+                status TEXT NOT NULL,
+                observed_at TEXT NOT NULL,
+                run_id TEXT,
+                position INTEGER,
+                surface TEXT,
+                position_state TEXT,
+                category_relationship TEXT,
+                evidence_type TEXT,
+                raw_source_id TEXT,
+                acquisition_status TEXT,
+                identity_status TEXT,
+                category_observed TEXT,
+                category_source TEXT,
+                category_expected TEXT,
+                category_decision TEXT,
                 commercial_attributes TEXT
             )
-        """)
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS mri_historical_publication_categories (
-                history_id TEXT PRIMARY KEY, publication_id TEXT, category_id TEXT, run_id TEXT, observed_at TEXT
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS mri_products (
+                product_id TEXT PRIMARY KEY,
+                canonical_brand TEXT NOT NULL,
+                product_status TEXT NOT NULL,
+                created_at TEXT NOT NULL
             )
-        """)
-        conn.commit()
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS mri_categories (
+                category_id TEXT PRIMARY KEY,
+                marketplace TEXT NOT NULL,
+                category_name TEXT NOT NULL,
+                canonical_url TEXT,
+                created_at TEXT NOT NULL
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS mri_publication_categories (
+                publication_id TEXT NOT NULL,
+                category_id TEXT NOT NULL,
+                status TEXT NOT NULL,
+                observed_at TEXT NOT NULL,
+                PRIMARY KEY(publication_id, category_id)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS mri_historical_publications (
+                history_id TEXT PRIMARY KEY,
+                publication_id TEXT NOT NULL,
+                product_id TEXT,
+                marketplace TEXT,
+                marketplace_product_id TEXT,
+                canonical_url TEXT,
+                status TEXT,
+                observed_at TEXT NOT NULL,
+                run_id TEXT,
+                position INTEGER,
+                surface TEXT,
+                position_state TEXT,
+                category_relationship TEXT,
+                evidence_type TEXT,
+                raw_source_id TEXT,
+                acquisition_status TEXT,
+                identity_status TEXT,
+                category_observed TEXT,
+                category_source TEXT,
+                category_expected TEXT,
+                category_decision TEXT,
+                commercial_attributes TEXT
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS mri_historical_publication_categories (
+                history_id TEXT PRIMARY KEY,
+                publication_id TEXT NOT NULL,
+                category_id TEXT NOT NULL,
+                run_id TEXT,
+                observed_at TEXT NOT NULL
+            )
+            """
+        ]
+
+        caller_owns_tx = conn.in_transaction
+        conn.execute("SAVEPOINT mri_init_sqlite_tables;")
+        try:
+            for ddl in table_ddls:
+                conn.execute(ddl)
+            conn.execute("RELEASE SAVEPOINT mri_init_sqlite_tables;")
+            if not caller_owns_tx:
+                conn.commit()
+        except Exception:
+            try:
+                conn.execute("ROLLBACK TO SAVEPOINT mri_init_sqlite_tables;")
+                conn.execute("RELEASE SAVEPOINT mri_init_sqlite_tables;")
+            except Exception:
+                pass
+            raise
 
     async def investigate_paris(self, run_id: str) -> MarketplaceInvestigationResult:
         """

@@ -287,3 +287,111 @@ def test_abc_category_isolation_preserved(sandbox_db):
         else:
             assert hist_cat_rows == [(f"MELI_CAT_CAT_{suffix}",)]
     conn.close()
+
+
+def test_initialization_atomicity_and_caller_transaction(sandbox_db):
+    """
+    Test 6: Tests SQLite initialization atomicity, constraint parity, and caller transaction preservation:
+    - If caller owns an open transaction, _init_sqlite_tables must not commit it.
+    - If a DDL error occurs during initialization (e.g. denied table creation), all partial tables are rolled back.
+    - Fresh schema must preserve NOT NULL constraints matching legacy schema.
+    """
+    runner = AutonomousMultiMarketplaceRunner(db_path=sandbox_db)
+
+    # 1. Caller transaction preservation
+    conn = sqlite3.connect(sandbox_db)
+    conn.execute("PRAGMA foreign_keys = ON;")
+    conn.execute("""
+        CREATE TABLE mri_runs (
+            run_id TEXT PRIMARY KEY, started_at TEXT NOT NULL, finished_at TEXT, marketplace TEXT NOT NULL,
+            brand TEXT NOT NULL, execution_mode TEXT NOT NULL, truth_model_version TEXT NOT NULL,
+            terminal_state TEXT, source_method TEXT, status TEXT NOT NULL, created_at TEXT NOT NULL
+        )
+    """)
+    conn.execute("INSERT INTO mri_runs VALUES ('COMMITTED', '2026', NULL, 'Paris', 'TEST', 'AUDIT', '2', 'COMPLETED', 'AUDIT', 'SUCCESS', '2026')")
+    conn.commit()
+
+    # Caller starts transaction
+    conn.execute("INSERT INTO mri_runs VALUES ('UNCOMMITTED', '2026', NULL, 'Paris', 'TEST', 'AUDIT', '2', 'COMPLETED', 'AUDIT', 'SUCCESS', '2026')")
+    assert conn.in_transaction is True
+
+    # Call _init_sqlite_tables
+    runner._init_sqlite_tables(conn)
+
+    # Caller decides to roll back
+    conn.rollback()
+    assert conn.in_transaction is False
+
+    # The uncommitted row must have been rolled back
+    remaining = conn.execute("SELECT run_id FROM mri_runs WHERE run_id = 'UNCOMMITTED'").fetchall()
+    assert remaining == [], f"Expected uncommitted row to be rolled back, found: {remaining}"
+    conn.close()
+
+    # 2. Fresh schema constraint parity
+    fresh_db = sandbox_db + "_fresh.db"
+    conn_fresh = sqlite3.connect(fresh_db)
+    conn_fresh.execute("PRAGMA foreign_keys = ON;")
+    runner_fresh = AutonomousMultiMarketplaceRunner(db_path=fresh_db)
+    runner_fresh._init_sqlite_tables(conn_fresh)
+
+    with pytest.raises(sqlite3.IntegrityError):
+        conn_fresh.execute("INSERT INTO mri_runs (run_id) VALUES ('INCOMPLETE_ROW')")
+    conn_fresh.close()
+
+    # 3. Initialization atomicity under injected fault
+    fault_db = sandbox_db + "_fault.db"
+    conn_fault = sqlite3.connect(fault_db)
+    def deny_mstates(action, a, b, db, trigger):
+        return sqlite3.SQLITE_DENY if action == sqlite3.SQLITE_CREATE_TABLE and a == 'mri_run_marketplace_states' else sqlite3.SQLITE_OK
+    conn_fault.set_authorizer(deny_mstates)
+
+    with pytest.raises(sqlite3.DatabaseError):
+        runner_fault = AutonomousMultiMarketplaceRunner(db_path=fault_db)
+        runner_fault._init_sqlite_tables(conn_fault)
+
+    conn_fault.set_authorizer(None)
+    tables = conn_fault.execute("SELECT name FROM sqlite_master WHERE type = 'table'").fetchall()
+    assert tables == [], f"Expected 0 durable tables after initialization failure, found: {tables}"
+    conn_fault.close()
+
+
+def test_persistor_atomicity_and_connection_lifecycle(sandbox_db):
+    """
+    Test 7: Tests persistor atomicity and proper connection closure under injected failures:
+    - Trigger error during persist_to_mri_sqlite must roll back the entire transaction.
+    - No partial parents must remain durable.
+    - Connection must be closed properly without leaving dangling open transactions.
+    """
+    runner = AutonomousMultiMarketplaceRunner(db_path=sandbox_db)
+    conn = sqlite3.connect(sandbox_db)
+    runner._init_sqlite_tables(conn)
+    conn.execute("CREATE TRIGGER test_fault_trigger BEFORE INSERT ON mri_run_marketplace_states BEGIN SELECT RAISE(ABORT, 'TEST_INJECTED_ABORT'); END;")
+    conn.commit()
+    conn.close()
+
+    engines = [REAParisEngine(), FalabellaSSREngine(), MeliTaxonomyEngine(), RipleyCommercialEngine()]
+
+    for engine in engines:
+        held = []
+        orig_connect = sqlite3.connect
+        def capture(*args, **kwargs):
+            c = orig_connect(*args, **kwargs)
+            held.append(c)
+            return c
+        sqlite3.connect = capture
+
+        with pytest.raises(sqlite3.IntegrityError):
+            engine.persist_to_mri_sqlite([], [], "FAULT_RUN_ID", db_path=sandbox_db)
+        sqlite3.connect = orig_connect
+
+        # Verify held connection is closed
+        for c in held:
+            with pytest.raises(sqlite3.ProgrammingError, match="Cannot operate on a closed database"):
+                c.execute("SELECT 1")
+
+        # Verify no durable parent remained in database
+        check_conn = sqlite3.connect(sandbox_db)
+        parent_count = check_conn.execute("SELECT count(*) FROM mri_runs WHERE run_id = 'FAULT_RUN_ID'").fetchone()[0]
+        check_conn.close()
+        assert parent_count == 0, f"Expected 0 durable parents for {type(engine).__name__}, got {parent_count}"
+
