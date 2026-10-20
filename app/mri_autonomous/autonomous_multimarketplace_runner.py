@@ -30,6 +30,8 @@ from app.mri_autonomous.rea_paris_engine import REAParisEngine, NormalizedPublic
 from app.mri_autonomous.falabella_ssr_engine import FalabellaSSREngine
 from app.mri_autonomous.meli_taxonomy_engine import MeliTaxonomyEngine
 from app.mri_autonomous.ripley_commercial_engine import RipleyCommercialEngine
+from app.mri_autonomous.capability_registry import CapabilityRegistry, CapabilityType
+from app.mri_autonomous.strategy_selector import StrategySelector
 
 logger = logging.getLogger(__name__)
 
@@ -74,11 +76,19 @@ class AutonomousMultiMarketplaceRunner:
     Autonomous multi-marketplace investigator for Visual Auditor MRI.
     """
 
-    def __init__(self, brand: str = "Nicopoly", db_path: Optional[str] = None):
+    def __init__(
+        self,
+        brand: str = "Nicopoly",
+        db_path: Optional[str] = None,
+        capability_registry: Optional[CapabilityRegistry] = None,
+        strategy_selector: Optional[StrategySelector] = None
+    ):
         self.brand = brand
         self.db_path = db_path or str(StorageConfig.get_sqlite_path())
         # Enforce write barrier immediately upon constructor call
         StorageConfig.assert_write_allowed(self.db_path)
+        self.registry = capability_registry or CapabilityRegistry()
+        self.selector = strategy_selector or StrategySelector(self.registry)
 
     def _init_sqlite_tables(self, conn: sqlite3.Connection):
         """
@@ -215,6 +225,31 @@ class AutonomousMultiMarketplaceRunner:
             """
         ]
 
+        # Validate pre-existing schema compatibility when foreign keys are active
+        fk_enabled = bool(conn.execute("PRAGMA foreign_keys").fetchone()[0])
+        if fk_enabled:
+            existing = set(r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall())
+            if 'mri_runs' in existing:
+                cols = conn.execute("PRAGMA table_info(mri_runs)").fetchall()
+                pks = [c[1] for c in cols if c[5] > 0]
+                if 'run_id' not in pks:
+                    idx_list = conn.execute("PRAGMA index_list(mri_runs)").fetchall()
+                    unique_on_run_id = False
+                    for idx in idx_list:
+                        if idx[2] == 1:
+                            idx_info = conn.execute(f"PRAGMA index_info({idx[1]})").fetchall()
+                            if [col[2] for col in idx_info] == ['run_id']:
+                                unique_on_run_id = True
+                                break
+                    if not unique_on_run_id:
+                        raise sqlite3.IntegrityError("Incompatible schema: pre-existing 'mri_runs' table lacks unique/primary key on 'run_id'")
+
+            if 'mri_publications' in existing:
+                fks = conn.execute("PRAGMA foreign_key_list(mri_publications)").fetchall()
+                has_prod_fk = any(fk[2] == 'mri_products' and fk[3] == 'product_id' and fk[4] == 'product_id' for fk in fks)
+                if not has_prod_fk:
+                    raise sqlite3.IntegrityError("Incompatible schema: pre-existing 'mri_publications' table lacks foreign key referencing 'mri_products(product_id)'")
+
         caller_owns_tx = conn.in_transaction
         sp_active = False
         try:
@@ -233,11 +268,14 @@ class AutonomousMultiMarketplaceRunner:
                     conn.execute("ROLLBACK TO SAVEPOINT mri_init_sqlite_tables;")
                 except Exception as rbe:
                     cleanup_err = rbe
-                try:
-                    conn.execute("RELEASE SAVEPOINT mri_init_sqlite_tables;")
-                    sp_active = False
-                except Exception as rle:
-                    if cleanup_err is None:
+
+                # CRITICAL: Only attempt RELEASE if ROLLBACK TO succeeded!
+                # If ROLLBACK TO failed, calling RELEASE would commit partial schema!
+                if cleanup_err is None:
+                    try:
+                        conn.execute("RELEASE SAVEPOINT mri_init_sqlite_tables;")
+                        sp_active = False
+                    except Exception as rle:
                         cleanup_err = rle
 
                 if cleanup_err is not None:
@@ -246,8 +284,7 @@ class AutonomousMultiMarketplaceRunner:
                             conn.rollback()
                         except Exception:
                             pass
-                    else:
-                        raise cleanup_err from ex
+                    raise cleanup_err from ex
             raise
 
     async def investigate_paris(self, run_id: str) -> MarketplaceInvestigationResult:
@@ -637,41 +674,57 @@ class AutonomousMultiMarketplaceRunner:
 
         decisions_log = []
 
-        # 1. Paris
+        # 1. Paris Strategy Selection & Investigation
+        paris_strat = self.selector.select_strategy("Paris", CapabilityType.CATALOG_DISCOVERY)
         decisions_log.append({
             "step": 1,
             "marketplace": "Paris",
-            "decision": "Inspect Paris.cl using Constructor.io REA discovery and HAR provenance",
+            "decision": f"Selected capability: {paris_strat.strategy_id if paris_strat else 'default'} - {paris_strat.selection_reason if paris_strat else 'default'}",
+            "fallback_chain": paris_strat.fallback_strategy_ids if paris_strat else [],
             "timestamp": datetime.now(timezone.utc).isoformat()
         })
         paris_res = await self.investigate_paris(run_id)
+        if paris_strat:
+            self.registry.report_outcome(paris_strat.strategy_id, success=(paris_res.status == "COMPLETED"))
 
-        # 2. Ripley
+        # 2. Ripley Strategy Selection & Investigation
+        ripley_strat = self.selector.select_strategy("Ripley", CapabilityType.PRODUCT_EXTRACTION)
         decisions_log.append({
             "step": 2,
             "marketplace": "Ripley",
-            "decision": "Inspect Ripley.cl using verified facets, empty-state detection and catalog counter",
+            "decision": f"Selected capability: {ripley_strat.strategy_id if ripley_strat else 'default'} - {ripley_strat.selection_reason if ripley_strat else 'default'}",
+            "fallback_chain": ripley_strat.fallback_strategy_ids if ripley_strat else [],
             "timestamp": datetime.now(timezone.utc).isoformat()
         })
         ripley_res = await self.investigate_ripley(run_id)
+        if ripley_strat:
+            self.registry.report_outcome(ripley_strat.strategy_id, success=(ripley_res.status == "COMPLETED"))
 
-        # 3. Falabella
+        # 3. Falabella Strategy Selection & Investigation
+        falabella_strat = self.selector.select_strategy("Falabella", CapabilityType.PRODUCT_EXTRACTION)
         decisions_log.append({
             "step": 3,
             "marketplace": "Falabella",
-            "decision": "Inspect Falabella.cl via Next.js SSR __NEXT_DATA__ brand & seller corridors",
+            "decision": f"Selected capability: {falabella_strat.strategy_id if falabella_strat else 'default'} - {falabella_strat.selection_reason if falabella_strat else 'default'}",
+            "fallback_chain": falabella_strat.fallback_strategy_ids if falabella_strat else [],
             "timestamp": datetime.now(timezone.utc).isoformat()
         })
         falabella_res = await self.investigate_falabella(run_id)
+        if falabella_strat:
+            self.registry.report_outcome(falabella_strat.strategy_id, success=(falabella_res.status == "COMPLETED"))
 
-        # 4. Mercado Libre
+        # 4. Mercado Libre Strategy Selection & Investigation
+        meli_strat = self.selector.select_strategy("Mercado Libre", CapabilityType.OFFICIAL_STORE_ISOLATION)
         decisions_log.append({
             "step": 4,
             "marketplace": "Mercado Libre",
-            "decision": "Inspect Mercado Libre Chile via Official Store 56574 taxonomy & domain discovery",
+            "decision": f"Selected capability: {meli_strat.strategy_id if meli_strat else 'default'} - {meli_strat.selection_reason if meli_strat else 'default'}",
+            "fallback_chain": meli_strat.fallback_strategy_ids if meli_strat else [],
             "timestamp": datetime.now(timezone.utc).isoformat()
         })
         meli_res = await self.investigate_mercadolibre(run_id)
+        if meli_strat:
+            self.registry.report_outcome(meli_strat.strategy_id, success=(meli_res.status == "COMPLETED"))
 
         finished_at = datetime.now(timezone.utc).isoformat()
 

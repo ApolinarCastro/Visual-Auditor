@@ -417,3 +417,77 @@ def test_persistor_atomicity_and_connection_lifecycle(sandbox_db):
         check_conn.close()
         assert parent_count == 0, f"Expected 0 durable parents for {type(engine).__name__}, got {parent_count}"
 
+
+def test_rollback_to_authorization_denial_does_not_commit_partial_ddl(sandbox_db):
+    """
+    Test 8 (Gate 032 Contraexample):
+    When CREATE TABLE fails AND ROLLBACK TO SAVEPOINT is denied by authorizer,
+    the runner must NEVER execute RELEASE (which would commit partial DDL).
+    Instead, it must roll back the connection (or propagate if caller-owned),
+    leaving zero durable tables in the database.
+    """
+    for prior in [False, True]:
+        test_db = f"{sandbox_db}_sp_fault_prior_{prior}.db"
+        c = sqlite3.connect(test_db)
+        c.execute("CREATE TABLE caller_data(value TEXT);")
+        c.commit()
+        if prior:
+            c.execute("INSERT INTO caller_data VALUES ('pending');")
+
+        ops = []
+        def deny_rollback_and_create(action, a, b, db, trigger):
+            if action == sqlite3.SQLITE_SAVEPOINT:
+                ops.append(a)
+                if a == 'ROLLBACK':
+                    return sqlite3.SQLITE_DENY
+            if action == sqlite3.SQLITE_CREATE_TABLE and a == 'mri_run_marketplace_states':
+                return sqlite3.SQLITE_DENY
+            return sqlite3.SQLITE_OK
+
+        c.set_authorizer(deny_rollback_and_create)
+        runner = AutonomousMultiMarketplaceRunner(db_path=test_db)
+        with pytest.raises(sqlite3.DatabaseError):
+            runner._init_sqlite_tables(c)
+
+        c.set_authorizer(None)
+        c.rollback()
+        c.close()
+
+        # Reopen clean connection to verify durable tables
+        check_c = sqlite3.connect(test_db)
+        durable = check_c.execute("SELECT name FROM sqlite_master WHERE name LIKE 'mri_%'").fetchall()
+        check_c.close()
+        assert durable == [], f"Expected 0 durable tables after rollback_to failure (prior={prior}), got {durable}"
+        assert 'RELEASE' not in ops, f"RELEASE must never be executed after failed ROLLBACK TO! Ops were: {ops}"
+
+
+def test_preexisting_incompatible_schema_rejection(sandbox_db):
+    """
+    Test 9 (Gate 032 Pre-existing Schema):
+    Verifies that _init_sqlite_tables validates pre-existing schema:
+    1. mri_runs without primary key is rejected with IntegrityError.
+    2. mri_publications without foreign key referencing mri_products is rejected with IntegrityError.
+    """
+    # Case A: Missing primary key on mri_runs
+    db_no_pk = f"{sandbox_db}_no_pk.db"
+    c_pk = sqlite3.connect(db_no_pk)
+    c_pk.execute("CREATE TABLE mri_runs(run_id TEXT, marketplace TEXT);")
+    c_pk.commit()
+    c_pk.execute("PRAGMA foreign_keys = ON;")
+    runner_pk = AutonomousMultiMarketplaceRunner(db_path=db_no_pk)
+    with pytest.raises(sqlite3.IntegrityError, match="lacks unique/primary key on 'run_id'"):
+        runner_pk._init_sqlite_tables(c_pk)
+    c_pk.close()
+
+    # Case B: Weak mri_publications without FK to products
+    db_weak = f"{sandbox_db}_weak_pub.db"
+    c_weak = sqlite3.connect(db_weak)
+    c_weak.execute("CREATE TABLE mri_publications(publication_id TEXT PRIMARY KEY, product_id TEXT, marketplace TEXT, status TEXT, observed_at TEXT);")
+    c_weak.commit()
+    c_weak.execute("PRAGMA foreign_keys = ON;")
+    runner_weak = AutonomousMultiMarketplaceRunner(db_path=db_weak)
+    with pytest.raises(sqlite3.IntegrityError, match="lacks foreign key referencing 'mri_products"):
+        runner_weak._init_sqlite_tables(c_weak)
+    c_weak.close()
+
+
