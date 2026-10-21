@@ -323,12 +323,27 @@
             </div>
             
             <div class="status-box">
-                <div><strong>Estado del Corredor:</strong> <span id="lblStatus" class="badge badge-info">IDLE</span></div>
-                <div style="margin-top:8px; color: var(--text-muted)" id="lblStatusMsg">Esperando inicio de auditoría...</div>
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+                    <div><strong>Estado del Corredor:</strong> <span id="lblStatus" class="badge badge-info">IDLE</span></div>
+                    <div style="font-size:0.85rem; color:var(--text-muted);">
+                        <span>Run ID: <code id="lblActiveRun" style="color:var(--info); font-weight:600;">-</code></span> | 
+                        <span>Inicio: <span id="lblStartTime">-</span></span> | 
+                        <span>Duración: <span id="lblDuration">-</span></span>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px; margin-bottom:12px; font-size:0.85rem; background:rgba(0,0,0,0.2); padding:10px; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
+                    <div><span style="color:var(--text-muted)">Canal / Categoría:</span> <strong id="lblActiveChannel">-</strong></div>
+                    <div><span style="color:var(--text-muted)">Estrategia Activa:</span> <code id="lblActiveStrategy" style="color:var(--primary); font-size:0.8rem;">-</code></div>
+                    <div><span style="color:var(--text-muted)">Fuente / URL:</span> <span id="lblActiveUrl" style="word-break:break-all; font-family:monospace; font-size:0.8rem; color:var(--info);">-</span></div>
+                    <div><span style="color:var(--text-muted)">Páginas / Productos:</span> <strong id="lblPagesProcessed">0</strong> págs / <strong id="lblProdsProcessed">0</strong> prods</div>
+                </div>
+
+                <div style="color: var(--text-muted); font-size:0.9rem;" id="lblStatusMsg">Esperando inicio de auditoría...</div>
                 
-                <div style="margin-top: 15px; display: flex; justify-content: space-between; font-size: 0.85rem">
-                    <span>Progreso: <span id="lblProgress">0</span> / <span id="lblTotal">0</span></span>
-                    <span id="lblActiveRun" style="color:var(--info); font-family:monospace"></span>
+                <div style="margin-top: 12px; display: flex; justify-content: space-between; font-size: 0.85rem">
+                    <span>Progreso: <strong id="lblProgress">0</strong> / <span id="lblTotal">0</span> (<span id="lblPct">0</span>%)</span>
+                    <span>Verificadas: <strong id="lblVerifiedCnt" style="color:var(--primary)">0</strong> | Pendientes: <strong id="lblPendingCnt" style="color:var(--warning)">0</strong></span>
                 </div>
                 <div class="progress-bar-container">
                     <div class="progress-bar" id="progressBar"></div>
@@ -479,7 +494,8 @@
                 </table>
             </div>
             <div id="emptyRecExpTable" class="empty-state" style="display:none;">
-                <h3>No hay experiencias de recuperación registradas</h3>
+                <h3>Sin aprendizaje validado todavía</h3>
+                <p>Las experiencias de recuperación se registrarán cuando ocurran eventos de fallback o bloqueos resueltos.</p>
             </div>
 
             <h3 style="font-size: 1.1rem; color: #fff; margin-bottom: 12px;">Registros de Conocimiento de Productos y Categorías (ExperienceStore)</h3>
@@ -500,7 +516,12 @@
                 </table>
             </div>
             <div id="emptyLearnTable" class="empty-state" style="display:none;">
-                <h3>No hay registros de experiencia disponibles</h3>
+                <h3>Sin aprendizaje validado todavía</h3>
+                <p>No existen contradicciones, identidades ni adaptadores aprendidos en memoria persistente.</p>
+            </div>
+
+            <div style="margin-top:25px; padding:15px; background:rgba(0,0,0,0.25); border:1px solid var(--border); border-radius:6px; font-size:0.85rem; color:var(--text-muted);">
+                <strong>Nota Operativa:</strong> La incorporación futura de <strong>OpenSEO</strong> (optimización semántica de catálogo) se encuentra formalmente desacoplada del registro de experiencias de adquisición y no representa funcionalidad ejecutada en las auditorías actuales.
             </div>
         </div>
 
@@ -571,12 +592,13 @@
 
         async function loadMultiMarketplaceData() {
             try {
+                const runParam = selectedRunId ? `?run_id=${encodeURIComponent(selectedRunId)}` : '';
                 const [resFala, resMeli, resParis, resRipley, resSumm] = await Promise.all([
-                    fetch('/api/falabella/nicopoly').then(r => r.json()).catch(() => null),
-                    fetch('/api/meli/nicopoly').then(r => r.json()).catch(() => null),
-                    fetch('/api/rea/paris').then(r => r.json()).catch(() => null),
-                    fetch('/api/ripley/nicopoly').then(r => r.json()).catch(() => null),
-                    fetch('/api/multimarketplace/summary').then(r => r.json()).catch(() => null)
+                    fetch('/api/falabella/nicopoly' + runParam).then(r => r.json()).catch(() => null),
+                    fetch('/api/meli/nicopoly' + runParam).then(r => r.json()).catch(() => null),
+                    fetch('/api/rea/paris' + runParam).then(r => r.json()).catch(() => null),
+                    fetch('/api/ripley/nicopoly' + runParam).then(r => r.json()).catch(() => null),
+                    fetch('/api/multimarketplace/summary' + runParam).then(r => r.json()).catch(() => null)
                 ]);
                 multiMarketplaceData.fala = resFala;
                 multiMarketplaceData.meli = resMeli;
@@ -844,11 +866,27 @@
                 document.getElementById('lblProgress').innerText = st.progress || 0;
                 document.getElementById('lblTotal').innerText = st.total || 0;
                 
-                let pct = st.total > 0 ? (st.progress / st.total)*100 : 0;
+                let pct = st.total > 0 ? Math.round((st.progress / st.total)*100) : 0;
+                document.getElementById('lblPct').innerText = Math.min(pct, 100);
                 document.getElementById('progressBar').style.width = Math.min(pct, 100) + '%';
-                
+
+                if (st.run_id) document.getElementById('lblActiveRun').innerText = st.run_id;
+                if (st.started_at) document.getElementById('lblStartTime').innerText = st.started_at.split('T')[1]?.split('.')[0] || st.started_at;
+                if (st.duration) document.getElementById('lblDuration').innerText = st.duration;
+                if (st.marketplace || st.current_category) {
+                    document.getElementById('lblActiveChannel').innerText = `${st.marketplace || 'Todos'} / ${st.current_category || 'General'}`;
+                }
+                if (st.active_strategy) document.getElementById('lblActiveStrategy').innerText = st.active_strategy;
+                if (st.source_url) document.getElementById('lblActiveUrl').innerText = st.source_url;
+                if (st.pages_processed !== undefined) document.getElementById('lblPagesProcessed').innerText = st.pages_processed;
+                if (st.products_processed !== undefined) document.getElementById('lblProdsProcessed').innerText = st.products_processed;
+
                 if (data.results && data.results.length > 0) {
                     currentResults = data.results;
+                    const ver = currentResults.filter(r => (r.decision || r.estado_final || '').toUpperCase() === 'CORRECT').length;
+                    const pen = currentResults.filter(r => (r.decision || r.estado_final || '').toUpperCase() === 'REVIEW_REQUIRED').length;
+                    document.getElementById('lblVerifiedCnt').innerText = ver;
+                    document.getElementById('lblPendingCnt').innerText = pen;
                     updateDashboardCards();
                     renderMainTable();
                 }
@@ -1129,7 +1167,7 @@
                         <td><span class="badge badge-success">${h.confirmed}</span></td>
                         <td>
                             <button class="btn-primary" style="padding:5px 12px; font-size:0.85rem;" onclick="selectHistoricalRun('${h.run_id}')">
-                                ${isSelected ? '&check; Seleccionada' : 'Cargar en Vivo'}
+                                ${isSelected ? '&check; Seleccionada' : 'Ver resultados'}
                             </button>
                         </td>
                     </tr>
@@ -1152,15 +1190,20 @@
                 currentResults = data.publications || [];
                 selectedRunId = runId;
                 
-                document.getElementById('lblActiveRun').innerText = `Corrida cargada: ${runId} (${currentResults.length} pubs)`;
+                document.getElementById('lblActiveRun').innerText = `${runId}`;
                 document.getElementById('lblStatus').innerText = "PERSISTED_VIEW";
-                document.getElementById('lblStatusMsg').innerText = `Visualizando corrida histórica persistida ${runId} (${data.source})`;
+                document.getElementById('lblStatusMsg').innerText = `Visualizando corrida histórica persistida ${runId} (${data.source || 'SQLITE'})`;
                 document.getElementById('lblProgress').innerText = currentResults.length;
                 document.getElementById('lblTotal').innerText = currentResults.length;
+                document.getElementById('lblPct').innerText = '100';
+                document.getElementById('lblVerifiedCnt').innerText = currentResults.filter(r => (r.decision || r.estado_final || '').toUpperCase() === 'CORRECT').length;
+                document.getElementById('lblPendingCnt').innerText = currentResults.filter(r => (r.decision || r.estado_final || '').toUpperCase() === 'REVIEW_REQUIRED').length;
                 document.getElementById('progressBar').style.width = '100%';
 
                 updateDashboardCards();
                 renderMainTable();
+                // Invalidate and reload multimarketplace data scoped to this selectedRunId
+                loadMultiMarketplaceData();
                 switchTab('ops');
             } catch(e) {
                 alert("Error de conexión al cargar la corrida: " + e.message);

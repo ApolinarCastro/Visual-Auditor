@@ -249,22 +249,30 @@ class RipleyCommercialEngine:
                 logger.warning(f"[Ripley] Skipping item without verifiable SKU: {title}")
                 continue
 
-            vendor = str(it.get("vendor") or self.brand).strip()
+            raw_vendor = it.get("vendor")
+            if raw_vendor is not None and str(raw_vendor).strip() != "":
+                vendor = str(raw_vendor).strip()
+            else:
+                vendor = ""
+
             price = float(it.get("price") or 0.0)
             canonical_url = url or f"https://simple.ripley.cl/product/{sku}"
 
             cat_name = str(it.get("category") or "Moda Mujer")
             cat_id = it.get("category_id") or "moda-mujer"
 
+            is_target_brand = (vendor.lower() == self.brand.lower()) if vendor else False
+            canonical_brand = self.brand if is_target_brand else (vendor if vendor else "DESCONOCIDO")
+
             if sku not in pubs_map:
                 pubs_map[sku] = NormalizedPublication(
                     publication_id=f"PUB_RIPLEY_{sku}",
                     marketplace="Ripley",
                     sku=sku,
-                    title=title or f"Producto Nicopoly {sku}",
-                    brand=self.brand,
-                    sellers=[vendor] if vendor else [self.brand],
-                    is_official_seller=(vendor.lower() == self.brand.lower()),
+                    title=title or (f"Producto Nicopoly {sku}" if is_target_brand else f"Producto {sku}"),
+                    brand=canonical_brand,
+                    sellers=[vendor] if vendor else [canonical_brand],
+                    is_official_seller=is_target_brand,
                     price_regular=price if price > 0 else None,
                     price_displayed=price if price > 0 else None,
                     discount_percentage=0.0,
@@ -308,6 +316,7 @@ class RipleyCommercialEngine:
 
         conn = sqlite3.connect(effective_db)
         try:
+            conn.execute("PRAGMA foreign_keys = ON;")
             cur = conn.cursor()
             now_str = datetime.now(timezone.utc).isoformat()
 
@@ -396,15 +405,35 @@ class RipleyCommercialEngine:
 
             # 2. Persist categories
             cats_inserted = 0
+            registered_cat_ids = set()
             for ent in entities:
+                ent_cat_id = f"RIPLEY_CAT_{ent.group_id}" if not ent.group_id.startswith("RIPLEY_CAT_") else ent.group_id
                 cur.execute("""
                     INSERT OR REPLACE INTO mri_categories (
                         category_id, marketplace, category_name, canonical_url, created_at
                     ) VALUES (?, ?, ?, ?, ?)
                 """, (
-                    ent.group_id, ent.marketplace, ent.display_name, ent.official_url, now_str
+                    ent_cat_id, ent.marketplace, ent.display_name, ent.official_url, now_str
                 ))
+                registered_cat_ids.add(ent_cat_id)
                 cats_inserted += 1
+
+            # Ensure all categories referenced by publications exist in mri_categories
+            for pub in publications:
+                for cat in pub.categories:
+                    raw_cid = cat.get("group_id") or "moda-mujer"
+                    cat_id = f"RIPLEY_CAT_{raw_cid}" if not raw_cid.startswith("RIPLEY_CAT_") else raw_cid
+                    if cat_id not in registered_cat_ids:
+                        c_name = cat.get("name") or "Moda Mujer"
+                        cur.execute("""
+                            INSERT OR REPLACE INTO mri_categories (
+                                category_id, marketplace, category_name, canonical_url, created_at
+                            ) VALUES (?, ?, ?, ?, ?)
+                        """, (
+                            cat_id, "Ripley", c_name, f"https://simple.ripley.cl/{raw_cid}", now_str
+                        ))
+                        registered_cat_ids.add(cat_id)
+                        cats_inserted += 1
 
             # 3. Persist products and publications
             pubs_inserted = 0
@@ -462,7 +491,8 @@ class RipleyCommercialEngine:
                             category_source TEXT,
                             category_expected TEXT,
                             category_decision TEXT,
-                            commercial_attributes TEXT
+                            commercial_attributes TEXT,
+                            FOREIGN KEY (publication_id) REFERENCES mri_publications(publication_id)
                         )
                     """)
                     cur.execute("""
@@ -486,7 +516,9 @@ class RipleyCommercialEngine:
                             publication_id TEXT NOT NULL,
                             category_id TEXT NOT NULL,
                             run_id TEXT,
-                            observed_at TEXT NOT NULL
+                            observed_at TEXT NOT NULL,
+                            FOREIGN KEY (history_id) REFERENCES mri_historical_publications(history_id),
+                            FOREIGN KEY (category_id) REFERENCES mri_categories(category_id)
                         )
                     """)
                     old_links = cur.execute(
@@ -494,6 +526,12 @@ class RipleyCommercialEngine:
                         (pub.publication_id,)
                     ).fetchall()
                     for o_cat, o_obs in old_links:
+                        # Ensure old category exists in mri_categories before archiving to satisfy FK
+                        cur.execute("""
+                            INSERT OR IGNORE INTO mri_categories (
+                                category_id, marketplace, category_name, canonical_url, created_at
+                            ) VALUES (?, ?, ?, ?, ?)
+                        """, (o_cat, "Ripley", "Moda Mujer", f"https://simple.ripley.cl/{o_cat}", now_str))
                         cur.execute("""
                             INSERT OR REPLACE INTO mri_historical_publication_categories (
                                 history_id, publication_id, category_id, run_id, observed_at
@@ -501,6 +539,20 @@ class RipleyCommercialEngine:
                         """, (f"hist_{existing[7]}_{pub.publication_id}_{o_cat}", pub.publication_id, o_cat, existing[7], o_obs))
                     # Delete old active links for this publication to enforce run isolation
                     cur.execute("DELETE FROM mri_publication_categories WHERE publication_id = ?", (pub.publication_id,))
+
+                # Derive identity status and evidence accurately from publication
+                if pub.is_official_seller:
+                    identity_st = "TARGET_IDENTITY_VERIFIED"
+                    cat_dec = "CORRECT"
+                elif pub.brand and pub.brand.lower() != self.brand.lower() and pub.brand != "DESCONOCIDO":
+                    identity_st = "NON_TARGET_BRAND"
+                    cat_dec = "INCORRECT"
+                else:
+                    identity_st = "IDENTIDAD_NO_VERIFICADA"
+                    cat_dec = "REVIEW_REQUIRED"
+
+                ev_type = getattr(pub, "evidence_type", None) or "LIVE_OBSERVATION"
+                raw_src = getattr(pub, "raw_source_id", None) or f"RIPLEY-OBS-{pub.sku}"
 
                 cur.execute("""
                     INSERT OR REPLACE INTO mri_publications (
@@ -513,15 +565,16 @@ class RipleyCommercialEngine:
                 """, (
                     pub.publication_id, prod_id, pub.marketplace, pub.sku,
                     pub.canonical_url, "OBSERVED", pub.observed_at, run_id, idx,
-                    "RIPLEY_FACET_GRID", "EXACT", "CORRECT",
-                    "FACET_COUNTER_RECORD", f"RIPLEY-OBS-{pub.sku}",
-                    "OBSERVED", "TARGET_IDENTITY_VERIFIED", primary_cat,
-                    "RIPLEY_TAXONOMY", primary_cat, "CORRECT", comm_attrs
+                    "RIPLEY_FACET_GRID", "EXACT", cat_dec,
+                    ev_type, raw_src,
+                    "OBSERVED", identity_st, primary_cat,
+                    "RIPLEY_TAXONOMY", primary_cat, cat_dec, comm_attrs
                 ))
                 pubs_inserted += 1
 
                 for cat in pub.categories:
-                    cat_id = f"RIPLEY_CAT_{cat['group_id']}"
+                    raw_cid = cat.get("group_id") or "moda-mujer"
+                    cat_id = f"RIPLEY_CAT_{raw_cid}" if not raw_cid.startswith("RIPLEY_CAT_") else raw_cid
                     cur.execute("""
                         INSERT OR REPLACE INTO mri_publication_categories (
                             publication_id, category_id, status, observed_at

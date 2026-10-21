@@ -398,6 +398,7 @@ class FalabellaSSREngine:
 
         conn = sqlite3.connect(effective_db)
         try:
+            conn.execute("PRAGMA foreign_keys = ON;")
             cur = conn.cursor()
             now_str = datetime.now(timezone.utc).isoformat()
 
@@ -440,15 +441,38 @@ class FalabellaSSREngine:
 
             # 2. Persist categories in mri_categories
             cats_inserted = 0
+            registered_cat_ids = set()
             for ent in entities:
+                ent_cat_id = f"FALA_CAT_{ent.group_id}" if not ent.group_id.startswith("FALA_CAT_") else ent.group_id
                 cur.execute("""
                     INSERT OR REPLACE INTO mri_categories (
                         category_id, marketplace, category_name, canonical_url, created_at
                     ) VALUES (?, ?, ?, ?, ?)
                 """, (
-                    ent.group_id, ent.marketplace, ent.display_name, ent.official_url, now_str
+                    ent_cat_id, ent.marketplace, ent.display_name, ent.official_url, now_str
                 ))
+                registered_cat_ids.add(ent_cat_id)
                 cats_inserted += 1
+
+            # Ensure all categories referenced by publications exist in mri_categories
+            for pub in publications:
+                for cat in pub.categories:
+                    raw_cid = cat.get("group_id") or "cat20002"
+                    cat_id = f"FALA_CAT_{raw_cid}" if not raw_cid.startswith("FALA_CAT_") else raw_cid
+                    if cat_id not in registered_cat_ids:
+                        c_name = cat.get("name") or raw_cid
+                        c_url = cat.get("path") or f"/category/{raw_cid}"
+                        if not c_url.startswith("http"):
+                            c_url = f"{self.base_url}{c_url}" if c_url.startswith("/") else f"{self.base_url}/{c_url}"
+                        cur.execute("""
+                            INSERT OR REPLACE INTO mri_categories (
+                                category_id, marketplace, category_name, canonical_url, created_at
+                            ) VALUES (?, ?, ?, ?, ?)
+                        """, (
+                            cat_id, "Falabella", c_name, c_url, now_str
+                        ))
+                        registered_cat_ids.add(cat_id)
+                        cats_inserted += 1
 
             # 3. Persist products and publications
             pubs_inserted = 0
@@ -538,7 +562,9 @@ class FalabellaSSREngine:
                             publication_id TEXT NOT NULL,
                             category_id TEXT NOT NULL,
                             run_id TEXT,
-                            observed_at TEXT NOT NULL
+                            observed_at TEXT NOT NULL,
+                            FOREIGN KEY (history_id) REFERENCES mri_historical_publications(history_id),
+                            FOREIGN KEY (category_id) REFERENCES mri_categories(category_id)
                         )
                     """)
                     old_links = cur.execute(
@@ -546,6 +572,12 @@ class FalabellaSSREngine:
                         (pub.publication_id,)
                     ).fetchall()
                     for o_cat, o_obs in old_links:
+                        # Ensure old category exists in mri_categories before archiving to satisfy FK
+                        cur.execute("""
+                            INSERT OR IGNORE INTO mri_categories (
+                                category_id, marketplace, category_name, canonical_url, created_at
+                            ) VALUES (?, ?, ?, ?, ?)
+                        """, (o_cat, "Falabella", "Moda Mujer", f"https://www.falabella.com/falabella-cl/category/{o_cat}", now_str))
                         cur.execute("""
                             INSERT OR REPLACE INTO mri_historical_publication_categories (
                                 history_id, publication_id, category_id, run_id, observed_at

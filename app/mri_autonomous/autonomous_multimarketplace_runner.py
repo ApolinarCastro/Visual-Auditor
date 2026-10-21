@@ -236,30 +236,29 @@ class AutonomousMultiMarketplaceRunner:
             """
         ]
 
-        # Validate pre-existing schema compatibility when foreign keys are active
-        fk_enabled = bool(conn.execute("PRAGMA foreign_keys").fetchone()[0])
-        if fk_enabled:
-            existing = set(r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall())
-            if 'mri_runs' in existing:
-                cols = conn.execute("PRAGMA table_info(mri_runs)").fetchall()
-                pks = [c[1] for c in cols if c[5] > 0]
-                if 'run_id' not in pks:
-                    idx_list = conn.execute("PRAGMA index_list(mri_runs)").fetchall()
-                    unique_on_run_id = False
-                    for idx in idx_list:
-                        if idx[2] == 1:
-                            idx_info = conn.execute(f"PRAGMA index_info({idx[1]})").fetchall()
-                            if [col[2] for col in idx_info] == ['run_id']:
-                                unique_on_run_id = True
-                                break
-                    if not unique_on_run_id:
-                        raise sqlite3.IntegrityError("Incompatible schema: pre-existing 'mri_runs' table lacks unique/primary key on 'run_id'")
+        # Validate pre-existing schema compatibility unconditionally (F5 fix)
+        existing = set(r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall())
+        if 'mri_runs' in existing:
+            cols = conn.execute("PRAGMA table_info(mri_runs)").fetchall()
+            pks = [c[1] for c in cols if c[5] > 0]
+            # Exact match: run_id must be single-column primary key
+            if len(pks) != 1 or pks[0] != 'run_id':
+                idx_list = conn.execute("PRAGMA index_list(mri_runs)").fetchall()
+                unique_on_run_id = False
+                for idx in idx_list:
+                    if idx[2] == 1:
+                        idx_info = conn.execute(f"PRAGMA index_info({idx[1]})").fetchall()
+                        if [col[2] for col in idx_info] == ['run_id']:
+                            unique_on_run_id = True
+                            break
+                if not unique_on_run_id:
+                    raise sqlite3.IntegrityError("Incompatible schema: pre-existing 'mri_runs' table lacks unique/primary key on 'run_id'")
 
-            if 'mri_publications' in existing:
-                fks = conn.execute("PRAGMA foreign_key_list(mri_publications)").fetchall()
-                has_prod_fk = any(fk[2] == 'mri_products' and fk[3] == 'product_id' and fk[4] == 'product_id' for fk in fks)
-                if not has_prod_fk:
-                    raise sqlite3.IntegrityError("Incompatible schema: pre-existing 'mri_publications' table lacks foreign key referencing 'mri_products(product_id)'")
+        if 'mri_publications' in existing:
+            fks = conn.execute("PRAGMA foreign_key_list(mri_publications)").fetchall()
+            has_prod_fk = any(fk[2] == 'mri_products' and fk[3] == 'product_id' and fk[4] == 'product_id' for fk in fks)
+            if not has_prod_fk:
+                raise sqlite3.IntegrityError("Incompatible schema: pre-existing 'mri_publications' table lacks foreign key referencing 'mri_products(product_id)'")
 
         caller_owns_tx = conn.in_transaction
         sp_active = False
@@ -799,15 +798,17 @@ class AutonomousMultiMarketplaceRunner:
                     if products:
                         pubs, ents = engine.normalize_items_to_publications(products[:20])
                         engine.persist_to_mri_sqlite(pubs, ents, run_id, db_path=self.db_path)
-                        res.publications_count = len(pubs)
-                        # Veracity contract: commercial success requires verified publications acquired
+                        # Count only publications verified as target brand
+                        target_pubs = [p for p in pubs if p.is_official_seller or p.brand.lower() == "nicopoly"]
+                        res.publications_count = len(target_pubs)
+                        # Veracity contract: commercial success requires verified target brand publications acquired
                         if res.publications_count > 0:
                             res.active_strategy = strat_id
                             res.status = "COMPLETED"
-                            res.total_brand_publications = len(products)
-                            res.total_official_seller_publications = len(products)
+                            res.total_brand_publications = len(target_pubs)
+                            res.total_official_seller_publications = len(target_pubs)
                             res.sellers_found = ["Nicopoly"]
-                            res.categories_found = [{"id": "moda-mujer", "name": "Moda Mujer", "count": len(products)}]
+                            res.categories_found = [{"id": "moda-mujer", "name": "Moda Mujer", "count": len(target_pubs)}]
                             res.evidence = {
                                 "mechanism": "RIPLEY_HEADLESS_SCRAPER",
                                 "total_count": len(products),
@@ -818,7 +819,7 @@ class AutonomousMultiMarketplaceRunner:
                             self.registry.report_outcome(strat_id, success=True)
                             return res
                         else:
-                            raise RuntimeError("Ripley headless scraper returned 0 verified publications")
+                            raise RuntimeError("Ripley headless scraper returned 0 verified target brand publications")
                     else:
                         raise RuntimeError("Ripley headless scraper returned empty product catalog")
                 except Exception as e:

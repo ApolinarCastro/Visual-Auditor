@@ -264,3 +264,36 @@ FLUJO E2E AISLADO VERIFICADO CON ÉXITO: 100% OPERATIVO
 - **Mercado Libre**: Ante el bloqueo de paginación del scraper headless en página 1, el circuito conmutó a la estrategia secundaria (`MELI_OFFICIAL_TAXONOMY_DISCOVERY`). Se autenticaron 14 categorías oficiales de la tienda Nicopoly, pero al requerir OAuth la búsqueda pública de ítems, el sistema reportó con total veracidad `PARTIAL` y 0 publicaciones (sin inventar datos ni falsos éxitos).
 - **Protección de Producción y Hash Canónico**: Las 2.533 observaciones históricas permanecen intactas (`Count: 2533`, `SHA: c4f44dcee641a7bbbf51d8062ed16103d50b13c81f9e3f56809bd0bb3bbd5f3b`).
 
+---
+
+## 6. Resolución Integral de Defectos Codex F1–F5 y Rediseño Operativo MRI
+
+### 6.1. Correcciones Estructurales y Verificabilidad
+
+1. **F1 (Integridad Relacional de Categorías Activas e Históricas)**:
+   - Activación obligatoria de `PRAGMA foreign_keys = ON;` en todas las conexiones persistidoras (`ripley_commercial_engine.py`, `falabella_ssr_engine.py`, `meli_taxonomy_engine.py`).
+   - Normalización unificada de claves foráneas entre `mri_categories` y `mri_publication_categories` / `mri_historical_publication_categories`. Inserción garantizada de entidades categoría antes de asociar publicaciones, asegurando 0 violaciones de clave foránea (`PRAGMA foreign_key_check = []`).
+2. **F2 (Prohibición de Identidad Fabricada y Falso COMPLETED)**:
+   - Eliminación del fallback de vendor en `ripley_commercial_engine.py`. Si el producto observado tiene otro vendor (`vendor != Nicopoly`), se registra su marca real como `canonical_brand`, su estado como `NON_TARGET_BRAND`, y la publicación no se computa como éxito comercial.
+   - En `investigate_ripley`, el estado `COMPLETED` exige publicaciones verificadas de la marca objetivo. Con 0 publicaciones verificadas de Nicopoly, la corrida finaliza en `PARTIAL` o `SOURCE_BLOCKED`.
+3. **F3 (Eliminación de Cifras Estáticas y Desacoplamiento de Corridas)**:
+   - Eliminación del retorno hardcoded (368 publicaciones, 9 categorías) en `/api/falabella/nicopoly`. Ahora el endpoint consulta dinámicamente SQLite según el parámetro `run_id` (o la última corrida). Si una corrida no tiene datos o es inexistente, reporta `NO_EVIDENCE_RECORDED` con 0 publicaciones.
+   - Endpoints `/api/falabella/nicopoly`, `/api/rea/paris`, `/api/ripley/nicopoly` y `/api/multimarketplace/summary` consumen el parámetro `run_id` desde el frontend, permitiendo examinar cualquier corrida de forma consistente y aislada.
+4. **F4 (Corrección de Excepción HTTP 500 en Endpoint Ripley)**:
+   - Inclusión de `Optional` en las importaciones de typing en `mri_api.py`, resolviendo la evaluación de tipo diferida en Python 3.14.
+5. **F5 (Rechazo Incondicional de Esquemas SQLite Incompatibles)**:
+   - Validación estructural incondicional en `_init_sqlite_tables` (independientemente del estado de `PRAGMA foreign_keys`). Exige clave primaria única exacta de columna única sobre `run_id` en `mri_runs`, rechazando tablas con PK compuesta o sin índice único antes de crear tablas hijas.
+
+### 6.2. Rediseño Operativo y Monitor Observable del Dashboard
+
+- **Telemetría en Vivo de Operaciones**: El cuadro de estado del corredor expone en tiempo real: `Run ID`, estado operativo (`RUNNING`, `PERSISTED_VIEW`, `IDLE`), hora de inicio, duración, canal y categoría activa, estrategia activa y fallback, URL de procedencia, conteo de páginas y productos procesados, y desglose de publicaciones verificadas vs. pendientes.
+- **Historial Coherente**: Se actualizó el botón de acción a «Ver resultados» para corridas históricas. Al seleccionar cualquier `run_id`, se actualizan sincrónicamente las métricas de tarjetas, la tabla principal filtrable, el estado del corredor y la vista multimarketplace.
+- **Evidencia y Aprendizaje Fiel**:
+  - Estado vacío en Aprendizaje muestra explícitamente «Sin aprendizaje validado todavía».
+  - Nota operativa de delimitación clara: OpenSEO se distingue como capacidad futura no ejecutada en las auditorías actuales.
+
+### 6.3. Verificación de Regresiones y Preservación de Producción
+- **Pytest**: 21/21 tests aprobados (`tests/test_mri_022_relational_recovery.py` y `tests/test_mri_capability_registry_023.py`).
+- **Controles Negativos**: Verificados en aislamiento (ausencia de marca, marca diferente, catálogo vacío, WAF 403, esquema incompatible rechazado).
+- **Integridad de Producción**: Las 2.533 observaciones canónicas de la corrida histórica permanecen 100% inalteradas con su hash SHA-256 verificado: `c4f44dcee641a7bbbf51d8062ed16103d50b13c81f9e3f56809bd0bb3bbd5f3b`.
+

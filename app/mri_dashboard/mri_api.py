@@ -9,7 +9,7 @@ import sys
 import sqlite3
 import json
 import re
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 # Ensure the project root is in the path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
@@ -111,9 +111,57 @@ async def get_state():
 
 
 @app.get("/api/categories/{marketplace}")
-async def get_categories_api(marketplace: str):
+async def get_categories_api(marketplace: str, run_id: Optional[str] = None):
+    effective_db = DB_PATH
+    try:
+        from app.mri_autonomous.storage_guard import StorageConfig
+        effective_db = StorageConfig.get_sqlite_path()
+    except Exception:
+        pass
+
+    cats_dict = {}
+    if Path(effective_db).exists():
+        conn = get_sqlite_conn(str(effective_db))
+        try:
+            cur = conn.cursor()
+            # If run_id is supplied, query categories active for that run
+            if run_id:
+                q = """
+                    SELECT DISTINCT c.category_id, c.category_name, c.canonical_url
+                    FROM mri_categories c
+                    JOIN mri_publication_categories pc ON c.category_id = pc.category_id
+                    JOIN mri_publications p ON pc.publication_id = p.publication_id
+                    WHERE c.marketplace = ? AND p.run_id = ?
+                    UNION
+                    SELECT DISTINCT c.category_id, c.category_name, c.canonical_url
+                    FROM mri_categories c
+                    JOIN mri_historical_publication_categories hpc ON c.category_id = hpc.category_id
+                    WHERE c.marketplace = ? AND hpc.run_id = ?
+                """
+                rows = cur.execute(q, (marketplace, run_id, marketplace, run_id)).fetchall()
+            else:
+                rows = cur.execute(
+                    "SELECT category_id, category_name, canonical_url FROM mri_categories WHERE marketplace = ?",
+                    (marketplace,)
+                ).fetchall()
+            for r in rows:
+                cid, cname, curl = r[0], r[1], r[2]
+                cats_dict[cid] = {
+                    "name": cname,
+                    "url": curl or "",
+                    "source": "SQLITE_MRI_PERSISTENCE",
+                    "status": "VERIFIED"
+                }
+        except Exception:
+            pass
+        finally:
+            conn.close()
+
+    if cats_dict:
+        return JSONResponse(content=cats_dict)
+
     from app.mri_dashboard.category_manager import category_manager
-    return category_manager.get_categories(marketplace)
+    return JSONResponse(content=category_manager.get_categories(marketplace))
 
 
 @app.post("/api/audit/start")
@@ -862,39 +910,94 @@ async def get_learning():
 
 
 @app.get("/api/rea/paris")
-async def get_rea_paris_data():
+async def get_rea_paris_data(run_id: Optional[str] = None):
     """
     Returns normalized Paris commercial intelligence discovered via REA engine:
-    - Queries SQLite visibility.db first (entities, categories, publications)
+    - Queries SQLite visibility.db scoped to run_id (or latest run)
     - Reconstructs Brand vs Official Seller breakdown from persisted data
     - Differentiates incomplete/empty evidence from operational truth
     - Operates 100% offline without forcing network requests
     """
+    effective_db = DB_PATH
+    try:
+        from app.mri_autonomous.storage_guard import StorageConfig
+        effective_db = StorageConfig.get_sqlite_path()
+    except Exception:
+        pass
+
+    target_run_id = run_id
     rows = []
     cat_rows = []
     try:
-        conn = get_sqlite_conn()
+        conn = get_sqlite_conn(str(effective_db))
         try:
             cur = conn.cursor()
-            # Check persisted Paris publications if table exists
-            try:
-                rows = cur.execute("""
-                    SELECT publication_id, marketplace_product_id, commercial_attributes, category_observed
-                    FROM mri_publications
-                    WHERE marketplace = 'Paris'
-                """).fetchall()
-            except sqlite3.OperationalError:
-                rows = []
+            if not target_run_id:
+                try:
+                    r_row = cur.execute("""
+                        SELECT run_id FROM mri_runs WHERE marketplace = 'Paris' OR marketplace = 'MULTI_MARKETPLACE'
+                        ORDER BY started_at DESC LIMIT 1
+                    """).fetchone()
+                    if r_row:
+                        target_run_id = r_row["run_id"]
+                except sqlite3.OperationalError:
+                    pass
 
-            # Check persisted Paris categories / entities if table exists
-            try:
-                cat_rows = cur.execute("""
-                    SELECT category_id, category_name, canonical_url
-                    FROM mri_categories
-                    WHERE marketplace = 'Paris'
-                """).fetchall()
-            except sqlite3.OperationalError:
-                cat_rows = []
+            # Check persisted Paris publications scoped to target_run_id
+            if target_run_id:
+                try:
+                    rows = cur.execute("""
+                        SELECT publication_id, marketplace_product_id, commercial_attributes, category_observed
+                        FROM mri_publications
+                        WHERE marketplace = 'Paris' AND run_id = ?
+                    """, (target_run_id,)).fetchall()
+                except sqlite3.OperationalError:
+                    rows = []
+
+                if not rows:
+                    try:
+                        rows = cur.execute("""
+                            SELECT publication_id, marketplace_product_id, commercial_attributes, category_observed
+                            FROM mri_historical_publications
+                            WHERE marketplace = 'Paris' AND run_id = ?
+                        """, (target_run_id,)).fetchall()
+                    except sqlite3.OperationalError:
+                        rows = []
+
+                try:
+                    cat_rows = cur.execute("""
+                        SELECT DISTINCT c.category_id, c.category_name, c.canonical_url
+                        FROM mri_categories c
+                        JOIN mri_publication_categories pc ON c.category_id = pc.category_id
+                        JOIN mri_publications p ON pc.publication_id = p.publication_id
+                        WHERE p.marketplace = 'Paris' AND p.run_id = ?
+                    """, (target_run_id,)).fetchall()
+                    if not cat_rows:
+                        cat_rows = cur.execute("""
+                            SELECT DISTINCT c.category_id, c.category_name, c.canonical_url
+                            FROM mri_categories c
+                            JOIN mri_historical_publication_categories hpc ON c.category_id = hpc.category_id
+                            WHERE hpc.run_id = ?
+                        """, (target_run_id,)).fetchall()
+                except sqlite3.OperationalError:
+                    cat_rows = []
+            else:
+                try:
+                    rows = cur.execute("""
+                        SELECT publication_id, marketplace_product_id, commercial_attributes, category_observed
+                        FROM mri_publications
+                        WHERE marketplace = 'Paris'
+                    """).fetchall()
+                except sqlite3.OperationalError:
+                    rows = []
+                try:
+                    cat_rows = cur.execute("""
+                        SELECT category_id, category_name, canonical_url
+                        FROM mri_categories
+                        WHERE marketplace = 'Paris'
+                    """).fetchall()
+                except sqlite3.OperationalError:
+                    cat_rows = []
         finally:
             conn.close()
     except Exception:
@@ -998,45 +1101,174 @@ async def get_rea_paris_data():
 
 
 @app.get("/api/falabella/nicopoly")
-async def get_falabella_nicopoly_data():
+async def get_falabella_nicopoly_data(run_id: Optional[str] = None):
     """
-    Returns normalized Falabella commercial intelligence extracted via Next.js SSR __NEXT_DATA__:
-    - Exact total from props.pageProps.pagination.count (368)
-    - Identity equivalence: brand (368) == seller (368, SC75ABC)
-    - 9 L2 subcategories breakdown (Abrigos, Pantalones, Poleras, etc.)
-    - Attribute 'Tipo' distribution
+    Returns normalized Falabella commercial intelligence dynamically scoped to run_id (or latest run):
+    - Reads publications and categories from SQLite
+    - If run does not exist or has 0 publications, returns unacquired state without hardcoded figures
+    - Status: OPERATIONAL if publications acquired, otherwise verified unacquired terminal state
     """
+    effective_db = DB_PATH
     try:
-        from app.mri_autonomous.falabella_ssr_engine import FalabellaSSREngine
-        engine = FalabellaSSREngine()
+        from app.mri_autonomous.storage_guard import StorageConfig
+        effective_db = StorageConfig.get_sqlite_path()
+    except Exception:
+        pass
+
+    target_run_id = run_id
+    target_terminal_state = None
+    rows = []
+    cat_rows = []
+
+    if Path(effective_db).exists():
+        conn = get_sqlite_conn(str(effective_db))
+        try:
+            cur = conn.cursor()
+            if not target_run_id:
+                try:
+                    s_row = cur.execute("""
+                        SELECT run_id, terminal_state, status
+                        FROM mri_run_marketplace_states
+                        WHERE marketplace = 'Falabella'
+                        ORDER BY rowid DESC LIMIT 1
+                    """).fetchone()
+                    if s_row:
+                        target_run_id = s_row["run_id"]
+                        target_terminal_state = s_row["terminal_state"] or s_row["status"]
+                    else:
+                        r_row = cur.execute("""
+                            SELECT run_id, terminal_state, status
+                            FROM mri_runs
+                            WHERE marketplace = 'Falabella'
+                            ORDER BY rowid DESC LIMIT 1
+                        """).fetchone()
+                        if r_row:
+                            target_run_id = r_row["run_id"]
+                            target_terminal_state = r_row["terminal_state"] or r_row["status"]
+                except sqlite3.OperationalError:
+                    pass
+            else:
+                try:
+                    s_row = cur.execute("""
+                        SELECT terminal_state, status
+                        FROM mri_run_marketplace_states
+                        WHERE run_id = ? AND marketplace = 'Falabella'
+                    """, (target_run_id,)).fetchone()
+                    if s_row:
+                        target_terminal_state = s_row["terminal_state"] or s_row["status"]
+                    else:
+                        r_row = cur.execute("""
+                            SELECT terminal_state, status
+                            FROM mri_runs
+                            WHERE run_id = ?
+                        """, (target_run_id,)).fetchone()
+                        if r_row:
+                            target_terminal_state = r_row["terminal_state"] or r_row["status"]
+                except sqlite3.OperationalError:
+                    pass
+
+            if target_run_id:
+                try:
+                    rows = cur.execute("""
+                        SELECT publication_id, marketplace_product_id, commercial_attributes, category_observed
+                        FROM mri_publications
+                        WHERE marketplace = 'Falabella' AND run_id = ?
+                    """, (target_run_id,)).fetchall()
+                except sqlite3.OperationalError:
+                    rows = []
+
+                if not rows:
+                    try:
+                        rows = cur.execute("""
+                            SELECT publication_id, marketplace_product_id, commercial_attributes, category_observed
+                            FROM mri_historical_publications
+                            WHERE marketplace = 'Falabella' AND run_id = ?
+                        """, (target_run_id,)).fetchall()
+                    except sqlite3.OperationalError:
+                        rows = []
+
+                try:
+                    cat_rows = cur.execute("""
+                        SELECT DISTINCT c.category_id, c.category_name, c.canonical_url
+                        FROM mri_categories c
+                        JOIN mri_publication_categories pc ON c.category_id = pc.category_id
+                        JOIN mri_publications p ON pc.publication_id = p.publication_id
+                        WHERE p.marketplace = 'Falabella' AND p.run_id = ?
+                    """, (target_run_id,)).fetchall()
+                    if not cat_rows:
+                        cat_rows = cur.execute("""
+                            SELECT DISTINCT c.category_id, c.category_name, c.canonical_url
+                            FROM mri_categories c
+                            JOIN mri_historical_publication_categories hpc ON c.category_id = hpc.category_id
+                            WHERE hpc.run_id = ?
+                        """, (target_run_id,)).fetchall()
+                except sqlite3.OperationalError:
+                    cat_rows = []
+        finally:
+            conn.close()
+
+    if rows:
+        official_seller_count = 0
+        cat_counts = {}
+        for r in rows:
+            attrs = {}
+            try:
+                attrs = json.loads(r["commercial_attributes"] or "{}")
+            except Exception:
+                pass
+            sellers = attrs.get("sellers", [])
+            if attrs.get("is_official_seller") or any("nicopoly" in str(s).lower() for s in sellers):
+                official_seller_count += 1
+            cat_obs = r["category_observed"] or "Moda Mujer"
+            cat_counts[cat_obs] = cat_counts.get(cat_obs, 0) + 1
+
+        total_pubs = len(rows)
+        l2_subcategories = [
+            {"id": c["category_id"], "name": c["category_name"], "count": cat_counts.get(c["category_name"], 1)}
+            for c in cat_rows
+        ] if cat_rows else [
+            {"id": f"CAT_{k[:8]}", "name": k, "count": v} for k, v in cat_counts.items()
+        ]
         return JSONResponse(content={
             "marketplace": "Falabella",
+            "run_id": target_run_id,
             "brand": "NICOPOLY",
             "official_seller": "Nicopoly",
             "seller_id": "SC75ABC",
-            "total_brand_publications": 368,
-            "total_seller_publications": 368,
-            "brand_seller_identity_match": True,
-            "l0_department": {"id": "cat7330051", "name": "Mujer", "count": 368},
-            "l1_subcategory": {"id": "cat20002", "name": "Moda Mujer", "count": 368},
-            "l2_subcategories": [
-                {"id": "cat850036", "name": "Abrigos y Chaquetas", "count": 107},
-                {"id": "cat850040", "name": "Pantalones", "count": 67},
-                {"id": "CATG35031", "name": "Poleras Mujer", "count": 54},
-                {"id": "cat850034", "name": "Sweaters y chalecos", "count": 52},
-                {"id": "cat850030", "name": "Blusas Mujer", "count": 46},
-                {"id": "cat14330023", "name": "Vestidos y enteritos", "count": 20},
-                {"id": "cat850044", "name": "Shorts", "count": 13},
-                {"id": "cat850042", "name": "Faldas", "count": 6},
-                {"id": "CATG34995", "name": "Parkas Mujer", "count": 3}
-            ],
-            "total_l2_categories": 9,
-            "sum_l2_publications": 368,
+            "total_brand_publications": total_pubs,
+            "total_seller_publications": official_seller_count,
+            "brand_seller_identity_match": (total_pubs == official_seller_count),
+            "l0_department": {"id": "cat7330051", "name": "Mujer", "count": total_pubs},
+            "l1_subcategory": {"id": "cat20002", "name": "Moda Mujer", "count": total_pubs},
+            "l2_subcategories": l2_subcategories,
+            "total_l2_categories": len(l2_subcategories),
+            "sum_l2_publications": total_pubs,
             "discovery_mechanism": "NEXT_JS_SSR_EXTRACTION",
+            "storage_source": "SQLITE_MRI_PERSISTENCE",
             "status": "OPERATIONAL"
         })
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
+
+    # When no verified records for target run
+    unacquired_status = target_terminal_state or "NO_EVIDENCE_RECORDED"
+    return JSONResponse(content={
+        "marketplace": "Falabella",
+        "run_id": target_run_id,
+        "brand": "NICOPOLY",
+        "official_seller": "Nicopoly",
+        "seller_id": "SC75ABC",
+        "total_brand_publications": 0,
+        "total_seller_publications": 0,
+        "brand_seller_identity_match": False,
+        "l0_department": None,
+        "l1_subcategory": None,
+        "l2_subcategories": [],
+        "total_l2_categories": 0,
+        "sum_l2_publications": 0,
+        "discovery_mechanism": "NEXT_JS_SSR_EXTRACTION",
+        "storage_source": "NONE" if not target_run_id else "SQLITE_EMPTY_RUN",
+        "status": unacquired_status,
+        "message": f"Sin publicaciones verificadas de Falabella adquiridas en la corrida {target_run_id or 'actual'}."
+    })
 
 
 @app.get("/api/meli/nicopoly")
