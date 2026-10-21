@@ -98,7 +98,7 @@ class AutonomousMultiMarketplaceRunner:
         self.db_path = db_path or str(StorageConfig.get_sqlite_path())
         # Enforce write barrier immediately upon constructor call
         StorageConfig.assert_write_allowed(self.db_path)
-        self.registry = capability_registry or CapabilityRegistry()
+        self.registry = capability_registry or CapabilityRegistry(auto_probe=True)
         self.selector = strategy_selector or StrategySelector(self.registry)
 
     def _init_sqlite_tables(self, conn: sqlite3.Connection):
@@ -506,7 +506,14 @@ class AutonomousMultiMarketplaceRunner:
                 try:
                     from app.scrapers.falabella_scraper import FalabellaScraper
                     scraper = FalabellaScraper(headless=True)
-                    scrape_res = await scraper.scrape_autonomous_category(f"https://www.falabella.com/falabella-cl/brand/{self.brand.upper()}")
+                    try:
+                        await scraper.start()
+                        scrape_res = await scraper.scrape_autonomous_category(f"https://www.falabella.com/falabella-cl/brand/{self.brand.upper()}")
+                    finally:
+                        try:
+                            await scraper.stop()
+                        except Exception:
+                            pass
                     items = scrape_res.get("products", [])
                     if items:
                         norm_pubs, norm_ents = engine.harvest_sample_publications(self.brand, max_items=20)
@@ -571,7 +578,14 @@ class AutonomousMultiMarketplaceRunner:
                 try:
                     from app.scrapers.mercadolibre_scraper import MercadoLibreScraper
                     scraper = MercadoLibreScraper(headless=True)
-                    scrape_res = await scraper.scrape_autonomous_category("https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly")
+                    try:
+                        await scraper.start()
+                        scrape_res = await scraper.scrape_autonomous_category("https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly")
+                    finally:
+                        try:
+                            await scraper.stop()
+                        except Exception:
+                            pass
                     products = scrape_res.get("products", [])
                     if products:
                         sample_pubs, sample_ents = engine.harvest_sample_publications(
@@ -773,7 +787,14 @@ class AutonomousMultiMarketplaceRunner:
                 try:
                     from app.scrapers.ripley_scraper import RipleyScraper
                     scraper = RipleyScraper(headless=True)
-                    scrape_res = await scraper.scrape_autonomous_category("https://simple.ripley.cl/search/nicopoly")
+                    try:
+                        await scraper.start()
+                        scrape_res = await scraper.scrape_autonomous_category("https://simple.ripley.cl/search/nicopoly")
+                    finally:
+                        try:
+                            await scraper.stop()
+                        except Exception:
+                            pass
                     products = scrape_res.get("products", [])
                     if products:
                         pubs, ents = engine.normalize_items_to_publications(products[:20])
