@@ -404,6 +404,25 @@ class MRIOrchestrator:
             _catalog = {"status": "UNKNOWN", "path": None, "error": str(_cat_exc)}
         self.state["catalog_reference"] = _catalog
         self.state["historical_references"] = historical_reference_status()
+        # Fail-closed preflight: skills, browsers, profiles (single owner).
+        try:
+            from app.mri_autonomous.execution_preflight import run_preflight
+            _pre = run_preflight(check_auth=False)
+            self.state["preflight"] = _pre
+            if not _pre.get("ok"):
+                self.state["status_message"] = "PREFLIGHT_FAILED"
+                self.state["stage"] = "preflight"
+                self.state["terminal_state"] = "SOURCE_BLOCKED"
+                self.state["outcome"] = "SOURCE_BLOCKED"
+                self.state.setdefault("errors", []).append({
+                    "stage": "preflight",
+                    "error": "PREFLIGHT_FAILED: " + "; ".join(_pre.get("blockers") or []),
+                    "run_id": run_id,
+                    "at": datetime.now().isoformat()})
+                self.is_running = False
+                return
+        except Exception as _pre_exc:
+            self.state["preflight"] = {"ok": False, "error": f"{type(_pre_exc).__name__}: {_pre_exc}"}
         self.state["acquisitions"] = []
         blocked_reason = None
         _cp_aux = None

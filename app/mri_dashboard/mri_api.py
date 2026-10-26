@@ -1529,6 +1529,14 @@ async def import_season_checklist(request: Request):
                                  "authority": "VALIDATION_ONLY"})
 
 
+@app.get("/api/preflight")
+async def get_execution_preflight(check_auth: bool = True):
+    import asyncio
+    from app.mri_autonomous.execution_preflight import run_preflight
+    report = await asyncio.to_thread(run_preflight, check_auth=check_auth)
+    return JSONResponse(content=report)
+
+
 @app.post("/api/checklist/upload")
 async def upload_season_checklist(request: Request):
     """Upload the season CHECKLIST (validation-only; never feeds acquisition)."""
