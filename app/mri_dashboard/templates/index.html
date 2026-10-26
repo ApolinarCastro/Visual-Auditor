@@ -377,6 +377,17 @@
                 </div>
             </div>
 
+            <div id="catalogUploadPanel" style="margin-top:16px; padding:14px; border:1px solid var(--border); border-radius:8px; background:rgba(255,255,255,0.02);">
+                <h3 style="margin:0 0 8px 0; font-size:1rem; color:#fff;">Catálogo maestro (referencia)</h3>
+                <p style="color:var(--text-muted); font-size:0.82rem; margin:0 0 10px 0;">Sube el .xlsx/.csv del catálogo (SKU_HIJO, SKU_PADRE, NOMBRE_PRODUCTO, MARCA, precios/stock por canal). <strong>Stock 0 ⇒ candidato a descarte inmediato.</strong></p>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                    <input type="file" id="catalogFile" accept=".xlsx,.xls,.csv">
+                    <button onclick="uploadCatalog()" id="btnUploadCatalog">Subir y recargar</button>
+                    <span id="catalogUploadStatus" style="font-size:0.82rem; color:var(--text-muted);"></span>
+                </div>
+                <div id="catalogUploadResult" style="font-size:0.8rem; color:var(--text-muted); margin-top:8px;"></div>
+            </div>
+
             <div id="catalogMetricsPanel" style="display:none; margin-top:20px; padding:16px; border:1px solid var(--border); border-radius:8px; background:rgba(255,255,255,0.02);">
                 <h3 style="margin:0 0 12px 0; font-size:1.05rem; color:#fff;">Conciliación de catálogo (marketplace)</h3>
                 <div class="grid-cards" style="margin-bottom:12px;">
@@ -1135,6 +1146,35 @@
             if(sel) {
                 sel.value = decision;
                 renderMainTable();
+            }
+        }
+
+        async function uploadCatalog() {
+            const input = document.getElementById('catalogFile');
+            const status = document.getElementById('catalogUploadStatus');
+            const result = document.getElementById('catalogUploadResult');
+            if (!input || !input.files || !input.files.length) {
+                status.innerText = 'Selecciona un archivo primero';
+                return;
+            }
+            const file = input.files[0];
+            status.innerText = 'Subiendo y recargando catálogo…';
+            result.innerHTML = '';
+            try {
+                const resp = await fetch('/api/catalog/upload', {
+                    method: 'POST',
+                    headers: {'X-Filename': file.name,
+                              'Content-Type': file.type || 'application/octet-stream'},
+                    body: file
+                });
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data.detail || ('HTTP ' + resp.status));
+                status.innerText = 'Cargado: ' + data.master_items + ' registros maestros';
+                const lines = Object.entries(data.channels || {}).map(([mkt, c]) =>
+                    `<div><strong>${mkt}</strong>: esperados ${c.expected} · sin stock ${c.discarded_no_stock} · stock desconocido ${c.unverified_stock} · no esperados ${c.not_expected}</div>`);
+                result.innerHTML = lines.join('');
+            } catch (err) {
+                status.innerText = 'Error: ' + err.message;
             }
         }
 

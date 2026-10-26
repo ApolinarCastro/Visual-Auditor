@@ -1498,6 +1498,57 @@ def _falabella_audit_metrics(run_id: str) -> Dict[str, Any]:
     return {}
 
 
+@app.post("/api/catalog/upload")
+async def upload_master_catalog(request: Request):
+    """Operator upload of the reference catalog (xlsx/csv). Stock 0 = discard."""
+    if getattr(orchestrator, "is_running", False):
+        raise HTTPException(status_code=409,
+                            detail="No se puede reemplazar el catálogo con una auditoría en curso")
+    filename = request.headers.get("x-filename", "catalogo.xlsx")
+    suffix = Path(filename).suffix.lower()
+    if suffix not in (".xlsx", ".xls", ".csv"):
+        raise HTTPException(status_code=400, detail="Formato no soportado (.xlsx/.xls/.csv)")
+    body = await request.body()
+    if not body or len(body) > 25 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Archivo vacío o mayor a 25 MB")
+    import os
+    import shutil
+    from datetime import datetime
+    from app.config.settings import MULTIVENDE_EXCEL_PATH
+    from app.loaders.multivende_loader import get_multivende_loader
+    target = Path(MULTIVENDE_EXCEL_PATH)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        from app.mri_autonomous.storage_guard import StorageConfig
+        backup_dir = Path(StorageConfig.get_aux_dir()) / "catalog_backups"
+        backup_dir.mkdir(parents=True, exist_ok=True)
+        if target.exists():
+            shutil.copy2(target, backup_dir / (
+                f"master_{datetime.now().strftime('%Y%m%dT%H%M%S')}{target.suffix}"))
+    except Exception:
+        pass
+    tmp = target.with_suffix(target.suffix + ".upload.tmp")
+    tmp.write_bytes(body)
+    os.replace(tmp, target)
+    loader = get_multivende_loader()
+    if not loader.reload():
+        raise HTTPException(status_code=422,
+                            detail="El archivo no pudo cargarse como catálogo maestro")
+    channels = {}
+    for mkt in ("falabella", "ripley", "mercado libre", "paris"):
+        r = loader.expected_for_channel(mkt)
+        channels[mkt] = {k: r.get(k) for k in
+                         ("expected", "discarded_no_stock",
+                          "unverified_stock", "not_expected")}
+    return JSONResponse(content={
+        "status": "LOADED", "filename": filename, "bytes": len(body),
+        "reference_available": loader.reference_available,
+        "master_items": len(loader._master_items),
+        "stock_rule": "stock 0 => DESCARTADO_SIN_STOCK",
+        "channels": channels,
+    })
+
+
 @app.get("/api/history/{run_id}")
 async def get_history_run_publications(run_id: str):
     """

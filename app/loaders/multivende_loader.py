@@ -20,6 +20,7 @@ class MultivendeLoader:
             "ripley": {}
         }
         self._sku_master_map = {}
+        self._master_items = []
 
     @property
     def reference_available(self) -> bool:
@@ -96,6 +97,7 @@ class MultivendeLoader:
                     },
                     "stock": int(row.get("CANTIDAD_BODEGA_ONLINE", -1)) if pd.notna(row.get("CANTIDAD_BODEGA_ONLINE")) else -1
                 }
+                self._master_items.append(dict(item_info))
                 
                 def update_index(index_dict, key, new_item, allow_sku=False):
                     if not key:
@@ -217,6 +219,45 @@ class MultivendeLoader:
                 return item
 
         return None
+
+    def reload(self) -> bool:
+        """Force re-read after an operator uploads a new master file."""
+        self._loaded = False
+        self._missing_checked = False
+        self._missing_reported = False
+        self._reference_available = None
+        self._marketplace_indexes = {"mercado libre": {}, "paris": {},
+                                     "falabella": {}, "ripley": {}}
+        self._sku_master_map = {}
+        self._master_items = []
+        return self.load_catalog()
+
+    def expected_for_channel(self, marketplace: str) -> dict:
+        """Expected universe for a channel with the stock rule.
+
+        stock == 0  -> DESCARTADO_SIN_STOCK (immediate discard candidate)
+        stock <  0  -> stock unknown (unverified, not expected)
+        price <= 0  -> not expected for that channel
+        """
+        self.load_catalog()
+        key = marketplace.lower()
+        expected, zero, unknown, no_price = [], [], [], []
+        for item in self._master_items:
+            stock = item.get("stock", -1)
+            price = float((item.get("prices") or {}).get(key) or 0)
+            if stock == 0:
+                zero.append(item)
+            elif stock < 0:
+                unknown.append(item)
+            elif price <= 0:
+                no_price.append(item)
+            else:
+                expected.append(item)
+        return {"marketplace": marketplace, "expected": len(expected),
+                "discarded_no_stock": len(zero),
+                "unverified_stock": len(unknown),
+                "not_expected": len(no_price),
+                "expected_items": expected, "discarded_items": zero}
 
     def _clean_brand(self, text: str) -> str:
         if not text:
