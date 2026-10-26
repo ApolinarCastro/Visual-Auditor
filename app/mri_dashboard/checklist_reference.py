@@ -20,6 +20,16 @@ CHANNELS = {
     "mercado libre": ("MLC_MELI", "MELI_LINK", "MELI_OBSERV."),
 }
 CACHE_NAME = "checklist_cache.json"
+UPLOAD_NAME = "CHECKLIST (GRUPOS_2026 SS).xlsx"
+
+
+def upload_path():
+    try:
+        from app.mri_autonomous.storage_guard import StorageConfig
+        base = Path(StorageConfig.get_aux_dir())
+    except Exception:
+        base = Path(__file__).resolve().parents[2] / "data" / "sqlite" / "mri_operational"
+    return base / UPLOAD_NAME
 
 
 def default_paths():
@@ -27,6 +37,7 @@ def default_paths():
     env = os.environ.get("MRI_CHECKLIST_PATH")
     if env:
         out.append(Path(env))
+    out.append(upload_path())
     root = Path(__file__).resolve().parents[2]
     out.append(root / "CHECKLIST (GRUPOS_2026 SS).xlsx")
     out.append(Path.home() / "Downloads" / "CHECKLIST (GRUPOS_2026 SS).xlsx")

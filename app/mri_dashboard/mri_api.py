@@ -1529,6 +1529,47 @@ async def import_season_checklist(request: Request):
                                  "authority": "VALIDATION_ONLY"})
 
 
+@app.post("/api/checklist/upload")
+async def upload_season_checklist(request: Request):
+    """Upload the season CHECKLIST (validation-only; never feeds acquisition)."""
+    import asyncio
+    import os
+    import shutil
+    from datetime import datetime
+    from app.mri_dashboard.checklist_reference import upload_path, load_checklist
+    filename = request.headers.get("x-filename", "checklist.xlsx")
+    suffix = Path(filename).suffix.lower()
+    if suffix not in (".xlsx", ".xls", ".csv"):
+        raise HTTPException(status_code=400, detail="Formato no soportado (.xlsx/.xls/.csv)")
+    body = await request.body()
+    if not body or len(body) > 350 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Archivo vacío o mayor a 350 MB")
+    target = upload_path()
+    target.parent.mkdir(parents=True, exist_ok=True)
+    backup_dir = target.parent / "catalog_backups"
+    backup_dir.mkdir(exist_ok=True)
+    if target.exists():
+        shutil.copy2(target, backup_dir / (
+            f"checklist_{datetime.now().strftime('%Y%m%dT%H%M%S')}{target.suffix}"))
+    tmp = target.with_suffix(target.suffix + ".upload.tmp")
+    tmp.write_bytes(body)
+    os.replace(tmp, target)
+    data = await asyncio.to_thread(load_checklist, target, use_cache=False)
+    if not data:
+        raise HTTPException(status_code=422, detail="El checklist no pudo interpretarse")
+    per_channel = {}
+    for prod in data.get("products") or []:
+        for ch, val in (prod.get("channels") or {}).items():
+            if val.get("product_id") or val.get("link"):
+                per_channel[ch] = per_channel.get(ch, 0) + 1
+    return JSONResponse(content={"status": "LOADED", "filename": filename,
+                                 "bytes": len(body),
+                                 "products": len(data.get("products") or []),
+                                 "per_channel": per_channel,
+                                 "authority": "VALIDATION_ONLY",
+                                 "path": str(target)})
+
+
 @app.get("/api/checklist/coverage")
 async def season_checklist_coverage(marketplace: str, run_id: Optional[str] = None):
     """Season checklist vs observed (validation only; never feeds acquisition)."""

@@ -389,6 +389,11 @@
                     <button onclick="uploadCatalog()" id="btnUploadCatalog">Subir y recargar</button>
                     <span id="catalogUploadStatus" style="font-size:0.82rem; color:var(--text-muted);"></span>
                 </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:8px;">
+                    <input type="file" id="checklistFile" accept=".xlsx,.xls,.csv">
+                    <button onclick="uploadChecklist()" id="btnUploadChecklist">Subir checklist temporada</button>
+                    <span id="checklistUploadStatus" style="font-size:0.82rem; color:var(--text-muted);"></span>
+                </div>
                 <div id="catalogUploadResult" style="font-size:0.8rem; color:var(--text-muted); margin-top:8px;"></div>
                 <div style="display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap;">
                     <select id="coverageMarketplace">
@@ -1298,6 +1303,30 @@
                     .map(x => `<div>${x.sku_master} — ${x.name}</div>`).join('');
                 out.innerHTML = `<div><strong>${data.marketplace}</strong>: esperados ${m.expected} · publicados ${c.published_verified} · faltantes ${c.missing} · no verificables ${c.unverified} · sin stock ${m.discarded_no_stock} · extra ${c.extra_not_in_master}</div>` + missing;
             } catch (err) { status.innerText = 'Error: ' + err.message; }
+        }
+
+        async function uploadChecklist() {
+            const input = document.getElementById('checklistFile');
+            const status = document.getElementById('checklistUploadStatus');
+            if (!input || !input.files || !input.files.length) {
+                status.innerText = 'Selecciona el checklist primero';
+                return;
+            }
+            const file = input.files[0];
+            status.innerText = 'Subiendo checklist (puede tardar por tamaño)…';
+            try {
+                const resp = await fetch('/api/checklist/upload', {
+                    method: 'POST',
+                    headers: {'X-Filename': file.name,
+                              'Content-Type': file.type || 'application/octet-stream'},
+                    body: file
+                });
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data.detail || ('HTTP ' + resp.status));
+                status.innerText = 'Checklist cargado: ' + data.products + ' registros';
+            } catch (err) {
+                status.innerText = 'Error: ' + err.message;
+            }
         }
 
         async function uploadCatalog() {
