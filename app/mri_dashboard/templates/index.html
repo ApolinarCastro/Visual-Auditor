@@ -942,6 +942,7 @@
                 
                 const isRun = data.is_running;
                 const st = data.state || {};
+                window.__falabellaAudit = st.falabella_ssr_audit || window.__falabellaAudit || null;
                 
                 const _term = ["FAILED", "COMPLETED", "STOPPED_BY_USER", "ABORTED"];
                 document.getElementById('lblStatus').innerText =
@@ -1122,6 +1123,22 @@
                 rowCategories(r).forEach(c => { if (c) cats.add(c); });
             });
             populateDropdown('filterCategory', cats);
+            // Dual metrics: unique by membership + reported count per category.
+            const _uniq = {};
+            currentResults.forEach(r => {
+                rowCategories(r).forEach(c => { if (c) _uniq[c] = (_uniq[c] || 0) + 1; });
+            });
+            const _rep = {};
+            ((window.__falabellaAudit || {}).category_metrics || []).forEach(m => {
+                if (m && m.category) _rep[m.category] = m.reported_count;
+            });
+            Array.from(document.querySelectorAll('#filterCategory option')).forEach(o => {
+                if (o.value !== 'ALL') {
+                    const u = _uniq[o.value] || 0;
+                    const r = _rep[o.value];
+                    o.textContent = o.value + ' — ' + u + ' únicos' + (r != null ? ' / ' + r + ' rep.' : '');
+                }
+            });
 
             const filterMkt = document.getElementById('filterMarketplace').value;
             const filterStatus = document.getElementById('filterStatus').value;

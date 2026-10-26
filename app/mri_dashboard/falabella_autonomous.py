@@ -140,13 +140,14 @@ def _brand_card(card, brand):
     return brand.lower() in blob
 
 
-def _paginate(fetch_page, *, surface, category_name=None, max_pages=100,
-              delay=0.35, on_page=None, allow_empty=False, filter_brand=None):
+def _paginate(fetch_page, *, surface, category_name=None, category_parent=None,
+              max_pages=100, delay=0.35, on_page=None, allow_empty=False,
+              filter_brand=None):
     """Paginate one surface until the source's own terminal condition."""
     cards, pages, seen_ids = [], [], set()
     terminal, cause = PAGE_BOUND_REACHED, f"page safety bound {max_pages} reached"
     expected, build_id = None, None
-    prev_page_ids, stall = None, 0
+    prev_page_ids, prev_raw_ids, stall = None, None, 0
     first_payload = None
 
     for page in range(1, max_pages + 1):
@@ -183,8 +184,13 @@ def _paginate(fetch_page, *, surface, category_name=None, max_pages=100,
             break
 
         page_ids, new_ids = set(), 0
+        raw_ids = {str(card.get("productId") or card.get("product_id") or "")
+                   for card in raw}
+        raw_ids.discard("")
         for card in raw:
             norm = _normalise_card(card, surface, category_name, page, build_id)
+            if norm is not None:
+                norm["parent_category"] = category_parent
             if norm is None:
                 continue
             if filter_brand and not _brand_card(card, filter_brand):
@@ -199,8 +205,8 @@ def _paginate(fetch_page, *, surface, category_name=None, max_pages=100,
         if on_page:
             on_page(page, pages[-1])
 
-        stall = stall + 1 if (page > 1 and page_ids == prev_page_ids) else 0
-        prev_page_ids = page_ids
+        stall = stall + 1 if (page > 1 and raw_ids == prev_raw_ids) else 0
+        prev_page_ids, prev_raw_ids = page_ids, raw_ids
         if stall >= 2:
             terminal, cause = NO_PROGRESS, "source repeated the identical page twice"
             break
@@ -259,9 +265,20 @@ def _category_candidates(payload):
                            _re.I)
             if m:
                 depth = int(m.group(1))
+            import urllib.parse as _up
+            filter_params = {}
+            for f in val.get("filters") or []:
+                if isinstance(f, dict) and f.get("name") and f.get("value") is not None:
+                    filter_params[str(f["name"])] = _up.unquote_plus(str(f["value"]))
+            if not filter_params and val.get("url"):
+                qs = _up.parse_qsl(_up.unquote_plus(str(val.get("url"))))
+                filter_params = dict(qs)
+            for drop in ("page", "totalProducts"):
+                filter_params.pop(drop, None)
             out.append({"category_id": cid,
                         "name": val.get("title") or val.get("name"),
-                        "depth": depth})
+                        "depth": depth,
+                        "filter_params": filter_params})
     return out
 
 
@@ -305,6 +322,8 @@ def discover_categories(engine, brand, seed_payload, *, max_fetch=40, delay=0.8)
         nodes.append({**cat, "depth": depth, "brand_count": brand_count,
                       "children": [c["category_id"] for c in children]})
         if children and depth < 3:
+            for child in children:
+                child.setdefault("parent_name", cat.get("name"))
             queue.extend((c, (c.get("depth") if c.get("depth") is not None
                               else depth + 1)) for c in children)
         if delay:
@@ -312,7 +331,7 @@ def discover_categories(engine, brand, seed_payload, *, max_fetch=40, delay=0.8)
     # Traverse a node if it has products of its own (brand_count>0) or if it is
     # a leaf; a container with brand_count==0 is represented by its children.
     leaves = [{k: n.get(k) for k in ("category_id", "name", "depth",
-                                     "brand_count")}
+                                     "brand_count", "filter_params", "parent_name")}
               for n in nodes
               if (n.get("depth") or 0) >= 2
               and ((n.get("brand_count") or 0) > 0 or not n.get("children"))]
@@ -528,19 +547,25 @@ def run_full_audit(engine, *, brand="NICOPOLY", run_id=None, aux_dir=None,
     for cat in categories[:30]:
         cid, cname = cat["category_id"], cat.get("name")
         params = {"f.product.brandName": brand.lower(), "facetSelected": "true"}
+        params.update(cat.get("filter_params") or {})
         brand_surface = _paginate(
             lambda p, _cid=cid, _params=params: engine.fetch_page_ssr_data(
                 f"/category/{_cid}/x", {**_params, "page": p}),
             surface=f"category:{cid}", category_name=cname,
+            category_parent=(cat.get("parent_name")
+                             if (cat.get("depth") or 0) >= 3 else None),
             max_pages=min(max_pages, 20), delay=delay, allow_empty=True)
         if (brand_surface["cards"] == 0
-                and brand_surface["terminal"] in (EMPTY, NOT_FOUND)):
+                and brand_surface["terminal"] in (EMPTY, NOT_FOUND, SOFT_404,
+                                                  SOURCE_BLOCKED)):
             # L3 verified behaviour: brand filter yields 0 even with Nicopoly
             # products inside; scan the category unfiltered and filter in code.
             fallback = _paginate(
                 lambda p, _cid=cid: engine.fetch_page_ssr_data(
                     f"/category/{_cid}/x", {"page": p}),
                 surface=f"category:{cid}", category_name=cname,
+                category_parent=(cat.get("parent_name")
+                                 if (cat.get("depth") or 0) >= 3 else None),
                 max_pages=min(max_pages, 60), delay=delay,
                 allow_empty=True, filter_brand=brand)
             if fallback["cards"] > 0 or fallback["complete"]:
@@ -571,6 +596,9 @@ def run_full_audit(engine, *, brand="NICOPOLY", run_id=None, aux_dir=None,
                 existing["skus"][str(sku)] = {"price": card.get("price")}
             if card.get("category_name") and card["category_name"] not in existing["categories"]:
                 existing["categories"].append(card["category_name"])
+            if (card.get("parent_category")
+                    and card["parent_category"] not in existing["categories"]):
+                existing["categories"].append(card["parent_category"])
             if card["surface"] not in existing["surfaces"]:
                 existing["surfaces"].append(card["surface"])
 
@@ -609,6 +637,19 @@ def run_full_audit(engine, *, brand="NICOPOLY", run_id=None, aux_dir=None,
             sku_id_set.add(str(sku))
         if len(skus) > 1:
             multi_sku += 1
+    category_metrics = []
+    for s in surfaces:
+        if not str(s.get("surface", "")).startswith("category:"):
+            continue
+        category_metrics.append({
+            "category_id": str(s.get("surface")).split(":", 1)[1],
+            "category": s.get("category_name") or str(s.get("surface")).split(":", 1)[1],
+            "reported_count": s.get("expected_cards"),
+            "cards": s.get("cards"),
+            "unique_products": s.get("unique_product_ids"),
+            "pages": s.get("pages_traversed"),
+            "terminal": s.get("terminal"),
+        })
     complete = (bool(surfaces) and all(s["complete"] for s in surfaces)
                 and bool(categories))
     pending = [s["surface"] for s in surfaces if not s["complete"]]
@@ -631,6 +672,7 @@ def run_full_audit(engine, *, brand="NICOPOLY", run_id=None, aux_dir=None,
         "categories_used": [c["category_id"] for c in categories],
         "category_tree": discovery["tree"],
         "category_discovery_fetched": discovery["fetched"],
+        "category_metrics": category_metrics,
         "gsc_grouping": gsc_stats,
         "pdp_enrichment": pdp_stats,
         "cards_total": cards_total,
