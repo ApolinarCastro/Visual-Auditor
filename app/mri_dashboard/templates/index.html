@@ -293,9 +293,13 @@
         <div class="nav-item" id="tab-hist" onclick="switchTab('hist')">B. Historial de Ejecuciones</div>
         <div class="nav-item" id="tab-learn" onclick="switchTab('learn')">C. Aprendizaje y Experiencia</div>
         <div class="nav-item" id="tab-multi" onclick="switchTab('multi')">D. Inteligencia Multimarketplace</div>
+        <div class="nav-item" id="tab-mgr" onclick="switchTab('mgr')">E. Resumen Gerencial</div>
     </aside>
     
     <main>
+        <div id="globalOpsNote" style="margin-bottom:14px; padding:10px 14px; border-left:3px solid var(--warning); background:rgba(245,158,11,0.08); color:var(--text-muted); font-size:0.82rem; border-radius:4px;">
+            <strong>Nota Operativa:</strong> La incorporación futura de <strong>OpenSEO</strong> (optimización semántica de catálogo) se encuentra formalmente desacoplada del registro de experiencias de adquisición y no representa funcionalidad ejecutada en las auditorías actuales.
+        </div>
         <!-- A. Operaciones y Resultados -->
         <div id="ops" class="panel active">
             <h2>A. Operaciones y Resultados Verificables</h2>
@@ -592,6 +596,35 @@
                 <!-- Dinámicamente poblado con tablas de Falabella, Meli, Paris, Ripley o Comparativa -->
             </div>
         </div>
+
+        <!-- E. Resumen Gerencial (solo lectura; separado de la operación) -->
+        <div id="mgr" class="panel">
+            <h2>E. Resumen Gerencial</h2>
+            <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom:16px;">
+                Vista de dirección: resultados de la última corrida completada y estado por marketplace. No ejecuta auditorías ni modifica datos.
+            </p>
+            <div class="grid-cards" style="margin-bottom:18px;">
+                <div class="card"><div class="card-title">Productos publicados (Falabella)</div><div class="card-value" style="color:var(--primary)" id="mgrPublished">—</div></div>
+                <div class="card"><div class="card-title">Categorías cubiertas</div><div class="card-value" style="color:var(--info)" id="mgrCategories">—</div></div>
+                <div class="card"><div class="card-title">Suma rep. / diferencia</div><div class="card-value" style="color:var(--warning)" id="mgrReconciliation">—</div></div>
+                <div class="card"><div class="card-title">Claves SKU / ofertas</div><div class="card-value" style="color:var(--info)" id="mgrSkus">—</div></div>
+                <div class="card"><div class="card-title">Aceptación última corrida</div><div class="card-value" style="color:var(--primary)" id="mgrAcceptance">—</div></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin:6px 0 10px 0;">
+                <h3 style="margin:0; font-size:1.05rem; color:#fff;">Última corrida completada por marketplace</h3>
+                <button onclick="openReconciliation()">Abrir conciliación operativa</button>
+            </div>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead><tr><th>Marketplace</th><th>Run ID</th><th>Fecha</th><th>Publicaciones</th><th>Estado</th></tr></thead>
+                    <tbody id="tbMgrRuns"></tbody>
+                </table>
+            </div>
+            <p style="color:var(--text-muted); font-size:0.8rem; margin-top:10px;">
+                Cada fila es la última corrida independiente de ese marketplace; no se suman corridas distintas. La conciliación de categorías y la cobertura quedan en Operación → Herramientas.
+            </p>
+        </div>
+
     </main>
 
     <!-- Modal Detalle Verificable de Publicación -->
@@ -612,6 +645,50 @@
         let pollInterval = null;
         let selectedRunId = null;
 
+        async function loadManagerView() {
+            const set = (id, val) => { const e = document.getElementById(id); if (e) e.innerText = val; };
+            try {
+                const hist = await fetch('/api/history').then(r => r.json());
+                const items = Array.isArray(hist) ? hist : (hist.history || []);
+                const isDone = i => ['FOUND', 'COMPLETED', 'SUCCESS'].includes(
+                    String(i.terminal_state || i.outcome || '').toUpperCase());
+                const byMkt = {};
+                items.filter(isDone).forEach(i => {
+                    const m = i.marketplace || i.engine || '—';
+                    if (!byMkt[m]) byMkt[m] = i;
+                });
+                const tb = document.getElementById('tbMgrRuns');
+                tb.innerHTML = Object.entries(byMkt).map(([m, i]) =>
+                    `<tr><td>${m}</td><td>${i.run_id || ''}</td><td>${(i.timestamp || i.started_at || '').slice(0, 19)}</td><td>${i.total ?? 0}</td><td>${i.terminal_state || i.outcome || ''}</td></tr>`
+                ).join('') || '<tr><td colspan="5">Sin corridas completadas</td></tr>';
+                const fala = byMkt['Falabella'];
+                if (fala) {
+                    set('mgrPublished', fala.total ?? '—');
+                    try {
+                        const detail = await fetch('/api/history/' + encodeURIComponent(fala.run_id)).then(r => r.json());
+                        const cs = detail.catalog_summary || {};
+                        const cats = (detail.category_metrics || []).filter(m => !m.parent);
+                        if (cs.unique_products != null) set('mgrPublished', cs.unique_products);
+                        set('mgrCategories', cats.length || '—');
+                        set('mgrReconciliation', cs.reported_sum != null ? (cs.reported_sum + ' / ' + cs.difference) : '—');
+                        set('mgrSkus', cs.sku_keys ?? '—');
+                        set('mgrAcceptance', detail.acceptance || fala.acceptance || '—');
+                    } catch (e) { /* métricas históricas opcionales */ }
+                }
+            } catch (err) {
+                const tb = document.getElementById('tbMgrRuns');
+                if (tb) tb.innerHTML = '<tr><td colspan="5">No se pudo cargar el resumen: ' + err.message + '</td></tr>';
+            }
+        }
+
+        function openReconciliation() {
+            switchTab('ops');
+            const tools = document.getElementById('refTools');
+            if (tools) tools.open = true;
+            const target = document.getElementById('catalogMetricsPanel');
+            if (target) target.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }
+
         function switchTab(tabId) {
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -625,6 +702,7 @@
             if(tabId === 'learn') loadLearning();
             if(tabId === 'hist') loadHistory();
             if(tabId === 'multi') loadMultiMarketplaceData();
+            if(tabId === 'mgr') loadManagerView();
         }
 
         let multiMarketplaceData = {
