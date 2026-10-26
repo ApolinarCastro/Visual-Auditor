@@ -377,6 +377,27 @@
                 </div>
             </div>
 
+            <div id="catalogMetricsPanel" style="display:none; margin-top:20px; padding:16px; border:1px solid var(--border); border-radius:8px; background:rgba(255,255,255,0.02);">
+                <h3 style="margin:0 0 12px 0; font-size:1.05rem; color:#fff;">Conciliación de catálogo (marketplace)</h3>
+                <div class="grid-cards" style="margin-bottom:12px;">
+                    <div class="card"><div class="card-title">Productos padre únicos</div><div class="card-value" style="color:var(--primary)" id="catUnique">0</div></div>
+                    <div class="card"><div class="card-title">Suma rep. por categoría</div><div class="card-value" style="color:var(--info)" id="catRepSum">0</div></div>
+                    <div class="card"><div class="card-title">Diferencia (rep. − únicos)</div><div class="card-value" style="color:var(--warning)" id="catDiff">0</div></div>
+                    <div class="card"><div class="card-title">Productos en &gt;1 categoría</div><div class="card-value" style="color:var(--purple)" id="catOverlap">0</div></div>
+                    <div class="card"><div class="card-title">Claves SKU/ofertas</div><div class="card-value" style="color:var(--info)" id="catSkuKeys">0</div></div>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead><tr><th>Categoría</th><th>rep. (página)</th><th>únicos</th><th>diferencia</th><th>tarjetas</th><th>estado</th></tr></thead>
+                        <tbody id="tbCatMetrics"></tbody>
+                    </table>
+                </div>
+                <label style="display:flex; gap:8px; align-items:center; margin-top:10px; font-size:0.85rem; color:var(--text-muted);">
+                    <input type="checkbox" id="chkOverlapOnly" onchange="renderMainTable()"> Mostrar solo productos en &gt;1 categoría (solapados)
+                </label>
+                <p id="catSemantics" style="color:var(--text-muted); font-size:0.78rem; margin:8px 0 0 0;"></p>
+            </div>
+
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; margin-bottom:12px;">
                 <h3 style="margin: 0; font-size: 1.15rem; color: #fff;">Tabla Completa de Publicaciones y Auditoría Comercial</h3>
                 <span id="lblTableCount" style="color:var(--text-muted); font-size:0.85rem"></span>
@@ -943,6 +964,7 @@
                 const isRun = data.is_running;
                 const st = data.state || {};
                 window.__falabellaAudit = st.falabella_ssr_audit || window.__falabellaAudit || null;
+                if (typeof renderCatalogMetrics === 'function') renderCatalogMetrics();
                 
                 const _term = ["FAILED", "COMPLETED", "STOPPED_BY_USER", "ABORTED"];
                 document.getElementById('lblStatus').innerText =
@@ -1116,6 +1138,34 @@
             }
         }
 
+        function renderCatalogMetrics() {
+            const panel = document.getElementById('catalogMetricsPanel');
+            if (!panel) return;
+            const audit = window.__falabellaAudit || {};
+            const summary = audit.catalog_summary || null;
+            const metrics = audit.category_metrics || [];
+            // Semántica específica por marketplace: solo Falabella publica este contrato hoy.
+            if (!summary || (summary.marketplace && summary.marketplace !== 'Falabella')) {
+                panel.style.display = 'none';
+                return;
+            }
+            panel.style.display = 'block';
+            document.getElementById('catUnique').innerText = summary.unique_products ?? 0;
+            document.getElementById('catRepSum').innerText = summary.reported_sum ?? 0;
+            document.getElementById('catDiff').innerText = summary.difference ?? 0;
+            document.getElementById('catOverlap').innerText = summary.overlap_products ?? 0;
+            document.getElementById('catSkuKeys').innerText = summary.sku_keys ?? 0;
+            document.getElementById('catSemantics').innerText =
+                (summary.semantics && summary.semantics.reported_sum) ? summary.semantics.reported_sum : '';
+            const tb = document.getElementById('tbCatMetrics');
+            tb.innerHTML = metrics.filter(m => !m.parent).map(m => {
+                const rep = m.reported_count == null ? '-' : m.reported_count;
+                const uniq = m.unique_products == null ? '-' : m.unique_products;
+                const diff = (m.reported_count != null && m.unique_products != null) ? (m.reported_count - m.unique_products) : '-';
+                return `<tr><td>${m.category || m.category_id}</td><td>${rep}</td><td>${uniq}</td><td>${diff}</td><td>${m.cards ?? '-'}</td><td>${m.terminal || '-'}</td></tr>`;
+            }).join('');
+        }
+
         function renderMainTable() {
             // Dynamic categories from currentResults
             const cats = new Set();
@@ -1155,6 +1205,8 @@
                     if (dec !== filterStatus) match = false;
                 }
                 if (filterCategory !== "ALL" && !rowCategories(r).includes(filterCategory)) match = false;
+                const overlapOnly = document.getElementById('chkOverlapOnly');
+                if (overlapOnly && overlapOnly.checked && rowCategories(r).length <= 1) match = false;
                 if (filterCoverage !== "ALL") {
                     if (filterCoverage === "PARTIAL") {
                         if (r.coverage !== "PARTIAL" && r.coverage !== "PAGE_BUDGET_EXCEEDED") match = false;
@@ -1169,6 +1221,7 @@
             });
 
             document.getElementById('lblTableCount').innerText = `Mostrando ${filtered.length} de ${currentResults.length} registros`;
+            renderCatalogMetrics();
 
             const emptyDiv = document.getElementById('emptyOpsTable');
             const tbody = document.getElementById('tbMainAudit');
@@ -1382,6 +1435,10 @@
                 }
                 const data = await res.json();
                 currentResults = data.publications || [];
+                if (data.catalog_summary !== undefined) {
+                    window.__falabellaAudit = { catalog_summary: data.catalog_summary,
+                                                category_metrics: data.category_metrics || [] };
+                }
                 selectedRunId = runId;
                 
                 document.getElementById('lblActiveRun').innerText = `${runId}`;

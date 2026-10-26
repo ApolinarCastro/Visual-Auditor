@@ -1482,6 +1482,22 @@ def _persisted_run_meta(run_id: str) -> dict:
     return out
 
 
+def _falabella_audit_metrics(run_id: str) -> Dict[str, Any]:
+    """Marketplace-specific reconciliation metrics persisted with the run."""
+    try:
+        from app.mri_autonomous.storage_guard import StorageConfig
+        hist = Path(StorageConfig.get_aux_dir()) / "mri_history.json"
+        for entry in json.loads(hist.read_text(encoding="utf-8")):
+            if entry.get("run_id") == run_id:
+                audit = entry.get("falabella_ssr_audit") or {}
+                if audit:
+                    return {"catalog_summary": audit.get("catalog_summary"),
+                            "category_metrics": audit.get("category_metrics")}
+    except Exception:
+        pass
+    return {}
+
+
 @app.get("/api/history/{run_id}")
 async def get_history_run_publications(run_id: str):
     """
@@ -1502,6 +1518,7 @@ async def get_history_run_publications(run_id: str):
         return JSONResponse(content={"run_id": run_id, "publications": pubs,
                                      "count": len(pubs), "source": "OPERATIONAL",
                                      **_persisted_run_meta(run_id),
+                                     **_falabella_audit_metrics(run_id),
                                      "identity_summary": _identity_summary_from_publications(pubs)})
 
     # 1b. Fall back to the PROTECTED database, strictly read-only
@@ -1515,6 +1532,7 @@ async def get_history_run_publications(run_id: str):
             return JSONResponse(content={"run_id": run_id, "publications": pubs_p,
                                          "count": len(pubs_p), "source": "PROTECTED",
                                          **_persisted_run_meta(run_id),
+                                         **_falabella_audit_metrics(run_id),
                                          "identity_summary": _identity_summary_from_publications(pubs_p)})
 
     # Check if run exists in mri_runs with 0 publications

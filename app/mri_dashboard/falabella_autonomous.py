@@ -665,6 +665,30 @@ def run_full_audit(engine, *, brand="NICOPOLY", run_id=None, aux_dir=None,
                 "terminal": s.get("terminal"),
                 "parent": True,
             })
+    # Marketplace-specific reconciliation (Falabella): reported category counts
+    # are card counts, NOT inventory. Difference is overlap + duplicated cards,
+    # never products lost.
+    _multi = sum(1 for o in observations
+                 if len(o.get("categories_observed") or []) > 1)
+    _rep_sum = sum(int(m.get("reported_count") or 0)
+                   for m in category_metrics if not m.get("parent"))
+    _dup_cards = sum(max(0, int(m.get("cards") or 0)
+                         - int(m.get("unique_products") or 0))
+                     for m in category_metrics if not m.get("parent"))
+    catalog_summary = {
+        "marketplace": "Falabella",
+        "unique_products": len(observations),
+        "reported_sum": _rep_sum,
+        "difference": _rep_sum - len(observations),
+        "overlap_products": _multi,
+        "duplicated_cards": _dup_cards,
+        "sku_keys": len(sku_keys),
+        "semantics": {
+            "reported_sum": "suma de pagination.count por categoria (tarjetas, NO inventario)",
+            "unique_products": "productos padre distintos (dedupe por group_id)",
+            "difference": "solapamiento entre categorias + tarjetas duplicadas",
+        },
+    }
     complete = (bool(surfaces) and all(s["complete"] for s in surfaces)
                 and bool(categories))
     pending = [s["surface"] for s in surfaces if not s["complete"]]
@@ -688,6 +712,7 @@ def run_full_audit(engine, *, brand="NICOPOLY", run_id=None, aux_dir=None,
         "category_tree": discovery["tree"],
         "category_discovery_fetched": discovery["fetched"],
         "category_metrics": category_metrics,
+        "catalog_summary": catalog_summary,
         "gsc_grouping": gsc_stats,
         "pdp_enrichment": pdp_stats,
         "cards_total": cards_total,
