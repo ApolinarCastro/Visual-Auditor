@@ -10,6 +10,9 @@ class MultivendeLoader:
     def __init__(self, excel_path=MULTIVENDE_EXCEL_PATH):
         self.excel_path = Path(excel_path)
         self._loaded = False
+        self._missing_checked = False
+        self._missing_reported = False
+        self._reference_available = None
         self._marketplace_indexes = {
             "mercado libre": {},
             "paris": {},
@@ -18,12 +21,37 @@ class MultivendeLoader:
         }
         self._sku_master_map = {}
 
+    @property
+    def reference_available(self) -> bool:
+        """True only when the reference catalog was actually loaded."""
+        return bool(self._loaded and self._reference_available)
+
+    def reset_reference_check(self) -> None:
+        """Re-check the reference once per new run (not per product)."""
+        self._missing_checked = False
+        self._missing_reported = False
+        if not self._loaded:
+            self._reference_available = None
+
     def load_catalog(self) -> bool:
         if self._loaded:
             return True
 
+        # One filesystem check per run: a missing reference file must not be
+        # re-probed (nor re-warned) for every product of the run.
+        if self._missing_checked:
+            return False
+        self._missing_checked = True
+
         if not self.excel_path.exists():
-            logger.warning(f"[MultivendeLoader] File not found: {self.excel_path}")
+            if not self._missing_reported:
+                self._missing_reported = True
+                logger.warning(f"[MultivendeLoader] File not found: {self.excel_path}")
+                logger.warning(
+                    "[MultivendeLoader] CATALOG_REFERENCE_MISSING: identity, "
+                    "price and stock cannot be validated against the master catalog "
+                    "for this run.")
+            self._reference_available = False
             return False
 
         try:
@@ -124,9 +152,11 @@ class MultivendeLoader:
                             self._marketplace_indexes[mkt][norm_sku] = item_info
 
             self._loaded = True
+            self._reference_available = True
             logger.info(f"[MultivendeLoader] Successfully indexed {len(self._sku_master_map)} master SKUs.")
             return True
         except Exception as e:
+            self._reference_available = False
             logger.error(f"[MultivendeLoader] Failed to load catalog matrix: {e}")
             return False
 

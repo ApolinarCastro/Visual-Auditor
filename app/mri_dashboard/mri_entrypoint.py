@@ -175,12 +175,44 @@ def _reconcile_schema_from_reference(conn, reference: Optional[str] = None) -> d
             "columns_added": added_cols, "indexes_created": added_idx}
 
 
+def authorize_run_destinations() -> dict:
+    """Explicitly authorize the MINIMUM auxiliary write destinations of a run.
+
+    The operational SQLite was already authorized; the auxiliary files used by
+    the same flow (category catalog, history JSON, learning DB) were not, which
+    produced: UnauthorizedDatabaseError ... tmp/mri_sandbox/mri_categories.json.
+
+    Only these three destinations are granted, inside the bounded aux dir.
+    """
+    from app.mri_autonomous.storage_guard import StorageConfig
+    targets = {
+        "categories_json": StorageConfig.get_categories_json_path(),
+        "history_json": StorageConfig.get_history_json_path(),
+        "experience_db": StorageConfig.get_experience_db_path(),
+    }
+    out = {}
+    for name, path in targets.items():
+        try:
+            Path(path).parent.mkdir(parents=True, exist_ok=True)
+        except Exception:
+            pass
+        try:
+            StorageConfig.ensure_writable(path, reason=f"MRI run destination: {name}")
+            out[name] = {"path": str(path), "authorized": True}
+        except Exception as exc:
+            out[name] = {"path": str(path), "authorized": False,
+                         "error": f"{type(exc).__name__}: {exc}"}
+    return out
+
+
 def storage_summary() -> dict:
     """Explicit storage selection, reported at startup."""
     op = operational_db_path()
     prot = os.getenv("MRI_HISTORICAL_DB") or str(
         Path(__file__).resolve().parents[2] / "data" / "sqlite" / "visibility.db")
+    from app.mri_autonomous.storage_guard import StorageConfig
     return {"operational_db": str(op), "protected_db": prot,
+            "aux_dir": str(StorageConfig.get_aux_dir()),
             "mode": (os.getenv("MRI_ENV") or "PRODUCTION").upper()}
 
 
@@ -313,6 +345,8 @@ def serve(
     print(f"  escuchando en : http://{host}:{port}")
     print(f"  autenticación : HTTP Basic (obligatoria)")
     _st = storage_summary()
+    _dest = authorize_run_destinations()
+    print(f"  auxiliares    : {_st.get('aux_dir')}")
     print(f"  operativa     : {_st['operational_db']}")
     print(f"  histórica     : {_st['protected_db']} (solo lectura)")
     print("=" * 66)

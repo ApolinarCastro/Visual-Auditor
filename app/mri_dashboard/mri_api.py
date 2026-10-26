@@ -221,6 +221,9 @@ async def index(request: Request):
 @app.get("/api/state")
 async def get_state():
     st = orchestrator.state or {}
+    from app.mri_dashboard.acquisition_contract import view_metadata
+    _view = view_metadata(execution_mode=f"{st.get('mode') or 'UNKNOWN'}",
+                          run_id=st.get("run_id"), source="LIVE_MEMORY", live=True)
     return JSONResponse(content={
         "is_running": orchestrator.is_running,
         "state": st,
@@ -232,7 +235,97 @@ async def get_state():
         "mode": st.get("mode"),
         "source": "LIVE_MEMORY",
         "results_count": len(orchestrator.results or []),
+        # acquisition truth (live view only; never a persisted historical run)
+        **_view,
+        "outcome": st.get("outcome"),
+        "acquisitions": st.get("acquisitions") or [],
+        "identity_summary": st.get("identity_summary"),
+        "catalog_reference": st.get("catalog_reference") or _safe_catalog_reference(),
     })
+
+
+_RUN_ERRORS = []
+
+
+def _error_log_path():
+    from app.mri_autonomous.storage_guard import StorageConfig
+    return StorageConfig.get_aux_dir() / "mri_run_errors.json"
+
+
+def _append_run_error(entry: dict) -> None:
+    """Keep a bounded, inspectable history of background failures."""
+    _RUN_ERRORS.append(entry)
+    del _RUN_ERRORS[:-50]
+    try:
+        path = _error_log_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        import json as _json
+        path.write_text(_json.dumps(_RUN_ERRORS, indent=2, ensure_ascii=False),
+                        encoding="utf-8")
+    except Exception:
+        pass
+
+
+@app.get("/api/errors")
+async def get_run_errors():
+    """Background failure history (inspection, never hidden)."""
+    return JSONResponse(content={"errors": _RUN_ERRORS[-50:], "count": len(_RUN_ERRORS)})
+
+
+async def _guarded_run(fn, run_id: str, *args):
+    """Run a background task and ALWAYS publish a terminal state.
+
+    HTTP 202 only means "accepted". On failure the stage and error are recorded,
+    the state ends as FAILED (never IDLE/INICIANDO) and no exception escapes to
+    the ASGI layer.
+    """
+    from datetime import datetime, timezone
+    import inspect
+    import traceback
+    stage = (orchestrator.state or {}).get("stage") or "preparando"
+    # The API marked the run as accepted (RUNNING). The runners guard
+    # themselves with `is_running` and would return immediately, so release
+    # the dispatch flag here and let the runner own it for the whole execution.
+    orchestrator.is_running = False
+    try:
+        _res = fn(*args)
+        if inspect.isawaitable(_res):
+            await _res
+    except Exception as exc:
+        now = datetime.now(timezone.utc).isoformat()
+        entry = {
+            "run_id": run_id,
+            "stage": (orchestrator.state or {}).get("stage") or stage,
+            "error": f"{type(exc).__name__}: {exc}",
+            "traceback": traceback.format_exc()[-2000:],
+            "at": now,
+        }
+        _append_run_error(entry)
+        st = dict(orchestrator.state or {})
+        _declared = st.get("outcome")
+        _contract_states = ("SOURCE_BLOCKED", "EXTRACTOR_FAILURE", "PARTIAL",
+                            "NOT_FOUND", "STOPPED_BY_USER")
+        st.update({
+            # Preserve a contract state declared by the runner; generic FAILED
+            # only when the runner did not classify the failure.
+            "status_message": (_declared if _declared in _contract_states else "FAILED"),
+            "terminal_state": (_declared if _declared in _contract_states else "FAILED"),
+            "failed_stage": entry["stage"],
+            "error": entry["error"],
+            "error_run_id": run_id,
+            "last_activity": now,
+            "completed_at": now,
+        })
+        errs = list(st.get("errors") or [])
+        errs.append(entry)
+        st["errors"] = errs
+        states = dict(st.get("marketplace_states") or {})
+        for m, v in list(states.items()):
+            if v == "EN_CURSO":
+                states[m] = "FALLIDO"
+        st["marketplace_states"] = states
+        orchestrator.state = st
+        orchestrator.is_running = False
 
 
 @app.get("/api/storage/info")
@@ -249,11 +342,31 @@ async def get_storage_info():
         authorized = True
     except Exception:
         authorized = False
+    # Auxiliary run destinations actually used by the discovery flow.
+    destinations = {}
+    try:
+        from app.mri_autonomous.storage_guard import StorageConfig as _SC
+        for name, path in {
+            "categories_json": _SC.get_categories_json_path(),
+            "history_json": _SC.get_history_json_path(),
+            "experience_db": _SC.get_experience_db_path(),
+        }.items():
+            try:
+                _SC.assert_write_allowed(path)
+                destinations[name] = {"path": str(path), "authorized": True}
+            except Exception:
+                destinations[name] = {"path": str(path), "authorized": False}
+        aux = str(_SC.get_aux_dir())
+    except Exception:
+        aux = None
+
     return JSONResponse(content={
         "operational_db": str(op),
         "operational_exists": op.exists(),
         "protected_db": str(prot) if prot else None,
         "protected_role": "READ_ONLY_HISTORICAL",
+        "aux_dir": aux,
+        "destinations": destinations,
         "write_authorized": authorized,
         "mode": (os.getenv("MRI_ENV") or "PRODUCTION").upper(),
     })
@@ -315,13 +428,35 @@ async def get_categories_api(marketplace: str, run_id: Optional[str] = None):
 
 @app.post("/api/audit/start")
 async def start_audit(background_tasks: BackgroundTasks, request: Request):
+    # Parse the body FIRST: between the running-guard and the RUNNING
+    # publication below there must be no `await`, otherwise two concurrent
+    # requests could both pass the guard and start two runs (double-accept).
+    data = await request.json()
     if orchestrator.is_running:
         return JSONResponse(status_code=400, content={"message": "Already running"})
-    
-    data = await request.json()
+
     marketplace = data.get("marketplace", "ALL")
     limit = data.get("limit", 5)
     mode = data.get("mode", "AUDIT")
+
+    # Mode-specific parameters are parsed and validated BEFORE any RUNNING state
+    # is published. A malformed request must never leave the dashboard stuck in
+    # RUNNING with no scheduled task (the old int(limit) ran after publishing).
+    discovery_pages = None
+    discovery_item_limit = None
+    ssr_items = None
+    if mode == "DISCOVERY":
+        try:
+            discovery_pages = int(limit) if str(limit) != "ALL" else 5
+        except (TypeError, ValueError):
+            discovery_pages = 5
+        if str(limit) != "ALL" and str(limit).isdigit():
+            discovery_item_limit = int(limit)
+    elif mode in ("FALABELLA_SSR", "PARIS_PUBLIC"):
+        try:
+            ssr_items = int(limit)
+        except (TypeError, ValueError):
+            ssr_items = 12
 
     # The audit write destination must be EXPLICITLY authorized by the operator
     # and accepted by the guard. Refuse with an actionable 409 instead of
@@ -332,6 +467,12 @@ async def start_audit(background_tasks: BackgroundTasks, request: Request):
         from app.mri_autonomous.storage_guard import StorageConfig as _SC
         audit_db = str(_SC.get_sqlite_path())
         _SC.ensure_writable(audit_db, reason="dashboard audit persistence")
+        # Ensure auxiliary run destinations are authorized in the same operational boundary
+        for _aux_p in (_SC.get_categories_json_path(), _SC.get_history_json_path(), _SC.get_experience_db_path()):
+            try:
+                _SC.ensure_writable(_aux_p, reason="dashboard audit auxiliary persistence")
+            except Exception:
+                pass
     except Exception as exc:
         return JSONResponse(status_code=409, content={
             "error": "WRITE_DESTINATION_NOT_AUTHORIZED",
@@ -344,45 +485,74 @@ async def start_audit(background_tasks: BackgroundTasks, request: Request):
             "audit_db": audit_db,
         })
     
+    # 202 = accepted. Publish run identity and RUNNING state NOW, before any
+    # background work, so the UI never shows IDLE or inherited progress.
+    from datetime import datetime as _dt
+    run_id = f"run_mri_{str(mode).lower()}_{int(time.time())}"
+    _now = _dt.now().isoformat()
+    _mkts = (["Mercado Libre", "Paris", "Ripley", "Falabella"]
+             if marketplace == "ALL" else [marketplace])
+    orchestrator.is_running = True
+    orchestrator.results = []
+    orchestrator.state = {
+        "progress": 0, "total": 0, "total_known": False,
+        "current_product": None, "current_category": None,
+        "status_message": "RUNNING", "stage": "preparando",
+        "mode": mode, "marketplace": marketplace,
+        "brand": data.get("brand", "Nicopoly"),
+        "run_id": run_id, "started_at": _now, "last_activity": _now,
+        "marketplace_states": {m: "PENDIENTE" for m in _mkts},
+        "errors": [],
+    }
+
     if mode == "CONSOLIDATED_RECOVERY":
-        background_tasks.add_task(run_consolidated_recovery_pipeline)
-        return JSONResponse(content={"message": "Started Consolidated Recovery Pipeline"})
+        # run_consolidated_recovery_pipeline() takes NO arguments. Passing an
+        # extra positional argument made this branch raise TypeError inside the
+        # background task on every invocation.
+        background_tasks.add_task(_guarded_run, run_consolidated_recovery_pipeline, run_id)
+        return JSONResponse(status_code=200, content={
+            "message": "Accepted: Consolidated Recovery Pipeline", "mode": mode,
+            "run_id": run_id, "state": "RUNNING"})
     elif mode == "DISCOVERY":
-        background_tasks.add_task(orchestrator.run_discovery, marketplace, max_pages=int(limit) if limit != "ALL" else 5)
-        return JSONResponse(content={"message": "Started Autonomous Discovery mode"})
+        pages = discovery_pages
+        item_limit = discovery_item_limit
+        background_tasks.add_task(_guarded_run, orchestrator.run_discovery,
+                                  run_id, marketplace, pages, run_id, item_limit)
+        return JSONResponse(status_code=200, content={
+            "message": "Accepted: Autonomous Discovery", "mode": mode,
+            "run_id": run_id, "state": "RUNNING",
+            "marketplace": marketplace, "max_pages": pages})
     elif mode == "FALABELLA_SSR":
         # Bounded, browser-free acquisition using the CERTIFIED Falabella HTTP/SSR
         # strategy (DECISIONS.md D-016 / FAILURES.md F-010). No new engine: this
         # exposes the existing proven path through the authenticated audit API,
         # so acquisition -> persistence is one supported, auditable flow.
         brand = data.get("brand", "Nicopoly")
-        try:
-            items = int(limit)
-        except (TypeError, ValueError):
-            items = 12
-        ssr_run_id = f"run_mri_falabella_ssr_{int(time.time())}"
-        background_tasks.add_task(run_falabella_ssr_acquisition, brand, items, ssr_run_id)
-        return JSONResponse(content={"message": "Started FALABELLA_SSR acquisition",
-                                     "mode": mode, "brand": brand,
-                                     "max_items": items, "run_id": ssr_run_id})
+        items = ssr_items
+        background_tasks.add_task(_guarded_run, run_falabella_ssr_acquisition,
+                                  run_id, brand, items, run_id)
+        return JSONResponse(status_code=200, content={
+            "message": "Accepted: FALABELLA_SSR acquisition", "mode": mode,
+            "brand": brand, "max_items": items, "run_id": run_id,
+            "state": "RUNNING"})
     elif mode == "PARIS_PUBLIC":
         # Bounded, browser-free Paris acquisition through the EXISTING
         # REAParisEngine (public Constructor key discovery). Same contract as
         # FALABELLA_SSR: one supported flow acquisition -> persistence.
         brand = data.get("brand", "Nicopoly")
-        try:
-            items = int(limit)
-        except (TypeError, ValueError):
-            items = 12
-        paris_run_id = f"run_mri_paris_public_{int(time.time())}"
-        background_tasks.add_task(run_paris_public_acquisition, brand, items,
-                                  paris_run_id)
-        return JSONResponse(content={"message": "Started PARIS_PUBLIC acquisition",
-                                     "mode": mode, "brand": brand,
-                                     "max_items": items, "run_id": paris_run_id})
+        items = ssr_items
+        background_tasks.add_task(_guarded_run, run_paris_public_acquisition,
+                                  run_id, brand, items, run_id)
+        return JSONResponse(status_code=200, content={
+            "message": "Accepted: PARIS_PUBLIC acquisition", "mode": mode,
+            "brand": brand, "max_items": items, "run_id": run_id,
+            "state": "RUNNING"})
     else:
-        background_tasks.add_task(orchestrator.run_audit, marketplace, limit)
-        return JSONResponse(content={"message": f"Started in {mode} mode"})
+        background_tasks.add_task(_guarded_run, orchestrator.run_audit,
+                                  run_id, marketplace, limit, run_id)
+        return JSONResponse(status_code=200, content={
+            "message": f"Accepted in {mode} mode", "mode": mode,
+            "run_id": run_id, "state": "RUNNING"})
 
 
 def run_falabella_ssr_acquisition(brand: str = "Nicopoly", max_items: int = 12,
@@ -582,6 +752,37 @@ from app.mri_autonomous.category_evaluator import evaluate_commercial_category
 
 CATALOG_PATH = Path("Actualización masiva de productos.xlsx")
 _master_catalog_cache = None
+_master_catalog_source = "MISSING"
+
+
+def master_catalog_status() -> dict:
+    """Status of the OPTIONAL historical master catalog.
+
+    It is a historical reference for lookup only: never an authority for
+    current publications, sellers, categories or absence.
+    """
+    import os
+    roots = []
+    try:
+        roots.append(Path.cwd())
+        roots.append(Path(__file__).resolve().parents[2])
+    except Exception:
+        pass
+    found = None
+    for root in roots:
+        candidate = root / CATALOG_PATH.name
+        if candidate.exists():
+            found = str(candidate.resolve())
+            break
+    return {
+        "status": "AVAILABLE" if found else "CATALOG_REFERENCE_MISSING",
+        "path": found,
+        "role": "HISTORICAL_REFERENCE",
+        "authority": "NONE",
+        "allowed_use": "LOOKUP_BY_IDENTIFIER_ONLY",
+        "source_used": _master_catalog_source,
+        "blocks_acquisition": False,
+    }
 
 def clean_cat_title(s: str) -> str:
     if not s:
@@ -613,7 +814,7 @@ def normalize_title_tokens(t: str) -> frozenset:
 
 
 def get_master_catalog():
-    global _master_catalog_cache
+    global _master_catalog_cache, _master_catalog_source
     if _master_catalog_cache is not None:
         return _master_catalog_cache
     
@@ -648,12 +849,15 @@ def get_master_catalog():
                             token_to_entries[toks] = []
                         token_to_entries[toks].append(entry)
             wb.close()
+            _master_catalog_source = "HISTORICAL_REFERENCE_XLSX"
         except Exception as e:
             print("Error loading master catalog in API:", e)
+            _master_catalog_source = "UNREADABLE"
     else:
         # Fallback to versioned JSON fixture for clean checkouts
         fixture_path = Path("data/master_catalog_fixture.json")
         if fixture_path.exists():
+            _master_catalog_source = "HISTORICAL_REFERENCE_FIXTURE"
             try:
                 import json
                 with open(fixture_path, "r", encoding="utf-8") as f:
@@ -1098,7 +1302,10 @@ async def get_history():
                         r.marketplace,
                         COUNT(p.publication_id) as total,
                         SUM(CASE WHEN p.status IN ('OBSERVED', 'CONFIRMED', 'NICOPOLY_CONFIRMED') THEN 1 ELSE 0 END) as confirmed,
-                        COALESCE(r.execution_mode, 'SQLITE_PERSISTED') as mode
+                        COALESCE(r.execution_mode, 'SQLITE_PERSISTED') as mode,
+                        r.terminal_state as terminal_state,
+                        r.status as run_status,
+                        r.source_method as source_method
                     FROM mri_runs r
                     LEFT JOIN all_pubs p ON r.run_id = p.run_id
                     GROUP BY r.run_id
@@ -1127,6 +1334,11 @@ async def get_history():
                 for r in cur.execute(query).fetchall():
                     run_id = r["run_id"]
                     seen_runs.add(run_id)
+                    keys = r.keys()
+                    terminal = r["terminal_state"] if "terminal_state" in keys else None
+                    run_status = r["run_status"] if "run_status" in keys else None
+                    source_method = r["source_method"] if "source_method" in keys else None
+                    outcome = (terminal or run_status or "").upper() or None
                     history_items.append({
                         "run_id": run_id,
                         "timestamp": r["started_at"] or "2026-10-14T00:00:00",
@@ -1134,6 +1346,14 @@ async def get_history():
                         "total": r["total"] or 0,
                         "confirmed": r["confirmed"] or 0,
                         "mode": r["mode"],
+                        "engine": r["mode"],
+                        "source_method": source_method,
+                        "terminal_state": terminal,
+                        "outcome": outcome,
+                        # Historical query: never presented as a new acquisition.
+                        "view_kind": "PERSISTED_VIEW",
+                        "live": False,
+                        "is_new_acquisition": False,
                         "source": "OPERATIONAL"
                     })
         finally:
@@ -1145,7 +1365,13 @@ async def get_history():
         if r_id and r_id not in seen_runs:
             seen_runs.add(r_id)
             item = dict(h)
-            item.setdefault("source", "LIVE_MEMORY")
+            _live = bool(orchestrator.is_running and r_id == (orchestrator.state or {}).get("run_id"))
+            item.setdefault("source", "LIVE_MEMORY" if _live else "PERSISTED_JSON")
+            item["view_kind"] = "LIVE_MEMORY" if _live else "PERSISTED_VIEW"
+            item["live"] = _live
+            item["is_new_acquisition"] = _live
+            item.setdefault("outcome", item.get("outcome") or item.get("terminal_state"))
+            item.setdefault("engine", item.get("engine") or item.get("mode") or "DISCOVERY")
             history_items.append(item)
             
     # Add PROTECTED (production) runs that are not already listed. Read-only.
@@ -1156,11 +1382,100 @@ async def get_history():
 
     return JSONResponse(content={
         "history": history_items,
+        "catalog_reference": _safe_catalog_reference(),
         "sources": {
             "operational": str(_operational_db_path()),
             "protected": str(_protected_db_path()) if _protected_db_path() else None,
         },
     })
+
+
+def _safe_catalog_reference() -> dict:
+    """Reference-catalog status, surfaced as an explicit limitation."""
+    try:
+        from app.mri_dashboard.acquisition_contract import catalog_reference_status
+        return catalog_reference_status()
+    except Exception as exc:
+        return {"status": "UNKNOWN", "error": str(exc)}
+
+
+def _identity_summary_from_publications(pubs) -> dict:
+    """Counts by commercial-identity state; unknown is NEVER counted as official."""
+    counts = {
+        "records": 0, "unique_marketplace_ids": 0,
+        "OFFICIAL_VERIFIED": 0, "THIRD_PARTY_NEW": 0,
+        "THIRD_PARTY_USED": 0, "SELLER_UNVERIFIED": 0,
+        "official_kpi_eligible": 0, "excluded_from_official_kpi": 0,
+    }
+    skus = set()
+    for p in pubs or []:
+        if not isinstance(p, dict):
+            continue
+        counts["records"] += 1
+        sku = p.get("marketplace_product_id") or p.get("publication_id")
+        if sku:
+            skus.add(sku)
+        attrs = p.get("commercial_attributes")
+        if isinstance(attrs, str):
+            try:
+                attrs = json.loads(attrs)
+            except Exception:
+                attrs = None
+        identity = attrs.get("commercial_identity") if isinstance(attrs, dict) else None
+        state = (identity or {}).get("state")
+        if state in ("OFFICIAL_VERIFIED", "THIRD_PARTY_NEW", "THIRD_PARTY_USED"):
+            counts[state] += 1
+        else:
+            # Missing/unverified identity can never feed the official KPI.
+            counts["SELLER_UNVERIFIED"] += 1
+        if state == "OFFICIAL_VERIFIED" and (identity or {}).get("condition") != "USED":
+            counts["official_kpi_eligible"] += 1
+        else:
+            counts["excluded_from_official_kpi"] += 1
+    counts["unique_marketplace_ids"] = len(skus)
+    return counts
+
+
+def _persisted_run_meta(run_id: str) -> dict:
+    """Engine/terminal state of a persisted run: what ACTUALLY executed.
+
+    Never claims a new acquisition: the caller is a historical query.
+    """
+    from app.mri_dashboard.acquisition_contract import view_metadata
+    meta = {"execution_mode": None, "terminal_state": None, "run_status": None,
+            "source_method": None, "run_marketplace": None}
+    for db in (_operational_db_path(), _protected_db_path()):
+        if db is None or not Path(db).exists():
+            continue
+        try:
+            conn = _connect_ro(db)
+        except Exception:
+            continue
+        try:
+            row = conn.execute(
+                "SELECT execution_mode, terminal_state, status, source_method, marketplace "
+                "FROM mri_runs WHERE run_id = ?", (run_id,)).fetchone()
+        except Exception:
+            row = None
+        finally:
+            conn.close()
+        if row:
+            keys = row.keys() if hasattr(row, "keys") else []
+            meta["execution_mode"] = row["execution_mode"] if "execution_mode" in keys else None
+            meta["terminal_state"] = row["terminal_state"] if "terminal_state" in keys else None
+            meta["run_status"] = row["status"] if "status" in keys else None
+            meta["source_method"] = row["source_method"] if "source_method" in keys else None
+            meta["run_marketplace"] = row["marketplace"] if "marketplace" in keys else None
+            break
+    out = view_metadata(execution_mode=meta["execution_mode"],
+                        run_id=run_id, source="PERSISTED_VIEW", live=False)
+    out.update({
+        "engine": meta["execution_mode"] or "UNKNOWN",
+        "terminal_state": meta["terminal_state"],
+        "outcome": (meta["terminal_state"] or meta["run_status"] or "").upper() or None,
+        "source_method": meta["source_method"],
+    })
+    return out
 
 
 @app.get("/api/history/{run_id}")
@@ -1181,7 +1496,9 @@ async def get_history_run_publications(run_id: str):
     pubs = fetch_run_publications(run_id, db_path=str(effective_db))
     if pubs:
         return JSONResponse(content={"run_id": run_id, "publications": pubs,
-                                     "count": len(pubs), "source": "OPERATIONAL"})
+                                     "count": len(pubs), "source": "OPERATIONAL",
+                                     **_persisted_run_meta(run_id),
+                                     "identity_summary": _identity_summary_from_publications(pubs)})
 
     # 1b. Fall back to the PROTECTED database, strictly read-only
     protected = _protected_db_path()
@@ -1192,7 +1509,9 @@ async def get_history_run_publications(run_id: str):
             pubs_p = []
         if pubs_p:
             return JSONResponse(content={"run_id": run_id, "publications": pubs_p,
-                                         "count": len(pubs_p), "source": "PROTECTED"})
+                                         "count": len(pubs_p), "source": "PROTECTED",
+                                         **_persisted_run_meta(run_id),
+                                         "identity_summary": _identity_summary_from_publications(pubs_p)})
 
     # Check if run exists in mri_runs with 0 publications
     if Path(effective_db).exists():
@@ -1208,7 +1527,9 @@ async def get_history_run_publications(run_id: str):
                         "publications": [],
                         "count": 0,
                         "source": "SQLITE_EMPTY_RUN",
-                        "status": run_row["terminal_state"] or run_row["status"] or "COMPLETED"
+                        "status": run_row["terminal_state"] or run_row["status"] or "COMPLETED",
+                        **_persisted_run_meta(run_id),
+                        "identity_summary": _identity_summary_from_publications([]),
                     })
         except Exception:
             pass
@@ -1218,7 +1539,16 @@ async def get_history_run_publications(run_id: str):
     # 2. Check orchestrator history
     for h in orchestrator.history:
         if h.get("run_id") == run_id:
-            return JSONResponse(content={"run_id": run_id, "publications": h.get("results", []), "count": len(h.get("results", [])), "source": "ORCHESTRATOR_MEMORY"})
+            _results = h.get("results", []) or []
+            return JSONResponse(content={
+                "run_id": run_id, "publications": _results, "count": len(_results),
+                "source": "ORCHESTRATOR_MEMORY",
+                "engine": h.get("engine") or h.get("mode"),
+                "outcome": h.get("outcome") or h.get("terminal_state"),
+                "view_kind": "PERSISTED_VIEW", "live": False,
+                "is_new_acquisition": False,
+                "identity_summary": _identity_summary_from_publications(_results),
+            })
             
     return JSONResponse(status_code=404, content={"message": f"Run {run_id} not found", "run_id": run_id, "publications": []})
 
@@ -1730,6 +2060,159 @@ async def get_ripley_nicopoly_data(run_id: Optional[str] = None):
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
+def _comparative_marketplace_summary() -> dict:
+    """COMPARATIVE view: latest verified run per marketplace, with provenance.
+
+    Never merges or sums independent runs as if they were one joint audit. Each
+    marketplace shows its own run_id, date, source and terminal state.
+    """
+    mkt_meta = {
+        "Paris": "Constructor.io API / public key discovery",
+        "Falabella": "Next.js SSR __NEXT_DATA__ (HTTP)",
+        "Mercado Libre": "Official Corridor Scraper & Taxonomy Discovery",
+        "Ripley": "Catalog Scraper & Facets Verification",
+    }
+    out = {m: {"mechanism": mech, "brand_publications": 0,
+               "official_seller_publications": 0, "categories_count": 0,
+               "status": "NOT_EXECUTED", "run_id": None, "run_date": None,
+               "source": None} for m, mech in mkt_meta.items()}
+
+    def scan(db_path, source):
+        try:
+            conn = _connect_ro(db_path)
+        except Exception:
+            return
+        try:
+            cur = conn.cursor()
+            has_runs = cur.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='mri_runs'"
+            ).fetchone()
+            if not has_runs:
+                return
+            for mkt in list(out.keys()):
+                if out[mkt]["run_id"] is not None:
+                    continue  # operational data wins over protected
+                row = cur.execute(
+                    "SELECT r.run_id, r.started_at, r.terminal_state, r.status, r.execution_mode "
+                    "FROM mri_runs r "
+                    "WHERE r.marketplace = ? "
+                    "   OR EXISTS (SELECT 1 FROM mri_publications p "
+                    "              WHERE p.run_id = r.run_id AND p.marketplace = ?) "
+                    # Runs are inserted when they finish, so rowid is the only
+                    # monotonic "latest" key: started_at mixes local naive and
+                    # UTC offset strings, which text-sorts incorrectly.
+                    "ORDER BY r.rowid DESC LIMIT 1", (mkt, mkt)).fetchone()
+                if not row:
+                    continue
+                run_id, started, terminal, status, mode = row
+                # Scope publications to THIS marketplace: discovery runs are
+                # persisted with the neutral stamp MULTI_MARKETPLACE, so keying
+                # only on mri_runs.marketplace made a real single-marketplace
+                # run invisible (absence-of-execution presented as no data) and
+                # would otherwise attribute foreign publications to this market.
+                try:
+                    pubs = cur.execute(
+                        "SELECT marketplace_product_id, commercial_attributes "
+                        "FROM mri_publications WHERE run_id = ? AND marketplace = ?",
+                        (run_id, mkt)).fetchall()
+                except Exception:
+                    pubs = cur.execute(
+                        "SELECT marketplace_product_id, commercial_attributes "
+                        "FROM mri_publications WHERE run_id = ?", (run_id,)).fetchall()
+                skus, official = set(), 0
+                identity_counts = {
+                    "OFFICIAL_VERIFIED": 0, "THIRD_PARTY_NEW": 0,
+                    "THIRD_PARTY_USED": 0, "SELLER_UNVERIFIED": 0,
+                    "official_kpi_eligible": 0, "excluded_from_official_kpi": 0,
+                }
+                for sku, attrs_raw in pubs:
+                    if sku in skus:
+                        continue
+                    skus.add(sku)
+                    try:
+                        attrs = json.loads(attrs_raw) if isinstance(attrs_raw, str) else (attrs_raw or {})
+                    except Exception:
+                        attrs = {}
+                    identity = attrs.get("commercial_identity") if isinstance(attrs, dict) else None
+                    if identity:
+                        st = identity.get("state")
+                        if st in ("OFFICIAL_VERIFIED", "THIRD_PARTY_NEW", "THIRD_PARTY_USED"):
+                            identity_counts[st] += 1
+                        else:
+                            identity_counts["SELLER_UNVERIFIED"] += 1
+                        if st == "OFFICIAL_VERIFIED" and identity.get("condition") != "USED":
+                            official += 1
+                            identity_counts["official_kpi_eligible"] += 1
+                        else:
+                            identity_counts["excluded_from_official_kpi"] += 1
+                    else:
+                        # Legacy rows: only explicit seller evidence is official.
+                        sellers = [str(x).lower() for x in (attrs.get("sellers") or [])]
+                        if attrs.get("is_official_seller") or "nicopoly" in sellers:
+                            official += 1
+                            identity_counts["OFFICIAL_VERIFIED"] += 1
+                            identity_counts["official_kpi_eligible"] += 1
+                        else:
+                            identity_counts["SELLER_UNVERIFIED"] += 1
+                            identity_counts["excluded_from_official_kpi"] += 1
+                try:
+                    cats = cur.execute(
+                        "SELECT COUNT(*) FROM mri_publication_categories "
+                        "WHERE publication_id IN (SELECT publication_id FROM mri_publications "
+                        "WHERE run_id = ? AND marketplace = ?)",
+                        (run_id, mkt)).fetchone()[0]
+                except Exception:
+                    cats = 0
+                state = (terminal or status or "").upper()
+                if state in ("SOURCE_BLOCKED", "EXTRACTOR_FAILURE", "FAILED", "PARTIAL",
+                             "NOT_FOUND", "STOPPED_BY_USER", "STOPPED"):
+                    # Keep the real outcome: absence of rows is not "not executed".
+                    pass
+                elif state in ("", "COMPLETED", "SUCCESS", "PENDING", "RUNNING", "FOUND"):
+                    state = "OPERATIONAL" if skus else "NOT_EXECUTED"
+                out[mkt].update({
+                    "brand_publications": len(skus),
+                    "official_seller_publications": official,
+                    "categories_count": cats,
+                    "status": state,
+                    "run_id": run_id,
+                    "run_date": started,
+                    "source": source,
+                    "execution_mode": mode,
+                    "engine": mode,
+                    # This is a READ of persisted data, never a new acquisition.
+                    "view_kind": "PERSISTED_VIEW",
+                    "live": False,
+                    "is_new_acquisition": False,
+                    "identity_summary": identity_counts,
+                })
+        finally:
+            conn.close()
+
+    scan(_operational_db_path(), "OPERATIONAL")
+    protected = _protected_db_path()
+    if protected is not None:
+        scan(protected, "PROTECTED")
+
+    executed = [m for m, d in out.items() if d["status"] not in ("NOT_EXECUTED",)]
+    return {
+        "brand": "Nicopoly",
+        "mode": "COMPARATIVE",
+        "marketplaces": out,
+        "executed_marketplaces": len(executed),
+        "total_marketplaces": len(out),
+        "note": ("Cada marketplace muestra su ultima corrida verificada persistida. "
+                 "Es una VISTA PERSISTIDA: no se suman corridas independientes y no "
+                 "representa una adquisicion nueva."),
+        "shared_mri_contract_version": "2.0",
+        "status": "COMPARATIVE_READY" if executed else "NO_RUN_DATA",
+        "view_kind": "PERSISTED_VIEW",
+        "live": False,
+        "is_new_acquisition": False,
+        "catalog_reference": _safe_catalog_reference(),
+    }
+
+
 @app.get("/api/multimarketplace/summary")
 async def get_multimarketplace_summary(run_id: str = None):
     """
@@ -1737,6 +2220,10 @@ async def get_multimarketplace_summary(run_id: str = None):
     all four active marketplaces (Paris, Falabella, Mercado Libre, Ripley).
     Queries real execution data from SQLite associated with run_id (or latest run).
     """
+    # Comparative view (no run_id): latest verified run per marketplace.
+    if not run_id:
+        return JSONResponse(content=_comparative_marketplace_summary())
+
     effective_db = DB_PATH
     try:
         from app.mri_autonomous.storage_guard import StorageConfig
@@ -1943,7 +2430,11 @@ async def get_multimarketplace_summary(run_id: str = None):
             "total_active_marketplaces": 4,
             "operational_marketplaces_count": operational_count,
             "shared_mri_contract_version": "2.0",
-            "status": overall_status
+            "status": overall_status,
+            # Scoped read of ONE run: persisted view, not a new acquisition.
+            "view_kind": "PERSISTED_VIEW",
+            "live": False,
+            "is_new_acquisition": False,
         })
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e), "brand": "Nicopoly", "marketplaces": marketplaces_data})

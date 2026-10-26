@@ -196,9 +196,10 @@ class AcquisitionRecoveryRunner:
         scraper = MercadoLibreScraper(headless=True)
         await scraper.start()
         try:
+            # Mercado Libre scraper is frozen VA code: it does not accept
+            # `max_pages` (only RipleyScraper declares supports_pagination).
             res = await scraper.scrape_autonomous_category(
-                "https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly",
-                max_pages=max_pages
+                "https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly"
             )
             raw = res.get("products", [])
             for it in raw:
@@ -261,35 +262,52 @@ class AcquisitionRecoveryRunner:
         Preserves 1-to-many relationship: parent product observation -> associated variant publications.
         Restores commercial titles, verifies identities with master catalog, classifies categories.
         """
-        # Load master catalog
-        wb_cat = openpyxl.load_workbook(CATALOG_PATH, read_only=True)
-        ws_cat = wb_cat.active
+        # Load master catalog (OPTIONAL historical reference: it is never an
+        # authority and its absence must not block reconciliation).
         child_to_master = {}
         parent_to_master = {}
         title_to_master = {}
-        for r in ws_cat.iter_rows(values_only=True):
-            parent = str(r[2] or "").strip()
-            child = str(r[3] or "").strip()
-            title = str(r[4] or "").strip()
-            cat = str(r[7] or "").strip()
-            fal_tipo = str(r[54] or "").strip() if len(r) > 54 else ""
-            shopify_tipo = str(r[88] or "").strip() if len(r) > 88 else ""
-            ml_prenda = str(r[115] or "").strip() if len(r) > 115 else ""
-            entry = {
-                "parent_sku": parent,
-                "child_sku": child,
-                "title": title,
-                "category": cat,
-                "falabella_tipo": fal_tipo,
-                "shopify_tipo": shopify_tipo,
-                "ml_prenda": ml_prenda
-            }
-            if child and child not in child_to_master:
-                child_to_master[child] = entry
-            if parent and parent not in parent_to_master:
-                parent_to_master[parent] = entry
-            if title and title.lower() not in title_to_master:
-                title_to_master[title.lower()] = entry
+        self.last_catalog_status = "CATALOG_REFERENCE_MISSING"
+        self.last_catalog_source = None
+        if CATALOG_PATH.exists():
+            try:
+                wb_cat = openpyxl.load_workbook(CATALOG_PATH, read_only=True)
+                ws_cat = wb_cat.active
+                for r in ws_cat.iter_rows(values_only=True):
+                    parent = str(r[2] or "").strip()
+                    child = str(r[3] or "").strip()
+                    title = str(r[4] or "").strip()
+                    cat = str(r[7] or "").strip()
+                    fal_tipo = str(r[54] or "").strip() if len(r) > 54 else ""
+                    shopify_tipo = str(r[88] or "").strip() if len(r) > 88 else ""
+                    ml_prenda = str(r[115] or "").strip() if len(r) > 115 else ""
+                    entry = {
+                        "parent_sku": parent,
+                        "child_sku": child,
+                        "title": title,
+                        "category": cat,
+                        "falabella_tipo": fal_tipo,
+                        "shopify_tipo": shopify_tipo,
+                        "ml_prenda": ml_prenda,
+                        "reference_role": "HISTORICAL_REFERENCE",
+                        "reference_authority": "NONE",
+                    }
+                    if child and child not in child_to_master:
+                        child_to_master[child] = entry
+                    if parent and parent not in parent_to_master:
+                        parent_to_master[parent] = entry
+                    if title and title.lower() not in title_to_master:
+                        title_to_master[title.lower()] = entry
+                wb_cat.close()
+                self.last_catalog_status = "AVAILABLE"
+                self.last_catalog_source = str(CATALOG_PATH)
+            except Exception as _cat_exc:
+                self.last_catalog_status = "CATALOG_REFERENCE_UNREADABLE"
+                logger.warning(f"[RecoveryRunner] Historical reference unreadable: {_cat_exc}")
+        else:
+            logger.warning(
+                "[RecoveryRunner] CATALOG_REFERENCE_MISSING: reconciliation continues "
+                "without the historical master catalog; unresolved items are NO_VERIFICADO.")
 
         # Load SQLite snapshots
         conn = sqlite3.connect(self.db_path)
@@ -505,11 +523,16 @@ class AcquisitionRecoveryRunner:
     # 3. SQLITE PERSISTENCE & CATEGORY LINKAGE
     # ──────────────────────────────────────────────────────────────────────────
 
-    def persist_to_sqlite(self, reconciled_result: Dict[str, Any], run_id: str) -> Dict[str, int]:
+    def persist_to_sqlite(self, reconciled_result: Dict[str, Any], run_id: str,
+                          run_meta: Optional[Dict[str, Any]] = None) -> Dict[str, int]:
         """
         Materializes observations into SQLite visibility.db under a certified run_id.
         Generates deterministic category IDs and sets canonical_url = NULL for unknown categories.
         Guarantees non-destructive additive persistence.
+
+        `run_meta` (optional, backward compatible) records what ACTUALLY ran:
+          marketplace, execution_mode, source_method, terminal_state.
+        Without it the historical defaults are preserved for existing callers.
         """
         from app.mri_autonomous.storage_guard import StorageConfig
         StorageConfig.ensure_writable(self.db_path, reason="AcquisitionRecoveryRunner persistence")
@@ -518,8 +541,17 @@ class AcquisitionRecoveryRunner:
         c = conn.cursor()
         now_str = datetime.now().isoformat()
 
-        term_state = reconciled_result.get("terminal_state") or "COMPLETED"
-        run_status = "STOPPED" if term_state in ("PAGE_BUDGET_EXCEEDED", "STOPPED", "FAILED") else "SUCCESS"
+        meta = run_meta or {}
+        term_state = (meta.get("terminal_state")
+                      or reconciled_result.get("terminal_state") or "COMPLETED")
+        run_status = ("STOPPED" if term_state in
+                      ("PAGE_BUDGET_EXCEEDED", "STOPPED", "FAILED", "STOPPED_BY_USER")
+                      else ("SOURCE_BLOCKED" if term_state in
+                            ("SOURCE_BLOCKED", "EXTRACTOR_FAILURE")
+                            else "SUCCESS"))
+        run_marketplace = meta.get("marketplace") or "MULTI_MARKETPLACE"
+        execution_mode = meta.get("execution_mode") or "RECOVERY_OPERATIONAL_INTEGRATION"
+        source_method = meta.get("source_method") or "PAGINATED_ADAPTER_HARVEST"
 
         # 1. Register Run
         c.execute("""
@@ -528,9 +560,9 @@ class AcquisitionRecoveryRunner:
                 truth_model_version, terminal_state, source_method, status, created_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
-            run_id, now_str, now_str, "MULTI_MARKETPLACE", "Nicopoly",
-            "RECOVERY_OPERATIONAL_INTEGRATION", "2.0", term_state,
-            "PAGINATED_ADAPTER_HARVEST", run_status, now_str
+            run_id, meta.get("started_at") or now_str, now_str, run_marketplace, "Nicopoly",
+            execution_mode, "2.0", term_state,
+            source_method, run_status, now_str
         ))
 
         pubs_inserted = 0

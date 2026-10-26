@@ -32,14 +32,19 @@ REM  Works both when the venv sits next to run.py (normal checkout) and when
 REM  this .bat lives inside a git worktree whose venv is one level up.
 set "VENV_PY="
 if exist "%~dp0visibility_auditor_env\Scripts\python.exe" (
-    set "VENV_PY=%~dp0visibility_auditor_env\Scripts\python.exe"
+    "%~dp0visibility_auditor_env\Scripts\python.exe" -c "import _ssl" >nul 2>&1
+    if not errorlevel 1 set "VENV_PY=%~dp0visibility_auditor_env\Scripts\python.exe"
 )
 if not defined VENV_PY if exist "%~dp0..\visibility_auditor_env\Scripts\python.exe" (
-    set "VENV_PY=%~dp0..\visibility_auditor_env\Scripts\python.exe"
+    "%~dp0..\visibility_auditor_env\Scripts\python.exe" -c "import _ssl" >nul 2>&1
+    if not errorlevel 1 set "VENV_PY=%~dp0..\visibility_auditor_env\Scripts\python.exe"
 )
 if not defined VENV_PY (
     for /f "delims=" %%P in ('where python 2^>nul') do (
-        if not defined VENV_PY set "VENV_PY=%%P"
+        if not defined VENV_PY (
+            "%%P" -c "import _ssl" >nul 2>&1
+            if not errorlevel 1 set "VENV_PY=%%P"
+        )
     )
 )
 if not defined VENV_PY (

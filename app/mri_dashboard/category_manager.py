@@ -10,6 +10,7 @@ except Exception:
 
 class CategoryManager:
     def __init__(self, data_path=None):
+        self._explicit_path = (data_path is not None)
         if data_path is not None:
             self.data_path = str(data_path)
         else:
@@ -29,6 +30,11 @@ class CategoryManager:
     def _save(self):
         try:
             from app.mri_autonomous.storage_guard import StorageConfig
+            StorageConfig.ensure_writable(
+                self.data_path,
+                reason="Category catalog persistence",
+                explicit=getattr(self, "_explicit_path", False),
+            )
             StorageConfig.assert_write_allowed(self.data_path)
         except ImportError:
             pass

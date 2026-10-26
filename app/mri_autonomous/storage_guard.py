@@ -371,11 +371,29 @@ class StorageConfig:
         return cls.PRODUCTION_SQLITE
 
     @classmethod
+    def get_aux_dir(cls) -> Path:
+        """Bounded directory for auxiliary run files (JSON catalogs, learning DB).
+
+        Order: MRI_AUX_DIR (operator/launcher) -> effective sandbox root ->
+        legacy repo tmp/mri_sandbox. Keeping aux files inside the sandbox root
+        lets the guard grant them explicitly instead of leaving them outside
+        the authorized area (the old failure: UnauthorizedDatabaseError on
+        tmp/mri_sandbox/mri_categories.json).
+        """
+        env_aux = os.getenv("MRI_AUX_DIR")
+        if env_aux:
+            return Path(env_aux).resolve()
+        sandbox = cls._sandbox_root()
+        if sandbox is not None:
+            return sandbox
+        return (cls._REPO_ROOT / "tmp" / "mri_sandbox").resolve()
+
+    @classmethod
     def get_experience_db_path(cls) -> Path:
         if cls.is_test_mode():
             if cls._ISOLATED_DIR:
                 return cls._ISOLATED_DIR / "mri_experience.db"
-            return (cls._REPO_ROOT / "tmp" / "mri_sandbox" / "mri_experience.db").resolve()
+            return cls.get_aux_dir() / "mri_experience.db"
         return cls.PRODUCTION_EXPERIENCE
 
     @classmethod
@@ -383,7 +401,7 @@ class StorageConfig:
         if cls.is_test_mode():
             if cls._ISOLATED_DIR:
                 return cls._ISOLATED_DIR / "mri_history.json"
-            return (cls._REPO_ROOT / "tmp" / "mri_sandbox" / "mri_history.json").resolve()
+            return cls.get_aux_dir() / "mri_history.json"
         return cls.PRODUCTION_HISTORY
 
     @classmethod
@@ -391,7 +409,7 @@ class StorageConfig:
         if cls.is_test_mode():
             if cls._ISOLATED_DIR:
                 return cls._ISOLATED_DIR / "mri_categories.json"
-            return (cls._REPO_ROOT / "tmp" / "mri_sandbox" / "mri_categories.json").resolve()
+            return cls.get_aux_dir() / "mri_categories.json"
         return cls.PRODUCTION_CATEGORIES
 
     # ── The barrier itself ──────────────────────────────────────────────────
