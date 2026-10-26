@@ -217,6 +217,7 @@ def _paginate(fetch_page, *, surface, category_name=None, category_parent=None,
     return {
         "surface": surface,
         "category_name": category_name,
+        "category_parent": category_parent,
         "terminal": terminal,
         "cause": cause,
         "expected_cards": expected,
@@ -641,15 +642,29 @@ def run_full_audit(engine, *, brand="NICOPOLY", run_id=None, aux_dir=None,
     for s in surfaces:
         if not str(s.get("surface", "")).startswith("category:"):
             continue
+        _rep = (s.get("cards") if s.get("fallback_unfiltered")
+                else s.get("expected_cards"))
         category_metrics.append({
             "category_id": str(s.get("surface")).split(":", 1)[1],
             "category": s.get("category_name") or str(s.get("surface")).split(":", 1)[1],
-            "reported_count": s.get("expected_cards"),
+            "reported_count": _rep,
             "cards": s.get("cards"),
             "unique_products": s.get("unique_product_ids"),
             "pages": s.get("pages_traversed"),
             "terminal": s.get("terminal"),
         })
+        _parent = s.get("category_parent")
+        if _parent and not any(m.get("category") == _parent for m in category_metrics):
+            category_metrics.append({
+                "category_id": s.get("category_id") or "",
+                "category": _parent,
+                "reported_count": _rep,
+                "cards": s.get("cards"),
+                "unique_products": s.get("unique_product_ids"),
+                "pages": s.get("pages_traversed"),
+                "terminal": s.get("terminal"),
+                "parent": True,
+            })
     complete = (bool(surfaces) and all(s["complete"] for s in surfaces)
                 and bool(categories))
     pending = [s["surface"] for s in surfaces if not s["complete"]]
