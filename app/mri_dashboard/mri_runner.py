@@ -766,11 +766,26 @@ class MRIOrchestrator:
                         # stopped at 240 = 5 pages x 48 because limit=5 was mapped
                         # to max_pages; Paris ignored max_pages and reached full
                         # coverage). Visual Auditor scrapers stay frozen.
-                        if getattr(scraper, "supports_pagination", False):
-                            res = await scraper.scrape_autonomous_category(
-                                url, max_pages=_coverage.PAGE_SENTINEL)
-                        else:
-                            res = await scraper.scrape_autonomous_category(url)
+                        # Watchdog: a frozen page/DOM must not hang the whole run.
+                        import asyncio as _aio_cat
+                        try:
+                            if getattr(scraper, "supports_pagination", False):
+                                res = await _aio_cat.wait_for(
+                                    scraper.scrape_autonomous_category(
+                                        url, max_pages=_coverage.PAGE_SENTINEL),
+                                    timeout=240)
+                            else:
+                                res = await _aio_cat.wait_for(
+                                    scraper.scrape_autonomous_category(url),
+                                    timeout=240)
+                        except _aio_cat.TimeoutError:
+                            res = {"products": [], "stop_reason": "NO_PROGRESS",
+                                   "pages_traversed": 0,
+                                   "failure_type": "CATEGORY_TIMEOUT_240S"}
+                        except Exception as _cat_exc:
+                            res = {"products": [], "stop_reason": "EXTRACTOR_FAILURE",
+                                   "pages_traversed": 0,
+                                   "failure_type": f"{type(_cat_exc).__name__}: {_cat_exc}"}
 
                         discovered_products = res.get("products", []) or []
                         raw_stop = res.get("stop_reason")
