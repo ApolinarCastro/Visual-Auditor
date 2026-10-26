@@ -533,6 +533,27 @@ class MRIOrchestrator:
                 self.state["stage"] = "adquiriendo"
                 self.state["last_activity"] = datetime.now().isoformat()
                 scraper = get_scraper(mkt)
+                _profile_lock = None
+                if scraper and mkt in ("Mercado Libre", "Ripley"):
+                    try:
+                        from pathlib import Path as _P
+                        from app.mri_autonomous.browser_profile_manager import ProfileLock
+                        _root = _P(__file__).resolve().parents[2]
+                        _prof = _root / "data" / (
+                            "mercado_libre_profile" if mkt == "Mercado Libre" else "ripley_profile")
+                        _profile_lock = ProfileLock(_prof, run_id=run_id)
+                        _profile_lock.acquire()
+                        self.state.setdefault("profile_locks", {})[mkt] = {
+                            "path": str(_prof), "pid": __import__("os").getpid(),
+                            "acquired_at": datetime.now().isoformat()}
+                    except Exception as _pl_exc:
+                        self.state.setdefault("errors", []).append({
+                            "stage": "preflight",
+                            "error": f"PROFILE_LOCK_FAILED[{mkt}]: {_pl_exc}",
+                            "run_id": run_id, "at": datetime.now().isoformat()})
+                        self.state.setdefault("marketplace_states", {})[mkt] = "PENDIENTE"
+                        _profile_lock = None
+                        continue
                 if scraper:
                     try:
                         await scraper.start()
@@ -790,6 +811,18 @@ class MRIOrchestrator:
                         discovered_products = res.get("products", []) or []
                         raw_stop = res.get("stop_reason")
                         acq_state = normalize_stop_reason(raw_stop)
+                        _failure = str(res.get("failure_type") or "")
+                        if mkt in ("Ripley", "Mercado Libre") and (
+                                acq_state == "SOURCE_BLOCKED"
+                                or "blocked" in _failure.lower()
+                                or "challenge" in _failure.lower()):
+                            self.state.setdefault("anti_block", []).append({
+                                "marketplace": mkt, "category": cat_data.get("name"),
+                                "cause": _failure or raw_stop,
+                                "action": "COOLDOWN_20S",
+                                "at": datetime.now().isoformat()})
+                            import asyncio as _aio_cool
+                            await _aio_cool.sleep(20)
                         try:
                             _observed_url = (scraper.page.url
                                              if getattr(scraper, "page", None) else None)
@@ -1259,6 +1292,13 @@ class MRIOrchestrator:
                 finally:
                     if scraper:
                         await scraper.stop()
+                    if _profile_lock is not None:
+                        try:
+                            _profile_lock.release()
+                            self.state.setdefault("profile_locks", {}).get(mkt, {})[
+                                "released_at"] = datetime.now().isoformat()
+                        except Exception:
+                            pass
                         
             # ── Terminal outcome driven by the acquisition contract ──────────
             acqs = self.state.get("acquisitions") or []
