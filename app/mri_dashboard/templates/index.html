@@ -402,6 +402,7 @@
 
             <div id="catalogMetricsPanel" style="display:none; margin-top:20px; padding:16px; border:1px solid var(--border); border-radius:8px; background:rgba(255,255,255,0.02);">
                 <h3 style="margin:0 0 12px 0; font-size:1.05rem; color:#fff;">Conciliación de catálogo (marketplace)</h3>
+                <div id="catalogSummaryProvenance" style="font-size:0.78rem; color:var(--text-muted); margin:-6px 0 10px 0;"></div>
                 <div class="grid-cards" style="margin-bottom:12px;">
                     <div class="card"><div class="card-title">Productos padre únicos</div><div class="card-value" style="color:var(--primary)" id="catUnique">0</div></div>
                     <div class="card"><div class="card-title">Suma rep. por categoría</div><div class="card-value" style="color:var(--info)" id="catRepSum">0</div></div>
@@ -986,6 +987,15 @@
                 
                 const isRun = data.is_running;
                 const st = data.state || {};
+                const _rid = st.run_id || null;
+                if (window.__lastRunId !== _rid) {
+                    window.__lastRunId = _rid;
+                    // A new run starts: never show the previous run's reconciliation
+                    // as if it belonged to the current one.
+                    if (data.is_running || !st.falabella_ssr_audit) {
+                        window.__falabellaAudit = null;
+                    }
+                }
                 window.__falabellaAudit = st.falabella_ssr_audit || window.__falabellaAudit || null;
                 if (typeof renderCatalogMetrics === 'function') renderCatalogMetrics();
                 
@@ -1161,6 +1171,23 @@
             }
         }
 
+        document.addEventListener('DOMContentLoaded', () => {
+            const up = document.getElementById('catalogUploadPanel');
+            const met = document.getElementById('catalogMetricsPanel');
+            if (up && met && !document.getElementById('refTools')) {
+                const wrap = document.createElement('details');
+                wrap.id = 'refTools';
+                wrap.style.cssText = 'margin-top:18px; padding:10px 14px; border:1px solid var(--border); border-radius:8px; background:rgba(255,255,255,0.015);';
+                const sum = document.createElement('summary');
+                sum.textContent = 'Herramientas de referencia y conciliación (catálogo, checklist, cobertura)';
+                sum.style.cssText = 'cursor:pointer; color:var(--text-muted); font-size:0.9rem;';
+                wrap.appendChild(sum);
+                up.parentNode.insertBefore(wrap, up);
+                wrap.appendChild(up);
+                wrap.appendChild(met);
+            }
+        });
+
         async function runChecklistCoverage() {
             const mkt = document.getElementById('coverageMarketplace').value;
             const status = document.getElementById('coverageStatus');
@@ -1234,6 +1261,11 @@
             if (!summary || (summary.marketplace && summary.marketplace !== 'Falabella')) {
                 panel.style.display = 'none';
                 return;
+            }
+            const _prov = document.getElementById('catalogSummaryProvenance');
+            if (_prov) {
+                _prov.innerText = 'Última corrida completada: ' + (window.__lastRunId || '') +
+                    ' · ' + (summary.level || '');
             }
             panel.style.display = 'block';
             document.getElementById('catUnique').innerText = summary.unique_products ?? 0;
