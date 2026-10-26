@@ -1498,6 +1498,58 @@ def _falabella_audit_metrics(run_id: str) -> Dict[str, Any]:
     return {}
 
 
+@app.get("/api/catalog/coverage")
+async def master_coverage(marketplace: str, run_id: Optional[str] = None):
+    """Published vs missing against the uploaded master (per marketplace)."""
+    from app.loaders.multivende_loader import get_multivende_loader
+    from app.mri_dashboard.publication_coverage import build_report
+    loader = get_multivende_loader()
+    if not loader.reference_available:
+        raise HTTPException(status_code=422,
+                            detail="CATALOG_REFERENCE_MISSING: suba el catálogo maestro")
+    names = {"falabella": "Falabella", "ripley": "Ripley",
+             "mercado libre": "Mercado Libre", "paris": "Paris"}
+    key = marketplace.lower()
+    if key not in names:
+        raise HTTPException(status_code=400, detail="marketplace no soportado")
+    try:
+        from app.mri_autonomous.storage_guard import StorageConfig
+        db_path = str(StorageConfig.get_sqlite_path())
+    except Exception:
+        db_path = str(DB_PATH)
+    conn = get_sqlite_conn(db_path)
+    try:
+        cur = conn.cursor()
+        if run_id:
+            row = cur.execute("SELECT run_id, terminal_state, status FROM mri_runs WHERE run_id = ?",
+                              (run_id,)).fetchone()
+        else:
+            row = cur.execute("SELECT run_id, terminal_state, status FROM mri_runs "
+                              "WHERE marketplace = ? ORDER BY rowid DESC LIMIT 1",
+                              (names[key],)).fetchone()
+    finally:
+        conn.close()
+    if not row:
+        raise HTTPException(status_code=404, detail="No hay corrida para ese marketplace")
+    rid = row["run_id"]
+    terminal = (row["terminal_state"] or row["status"] or "").upper()
+    complete = terminal in ("FOUND", "COMPLETED", "SUCCESS")
+    if key == "falabella":
+        try:
+            from app.mri_autonomous.storage_guard import StorageConfig
+            hist = Path(StorageConfig.get_aux_dir()) / "mri_history.json"
+            for entry in json.loads(hist.read_text(encoding="utf-8")):
+                if entry.get("run_id") == rid:
+                    complete = bool((entry.get("falabella_ssr_audit") or {}).get("complete"))
+                    break
+        except Exception:
+            complete = False
+    pubs = fetch_run_publications(rid, db_path=db_path)
+    report = build_report(names[key], pubs, loader._master_items,
+                          run_id=rid, run_complete=complete)
+    return JSONResponse(content=report)
+
+
 @app.post("/api/catalog/upload")
 async def upload_master_catalog(request: Request):
     """Operator upload of the reference catalog (xlsx/csv). Stock 0 = discard."""

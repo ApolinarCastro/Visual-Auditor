@@ -386,6 +386,17 @@
                     <span id="catalogUploadStatus" style="font-size:0.82rem; color:var(--text-muted);"></span>
                 </div>
                 <div id="catalogUploadResult" style="font-size:0.8rem; color:var(--text-muted); margin-top:8px;"></div>
+                <div style="display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap;">
+                    <select id="coverageMarketplace">
+                        <option value="falabella">Falabella</option>
+                        <option value="ripley">Ripley</option>
+                        <option value="mercado libre">Mercado Libre</option>
+                        <option value="paris">Paris</option>
+                    </select>
+                    <button onclick="runCoverage()">Ver cobertura publicados/faltantes</button>
+                    <span id="coverageStatus" style="font-size:0.8rem; color:var(--text-muted);"></span>
+                </div>
+                <div id="coverageResult" style="font-size:0.8rem; color:var(--text-muted); margin-top:8px;"></div>
             </div>
 
             <div id="catalogMetricsPanel" style="display:none; margin-top:20px; padding:16px; border:1px solid var(--border); border-radius:8px; background:rgba(255,255,255,0.02);">
@@ -1147,6 +1158,23 @@
                 sel.value = decision;
                 renderMainTable();
             }
+        }
+
+        async function runCoverage() {
+            const mkt = document.getElementById('coverageMarketplace').value;
+            const status = document.getElementById('coverageStatus');
+            const out = document.getElementById('coverageResult');
+            status.innerText = 'Calculando cobertura…'; out.innerHTML = '';
+            try {
+                const resp = await fetch('/api/catalog/coverage?marketplace=' + encodeURIComponent(mkt));
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data.detail || ('HTTP ' + resp.status));
+                const c = data.coverage, m = data.master;
+                status.innerText = data.run_complete ? 'Corrida completa' : 'Corrida incompleta: sin faltantes definitivos';
+                const missing = (data.missing || []).slice(0, 10)
+                    .map(x => `<div>${x.sku_master} — ${x.name}</div>`).join('');
+                out.innerHTML = `<div><strong>${data.marketplace}</strong>: esperados ${m.expected} · publicados ${c.published_verified} · faltantes ${c.missing} · no verificables ${c.unverified} · sin stock ${m.discarded_no_stock} · extra ${c.extra_not_in_master}</div>` + missing;
+            } catch (err) { status.innerText = 'Error: ' + err.message; }
         }
 
         async function uploadCatalog() {
