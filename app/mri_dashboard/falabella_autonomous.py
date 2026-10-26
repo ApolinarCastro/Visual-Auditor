@@ -630,6 +630,15 @@ def run_full_audit(engine, *, brand="NICOPOLY", run_id=None, aux_dir=None,
             if best and best != obs.get("category_name"):
                 obs["category_name"] = best
                 obs["category_source"] = "SURFACE_SPECIFIC"
+    # Canonical L2 for manual reconciliation: a product observed in L3 is
+    # counted in its parent L2, and L2+L3 are never summed twice.
+    l3_parent = {c.get("name"): c.get("parent_name")
+                 for c in categories
+                 if (c.get("depth") or 0) >= 3 and c.get("parent_name")}
+    for obs in observations:
+        canon = sorted({l3_parent.get(c, c)
+                        for c in (obs.get("categories_observed") or []) if c})
+        obs["categories_canonical"] = canon
     sku_keys, sku_id_set, multi_sku = set(), set(), 0
     for o in observations:
         skus = o.get("skus") or {}
@@ -638,45 +647,65 @@ def run_full_audit(engine, *, brand="NICOPOLY", run_id=None, aux_dir=None,
             sku_id_set.add(str(sku))
         if len(skus) > 1:
             multi_sku += 1
-    category_metrics = []
-    for s in surfaces:
-        if not str(s.get("surface", "")).startswith("category:"):
+    # Canonical (L2) metrics, comparable with the manual category list.
+    root = {}
+    detail = []
+    for sfr in surfaces:
+        if not str(sfr.get("surface", "")).startswith("category:"):
             continue
-        _rep = (s.get("cards") if s.get("fallback_unfiltered")
-                else s.get("expected_cards"))
-        category_metrics.append({
-            "category_id": str(s.get("surface")).split(":", 1)[1],
-            "category": s.get("category_name") or str(s.get("surface")).split(":", 1)[1],
-            "reported_count": _rep,
-            "cards": s.get("cards"),
-            "unique_products": s.get("unique_product_ids"),
-            "pages": s.get("pages_traversed"),
-            "terminal": s.get("terminal"),
+        name = sfr.get("category_name") or str(sfr.get("surface")).split(":", 1)[1]
+        parent = sfr.get("category_parent")
+        rep = sfr.get("cards") if sfr.get("fallback_unfiltered") else sfr.get("expected_cards")
+        detail.append({
+            "category_id": str(sfr.get("surface")).split(":", 1)[1],
+            "category": name,
+            "parent": parent,
+            "reported_count": rep,
+            "cards": sfr.get("cards"),
+            "unique_products": sfr.get("unique_product_ids"),
+            "pages": sfr.get("pages_traversed"),
+            "terminal": sfr.get("terminal"),
         })
-        _parent = s.get("category_parent")
-        if _parent and not any(m.get("category") == _parent for m in category_metrics):
-            category_metrics.append({
-                "category_id": s.get("category_id") or "",
-                "category": _parent,
-                "reported_count": _rep,
-                "cards": s.get("cards"),
-                "unique_products": s.get("unique_product_ids"),
-                "pages": s.get("pages_traversed"),
-                "terminal": s.get("terminal"),
-                "parent": True,
-            })
-    # Marketplace-specific reconciliation (Falabella): reported category counts
-    # are card counts, NOT inventory. Difference is overlap + duplicated cards,
-    # never products lost.
+        key = parent or name
+        entry = root.setdefault(key, {"category": key, "reported_count": 0,
+                                      "cards": 0, "pages": 0, "terminal": "EXHAUSTION",
+                                      "components": []})
+        entry["components"].append(name)
+        if parent is None:
+            # A real L2 surface wins over its L3 children.
+            entry["reported_count"] = int(rep or 0)
+            entry["cards"] = int(sfr.get("cards") or 0)
+            entry["terminal"] = sfr.get("terminal")
+        elif entry["reported_count"] <= 0:
+            entry["reported_count"] += int(rep or 0)
+            entry["cards"] += int(sfr.get("cards") or 0)
+            entry["terminal"] = sfr.get("terminal")
+        entry["pages"] += int(sfr.get("pages_traversed") or 0)
+
+    category_metrics = []
+    for key, entry in root.items():
+        cat_unique = sum(1 for o in observations
+                         if key in (o.get("categories_canonical") or []))
+        category_metrics.append({
+            "category": key,
+            "reported_count": entry["reported_count"],
+            "unique_products": cat_unique,
+            "cards": entry["cards"],
+            "pages": entry["pages"],
+            "terminal": entry["terminal"],
+            "components": entry["components"],
+        })
+    category_metrics.sort(key=lambda m: (-(m["reported_count"] or 0), m["category"]))
+
     _multi = sum(1 for o in observations
-                 if len(o.get("categories_observed") or []) > 1)
-    _rep_sum = sum(int(m.get("reported_count") or 0)
-                   for m in category_metrics if not m.get("parent"))
+                 if len(o.get("categories_canonical") or []) > 1)
+    _rep_sum = sum(int(m.get("reported_count") or 0) for m in category_metrics)
     _dup_cards = sum(max(0, int(m.get("cards") or 0)
                          - int(m.get("unique_products") or 0))
-                     for m in category_metrics if not m.get("parent"))
+                     for m in category_metrics)
     catalog_summary = {
         "marketplace": "Falabella",
+        "level": "L2_CANONICAL",
         "unique_products": len(observations),
         "reported_sum": _rep_sum,
         "difference": _rep_sum - len(observations),
@@ -684,9 +713,9 @@ def run_full_audit(engine, *, brand="NICOPOLY", run_id=None, aux_dir=None,
         "duplicated_cards": _dup_cards,
         "sku_keys": len(sku_keys),
         "semantics": {
-            "reported_sum": "suma de pagination.count por categoria (tarjetas, NO inventario)",
+            "reported_sum": "suma de pagination.count por categoria L2 canonica (tarjetas, NO inventario)",
             "unique_products": "productos padre distintos (dedupe por group_id)",
-            "difference": "solapamiento entre categorias + tarjetas duplicadas",
+            "difference": "solapamiento REAL entre L2 + tarjetas duplicadas (L3 ya no se suma dos veces)",
         },
     }
     complete = (bool(surfaces) and all(s["complete"] for s in surfaces)
@@ -712,6 +741,7 @@ def run_full_audit(engine, *, brand="NICOPOLY", run_id=None, aux_dir=None,
         "category_tree": discovery["tree"],
         "category_discovery_fetched": discovery["fetched"],
         "category_metrics": category_metrics,
+        "category_metrics_detail": detail,
         "catalog_summary": catalog_summary,
         "gsc_grouping": gsc_stats,
         "pdp_enrichment": pdp_stats,
