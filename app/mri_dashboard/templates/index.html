@@ -1058,6 +1058,21 @@
             }
         }
 
+        function rowCategories(r) {
+            // Observación multi-categoría: un producto puede pertenecer a varias L2.
+            let cats = r.categories_observed;
+            if (!Array.isArray(cats) || cats.length === 0) {
+                const ca = r.commercial_attributes || {};
+                cats = ((ca.observed_attributes || {}).categories_observed)
+                    || ca.categories_observed || [];
+            }
+            if (!Array.isArray(cats) || cats.length === 0) {
+                cats = (r.real_category && r.real_category !== 'NO_VERIFICADO')
+                    ? [r.real_category] : [];
+            }
+            return cats;
+        }
+
         function updateDashboardCards() {
             let acq=0, cor=0, inc=0, rev=0, notv=0, catObs=0;
             
@@ -1104,7 +1119,7 @@
             // Dynamic categories from currentResults
             const cats = new Set();
             currentResults.forEach(r => {
-                if (r.real_category && r.real_category !== 'NO_VERIFICADO') cats.add(r.real_category);
+                rowCategories(r).forEach(c => { if (c) cats.add(c); });
             });
             populateDropdown('filterCategory', cats);
 
@@ -1122,7 +1137,7 @@
                 if (filterStatus !== "ALL") {
                     if (dec !== filterStatus) match = false;
                 }
-                if (filterCategory !== "ALL" && r.real_category !== filterCategory) match = false;
+                if (filterCategory !== "ALL" && !rowCategories(r).includes(filterCategory)) match = false;
                 if (filterCoverage !== "ALL") {
                     if (filterCoverage === "PARTIAL") {
                         if (r.coverage !== "PARTIAL" && r.coverage !== "PAGE_BUDGET_EXCEEDED") match = false;

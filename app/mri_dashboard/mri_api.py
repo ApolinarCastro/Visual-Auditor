@@ -1239,6 +1239,10 @@ def fetch_run_publications(run_id: str, db_path: Optional[str] = None) -> List[D
                 "reason": motivo,
                 "coverage": cov_val,
                 "real_category": obs_cat,
+                "categories_observed": (
+                    ((attrs.get("observed_attributes") or {}).get("categories_observed"))
+                    or attrs.get("categories_observed")
+                    or ([obs_cat] if obs_cat and obs_cat != "NO_VERIFICADO" else [])),
                 "expected_category": exp_cat,
                 "real_subcategory": "NO_VERIFICADO",
                 "category_source": cat_source,
