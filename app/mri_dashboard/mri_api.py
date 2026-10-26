@@ -1544,9 +1544,13 @@ async def master_coverage(marketplace: str, run_id: Optional[str] = None):
                     break
         except Exception:
             complete = False
-    pubs = fetch_run_publications(rid, db_path=db_path)
-    report = build_report(names[key], pubs, loader._master_items,
-                          run_id=rid, run_complete=complete)
+    # Coverage is CPU/IO heavy (master index + matching): never block the
+    # event loop, or /api/state freezes while the operator checks coverage.
+    import asyncio
+    pubs = await asyncio.to_thread(fetch_run_publications, rid, db_path=db_path)
+    report = await asyncio.to_thread(
+        build_report, names[key], pubs, loader._master_items,
+        run_id=rid, run_complete=complete)
     return JSONResponse(content=report)
 
 
