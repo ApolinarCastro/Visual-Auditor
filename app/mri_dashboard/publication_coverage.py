@@ -128,10 +128,37 @@ def build_report(marketplace, observations, master_items, *, run_id=None,
     for pid, g in groups.items():
         for sku in g["skus"]:
             variant_index[sku.lower()] = pid
+    checklist_idx = _checklist_index(checklist, marketplace)
     matched, missing, extra = {}, [], []
     for obs in observations or []:
         text = " ".join(str(obs.get(k) or "") for k in
                         ("producto_id", "sku", "producto_nombre", "canonical_url"))
+        # Validation-first key: season checklist channel IDs/URLs/SKUs.
+        if checklist_idx:
+            cpid = cmethod = None
+            for key in re.findall(r"\d{6,}", text):
+                if key in checklist_idx["ids"]:
+                    cpid, cmethod = checklist_idx["ids"][key], "CHECKLIST_ID"
+                    break
+            if cpid is None:
+                for sku, cand in checklist_idx["skus"].items():
+                    if sku and re.search(r"(?<![A-Za-z0-9])" + re.escape(sku)
+                                         + r"(?![A-Za-z0-9])", text, re.I):
+                        cpid, cmethod = cand, "CHECKLIST_SKU"
+                        break
+            if cpid is None:
+                cpid = checklist_idx["titles"].get(_norm(obs.get("producto_nombre")))
+                cmethod = "CHECKLIST_TITLE" if cpid else None
+            if cpid is not None and cpid in groups and cpid not in matched:
+                g = groups[cpid]
+                matched[cpid] = {
+                    "sku_parent": cpid, "name": g.get("name"),
+                    "skus_maestro": g["skus"], "method": cmethod,
+                    "observed_id": obs.get("producto_id") or obs.get("sku"),
+                    "url": obs.get("canonical_url") or obs.get("url"),
+                    "category": obs.get("real_category"),
+                }
+                continue
         pid = None
         method = None
         for sku, cand in variant_index.items():
