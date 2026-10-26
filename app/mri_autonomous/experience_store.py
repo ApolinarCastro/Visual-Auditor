@@ -12,6 +12,9 @@ except Exception:
 
 class ExperienceStore:
     def __init__(self, db_path: Optional[Any] = None):
+        # An explicit caller-supplied path is a declared non-production target
+        # (tests, isolated tools). It can never be the production database.
+        self._explicit_db = db_path is not None
         if db_path is not None:
             self.db_path = str(db_path)
         else:
@@ -22,21 +25,17 @@ class ExperienceStore:
                 self.db_path = str(DEFAULT_EXP_DB)
         
         # Enforce storage barrier on write/init
-        try:
-            from app.mri_autonomous.storage_guard import StorageConfig
-            StorageConfig.assert_write_allowed(self.db_path)
-        except ImportError:
-            pass
+        from app.mri_autonomous.storage_guard import StorageConfig
+        StorageConfig.ensure_writable(self.db_path, reason="ExperienceStore persistence",
+                                      explicit=self._explicit_db)
             
         os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         self._init_db()
 
     def _get_connection(self):
-        try:
-            from app.mri_autonomous.storage_guard import StorageConfig
-            StorageConfig.assert_write_allowed(self.db_path)
-        except ImportError:
-            pass
+        from app.mri_autonomous.storage_guard import StorageConfig
+        StorageConfig.ensure_writable(self.db_path, reason="ExperienceStore persistence",
+                                      explicit=self._explicit_db)
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
         return conn

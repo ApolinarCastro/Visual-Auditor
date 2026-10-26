@@ -12,6 +12,7 @@ Provides:
 
 import json
 import logging
+import os
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass, field, asdict
@@ -20,12 +21,144 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 import hashlib
 import pathlib
+import re
+import time
 
 logger = logging.getLogger(__name__)
 
-# Verified public Constructor.io production configuration for Paris.cl
-PARIS_CONSTRUCTOR_KEY = "key_6PvQHDnR0zdWgEPh"
+# Constructor.io public configuration for Paris.cl.
+#
+# SECURITY: no key is stored in source. Resolution order:
+#   1. explicit argument
+#   2. PARIS_CONSTRUCTOR_KEY environment variable (optional operator override)
+#   3. RUNTIME DISCOVERY from Paris.cl's own public frontend resources
+#      (the key is a PUBLIC search key: it is published to browsers by design)
+#
+# If discovery also fails, acquisition fails closed with ParisConfigurationError
+# so callers classify SOURCE_BLOCKED instead of fabricating results.
+CONSTRUCTOR_KEY_ENV = "PARIS_CONSTRUCTOR_KEY"
 PARIS_API_BASE = "https://ac.cnstrc.com"
+PARIS_FRONTEND_BASE = "https://www.paris.cl"
+CONSTRUCTOR_KEY_CACHE = pathlib.Path("tmp/paris_public_key.json")
+_KEY_DISCOVERY_TTL_S = 7 * 24 * 3600
+_KEY_RE = re.compile(r"key_[A-Za-z0-9]{10,}")
+
+# process-level memo: attempt discovery at most once per process
+_DISCOVERED_KEY: Optional[str] = None
+_DISCOVERY_ATTEMPTED = False
+
+
+class ParisConfigurationError(RuntimeError):
+    """Raised when Paris/Constructor.io configuration is missing or invalid."""
+
+
+def _public_get(url: str, timeout: int = 25) -> bytes:
+    req = urllib.request.Request(url, headers={
+        "User-Agent": DEFAULT_USER_AGENT,
+        "Accept": "text/html,application/javascript,application/json,*/*;q=0.8",
+        "Accept-Language": "es-CL,es;q=0.9,en;q=0.8",
+    })
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        return r.read()
+
+
+def _key_is_valid(key: str, timeout: int = 20) -> bool:
+    """A key is valid only if the public endpoint returns real brand results."""
+    q = urllib.parse.urlencode({
+        "key": key, "num_results_per_page": 1, "page": 1,
+        "filters[brand]": "Nicopoly",
+    })
+    try:
+        raw = _public_get(f"{PARIS_API_BASE}/search/nicopoly?{q}", timeout=timeout)
+        data = json.loads(raw.decode("utf-8", "replace"))
+        resp = data.get("response", {})
+        return bool(resp.get("results")) and (resp.get("total_num_results") or 0) > 0
+    except Exception:
+        return False
+
+
+def discover_public_constructor_key(force: bool = False) -> str:
+    """
+    Discover Paris' PUBLIC Constructor.io search key from public frontend assets.
+
+    Reads the public homepage, collects same-origin bundles, extracts `key_...`
+    tokens and keeps only one that the public endpoint accepts for Nicopoly.
+    Result is cached in a runtime file (never in source).
+    """
+    if not force and CONSTRUCTOR_KEY_CACHE.exists():
+        try:
+            cached = json.loads(CONSTRUCTOR_KEY_CACHE.read_text(encoding="utf-8"))
+            key = (cached.get("key") or "").strip()
+            age = time.time() - float(cached.get("discovered_epoch", 0))
+            if key and age < _KEY_DISCOVERY_TTL_S and _key_is_valid(key):
+                return key
+        except Exception:
+            pass
+
+    candidates: List[str] = []
+    try:
+        html = _public_get(f"{PARIS_FRONTEND_BASE}/").decode("utf-8", "replace")
+    except Exception as exc:
+        logger.warning("[Paris] frontend unreachable for key discovery: %s", exc)
+        return ""
+
+    candidates.extend(_KEY_RE.findall(html))
+
+    srcs = re.findall(r'<script[^>]+src="([^"]+)"', html)
+    urls: List[str] = []
+    for s in srcs:
+        u = urllib.parse.urljoin(PARIS_FRONTEND_BASE + "/", s)
+        if "paris.cl" in u and u not in urls:
+            urls.append(u)
+
+    for u in urls[:12]:
+        try:
+            body = _public_get(u).decode("utf-8", "replace")
+            candidates.extend(_KEY_RE.findall(body))
+        except Exception:
+            continue
+
+    for key in list(dict.fromkeys(candidates)):
+        if _key_is_valid(key):
+            try:
+                CONSTRUCTOR_KEY_CACHE.parent.mkdir(parents=True, exist_ok=True)
+                CONSTRUCTOR_KEY_CACHE.write_text(json.dumps({
+                    "key": key,
+                    "discovered_epoch": time.time(),
+                    "source": "public frontend resources (paris.cl)",
+                }, indent=2), encoding="utf-8")
+            except Exception:
+                pass
+            logger.info("[Paris] public Constructor key discovered from frontend assets")
+            return key
+
+    logger.warning("[Paris] no valid public Constructor key found in frontend assets")
+    return ""
+
+
+def resolve_constructor_key(explicit: Optional[str] = None) -> str:
+    """
+    Resolve the Constructor key: explicit -> env -> public discovery.
+
+    Absence of PARIS_CONSTRUCTOR_KEY no longer blocks a valid public source.
+    """
+    global _DISCOVERED_KEY, _DISCOVERY_ATTEMPTED
+    key = (explicit or os.getenv(CONSTRUCTOR_KEY_ENV, "") or "").strip()
+    if key:
+        return key
+    if not _DISCOVERY_ATTEMPTED:
+        _DISCOVERY_ATTEMPTED = True
+        _DISCOVERED_KEY = discover_public_constructor_key()
+    return _DISCOVERED_KEY or ""
+
+
+def _reset_key_discovery() -> None:
+    """Test helper: forget the memoised discovery result."""
+    global _DISCOVERED_KEY, _DISCOVERY_ATTEMPTED
+    _DISCOVERED_KEY = None
+    _DISCOVERY_ATTEMPTED = False
+
+
 DEFAULT_USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -151,12 +284,20 @@ class REAParisEngine:
     Uses verified endpoints discovered through reverse engineering.
     """
 
-    def __init__(self, api_key: str = PARIS_CONSTRUCTOR_KEY, user_agent: str = DEFAULT_USER_AGENT):
-        self.api_key = api_key
+    def __init__(self, api_key: Optional[str] = None, user_agent: str = DEFAULT_USER_AGENT):
+        self.api_key = resolve_constructor_key(api_key)
         self.user_agent = user_agent
         self.base_url = PARIS_API_BASE
 
     def _get_json(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        if not self.api_key:
+            raise ParisConfigurationError(
+                "Constructor.io API key not configured. Set the "
+                f"{CONSTRUCTOR_KEY_ENV} environment variable (or an operator-"
+                "protected .env) before running Paris acquisition. "
+                "Paris results will be reported as SOURCE_BLOCKED, never "
+                "fabricated."
+            )
         p = {"key": self.api_key}
         if params:
             p.update(params)
@@ -485,12 +626,9 @@ class REAParisEngine:
         Enforces storage write barrier (StorageConfig.assert_write_allowed).
         """
         import sqlite3
-        try:
-            from app.mri_autonomous.storage_guard import StorageConfig
-            effective_db = db_path or str(StorageConfig.get_sqlite_path())
-            StorageConfig.assert_write_allowed(effective_db)
-        except ImportError:
-            effective_db = db_path or "data/sqlite/visibility.db"
+        from app.mri_autonomous.storage_guard import StorageConfig
+        effective_db = db_path or str(StorageConfig.get_sqlite_path())
+        StorageConfig.ensure_writable(effective_db, reason="REA Paris persistence")
 
         conn = sqlite3.connect(effective_db)
         try:

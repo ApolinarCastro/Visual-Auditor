@@ -1,14 +1,17 @@
 import uvicorn
-from fastapi import FastAPI, BackgroundTasks, Request
+from fastapi import FastAPI, BackgroundTasks, Request, Depends, HTTPException, status
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pathlib import Path
 import os
 import sys
 import sqlite3
 import json
 import re
+import secrets
+import time
 from typing import Dict, Any, List, Optional
 
 # Ensure the project root is in the path
@@ -18,7 +21,50 @@ from app.mri_dashboard.mri_runner import orchestrator
 from app.mri_autonomous.experience_store import ExperienceStore
 from app.mri_autonomous.recovery_runner import AcquisitionRecoveryRunner
 
-app = FastAPI(title="MRI Autonomous Dashboard", version="1.0.0")
+# ── Authentication (B-03) ────────────────────────────────────────────────
+# The MRI API previously had NO authentication: no middleware, no dependency,
+# bound to 0.0.0.0, with POST /api/audit/start able to spend real scraper quota.
+# Mirrors the pattern already proven in app/dashboard/api.py: HTTP Basic applied
+# globally, fail-closed when credentials are absent, constant-time comparison.
+try:
+    from dotenv import load_dotenv
+    from app.config.settings import BASE_DIR as _CFG_BASE_DIR
+    # Repo-root scoped: avoid inheriting an unrelated parent .env via the
+    # upward search that bare load_dotenv() performs.
+    load_dotenv(_CFG_BASE_DIR / ".env", override=False)
+except Exception:
+    pass
+
+security = HTTPBasic()
+
+
+def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
+    env_user = os.getenv("DASHBOARD_USER")
+    env_pass = os.getenv("DASHBOARD_PASS")
+
+    if not env_user or not env_pass:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Credenciales de acceso no configuradas en el entorno.",
+        )
+
+    correct_username = secrets.compare_digest(credentials.username, env_user)
+    correct_password = secrets.compare_digest(credentials.password, env_pass)
+
+    if not (correct_username and correct_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credenciales incorrectas",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return credentials.username
+
+
+app = FastAPI(
+    title="MRI Autonomous Dashboard",
+    version="1.0.0",
+    dependencies=[Depends(get_current_username)],
+)
 
 try:
     from app.mri_autonomous.storage_guard import StorageConfig
@@ -70,6 +116,77 @@ def get_sqlite_conn(db_path: Optional[str] = None):
     return conn
 
 
+def _operational_db_path() -> Path:
+    """Database that receives NEW audits (operator-scoped, write-authorized)."""
+    try:
+        from app.mri_autonomous.storage_guard import StorageConfig
+        return Path(StorageConfig.get_sqlite_path())
+    except Exception:
+        return Path(DB_PATH)
+
+
+def _protected_db_path():
+    """Read-only historical database (production). Never written by MRI."""
+    env = os.getenv("MRI_HISTORICAL_DB")
+    candidates = [Path(env)] if env else []
+    candidates.append(Path(__file__).resolve().parents[2] / "data" / "sqlite" / "visibility.db")
+    for c in candidates:
+        try:
+            if c.exists() and c.resolve() != _operational_db_path().resolve():
+                return c.resolve()
+        except Exception:
+            continue
+    return None
+
+
+def _connect_ro(path) -> sqlite3.Connection:
+    """Open a database strictly read-only (no write authorization requested)."""
+    p = Path(path).as_posix()
+    conn = sqlite3.connect(f"file:{p}?mode=ro", uri=True)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA query_only=ON")
+    return conn
+
+
+def _protected_runs():
+    """Runs persisted in the PROTECTED database, tagged as such."""
+    protected = _protected_db_path()
+    if protected is None:
+        return []
+    items = []
+    try:
+        conn = _connect_ro(protected)
+    except Exception:
+        return []
+    try:
+        cur = conn.cursor()
+        has_runs = cur.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='mri_runs'").fetchone()
+        if has_runs:
+            rows = cur.execute(
+                """SELECT r.run_id, COALESCE(r.started_at, '') AS started_at, r.marketplace,
+                          (SELECT COUNT(*) FROM mri_publications p WHERE p.run_id = r.run_id) AS total,
+                          (SELECT COUNT(*) FROM mri_publications p WHERE p.run_id = r.run_id
+                             AND p.status IN ('OBSERVED','CONFIRMED','NICOPOLY_CONFIRMED')) AS confirmed,
+                          COALESCE(r.execution_mode, 'SQLITE_PERSISTED') AS mode
+                   FROM mri_runs r ORDER BY started_at DESC""").fetchall()
+            for r in rows:
+                items.append({
+                    "run_id": r["run_id"],
+                    "timestamp": r["started_at"] or "",
+                    "marketplace": r["marketplace"] or "MULTI_MARKETPLACE",
+                    "total": r["total"] or 0,
+                    "confirmed": r["confirmed"] or 0,
+                    "mode": r["mode"],
+                    "source": "PROTECTED",
+                })
+    except Exception:
+        items = []
+    finally:
+        conn.close()
+    return items
+
+
 def extract_title_from_url(url: str, sku: str) -> str:
     """Fallback extraction of clean product title from canonical URL slug across marketplaces."""
     if not url:
@@ -103,10 +220,42 @@ async def index(request: Request):
 
 @app.get("/api/state")
 async def get_state():
+    st = orchestrator.state or {}
     return JSONResponse(content={
         "is_running": orchestrator.is_running,
-        "state": orchestrator.state,
-        "results": orchestrator.results
+        "state": st,
+        "results": orchestrator.results,
+        # run context: the UI must show which run/date/marketplace it is showing
+        "run_id": st.get("run_id"),
+        "started_at": st.get("started_at"),
+        "marketplace": st.get("marketplace"),
+        "mode": st.get("mode"),
+        "source": "LIVE_MEMORY",
+        "results_count": len(orchestrator.results or []),
+    })
+
+
+@app.get("/api/storage/info")
+async def get_storage_info():
+    """Explicit, verifiable storage selection (operational vs protected)."""
+    op = _operational_db_path()
+    prot = _protected_db_path()
+    authorized = False
+    try:
+        from app.mri_autonomous.storage_guard import StorageConfig
+        # ensure_writable both verifies AND registers the scoped grant that the
+        # audit path uses; it can never authorize production (B-02 barrier).
+        StorageConfig.ensure_writable(op, reason="storage info")
+        authorized = True
+    except Exception:
+        authorized = False
+    return JSONResponse(content={
+        "operational_db": str(op),
+        "operational_exists": op.exists(),
+        "protected_db": str(prot) if prot else None,
+        "protected_role": "READ_ONLY_HISTORICAL",
+        "write_authorized": authorized,
+        "mode": (os.getenv("MRI_ENV") or "PRODUCTION").upper(),
     })
 
 
@@ -173,6 +322,27 @@ async def start_audit(background_tasks: BackgroundTasks, request: Request):
     marketplace = data.get("marketplace", "ALL")
     limit = data.get("limit", 5)
     mode = data.get("mode", "AUDIT")
+
+    # The audit write destination must be EXPLICITLY authorized by the operator
+    # and accepted by the guard. Refuse with an actionable 409 instead of
+    # enqueuing a run that would die inside the storage barrier (which used to
+    # surface as an ASGI 500 / ProductionWriteBlockedError).
+    audit_db = None
+    try:
+        from app.mri_autonomous.storage_guard import StorageConfig as _SC
+        audit_db = str(_SC.get_sqlite_path())
+        _SC.ensure_writable(audit_db, reason="dashboard audit persistence")
+    except Exception as exc:
+        return JSONResponse(status_code=409, content={
+            "error": "WRITE_DESTINATION_NOT_AUTHORIZED",
+            "message": ("La auditoría necesita un destino de escritura autorizado. "
+                        "Ejecute MRI en modo aislado con MRI_ENV=TEST y MRI_ISOLATED_DB "
+                        "apuntando a una base de trabajo. "
+                        "La escritura sobre la base productiva permanece denegada por diseño. "
+                        "La consulta de histórico sigue disponible en modo lectura."),
+            "detail": str(exc)[:200],
+            "audit_db": audit_db,
+        })
     
     if mode == "CONSOLIDATED_RECOVERY":
         background_tasks.add_task(run_consolidated_recovery_pipeline)
@@ -180,9 +350,189 @@ async def start_audit(background_tasks: BackgroundTasks, request: Request):
     elif mode == "DISCOVERY":
         background_tasks.add_task(orchestrator.run_discovery, marketplace, max_pages=int(limit) if limit != "ALL" else 5)
         return JSONResponse(content={"message": "Started Autonomous Discovery mode"})
+    elif mode == "FALABELLA_SSR":
+        # Bounded, browser-free acquisition using the CERTIFIED Falabella HTTP/SSR
+        # strategy (DECISIONS.md D-016 / FAILURES.md F-010). No new engine: this
+        # exposes the existing proven path through the authenticated audit API,
+        # so acquisition -> persistence is one supported, auditable flow.
+        brand = data.get("brand", "Nicopoly")
+        try:
+            items = int(limit)
+        except (TypeError, ValueError):
+            items = 12
+        ssr_run_id = f"run_mri_falabella_ssr_{int(time.time())}"
+        background_tasks.add_task(run_falabella_ssr_acquisition, brand, items, ssr_run_id)
+        return JSONResponse(content={"message": "Started FALABELLA_SSR acquisition",
+                                     "mode": mode, "brand": brand,
+                                     "max_items": items, "run_id": ssr_run_id})
+    elif mode == "PARIS_PUBLIC":
+        # Bounded, browser-free Paris acquisition through the EXISTING
+        # REAParisEngine (public Constructor key discovery). Same contract as
+        # FALABELLA_SSR: one supported flow acquisition -> persistence.
+        brand = data.get("brand", "Nicopoly")
+        try:
+            items = int(limit)
+        except (TypeError, ValueError):
+            items = 12
+        paris_run_id = f"run_mri_paris_public_{int(time.time())}"
+        background_tasks.add_task(run_paris_public_acquisition, brand, items,
+                                  paris_run_id)
+        return JSONResponse(content={"message": "Started PARIS_PUBLIC acquisition",
+                                     "mode": mode, "brand": brand,
+                                     "max_items": items, "run_id": paris_run_id})
     else:
         background_tasks.add_task(orchestrator.run_audit, marketplace, limit)
         return JSONResponse(content={"message": f"Started in {mode} mode"})
+
+
+def run_falabella_ssr_acquisition(brand: str = "Nicopoly", max_items: int = 12,
+                                  run_id: Optional[str] = None):
+    """
+    Bounded Falabella acquisition via the proven HTTP/SSR strategy, then persist.
+
+    Deliberately explicit about outcome:
+        FOUND          brand publications observed with direct seller evidence
+        NOT_FOUND      source served successfully but yielded no brand publications
+        SOURCE_BLOCKED request/HTTP failure prevented acquisition
+        UNKNOWN        observation exists but brand identity is unproven
+    Never fabricates categories, sellers, publications or metrics.
+    """
+    from datetime import datetime, timezone
+    from app.mri_autonomous.storage_guard import StorageConfig
+    from app.mri_autonomous.falabella_ssr_engine import FalabellaSSREngine
+
+    run_id = run_id or f"run_mri_falabella_ssr_{int(time.time())}"
+    orchestrator.is_running = True
+    orchestrator.state = {
+        "progress": 0,
+        "total": 0,
+        "current_product": None,
+        "status_message": "FALABELLA_SSR_STARTED",
+        "mode": "FALABELLA_SSR",
+        "marketplace": "Falabella",
+        "brand": brand,
+        "run_id": run_id,
+        "last_run_id": run_id,
+    }
+
+    pubs, ents, brand_ok = [], [], 0
+    outcome = "UNKNOWN"
+    error = None
+    try:
+        db = str(StorageConfig.get_sqlite_path())
+        eng = FalabellaSSREngine()
+        try:
+            payload = eng.get_brand_catalog(brand_name=brand, page=1)
+        except Exception as e:
+            payload = None
+            outcome = "SOURCE_BLOCKED"
+            error = f"{type(e).__name__}: {e}"
+
+        if payload is not None:
+            pubs, ents = eng.harvest_sample_publications(
+                brand=brand, max_items=max_items, page_payload=payload)
+            brand_ok = sum(
+                1 for p in pubs
+                if any(str(s).strip().lower() == brand.lower() for s in (p.sellers or []))
+            )
+            if pubs and brand_ok == len(pubs):
+                outcome = "FOUND"
+            elif pubs:
+                outcome = "UNKNOWN"
+            else:
+                outcome = "NOT_FOUND"
+
+        persisted = {"publications_materialized": 0,
+                     "categories_materialized": 0,
+                     "category_links_materialized": 0}
+        if outcome == "FOUND":
+            persisted = eng.persist_to_mri_sqlite(pubs, ents, run_id, db, "COMPLETED")
+
+        orchestrator.state.update({
+            "progress": 100,
+            "total": len(pubs),
+            "status_message": "FALABELLA_SSR_COMPLETED",
+            "outcome": outcome,
+            "run_id": run_id,
+            "last_run_id": run_id,
+            "normalized": len(pubs),
+            "brand_confirmed": brand_ok,
+            "persisted": persisted,
+            "db_path": db,
+            "error": error,
+            "completed_at": datetime.now(timezone.utc).isoformat(),
+        })
+    except Exception as e:
+        orchestrator.state.update({
+            "status_message": "FALABELLA_SSR_FAILED",
+            "outcome": "UNKNOWN",
+            "error": f"{type(e).__name__}: {e}",
+        })
+    finally:
+        orchestrator.is_running = False
+
+
+def run_paris_public_acquisition(brand: str = "Nicopoly", max_items: int = 12,
+                                 run_id: Optional[str] = None):
+    """
+    Bounded Paris acquisition via the EXISTING engine + public key discovery.
+
+    Outcomes: FOUND / NOT_FOUND / SOURCE_BLOCKED / UNKNOWN (never fabricated).
+    Persists into the OPERATIONAL database only.
+    """
+    from datetime import datetime, timezone
+    from app.mri_autonomous.storage_guard import StorageConfig
+    from app.mri_autonomous.rea_paris_engine import REAParisEngine
+
+    run_id = run_id or f"run_mri_paris_public_{int(time.time())}"
+    orchestrator.is_running = True
+    orchestrator.state = {
+        "progress": 0, "total": 0, "current_product": None,
+        "status_message": "PARIS_PUBLIC_STARTED",
+        "mode": "PARIS_PUBLIC", "marketplace": "Paris", "brand": brand,
+        "run_id": run_id, "started_at": datetime.now().isoformat(),
+    }
+    pubs, ents, outcome, error = [], [], "UNKNOWN", None
+    try:
+        db = str(StorageConfig.get_sqlite_path())
+        eng = REAParisEngine()
+        try:
+            pubs, ents = eng.harvest_sample_publications(brand=brand, max_items=max_items)
+        except Exception as e:
+            outcome = "SOURCE_BLOCKED"
+            error = f"{type(e).__name__}: {e}"
+
+        brand_ok = sum(
+            1 for p in pubs
+            if any(str(s).strip().upper() == brand.upper() for s in (p.sellers or []))
+        )
+        if pubs and brand_ok == len(pubs):
+            outcome = "FOUND"
+        elif pubs:
+            outcome = "UNKNOWN"
+        elif outcome != "SOURCE_BLOCKED":
+            outcome = "NOT_FOUND"
+
+        persisted = {"publications_materialized": 0,
+                     "categories_materialized": 0,
+                     "category_links_materialized": 0}
+        if outcome == "FOUND":
+            persisted = eng.persist_to_mri_sqlite(pubs, ents, run_id, db, "COMPLETED")
+
+        orchestrator.state.update({
+            "progress": 100, "total": len(pubs),
+            "status_message": "PARIS_PUBLIC_COMPLETED", "outcome": outcome,
+            "run_id": run_id, "normalized": len(pubs),
+            "brand_confirmed": brand_ok, "persisted": persisted,
+            "db_path": db, "error": error,
+            "completed_at": datetime.now(timezone.utc).isoformat(),
+        })
+    except Exception as e:
+        orchestrator.state.update({"status_message": "PARIS_PUBLIC_FAILED",
+                                   "outcome": "UNKNOWN",
+                                   "error": f"{type(e).__name__}: {e}"})
+    finally:
+        orchestrator.is_running = False
 
 
 def run_consolidated_recovery_pipeline():
@@ -783,7 +1133,8 @@ async def get_history():
                         "marketplace": r["marketplace"] if r["marketplace"] else "MULTI_MARKETPLACE",
                         "total": r["total"] or 0,
                         "confirmed": r["confirmed"] or 0,
-                        "mode": r["mode"]
+                        "mode": r["mode"],
+                        "source": "OPERATIONAL"
                     })
         finally:
             conn.close()
@@ -793,9 +1144,23 @@ async def get_history():
         r_id = h.get("run_id")
         if r_id and r_id not in seen_runs:
             seen_runs.add(r_id)
-            history_items.append(h)
+            item = dict(h)
+            item.setdefault("source", "LIVE_MEMORY")
+            history_items.append(item)
             
-    return JSONResponse(content={"history": history_items})
+    # Add PROTECTED (production) runs that are not already listed. Read-only.
+    for item in _protected_runs():
+        if item["run_id"] not in seen_runs:
+            seen_runs.add(item["run_id"])
+            history_items.append(item)
+
+    return JSONResponse(content={
+        "history": history_items,
+        "sources": {
+            "operational": str(_operational_db_path()),
+            "protected": str(_protected_db_path()) if _protected_db_path() else None,
+        },
+    })
 
 
 @app.get("/api/history/{run_id}")
@@ -812,10 +1177,22 @@ async def get_history_run_publications(run_id: str):
     except Exception:
         pass
 
-    # 1. Check SQLite mri_publications
+    # 1. Check the OPERATIONAL database (new audits)
     pubs = fetch_run_publications(run_id, db_path=str(effective_db))
     if pubs:
-        return JSONResponse(content={"run_id": run_id, "publications": pubs, "count": len(pubs), "source": "SQLITE"})
+        return JSONResponse(content={"run_id": run_id, "publications": pubs,
+                                     "count": len(pubs), "source": "OPERATIONAL"})
+
+    # 1b. Fall back to the PROTECTED database, strictly read-only
+    protected = _protected_db_path()
+    if protected is not None:
+        try:
+            pubs_p = fetch_run_publications(run_id, db_path=str(protected))
+        except Exception:
+            pubs_p = []
+        if pubs_p:
+            return JSONResponse(content={"run_id": run_id, "publications": pubs_p,
+                                         "count": len(pubs_p), "source": "PROTECTED"})
 
     # Check if run exists in mri_runs with 0 publications
     if Path(effective_db).exists():
@@ -846,12 +1223,39 @@ async def get_history_run_publications(run_id: str):
     return JSONResponse(status_code=404, content={"message": f"Run {run_id} not found", "run_id": run_id, "publications": []})
 
 
+def _readonly_experience_connection():
+    """
+    READ-ONLY connection to the learning store.
+
+    Reading must never request write authorization on the protected database.
+    Previously this endpoint opened the store for writing, so the storage
+    barrier raised ProductionWriteBlockedError and the endpoint returned 500.
+    Returns None when the database does not exist yet.
+    """
+    try:
+        from app.mri_autonomous.storage_guard import StorageConfig
+        path = Path(StorageConfig.get_experience_db_path())
+        if not path.exists():
+            return None
+        return StorageConfig.connect_sqlite(path, mode="ro")
+    except Exception:
+        return None
+
+
 @app.get("/api/learning")
 async def get_learning():
     """
-    Returns real experiences, strategies, and re-audit recovery records.
+    Returns real experiences, strategies, and re-audit recovery records (read-only).
     """
-    conn = get_experience_store()._get_connection()
+    conn = _readonly_experience_connection()
+    if conn is None:
+        return JSONResponse(content={
+            "experiences": [],
+            "total_validated": 0,
+            "total_reused": 0,
+            "recovery_experiences": [],
+            "source": "EXPERIENCE_DB_ABSENT",
+        })
     try:
         cur = conn.cursor()
         cur.execute("SELECT id, value, brand, marketplace, status, discovery_method, confidence, success_count, first_seen_at, last_seen_at, evidence_reference FROM experience ORDER BY last_seen_at DESC LIMIT 50")
@@ -1135,7 +1539,11 @@ async def get_falabella_nicopoly_data(run_id: Optional[str] = None):
                     if s_row:
                         target_run_id = s_row["run_id"]
                         target_terminal_state = s_row["terminal_state"] or s_row["status"]
-                    else:
+                except sqlite3.OperationalError:
+                    s_row = None
+
+                if not target_run_id:
+                    try:
                         r_row = cur.execute("""
                             SELECT run_id, terminal_state, status
                             FROM mri_runs
@@ -1145,8 +1553,20 @@ async def get_falabella_nicopoly_data(run_id: Optional[str] = None):
                         if r_row:
                             target_run_id = r_row["run_id"]
                             target_terminal_state = r_row["terminal_state"] or r_row["status"]
-                except sqlite3.OperationalError:
-                    pass
+                        else:
+                            # Check publications directly for MULTI_MARKETPLACE runs
+                            p_row = cur.execute("""
+                                SELECT run_id FROM mri_publications
+                                WHERE marketplace = 'Falabella' AND run_id IS NOT NULL
+                                ORDER BY rowid DESC LIMIT 1
+                            """).fetchone()
+                            if p_row:
+                                target_run_id = p_row["run_id"]
+                                r_st = cur.execute("SELECT terminal_state, status FROM mri_runs WHERE run_id = ?", (target_run_id,)).fetchone()
+                                if r_st:
+                                    target_terminal_state = r_st["terminal_state"] or r_st["status"]
+                    except sqlite3.OperationalError:
+                        pass
             else:
                 try:
                     s_row = cur.execute("""

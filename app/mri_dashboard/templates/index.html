@@ -587,24 +587,27 @@
             meli: null,
             paris: null,
             ripley: null,
-            summary: null
+            summary: null,
+            comparativeSummary: null
         };
 
         async function loadMultiMarketplaceData() {
             try {
                 const runParam = selectedRunId ? `?run_id=${encodeURIComponent(selectedRunId)}` : '';
-                const [resFala, resMeli, resParis, resRipley, resSumm] = await Promise.all([
+                const [resFala, resMeli, resParis, resRipley, resSumm, resComp] = await Promise.all([
                     fetch('/api/falabella/nicopoly' + runParam).then(r => r.json()).catch(() => null),
                     fetch('/api/meli/nicopoly' + runParam).then(r => r.json()).catch(() => null),
                     fetch('/api/rea/paris' + runParam).then(r => r.json()).catch(() => null),
                     fetch('/api/ripley/nicopoly' + runParam).then(r => r.json()).catch(() => null),
-                    fetch('/api/multimarketplace/summary' + runParam).then(r => r.json()).catch(() => null)
+                    fetch('/api/multimarketplace/summary' + runParam).then(r => r.json()).catch(() => null),
+                    fetch('/api/multimarketplace/summary').then(r => r.json()).catch(() => null)
                 ]);
                 multiMarketplaceData.fala = resFala;
                 multiMarketplaceData.meli = resMeli;
                 multiMarketplaceData.paris = resParis;
                 multiMarketplaceData.ripley = resRipley;
                 multiMarketplaceData.summary = resSumm;
+                multiMarketplaceData.comparativeSummary = resComp;
                 renderMultiMarketplaceView();
             } catch (err) {
                 console.error('Error loading multimarketplace data:', err);
@@ -710,9 +713,10 @@
                     </table>
                 `;
             } else {
-                // ALL (Cross-marketplace summary table)
-                const summ = multiMarketplaceData.summary;
-                const mkts = summ?.marketplaces || {};
+                // ALL (Cross-marketplace strategic comparative table)
+                // Always render the latest verified run per marketplace from comparativeSummary
+                const comp = multiMarketplaceData.comparativeSummary || multiMarketplaceData.summary;
+                const mkts = comp?.marketplaces || {};
                 let rows = '';
                 for (const [mname, mdata] of Object.entries(mkts)) {
                     let badgeClass = 'badge-info';
@@ -721,24 +725,73 @@
                     else if (mdata.status === 'BLOCKED' || mdata.status === 'FAILED') badgeClass = 'badge-danger';
                     else if (mdata.status === 'AUTH_REQUIRED') badgeClass = 'badge-purple';
 
+                    // Absence of execution must NEVER be rendered as zero
+                    // publications: those cells stay empty with an explicit mark.
+                    const notExecuted = mdata.status === 'NOT_EXECUTED';
+                    const runMeta = [mdata.run_id, mdata.source, mdata.run_date,
+                                     mdata.engine || mdata.execution_mode].filter(Boolean).join(' · ');
+                    const runLabel = runMeta
+                        ? `<br><small style="color:var(--text-muted); font-family:monospace;">${runMeta} · VISTA PERSISTIDA</small>`
+                        : '';
                     rows += `<tr>
-                        <td><strong>${mname}</strong></td>
+                        <td><strong>${mname}</strong>${runLabel}</td>
                         <td>${mdata.mechanism}</td>
-                        <td><strong>${mdata.brand_publications ?? '-'}</strong></td>
-                        <td>${mdata.official_seller_publications ?? '-'}</td>
-                        <td>${mdata.categories_count || mdata.product_categories_count || '-'}</td>
+                        <td><strong>${notExecuted ? '—' : (mdata.brand_publications ?? '-')}</strong></td>
+                        <td>${notExecuted ? '—' : (mdata.official_seller_publications ?? '-')}</td>
+                        <td>${notExecuted ? '—' : (mdata.categories_count || mdata.product_categories_count || '-')}</td>
                         <td><span class="badge ${badgeClass}">${mdata.status}</span></td>
                     </tr>`;
                 }
-                const runInfo = summ?.run_id ? `<span style="font-size:0.8rem; color:var(--text-muted); font-weight:normal;"> (Run ID: <code>${summ.run_id}</code>)</span>` : '';
+
+                let runScopedSection = '';
+                if (selectedRunId && multiMarketplaceData.summary && multiMarketplaceData.summary.run_id === selectedRunId) {
+                    const runMkts = multiMarketplaceData.summary.marketplaces || {};
+                    let runRows = '';
+                    for (const [rmName, rmData] of Object.entries(runMkts)) {
+                        let rBadge = 'badge-info';
+                        if (rmData.status === 'OPERATIONAL' || rmData.status === 'COMPLETED') rBadge = 'badge-success';
+                        else if (rmData.status === 'PARTIAL') rBadge = 'badge-warning';
+                        else if (rmData.status === 'FAILED') rBadge = 'badge-danger';
+                        else if (rmData.status === 'NOT_EXECUTED') rBadge = 'badge-purple';
+
+                        const rmNotExecuted = rmData.status === 'NOT_EXECUTED';
+                        runRows += `<tr>
+                            <td><strong>${rmName}</strong></td>
+                            <td>${rmData.mechanism}</td>
+                            <td><strong>${rmNotExecuted ? '—' : (rmData.brand_publications ?? '-')}</strong></td>
+                            <td>${rmNotExecuted ? '—' : (rmData.official_seller_publications ?? '-')}</td>
+                            <td>${rmNotExecuted ? '—' : (rmData.categories_count || '-')}</td>
+                            <td><span class="badge ${rBadge}">${rmData.status}</span></td>
+                        </tr>`;
+                    }
+                    runScopedSection = `
+                        <div style="margin-top:25px; padding:15px; background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:6px;">
+                            <h4 style="color:#fff; margin-bottom:8px;">Resultados Específicos de la Corrida Seleccionada (<code>${selectedRunId}</code>)</h4>
+                            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:10px;">
+                                Aislamiento estricto: Muestra únicamente lo ejecutado dentro de este run_id particular. Los marketplaces no auditados en esta corrida figuran como NOT_EXECUTED.
+                            </p>
+                            <table>
+                                <thead>
+                                    <tr><th>Marketplace</th><th>Mecanismo</th><th>Pubs Marca</th><th>Pubs Seller Oficial</th><th>Categorías</th><th>Estado en esta Corrida</th></tr>
+                                </thead>
+                                <tbody>${runRows}</tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+
                 container.innerHTML = `
-                    <h3 style="color:#fff; margin-bottom:12px;">Comparativa Estratégica 360° — 4 Marketplaces de Chile${runInfo}</h3>
+                    <h3 style="color:#fff; margin-bottom:8px;">Comparativa Estratégica 360° — Última Corrida Verificada por Marketplace</h3>
+                    <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">
+                        Contrato comparativo: Cada canal refleja su propia evidencia más reciente (run_id independiente, fecha y fuente). No se suman corridas dispares como si fueran una única auditoría conjunta.
+                    </p>
                     <table>
                         <thead>
-                            <tr><th>Marketplace</th><th>Mecanismo de Descubrimiento</th><th>Pubs Marca</th><th>Pubs Seller Oficial</th><th>Categorías</th><th>Estado Operativo</th></tr>
+                            <tr><th>Marketplace / Corrida</th><th>Mecanismo de Descubrimiento</th><th>Pubs Marca</th><th>Pubs Seller Oficial</th><th>Categorías</th><th>Estado Operativo</th></tr>
                         </thead>
                         <tbody>${rows}</tbody>
                     </table>
+                    ${runScopedSection}
                 `;
             }
         }
@@ -815,31 +868,60 @@
         async function startAudit() {
             const mkt = document.getElementById('mktSelect').value;
             const lim = document.getElementById('limitSelect').value;
-            const mode = document.getElementById('modeSelect').value;
-            
-            document.getElementById('btnStart').disabled = true;
-            document.getElementById('btnStop').disabled = false;
-            document.getElementById('lblStatus').innerText = "INICIANDO...";
-            document.getElementById('lblStatusMsg').innerText = "Despachando tarea al motor MRI...";
-            
+            let mode = document.getElementById('modeSelect').value;
+
+            // Browser-free real acquisition paths exposed by the audit API
+            if (mode === 'AUDIT') {
+                if (mkt === 'Falabella') mode = 'FALABELLA_SSR';
+                else if (mkt === 'Paris') mode = 'PARIS_PUBLIC';
+            }
+
+            const btnStart = document.getElementById('btnStart');
+            const btnStop = document.getElementById('btnStop');
+
+            // Do NOT paint a running state yet: the server verifies write
+            // authorization first. A 409 must leave the UI untouched.
+            btnStart.disabled = true;
+            btnStop.disabled = true;
+
             try {
                 const res = await fetch('/api/audit/start', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({marketplace: mkt, limit: lim, mode: mode})
                 });
-                if(res.ok) {
-                    startPolling();
-                } else {
-                    const err = await res.json();
-                    document.getElementById('lblStatusMsg').innerText = "Error: " + (err.message || "No se pudo iniciar");
-                    document.getElementById('btnStart').disabled = false;
-                    document.getElementById('btnStop').disabled = true;
+                let payload = {};
+                try { payload = await res.json(); } catch(e) { payload = {}; }
+
+                if (!res.ok) {
+                    btnStart.disabled = false;
+                    btnStop.disabled = true;
+                    document.getElementById('lblStatus').innerText = "NO INICIADO";
+                    document.getElementById('lblStatusMsg').innerText =
+                        "Error " + res.status + ": " +
+                        (payload.message || payload.error || "no se pudo iniciar la auditoría");
+                    return;
                 }
+
+                // Accepted: only now a running state is legitimate.
+                if (payload.run_id) {
+                    currentResults = [];
+                    selectedRunId = null;
+                    updateDashboardCards();
+                    renderMainTable();
+                    document.getElementById('lblActiveRun').innerText = payload.run_id;
+                }
+                document.getElementById('lblStatus').innerText = "INICIANDO...";
+                document.getElementById('lblStatusMsg').innerText =
+                    "Corrida " + (payload.run_id || '') + " · " + (payload.mode || mode) +
+                    " · " + (payload.marketplace || mkt) + " · FUENTE: OPERATIVA (LIVE)";
+                btnStop.disabled = false;
+                startPolling();
             } catch(e) {
+                btnStart.disabled = false;
+                btnStop.disabled = true;
+                document.getElementById('lblStatus').innerText = "NO INICIADO";
                 document.getElementById('lblStatusMsg').innerText = "Excepción de red: " + e.message;
-                document.getElementById('btnStart').disabled = false;
-                document.getElementById('btnStop').disabled = true;
             }
         }
         
@@ -861,14 +943,74 @@
                 const isRun = data.is_running;
                 const st = data.state || {};
                 
-                document.getElementById('lblStatus').innerText = isRun ? "RUNNING" : (st.status_message || "IDLE");
-                document.getElementById('lblStatusMsg').innerText = st.status_message || "En espera";
+                const _term = ["FAILED", "COMPLETED", "STOPPED_BY_USER", "ABORTED"];
+                document.getElementById('lblStatus').innerText =
+                    isRun ? "RUNNING" : (st.status_message || "IDLE");
                 document.getElementById('lblProgress').innerText = st.progress || 0;
                 document.getElementById('lblTotal').innerText = st.total || 0;
-                
-                let pct = st.total > 0 ? Math.round((st.progress / st.total)*100) : 0;
-                document.getElementById('lblPct').innerText = Math.min(pct, 100);
-                document.getElementById('progressBar').style.width = Math.min(pct, 100) + '%';
+
+                // Progress is only a percentage when the total work is KNOWN.
+                const _known = !!(st.total_known && st.total > 0);
+                let pct = _known ? Math.round(((st.progress || 0) / st.total) * 100) : 0;
+                document.getElementById('lblPct').innerText = _known ? Math.min(pct, 100) : "?";
+                const _bar = document.getElementById('progressBar');
+                _bar.style.width = _known ? Math.min(pct, 100) + '%' : '100%';
+                _bar.style.opacity = _known ? '1' : '0.35';
+
+                // Human-readable live status: stage ? channel/category ? counts ?
+                // marketplace states ? last activity ? concrete errors.
+                const _parts = [];
+                _parts.push("Etapa: " + (st.stage || "preparando"));
+                if (st.current_category) _parts.push("Categor?a: " + st.current_category);
+                if (!_known) _parts.push("progreso indeterminado (total a?n no conocido)");
+                _parts.push("procesados: " + (st.products_processed || st.progress || 0));
+                if (st.confirmed !== undefined) _parts.push("confirmados: " + st.confirmed);
+                const _ms = st.marketplace_states || {};
+                const _mk = Object.keys(_ms);
+                if (_mk.length) _parts.push("mkts: " + _mk.map(m => m + "=" + _ms[m]).join(", "));
+                if (st.last_activity) _parts.push("?ltima actividad: " + String(st.last_activity).split('T').pop().split('.')[0]);
+                if (st.error) _parts.push("ERROR [" + (st.failed_stage || '') + "]: " + st.error);
+                // Acquisition truth: engine, terminal outcome, identity split and
+                // the reference-catalog limitation must be visible, never implied.
+                if (data.engine) _parts.push("motor: " + data.engine);
+                if (data.outcome) _parts.push("resultado: " + data.outcome);
+                if (data.identity_summary) {
+                    const _is = data.identity_summary;
+                    _parts.push("oficiales: " + (_is.official_verified || 0) +
+                                " · terceros: " + ((_is.third_party_new || 0) + (_is.third_party_used || 0)) +
+                                " · sin verificar: " + (_is.seller_unverified || 0));
+                }
+                const _acq = (data.acquisitions || []);
+                if (_acq.length) {
+                    const _a = _acq[_acq.length - 1];
+                    if (_a.acquisition_state) {
+                        _parts.push("adquisición: " + _a.acquisition_state +
+                                    ( _a.raw_stop_reason ? " (" + _a.raw_stop_reason + ")" : ""));
+                    }
+                }
+                if (data.catalog_reference && data.catalog_reference.status === 'CATALOG_REFERENCE_MISSING') {
+                    _parts.push("CATALOG_REFERENCE_MISSING: identidad/precio/stock sin catálogo maestro");
+                }
+                // MRI-RUNTIME-RECOVERY-001: taxonomía, cobertura y aceptación
+                // reales visibles; nunca sustituir un fallo técnico por ausencia.
+                if (st.taxonomy_status && Object.keys(st.taxonomy_status).length) {
+                    _parts.push("taxonomía: " + Object.keys(st.taxonomy_status).map(function(m){
+                        var t = st.taxonomy_status[m] || {};
+                        return m + "=" + (t.status || "?") + (t.cause ? " (" + t.cause + ")" : "");
+                    }).join(", "));
+                }
+                if (st.coverage) {
+                    _parts.push("cobertura: categorías=" + (st.coverage.categories_discovered || 0) +
+                                " · páginas=" + (st.coverage.pages_observed || 0) +
+                                " · aceptación=" + (data.acceptance || st.coverage.acceptance || "?"));
+                }
+                const _errs = st.errors || [];
+                if (!st.error && _errs.length) {
+                    const _e = _errs[_errs.length - 1];
+                    _parts.push("ERROR [" + (_e.stage || '') + "]: " + (_e.error || ''));
+                }
+                document.getElementById('lblStatusMsg').innerText =
+                    (st.status_message || "En espera") + " ? " + _parts.join(" ? ");
 
                 if (st.run_id) document.getElementById('lblActiveRun').innerText = st.run_id;
                 if (st.started_at) document.getElementById('lblStartTime').innerText = st.started_at.split('T')[1]?.split('.')[0] || st.started_at;
@@ -883,6 +1025,12 @@
 
                 if (data.results && data.results.length > 0) {
                     currentResults = data.results;
+                    if (data.run_id) {
+                        const _when = (data.started_at || '').replace('T',' ').split('.')[0] || 'fecha desconocida';
+                        document.getElementById('lblActiveRun').innerText = data.run_id;
+                        document.getElementById('lblStatusMsg').innerText =
+                            `Corrida ${data.run_id} · ${data.marketplace || 'N/D'} · ${_when} · FUENTE: EN MEMORIA (LIVE)`;
+                    }
                     const ver = currentResults.filter(r => (r.decision || r.estado_final || '').toUpperCase() === 'CORRECT').length;
                     const pen = currentResults.filter(r => (r.decision || r.estado_final || '').toUpperCase() === 'REVIEW_REQUIRED').length;
                     document.getElementById('lblVerifiedCnt').innerText = ver;
@@ -895,6 +1043,15 @@
                     clearInterval(pollInterval);
                     document.getElementById('btnStart').disabled = false;
                     document.getElementById('btnStop').disabled = true;
+                    if (st.run_id) {
+                        const _when = (data.started_at || '').replace('T',' ').split('.')[0] || 'fecha desconocida';
+                        document.getElementById('lblActiveRun').innerText = st.run_id;
+                        document.getElementById('lblStatusMsg').innerText =
+                            `Corrida ${st.run_id} · ${data.marketplace || 'N/D'} · ${_when} · ` +
+                            `FUENTE: EN MEMORIA (LIVE) · ESTADO: ${getSpanishLabel(st.status_message)}`;
+                        // make the just-finished run immediately selectable
+                        loadHistory();
+                    }
                 }
             } catch(e) {
                 console.error("Error al consultar /api/state:", e);
@@ -1161,7 +1318,12 @@
                         <td>${h.timestamp.split('T').join(' ').split('.')[0]}</td>
                         <td>
                             <strong>${h.marketplace}</strong><br>
-                            <small style="color:var(--text-muted)">Modo: ${h.mode || 'RECOVERY'}</small>
+                            <small style="color:var(--text-muted)">Modo: ${h.mode || 'RECOVERY'}</small><br>
+                            ${h.source === 'PROTECTED'
+                                ? '<span class="badge badge-info">PROTEGIDO</span>'
+                                : (h.source === 'LIVE_MEMORY'
+                                    ? '<span class="badge badge-warning">EN MEMORIA</span>'
+                                    : '<span class="badge badge-success">OPERATIVA</span>')}
                         </td>
                         <td><strong>${h.total}</strong></td>
                         <td><span class="badge badge-success">${h.confirmed}</span></td>
@@ -1192,7 +1354,24 @@
                 
                 document.getElementById('lblActiveRun').innerText = `${runId}`;
                 document.getElementById('lblStatus').innerText = "PERSISTED_VIEW";
-                document.getElementById('lblStatusMsg').innerText = `Visualizando corrida histórica persistida ${runId} (${data.source || 'SQLITE'})`;
+                const _srcLabel = data.source === 'PROTECTED'
+                    ? 'PROTEGIDA (solo lectura)'
+                    : 'OPERATIVA';
+                const _idSummary = data.identity_summary || {};
+                const _catalog = data.catalog_reference || {};
+                const _extra = [
+                    "MOTOR: " + (data.engine || 'DESCONOCIDO'),
+                    "RESULTADO: " + (data.outcome || data.status || 'N/D'),
+                    "oficiales: " + (_idSummary.OFFICIAL_VERIFIED || 0),
+                    "terceros: " + ((_idSummary.THIRD_PARTY_NEW || 0) + (_idSummary.THIRD_PARTY_USED || 0)),
+                    "sin verificar: " + (_idSummary.SELLER_UNVERIFIED || 0),
+                ];
+                if (_catalog.status === 'CATALOG_REFERENCE_MISSING') {
+                    _extra.push("CATALOG_REFERENCE_MISSING: identidad/precio/stock sin catálogo maestro");
+                }
+                document.getElementById('lblStatusMsg').innerText =
+                    `VISTA PERSISTIDA (no es una adquisición nueva) · Corrida ${runId} · ` +
+                    `FUENTE: ${_srcLabel} · ` + _extra.join(" · ");
                 document.getElementById('lblProgress').innerText = currentResults.length;
                 document.getElementById('lblTotal').innerText = currentResults.length;
                 document.getElementById('lblPct').innerText = '100';
@@ -1275,6 +1454,12 @@
                 
                 if (stateData.results && stateData.results.length > 0) {
                     currentResults = stateData.results;
+                    if (stateData.run_id) {
+                        const _w = (stateData.started_at || '').replace('T',' ').split('.')[0] || 'fecha desconocida';
+                        document.getElementById('lblActiveRun').innerText = stateData.run_id;
+                        document.getElementById('lblStatusMsg').innerText =
+                            `Corrida ${stateData.run_id} · ${stateData.marketplace || 'N/D'} · ${_w} · FUENTE: EN MEMORIA (LIVE)`;
+                    }
                     updateDashboardCards();
                     renderMainTable();
                 } else {

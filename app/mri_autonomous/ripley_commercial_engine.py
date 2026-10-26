@@ -92,20 +92,31 @@ class RipleyCommercialEngine:
                         target_run_id = state_row["run_id"]
                         target_terminal_state = state_row["terminal_state"] or state_row["status"]
                 except sqlite3.OperationalError:
-                    pass
+                    state_row = None
 
-                # Fallback to mri_runs
+                # Fallback to latest run with Ripley publications or mri_runs
                 if not target_run_id:
                     try:
-                        r_row = cur.execute("""
-                            SELECT run_id, terminal_state, status
-                            FROM mri_runs
-                            WHERE marketplace = 'Ripley'
+                        p_row = cur.execute("""
+                            SELECT run_id FROM mri_publications
+                            WHERE marketplace = 'Ripley' AND run_id IS NOT NULL
                             ORDER BY rowid DESC LIMIT 1
                         """).fetchone()
-                        if r_row:
-                            target_run_id = r_row["run_id"]
-                            target_terminal_state = r_row["terminal_state"] or r_row["status"]
+                        if p_row:
+                            target_run_id = p_row["run_id"]
+                            r_st = cur.execute("SELECT terminal_state, status FROM mri_runs WHERE run_id = ?", (target_run_id,)).fetchone()
+                            if r_st:
+                                target_terminal_state = r_st["terminal_state"] or r_st["status"]
+                        else:
+                            r_row = cur.execute("""
+                                SELECT run_id, terminal_state, status
+                                FROM mri_runs
+                                WHERE marketplace = 'Ripley'
+                                ORDER BY rowid DESC LIMIT 1
+                            """).fetchone()
+                            if r_row:
+                                target_run_id = r_row["run_id"]
+                                target_terminal_state = r_row["terminal_state"] or r_row["status"]
                     except sqlite3.OperationalError:
                         pass
             else:
@@ -264,6 +275,32 @@ class RipleyCommercialEngine:
             is_target_brand = (vendor.lower() == self.brand.lower()) if vendor else False
             canonical_brand = self.brand if is_target_brand else (vendor if vendor else "DESCONOCIDO")
 
+            # Build hierarchical CommercialEntity items (L0 -> L1 -> L2)
+            if cat_id:
+                parts = cat_id.strip("/").split("/")
+                # Example: ['moda-mujer', 'tops-y-chaquetas', 'sweaters-y-chalecos']
+                accum_path = ""
+                parent_group_id = None
+                for idx, part in enumerate(parts):
+                    accum_path = f"{accum_path}/{part}" if accum_path else part
+                    ent_id = f"RIPLEY_CAT_{accum_path}"
+                    if ent_id not in entities_map:
+                        lvl = f"L{idx}"
+                        name = cat_name if idx == len(parts) - 1 else part.replace("-", " ").title()
+                        entities_map[ent_id] = CommercialEntity(
+                            marketplace="Ripley",
+                            group_id=accum_path,
+                            display_name=name,
+                            entity_type="category" if idx == 0 else "subcategory",
+                            parent_id=parent_group_id,
+                            hierarchical_path=accum_path,
+                            official_url=f"https://simple.ripley.cl/{accum_path}",
+                            reported_total=1,
+                            acquisition_mechanism="RIPLEY_CATALOG_EXTRACTION",
+                            evidence_status="VERIFIED_PUBLIC_CATALOG"
+                        )
+                    parent_group_id = accum_path
+
             if sku not in pubs_map:
                 pubs_map[sku] = NormalizedPublication(
                     publication_id=f"PUB_RIPLEY_{sku}",
@@ -307,12 +344,9 @@ class RipleyCommercialEngine:
         Strictly enforces isolated sandbox via StorageConfig.assert_write_allowed and
         implements run isolation (018R pattern).
         """
-        try:
-            from app.mri_autonomous.storage_guard import StorageConfig
-            effective_db = db_path or str(StorageConfig.get_sqlite_path())
-            StorageConfig.assert_write_allowed(effective_db)
-        except ImportError:
-            effective_db = db_path or "data/sqlite/visibility.db"
+        from app.mri_autonomous.storage_guard import StorageConfig
+        effective_db = db_path or str(StorageConfig.get_sqlite_path())
+        StorageConfig.ensure_writable(effective_db, reason="Ripley commercial persistence")
 
         conn = sqlite3.connect(effective_db)
         try:
@@ -536,7 +570,7 @@ class RipleyCommercialEngine:
                             INSERT OR REPLACE INTO mri_historical_publication_categories (
                                 history_id, publication_id, category_id, run_id, observed_at
                             ) VALUES (?, ?, ?, ?, ?)
-                        """, (f"hist_{existing[7]}_{pub.publication_id}_{o_cat}", pub.publication_id, o_cat, existing[7], o_obs))
+                        """, (f"hist_{existing[7]}_{pub.publication_id}", pub.publication_id, o_cat, existing[7], o_obs))
                     # Delete old active links for this publication to enforce run isolation
                     cur.execute("DELETE FROM mri_publication_categories WHERE publication_id = ?", (pub.publication_id,))
 

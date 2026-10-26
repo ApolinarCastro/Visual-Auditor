@@ -511,11 +511,8 @@ class AcquisitionRecoveryRunner:
         Generates deterministic category IDs and sets canonical_url = NULL for unknown categories.
         Guarantees non-destructive additive persistence.
         """
-        try:
-            from app.mri_autonomous.storage_guard import StorageConfig
-            StorageConfig.assert_write_allowed(self.db_path)
-        except ImportError:
-            pass
+        from app.mri_autonomous.storage_guard import StorageConfig
+        StorageConfig.ensure_writable(self.db_path, reason="AcquisitionRecoveryRunner persistence")
 
         conn = sqlite3.connect(self.db_path)
         c = conn.cursor()

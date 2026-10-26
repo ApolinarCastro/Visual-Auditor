@@ -325,12 +325,9 @@ class MeliTaxonomyEngine:
         Strictly enforces isolated sandbox via StorageConfig.assert_write_allowed.
         """
         import sqlite3
-        try:
-            from app.mri_autonomous.storage_guard import StorageConfig
-            effective_db = db_path or str(StorageConfig.get_sqlite_path())
-            StorageConfig.assert_write_allowed(effective_db)
-        except ImportError:
-            effective_db = db_path or "data/sqlite/visibility.db"
+        from app.mri_autonomous.storage_guard import StorageConfig
+        effective_db = db_path or str(StorageConfig.get_sqlite_path())
+        StorageConfig.ensure_writable(effective_db, reason="Meli taxonomy persistence")
 
         conn = sqlite3.connect(effective_db)
         try:

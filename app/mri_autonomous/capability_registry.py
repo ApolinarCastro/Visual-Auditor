@@ -109,7 +109,8 @@ class CapabilityRegistry:
                 supported_surfaces=["search", "browse", "groups"],
                 health=CapabilityHealth.UNKNOWN,
                 cost_weight=1.0,
-                metadata={"provider": "Constructor.io", "api_key": "key_6PvQHDnR0zdWgEPh"},
+                metadata={"provider": "Constructor.io",
+                          "credential_source": "env:PARIS_CONSTRUCTOR_KEY"},
             )
         )
         self.register(

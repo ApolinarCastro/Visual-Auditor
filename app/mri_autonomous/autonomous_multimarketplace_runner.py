@@ -322,7 +322,7 @@ class AutonomousMultiMarketplaceRunner:
                 res.strategies_attempted.append({
                     "strategy": len(res.strategies_attempted) + 1,
                     "name": strat_id,
-                    "action": "Query public Constructor.io search endpoint with key_6PvQHDnR0zdWgEPh"
+                    "action": "Query public Constructor.io search endpoint with configured credential"
                 })
                 try:
                     brand_summary = engine.get_brand_summary(self.brand)
