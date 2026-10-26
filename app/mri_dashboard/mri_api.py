@@ -1672,9 +1672,16 @@ async def master_coverage(marketplace: str, run_id: Optional[str] = None):
     # event loop, or /api/state freezes while the operator checks coverage.
     import asyncio
     pubs = await asyncio.to_thread(fetch_run_publications, rid, db_path=db_path)
+    try:
+        from app.mri_dashboard.checklist_reference import find_checklist, load_checklist
+        _checklist_path = find_checklist()
+        checklist = (await asyncio.to_thread(load_checklist, _checklist_path)
+                     if _checklist_path else None)
+    except Exception:
+        checklist = None
     report = await asyncio.to_thread(
         build_report, names[key], pubs, loader._master_items,
-        run_id=rid, run_complete=complete)
+        run_id=rid, run_complete=complete, checklist=checklist)
     return JSONResponse(content=report)
 
 

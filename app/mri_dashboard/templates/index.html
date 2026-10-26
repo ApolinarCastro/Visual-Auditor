@@ -303,6 +303,7 @@
         <!-- A. Operaciones y Resultados -->
         <div id="ops" class="panel active">
             <h2>A. Operaciones y Resultados Verificables</h2>
+            <div id="runModeBadge" style="display:inline-block; padding:4px 10px; border-radius:4px; font-size:0.75rem; font-weight:600; letter-spacing:0.04em; background:rgba(148,163,184,0.15); color:var(--text-muted);">SIN CORRIDA</div>
             <div class="controls">
                 <select id="modeSelect">
                     <option value="CONSOLIDATED_RECOVERY">Corredor Consolidado (Recuperación y Pipeline SQLite)</option>
@@ -1070,6 +1071,18 @@
                 
                 const isRun = data.is_running;
                 const st = data.state || {};
+                const _badge = document.getElementById('runModeBadge');
+                if (_badge) {
+                    if (data.is_running) {
+                        _badge.innerText = '● EN VIVO · ' + (st.run_id || '');
+                        _badge.style.background = 'rgba(34,197,94,0.15)';
+                        _badge.style.color = 'var(--primary)';
+                    } else {
+                        _badge.innerText = 'ÚLTIMA COMPLETADA · ' + (st.run_id || 'sin corrida');
+                        _badge.style.background = 'rgba(148,163,184,0.15)';
+                        _badge.style.color = 'var(--text-muted)';
+                    }
+                }
                 const _rid = st.run_id || null;
                 if (window.__lastRunId !== _rid) {
                     window.__lastRunId = _rid;

@@ -57,3 +57,25 @@ def test_stock_zero_never_counts_as_missing():
     assert r["master"]["expected_child_skus"] == 0
     assert r["coverage"]["missing"] == 0
     assert r["master"]["discarded_no_stock"] == 1
+
+
+def test_coverage_uses_checklist_channel_id():
+    master = [{"sku_master": "156819797", "sku_padre": "N03049A",
+               "sku_hijo": "N03049AL",
+               "product_name": "Blazer Manga 3/4 Ajustado con Solapas Blanco Nicopoly",
+               "stock": 10,
+               "prices": {"falabella": 53990, "ripley": 0,
+                          "mercado libre": 0, "paris": 0}}]
+    checklist = {"products": [{
+        "sku_padre": "N03049A", "sku_hijo": "N03049AL",
+        "name": "Blazer Manga 3/4 Ajustado con Solapas Blanco Nicopoly",
+        "channels": {"falabella": {
+            "product_id": "156819797",
+            "link": "https://www.falabella.com/falabella-cl/product/156819795/Blazer"}}}]}
+    obs = [{"producto_id": "156819795",
+            "producto_nombre": "Titulo distinto sin coincidencia",
+            "canonical_url": "https://www.falabella.com/falabella-cl/product/156819795/Blazer"}]
+    r = build_report("Falabella", obs, master, checklist=checklist)
+    assert r["coverage"]["published_verified"] == 1
+    assert r["coverage"]["missing"] == 0
+    assert r["published"][0]["method"] == "CHECKLIST_ID"

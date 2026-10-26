@@ -29,6 +29,35 @@ def _tokens(text) -> set:
     return {t for t in _norm(text).split() if len(t) >= 3 and t not in STOP}
 
 
+def _url_product_id(url):
+    m = re.search(r"/product/(\d+)", str(url or ""))
+    return m.group(1) if m else None
+
+
+def _checklist_index(checklist, marketplace):
+    """Channel IDs/SKUs/titles from the season checklist (validation key)."""
+    if not checklist:
+        return None
+    ids, skus, titles = {}, {}, {}
+    for p in checklist.get("products") or []:
+        parent = str(p.get("sku_padre") or p.get("sku_hijo") or "")
+        if not parent:
+            continue
+        ch = (p.get("channels") or {}).get(marketplace.lower()) or {}
+        if ch.get("product_id"):
+            ids[str(ch["product_id"])] = parent
+        uid = _url_product_id(ch.get("link"))
+        if uid:
+            ids[uid] = parent
+        for sku in (p.get("sku_padre"), p.get("sku_hijo")):
+            if sku:
+                skus[str(sku).lower()] = parent
+        n = _norm(p.get("name"))
+        if n:
+            titles.setdefault(n, parent)
+    return {"ids": ids, "skus": skus, "titles": titles}
+
+
 def _master_expected(master_items, marketplace):
     """Expected universe for one channel: stock > 0 and channel price > 0."""
     key = marketplace.lower()
@@ -92,7 +121,7 @@ def _parent_groups(expected):
 
 
 def build_report(marketplace, observations, master_items, *, run_id=None,
-                 run_complete=True, catalog_available=True):
+                 run_complete=True, catalog_available=True, checklist=None):
     expected, zero, unknown, no_price = _master_expected(master_items, marketplace)
     groups = _parent_groups(expected)
     variant_index = {}
