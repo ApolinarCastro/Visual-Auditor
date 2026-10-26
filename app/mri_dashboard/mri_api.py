@@ -1498,6 +1498,89 @@ def _falabella_audit_metrics(run_id: str) -> Dict[str, Any]:
     return {}
 
 
+@app.post("/api/checklist/import")
+async def import_season_checklist(request: Request):
+    """Import the season CHECKLIST strictly as validation reference."""
+    import asyncio
+    from app.mri_dashboard.checklist_reference import find_checklist, load_checklist
+    try:
+        payload = await request.json()
+    except Exception:
+        payload = {}
+    requested = payload.get("path") if isinstance(payload, dict) else None
+
+    def _load():
+        path = Path(requested) if requested else find_checklist()
+        if not path or not path.exists():
+            return None
+        return load_checklist(path, use_cache=False)
+
+    data = await asyncio.to_thread(_load)
+    if not data:
+        raise HTTPException(status_code=404, detail="CHECKLIST no encontrado")
+    per_channel = {ch: 0 for ch in ("falabella", "ripley", "paris", "mercado libre")}
+    for prod in data.get("products") or []:
+        for ch, val in (prod.get("channels") or {}).items():
+            if val.get("product_id") or val.get("link"):
+                per_channel[ch] = per_channel.get(ch, 0) + 1
+    return JSONResponse(content={"status": "LOADED", "source": data.get("source"),
+                                 "products": len(data.get("products") or []),
+                                 "per_channel": per_channel,
+                                 "authority": "VALIDATION_ONLY"})
+
+
+@app.get("/api/checklist/coverage")
+async def season_checklist_coverage(marketplace: str, run_id: Optional[str] = None):
+    """Season checklist vs observed (validation only; never feeds acquisition)."""
+    import asyncio
+    from app.mri_dashboard.checklist_reference import find_checklist, load_checklist, build_checklist_report
+    path = find_checklist()
+    if not path:
+        raise HTTPException(status_code=404, detail="CHECKLIST no encontrado")
+    names = {"falabella": "Falabella", "ripley": "Ripley",
+             "mercado libre": "Mercado Libre", "paris": "Paris"}
+    key = marketplace.lower()
+    if key not in names:
+        raise HTTPException(status_code=400, detail="marketplace no soportado")
+    try:
+        from app.mri_autonomous.storage_guard import StorageConfig
+        db_path = str(StorageConfig.get_sqlite_path())
+    except Exception:
+        db_path = str(DB_PATH)
+    conn = get_sqlite_conn(db_path)
+    try:
+        cur = conn.cursor()
+        if run_id:
+            row = cur.execute("SELECT run_id, terminal_state, status FROM mri_runs WHERE run_id = ?",
+                              (run_id,)).fetchone()
+        else:
+            row = cur.execute("SELECT run_id, terminal_state, status FROM mri_runs "
+                              "WHERE marketplace = ? ORDER BY rowid DESC LIMIT 1",
+                              (names[key],)).fetchone()
+    finally:
+        conn.close()
+    if not row:
+        raise HTTPException(status_code=404, detail="No hay corrida para ese marketplace")
+    rid = row["run_id"]
+    complete = (row["terminal_state"] or row["status"] or "").upper() in (
+        "FOUND", "COMPLETED", "SUCCESS")
+    if key == "falabella":
+        try:
+            from app.mri_autonomous.storage_guard import StorageConfig
+            hist = Path(StorageConfig.get_aux_dir()) / "mri_history.json"
+            for entry in json.loads(hist.read_text(encoding="utf-8")):
+                if entry.get("run_id") == rid:
+                    complete = bool((entry.get("falabella_ssr_audit") or {}).get("complete"))
+                    break
+        except Exception:
+            complete = False
+    pubs = await asyncio.to_thread(fetch_run_publications, rid, db_path=db_path)
+    report = await asyncio.to_thread(build_checklist_report, load_checklist(path),
+                                     names[key], pubs, run_id=rid,
+                                     run_complete=complete)
+    return JSONResponse(content=report)
+
+
 @app.get("/api/catalog/coverage")
 async def master_coverage(marketplace: str, run_id: Optional[str] = None):
     """Published vs missing against the uploaded master (per marketplace)."""

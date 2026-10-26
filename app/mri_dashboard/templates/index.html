@@ -394,6 +394,7 @@
                         <option value="paris">Paris</option>
                     </select>
                     <button onclick="runCoverage()">Ver cobertura publicados/faltantes</button>
+                    <button onclick="runChecklistCoverage()">Ver checklist temporada</button>
                     <span id="coverageStatus" style="font-size:0.8rem; color:var(--text-muted);"></span>
                 </div>
                 <div id="coverageResult" style="font-size:0.8rem; color:var(--text-muted); margin-top:8px;"></div>
@@ -1158,6 +1159,23 @@
                 sel.value = decision;
                 renderMainTable();
             }
+        }
+
+        async function runChecklistCoverage() {
+            const mkt = document.getElementById('coverageMarketplace').value;
+            const status = document.getElementById('coverageStatus');
+            const out = document.getElementById('coverageResult');
+            status.innerText = 'Verificando checklist de temporada…'; out.innerHTML = '';
+            try {
+                const resp = await fetch('/api/checklist/coverage?marketplace=' + encodeURIComponent(mkt));
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data.detail || ('HTTP ' + resp.status));
+                const c = data.coverage;
+                status.innerText = 'Referencia de validación (no alimenta búsqueda)';
+                const missing = (data.missing || []).slice(0, 10)
+                    .map(x => `<div>${x.parent} — ${x.name}</div>`).join('');
+                out.innerHTML = `<div><strong>Checklist ${data.marketplace}</strong>: productos ${data.total_products} · publicados ${c.published_verified} · faltantes ${c.missing} · no verificables ${c.unverified} · extra ${c.extra_not_in_checklist}</div>` + missing;
+            } catch (err) { status.innerText = 'Error: ' + err.message; }
         }
 
         async function runCoverage() {
