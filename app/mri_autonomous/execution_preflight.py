@@ -70,12 +70,13 @@ def _check_profiles():
     return {"ok": not blockers, "details": details, "blockers": blockers}
 
 
-def run_preflight(*, check_auth=True):
+def run_preflight(*, check_auth=True, check_profiles=True):
     checks = {"skills": _check_skills()}
     if check_auth:
         checks["auth"] = _check_auth()
     checks["browsers"] = _check_browsers()
-    checks["profiles"] = _check_profiles()
+    if check_profiles:
+        checks["profiles"] = _check_profiles()
     blockers = []
     for name, res in checks.items():
         for b in res.get("blockers") or []:

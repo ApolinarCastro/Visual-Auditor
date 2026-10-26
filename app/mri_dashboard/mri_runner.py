@@ -407,7 +407,7 @@ class MRIOrchestrator:
         # Fail-closed preflight: skills, browsers, profiles (single owner).
         try:
             from app.mri_autonomous.execution_preflight import run_preflight
-            _pre = run_preflight(check_auth=False)
+            _pre = run_preflight(check_auth=False, check_profiles=False)
             self.state["preflight"] = _pre
             if not _pre.get("ok"):
                 self.state["status_message"] = "PREFLIGHT_FAILED"
