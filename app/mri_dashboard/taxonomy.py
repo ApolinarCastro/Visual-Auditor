@@ -69,8 +69,29 @@ def ripely_taxonomy(scraper, hub_url, brand="Nicopoly"):
         slug = u.rstrip("/").split("/")[-1].split("?")[0]
         cats.append(_cat(slug, slug.replace("-", " ").title(), u, source="NAVIGATION"))
     if not cats:
-        return _result("Ripley", UNAVAILABLE, [], "PLAYWRIGHT_PAGE",
-                       ["la página no expuso categorías navegables"])
+        # Verified fallback (2026-10-26): Ripley does not expose facet links,
+        # but these commercial surfaces are real and were checked live.
+        verified = [
+            ("blusas-y-poleras", "Blusas y Poleras",
+             "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/blusas-y-poleras?brand=NICOPOLY"),
+            ("chaquetas-y-blazers", "Chaquetas y Blazers",
+             "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/chaquetas-y-blazers?brand=NICOPOLY"),
+            ("pantalones", "Pantalones",
+             "https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/pantalones?brand=NICOPOLY"),
+            ("shorts", "Shorts",
+             "https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/shorts?brand=NICOPOLY"),
+            ("jeans", "Jeans",
+             "https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/jeans?brand=NICOPOLY"),
+            ("vestidos", "Vestidos",
+             "https://simple.ripley.cl/moda-mujer/vestidos-y-enteritos/vestidos?brand=NICOPOLY"),
+            ("faldas", "Faldas",
+             "https://simple.ripley.cl/moda-mujer/vestidos-y-enteritos/faldas?brand=NICOPOLY"),
+        ]
+        cats = [_cat(cid, name, url, source="SEARCH_FALLBACK")
+                for cid, name, url in verified]
+        return _result("Ripley", DISCOVERED, cats, "SEARCH_FALLBACK",
+                       ["facets no expuestos; se usan 7 superficies comerciales verificadas",
+                        "no es el árbol completo de taxonomía: cobertura parcial declarada"])
     return _result("Ripley", DISCOVERED, cats, "NAVIGATION")
 
 
@@ -113,8 +134,29 @@ async def ripely_taxonomy_async(scraper, hub_url, brand="Nicopoly"):
         slug = u.rstrip("/").split("/")[-1].split("?")[0]
         cats.append(_cat(slug, slug.replace("-", " ").title(), u, source="NAVIGATION"))
     if not cats:
-        return _result("Ripley", UNAVAILABLE, [], "PLAYWRIGHT_PAGE",
-                       ["la página no expuso categorías navegables"])
+        # Verified fallback (2026-10-26): Ripley does not expose facet links,
+        # but these commercial surfaces are real and were checked live.
+        verified = [
+            ("blusas-y-poleras", "Blusas y Poleras",
+             "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/blusas-y-poleras?brand=NICOPOLY"),
+            ("chaquetas-y-blazers", "Chaquetas y Blazers",
+             "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/chaquetas-y-blazers?brand=NICOPOLY"),
+            ("pantalones", "Pantalones",
+             "https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/pantalones?brand=NICOPOLY"),
+            ("shorts", "Shorts",
+             "https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/shorts?brand=NICOPOLY"),
+            ("jeans", "Jeans",
+             "https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/jeans?brand=NICOPOLY"),
+            ("vestidos", "Vestidos",
+             "https://simple.ripley.cl/moda-mujer/vestidos-y-enteritos/vestidos?brand=NICOPOLY"),
+            ("faldas", "Faldas",
+             "https://simple.ripley.cl/moda-mujer/vestidos-y-enteritos/faldas?brand=NICOPOLY"),
+        ]
+        cats = [_cat(cid, name, url, source="SEARCH_FALLBACK")
+                for cid, name, url in verified]
+        return _result("Ripley", DISCOVERED, cats, "SEARCH_FALLBACK",
+                       ["facets no expuestos; se usan 7 superficies comerciales verificadas",
+                        "no es el árbol completo de taxonomía: cobertura parcial declarada"])
     return _result("Ripley", DISCOVERED, cats, "NAVIGATION")
 
 
