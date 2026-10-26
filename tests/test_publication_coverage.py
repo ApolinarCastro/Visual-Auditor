@@ -29,7 +29,7 @@ def test_published_and_missing():
         _obs("Blazer Dos Botones Burdeo Nicopoly", "1002"),
     ]
     r = build_report("Falabella", obs, master)
-    assert r["master"]["expected"] == 2
+    assert r["master"]["expected_child_skus"] == 2
     assert r["master"]["discarded_no_stock"] == 1
     assert r["master"]["unverified_stock"] == 1
     assert r["master"]["not_expected_channel"] == 1
@@ -45,7 +45,7 @@ def test_missing_is_reported_only_when_run_complete():
     obs = [_obs("Polera Básica Cuello Redondo Negro Nicopoly", "1001")]
     complete = build_report("Falabella", obs, master)
     assert complete["coverage"]["missing"] == 1
-    assert complete["missing"][0]["sku_master"] == "N06207BM"
+    assert complete["missing"][0]["sku_parent"] == "N06207BM"
     partial = build_report("Falabella", obs, master, run_complete=False)
     assert partial["coverage"]["missing"] == 0
     assert partial["coverage"]["unverified"] == 2
@@ -54,6 +54,6 @@ def test_missing_is_reported_only_when_run_complete():
 def test_stock_zero_never_counts_as_missing():
     master = [_master("N09999XX", "Parka Acolchada Negra", 0, 49990)]
     r = build_report("Falabella", [], master)
-    assert r["master"]["expected"] == 0
+    assert r["master"]["expected_child_skus"] == 0
     assert r["coverage"]["missing"] == 0
     assert r["master"]["discarded_no_stock"] == 1

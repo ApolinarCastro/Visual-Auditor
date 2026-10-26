@@ -74,52 +74,88 @@ def _resolve(obs, expected, sku_index):
     return scores[0][1], "TITLE_UNIQUE"
 
 
+def _parent_groups(expected):
+    """Collapse master child SKUs into parent products (SKU_PADRE)."""
+    groups = {}
+    for item in expected:
+        pid = str(item.get("sku_padre") or item.get("sku_master"))
+        g = groups.setdefault(pid, {
+            "parent": pid, "name": item.get("product_name"),
+            "skus": set(), "stock": item.get("stock"),
+        })
+        g["skus"].add(str(item.get("sku_master")))
+        if not g.get("name") and item.get("product_name"):
+            g["name"] = item.get("product_name")
+    for g in groups.values():
+        g["skus"] = sorted(g["skus"])
+    return groups
+
+
 def build_report(marketplace, observations, master_items, *, run_id=None,
                  run_complete=True, catalog_available=True):
     expected, zero, unknown, no_price = _master_expected(master_items, marketplace)
-    sku_index = {str(i.get("sku_master")).lower(): i for i in expected
-                 if i.get("sku_master")}
-    matched, missing, extra = [], [], []
-    matched_skus = set()
+    groups = _parent_groups(expected)
+    variant_index = {}
+    for pid, g in groups.items():
+        for sku in g["skus"]:
+            variant_index[sku.lower()] = pid
+    matched, missing, extra = {}, [], []
     for obs in observations or []:
-        item, method = _resolve(obs, expected, sku_index)
-        if item is None:
+        text = " ".join(str(obs.get(k) or "") for k in
+                        ("producto_id", "sku", "producto_nombre", "canonical_url"))
+        pid = None
+        method = None
+        for sku, cand in variant_index.items():
+            if len(sku) >= 4 and re.search(r"(?<![A-Za-z0-9])" + re.escape(sku)
+                                          + r"(?![A-Za-z0-9])", text, re.I):
+                pid, method = cand, "SKU_VARIANT"
+                break
+        if pid is None:
+            ot = _tokens(obs.get("producto_nombre"))
+            scores = []
+            for cand, g in groups.items():
+                mt = _tokens(g.get("name"))
+                union = ot | mt
+                scores.append((len(ot & mt) / len(union) if union else 0.0, cand))
+            scores.sort(reverse=True)
+            if scores and scores[0][0] >= 0.8 and (
+                    len(scores) == 1 or scores[1][0] < scores[0][0] - 0.05):
+                pid, method = scores[0][1], "TITLE_UNIQUE"
+        if pid is None:
             extra.append({
                 "observed_id": obs.get("producto_id") or obs.get("sku"),
                 "title": obs.get("producto_nombre"),
                 "url": obs.get("canonical_url") or obs.get("url"),
-                "category": obs.get("real_category"),
                 "reason": "SIN_MATCH_UNICO_EN_MAESTRO",
             })
             continue
-        sku = str(item.get("sku_master"))
-        if sku in matched_skus:
-            continue
-        matched_skus.add(sku)
-        matched.append({
-            "sku_master": sku,
-            "name": item.get("product_name"),
-            "method": method,
-            "observed_id": obs.get("producto_id") or obs.get("sku"),
-            "url": obs.get("canonical_url") or obs.get("url"),
-            "category": obs.get("real_category"),
-        })
-    for item in expected:
-        sku = str(item.get("sku_master"))
-        if sku in matched_skus:
-            continue
-        missing.append({
-            "sku_master": sku,
-            "name": item.get("product_name"),
-            "stock": item.get("stock"),
-            "price_channel": (item.get("prices") or {}).get(marketplace.lower()),
-        })
+        if pid not in matched:
+            g = groups[pid]
+            matched[pid] = {
+                "sku_parent": pid, "name": g.get("name"),
+                "skus_maestro": g["skus"], "method": method,
+                "observed_id": obs.get("producto_id") or obs.get("sku"),
+                "url": obs.get("canonical_url") or obs.get("url"),
+                "category": obs.get("real_category"),
+            }
+    for pid, g in groups.items():
+        if pid not in matched:
+            missing.append({"sku_parent": pid, "name": g.get("name"),
+                            "skus_maestro": g["skus"], "stock": g.get("stock")})
+    observations_n = len(observations or [])
+    published = list(matched.values())
+    warning = None
+    if observations_n and (len(extra) > 0.3 * observations_n
+                           or len(published) < 0.5 * observations_n):
+        warning = ("MATCHING_UNRELIABLE: demasiadas observaciones sin match; "
+                   "no usar missing como faltantes definitivos")
     coverage = {
-        "published_verified": len(matched) if run_complete else 0,
-        "missing": len(missing) if run_complete else 0,
-        "unverified": 0 if run_complete else len(expected),
+        "published_verified": len(published) if run_complete else 0,
+        "missing": len(missing) if (run_complete and not warning) else 0,
+        "unverified": (0 if run_complete else len(groups))
+                      or (len(groups) if warning else 0),
         "extra_not_in_master": len(extra),
-        "ambiguous": sum(1 for e in extra if "match" in e["reason"].lower()),
+        "match_warning": warning,
     }
     return {
         "marketplace": marketplace,
@@ -127,18 +163,20 @@ def build_report(marketplace, observations, master_items, *, run_id=None,
         "generated_at": datetime.now().isoformat(),
         "catalog_available": catalog_available,
         "run_complete": run_complete,
+        "level": "PARENT_PRODUCT",
         "master": {
-            "total": len(master_items or []),
-            "expected": len(expected),
+            "total_rows": len(master_items or []),
+            "expected_child_skus": len(expected),
+            "expected_parent_products": len(groups),
             "discarded_no_stock": len(zero),
             "unverified_stock": len(unknown),
             "not_expected_channel": len(no_price),
         },
         "coverage": coverage,
-        "published": matched,
+        "published": published,
         "missing": missing,
         "extra": extra[:500],
-        "discarded_no_stock": [
-            {"sku_master": i.get("sku_master"),
-             "name": i.get("product_name")} for i in zero[:500]],
+        "discarded_no_stock": [{"sku_master": i.get("sku_master"),
+                                "name": i.get("product_name")}
+                               for i in zero[:500]],
     }

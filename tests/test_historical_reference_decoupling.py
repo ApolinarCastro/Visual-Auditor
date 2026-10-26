@@ -132,6 +132,18 @@ def _run_without_historical_files(monkeypatch):
 
 
 def test_mri_acquires_and_evaluates_without_the_three_files(monkeypatch):
+    # Isolate the contract from the operator's real master upload: this test
+    # verifies acquisition WITHOUT references, so the reference status is faked.
+    import app.mri_dashboard.mri_runner as R
+    monkeypatch.setattr(R, "catalog_reference_status",
+                        lambda: {"status": "CATALOG_REFERENCE_MISSING",
+                                 "path": None, "filename": "none"})
+    monkeypatch.setattr(R, "historical_reference_status",
+                        lambda: {"svmp": {"authority": "NONE", "present": False},
+                                 "multivende_catalog": {"authority": "NONE",
+                                                        "present": False},
+                                 "busquedas_concretas": {"authority": "NONE",
+                                                         "present": False}})
     orch, seen = _run_without_historical_files(monkeypatch)
     results = orch.results
     assert orch.state["outcome"] == C.FOUND
