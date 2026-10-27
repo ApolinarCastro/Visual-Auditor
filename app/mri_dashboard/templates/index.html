@@ -305,27 +305,19 @@
             <h2>A. Operaciones y Resultados Verificables</h2>
             <div id="runModeBadge" style="display:inline-block; padding:4px 10px; border-radius:4px; font-size:0.75rem; font-weight:600; letter-spacing:0.04em; background:rgba(148,163,184,0.15); color:var(--text-muted);">SIN CORRIDA</div>
             <div class="controls">
-                <select id="modeSelect">
-                    <option value="CONSOLIDATED_RECOVERY">Corredor Consolidado (Recuperación y Pipeline SQLite)</option>
-                    <option value="DISCOVERY">Descubrimiento Autónomo (Categorías)</option>
-                    <option value="AUDIT">Auditoría Dirigida (Universo CSV)</option>
-                </select>
-                <select id="mktSelect">
-                    <option value="ALL">Todos los Marketplaces</option>
-                    <option value="Mercado Libre">Mercado Libre</option>
-                    <option value="Falabella">Falabella</option>
-                    <option value="Paris">Paris</option>
-                    <option value="Ripley">Ripley</option>
-                </select>
-                <select id="limitSelect">
-                    <option value="1">1 Página / Muestra Rápida</option>
-                    <option value="5">5 Productos/Páginas</option>
-                    <option value="10">10 Productos/Páginas</option>
-                    <option value="ALL">Todo el Catálogo</option>
+                <select id="mktSelect" title="Alcance de la auditoría">
+                    <option value="ALL">Auditoría total · todos los marketplaces</option>
+                    <option value="Mercado Libre">Auditoría · Mercado Libre</option>
+                    <option value="Falabella">Auditoría · Falabella</option>
+                    <option value="Paris">Auditoría · Paris</option>
+                    <option value="Ripley">Auditoría · Ripley</option>
                 </select>
                 <button class="btn-primary" onclick="startAudit()" id="btnStart">Iniciar Auditoría</button>
                 <button class="btn-danger" onclick="stopAudit()" id="btnStop" disabled>Detener</button>
             </div>
+            <p style="color:var(--text-muted); font-size:0.8rem; margin:8px 0 0 0;">
+                Alcance fijo: <strong>catálogo completo</strong> y <strong>descubrimiento autónomo de categorías</strong>.
+            </p>
             
             <div class="status-box">
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
@@ -432,13 +424,24 @@
                 <p id="catSemantics" style="color:var(--text-muted); font-size:0.78rem; margin:8px 0 0 0;"></p>
             </div>
 
+            <div id="categoryUniversePanel" style="margin-top:18px; padding:12px 14px; border:1px solid var(--border); border-radius:8px; background:rgba(255,255,255,0.015);">
+                <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+                    <h3 style="margin:0; font-size:1rem; color:#fff;">Categorías descubiertas (incluye 0 publicaciones)</h3>
+                    <span id="catUniverseCount" style="font-size:0.82rem; color:var(--text-muted);"></span>
+                </div>
+                <div style="overflow-x:auto; margin-top:8px; max-height:240px;">
+                    <table><thead><tr><th>Categoría</th><th>Publicaciones</th><th>Estado</th></tr></thead>
+                    <tbody id="tbCategoryUniverse"></tbody></table>
+                </div>
+            </div>
+
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; margin-bottom:12px;">
                 <h3 style="margin: 0; font-size: 1.15rem; color: #fff;">Tabla Completa de Publicaciones y Auditoría Comercial</h3>
                 <span id="lblTableCount" style="color:var(--text-muted); font-size:0.85rem"></span>
             </div>
             
             <div class="controls" style="margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 10px;">
-                <select id="filterMarketplace" onchange="renderMainTable()">
+                <select id="filterMarketplace" onchange="loadCategoryUniverse(selectedRunId || window.__lastRunId, this.value).then(renderMainTable)">
                     <option value="ALL">Canal: Todos</option>
                     <option value="Mercado Libre">Mercado Libre</option>
                     <option value="Falabella">Falabella</option>
@@ -448,9 +451,10 @@
                 <select id="filterStatus" onchange="renderMainTable()">
                     <option value="ALL">Decisión: Todas</option>
                     <option value="CORRECT">CORRECTO (Validada)</option>
-                    <option value="INCORRECT">INCORRECTO (Contradicción)</option>
-                    <option value="REVIEW_REQUIRED">REVISIÓN REQUERIDA (General / Variantes / Identidad)</option>
-                    <option value="NOT_VERIFIED">NO VERIFICADO (Sin Evidencia Pública)</option>
+                    <option value="INCORRECT">INCORRECTO / MAL UBICADO</option>
+                    <option value="REVIEW_REQUIRED">REVISIÓN REQUERIDA</option>
+                    <option value="NO_VERIFICADO">NO VERIFICADO</option>
+                    <option value="NOT_VERIFIED">NO VERIFICADO (histórico)</option>
                 </select>
                 <select id="filterCategory" onchange="renderMainTable()">
                     <option value="ALL">Filtro: Todas las Categorías Observadas</option>
@@ -650,6 +654,8 @@
         let currentResults = [];
         let pollInterval = null;
         let selectedRunId = null;
+        let categoryUniverse = new Map();
+        let categoryUniverseKey = null;
 
         async function loadManagerView() {
             const set = (id, val) => { const e = document.getElementById(id); if (e) e.innerText = val; };
@@ -996,14 +1002,9 @@
 
         async function startAudit() {
             const mkt = document.getElementById('mktSelect').value;
-            const lim = document.getElementById('limitSelect').value;
-            let mode = document.getElementById('modeSelect').value;
-
-            // Browser-free real acquisition paths exposed by the audit API
-            if (mode === 'AUDIT') {
-                if (mkt === 'Falabella') mode = 'FALABELLA_SSR';
-                else if (mkt === 'Paris') mode = 'PARIS_PUBLIC';
-            }
+            // Fixed contract: full catalog + autonomous category discovery.
+            const lim = 'ALL';
+            const mode = 'DISCOVERY';
 
             const btnStart = document.getElementById('btnStart');
             const btnStop = document.getElementById('btnStop');
@@ -1404,9 +1405,51 @@
             }).join('');
         }
 
+        async function loadCategoryUniverse(runId, marketplace) {
+            if (!runId) return;
+            const mkts = (marketplace && marketplace !== 'ALL')
+                ? [marketplace]
+                : [...new Set(currentResults.map(r => r.marketplace).filter(Boolean))];
+            if (!mkts.length) return;
+            const key = runId + '|' + mkts.join(',');
+            if (categoryUniverseKey === key) return;
+            const universe = new Map();
+            for (const m of mkts) {
+                try {
+                    const resp = await fetch('/api/categories/' + encodeURIComponent(m) +
+                        '?run_id=' + encodeURIComponent(runId));
+                    if (!resp.ok) continue;
+                    const cats = await resp.json();
+                    Object.values(cats || {}).forEach(c => {
+                        const name = (c && c.name) || c;
+                        if (name) universe.set(name, {
+                            publications: Number(c.publications || 0),
+                            status: c.status || c.source || 'DISPONIBLE'
+                        });
+                    });
+                } catch (e) { /* la tabla puede seguir con resultados */ }
+            }
+            categoryUniverse = universe;
+            categoryUniverseKey = key;
+            renderCategoryUniverse();
+        }
+
+        function renderCategoryUniverse() {
+            const tb = document.getElementById('tbCategoryUniverse');
+            const cnt = document.getElementById('catUniverseCount');
+            if (!tb) return;
+            const names = [...categoryUniverse.keys()].sort((a, b) => a.localeCompare(b));
+            if (cnt) cnt.innerText = names.length + ' categorías';
+            tb.innerHTML = names.length ? names.map(name => {
+                const info = categoryUniverse.get(name) || {};
+                const n = (info.publications || 0);
+                return `<tr><td>${name}</td><td>${n}</td><td>${n ? 'CON PUBLICACIONES' : 'SIN PUBLICACIONES'}</td></tr>`;
+            }).join('') : '<tr><td colspan="3">Sin categorías descubiertas para esta corrida.</td></tr>';
+        }
+
         function renderMainTable() {
             // Dynamic categories from currentResults
-            const cats = new Set();
+            const cats = new Set(categoryUniverse.keys());
             currentResults.forEach(r => {
                 rowCategories(r).forEach(c => { if (c) cats.add(c); });
             });
@@ -1706,6 +1749,7 @@
                 document.getElementById('lblPendingCnt').innerText = currentResults.filter(r => (r.decision || r.estado_final || '').toUpperCase() === 'REVIEW_REQUIRED').length;
                 document.getElementById('progressBar').style.width = '100%';
 
+                await loadCategoryUniverse(runId, data.marketplace || 'ALL');
                 updateDashboardCards();
                 renderMainTable();
                 // Invalidate and reload multimarketplace data scoped to this selectedRunId

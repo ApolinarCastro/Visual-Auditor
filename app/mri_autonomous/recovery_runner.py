@@ -57,6 +57,29 @@ def clean_id(val: Any) -> str:
     return re.sub(r"[^A-Z0-9]", "", s)
 
 
+
+
+def cleanup_ghost_unknown_memberships(conn) -> int:
+    """Remove CATEGORY_UNKNOWN edges when the publication has a real edge.
+
+    The current-state junction has no run_id; publication IDs are reused across
+    runs. Historical evidence remains in the historical junction table.
+    """
+    cur = conn.execute("""
+        DELETE FROM mri_publication_categories
+        WHERE category_id IN (
+            SELECT category_id FROM mri_categories
+            WHERE category_name = 'CATEGORY_UNKNOWN')
+          AND publication_id IN (
+            SELECT pc.publication_id
+            FROM mri_publication_categories pc
+            JOIN mri_categories c2 ON c2.category_id = pc.category_id
+            WHERE c2.category_name != 'CATEGORY_UNKNOWN')
+    """)
+    conn.commit()
+    return cur.rowcount
+
+
 def deterministic_category_id(marketplace: str, category_name: str) -> str:
     """
     Generate deterministic category ID based on sha256 of marketplace + canonical category name.
@@ -565,6 +588,14 @@ class AcquisitionRecoveryRunner:
             source_method, run_status, now_str
         ))
 
+        # Remove legacy ghost edges: CATEGORY_UNKNOWN must not coexist with a
+        # real evidenced category for the same publication. Historical rows are
+        # preserved in mri_historical_publication_categories.
+        try:
+            cleanup_ghost_unknown_memberships(conn)
+        except Exception:
+            pass
+
         pubs_inserted = 0
         cats_inserted = 0
         edges_inserted = 0
@@ -638,7 +669,13 @@ class AcquisitionRecoveryRunner:
                 pubs_inserted += 1
 
                 # Deterministic Category Resolution
-                cat_name = (obs["category_observed"] if obs["category_observed"] != "NO_VERIFICADO" else (obs["category_expected"] if obs["category_expected"] != "NO_VERIFICADO" else "Moda Mujer")).strip()
+                _ca = (obs["category_observed"] or "").strip()
+                _ce = (obs["category_expected"] or "").strip()
+                if _ca in ("NO_VERIFICADO", "CATEGORY_UNKNOWN", "NONE", ""):
+                    cat_name = _ce if _ce not in ("NO_VERIFICADO", "CATEGORY_UNKNOWN", "NONE", "") else "Moda Mujer"
+                else:
+                    cat_name = _ca
+                cat_name = cat_name.strip()
                 cat_id = deterministic_category_id(mkt, cat_name)
 
                 # Insert category with canonical_url = NULL (ZERO fake example.com URLs)
@@ -648,7 +685,12 @@ class AcquisitionRecoveryRunner:
                 """, (cat_id, mkt, cat_name, obs_at))
                 cats_inserted += 1
 
-                # Link publication to category
+                # The current-state junction has no run_id. A publication ID can
+                # reappear across runs, so old CATEGORY_UNKNOWN edges must not
+                # survive beside the new, evidenced category. History is kept in
+                # mri_historical_publication_categories.
+                c.execute("DELETE FROM mri_publication_categories WHERE publication_id = ?",
+                          (pub_id,))
                 c.execute("""
                     INSERT OR REPLACE INTO mri_publication_categories (publication_id, category_id, status, observed_at)
                     VALUES (?, ?, ?, ?)

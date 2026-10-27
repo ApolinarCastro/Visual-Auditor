@@ -394,11 +394,13 @@ async def get_categories_api(marketplace: str, run_id: Optional[str] = None):
                     JOIN mri_publication_categories pc ON c.category_id = pc.category_id
                     JOIN mri_publications p ON pc.publication_id = p.publication_id
                     WHERE c.marketplace = ? AND p.run_id = ?
+                      AND c.category_name != 'CATEGORY_UNKNOWN'
                     UNION
                     SELECT DISTINCT c.category_id, c.category_name, c.canonical_url
                     FROM mri_categories c
                     JOIN mri_historical_publication_categories hpc ON c.category_id = hpc.category_id
                     WHERE c.marketplace = ? AND hpc.run_id = ?
+                      AND c.category_name != 'CATEGORY_UNKNOWN'
                 """
                 rows = cur.execute(q, (marketplace, run_id, marketplace, run_id)).fetchall()
             else:
@@ -418,6 +420,31 @@ async def get_categories_api(marketplace: str, run_id: Optional[str] = None):
             pass
         finally:
             conn.close()
+
+    # The UI filter must also expose categories discovered but with 0
+    # publications (otherwise it looks as if only 7 categories exist).
+    if run_id:
+        try:
+            import json as _json
+            from app.mri_autonomous.storage_guard import StorageConfig as _SCc
+            _hist = Path(_SCc.get_aux_dir()) / "mri_history.json"
+            if _hist.exists():
+                _entries = _json.loads(_hist.read_text(encoding="utf-8"))
+                _hit = next((e for e in _entries if e.get("run_id") == run_id), None)
+                _tax = ((_hit or {}).get("taxonomy") or {}).get(marketplace) or {}
+                for _c in _tax.get("categories") or []:
+                    _name = _c.get("name") or _c.get("category_id")
+                    _slug = str(_c.get("category_id") or _name or "cat")
+                    _key = f"tax_{_slug}"
+                    cats_dict.setdefault(_key, {
+                        "name": _name,
+                        "url": _c.get("url") or "",
+                        "source": "TAXONOMY_DISCOVERED",
+                        "status": "PENDING",
+                        "publications": 0,
+                    })
+        except Exception:
+            pass
 
     if cats_dict:
         return JSONResponse(content=cats_dict)
@@ -750,7 +777,30 @@ async def stop_audit():
 
 from app.mri_autonomous.category_evaluator import evaluate_commercial_category
 
-CATALOG_PATH = Path("Actualización masiva de productos.xlsx")
+def _resolve_catalog_path() -> Path:
+    """Locate the master catalog independently of the process CWD.
+
+    The launcher can run from the repo root while the code lives in a
+    worktree; a relative path silently loaded a tiny fixture instead of the
+    real 15k-SKU master.
+    """
+    import os
+    name = "Actualización masiva de productos.xlsx"
+    candidates = []
+    env = os.environ.get("MRI_MASTER_CATALOG_PATH")
+    if env:
+        candidates.append(Path(env))
+    roots = [Path(__file__).resolve().parents[2], Path.cwd(),
+             Path(__file__).resolve().parents[3]]
+    for root in roots:
+        candidates.append(root / name)
+    for cand in candidates:
+        if cand.exists():
+            return cand
+    return roots[0] / name
+
+
+CATALOG_PATH = _resolve_catalog_path()
 _master_catalog_cache = None
 _master_catalog_source = "MISSING"
 
@@ -832,7 +882,9 @@ def get_master_catalog():
                 p = str(r[2] or "").strip()
                 c = str(r[3] or "").strip()
                 t = str(r[4] or "").strip()
-                cat = str(r[7] or "").strip()
+                # Master schema: 7=MARCA, 9=CATEGORIA. Using 7 made the
+                # expected category "Nicopoly" (brand) instead of the real leaf.
+                cat = str(r[9] or "").strip()
                 fal_tipo = str(r[54] or "").strip() if len(r) > 54 else ""
                 entry = {"category": cat, "falabella_tipo": fal_tipo, "title": t, "parent": p, "child": c}
                 if c and c not in child_to_cat:
@@ -866,7 +918,7 @@ def get_master_catalog():
                     p = str(r[2] or "").strip()
                     c = str(r[3] or "").strip()
                     t = str(r[4] or "").strip()
-                    cat = str(r[7] or "").strip()
+                    cat = str(r[9] or "").strip()
                     fal_tipo = str(r[54] or "").strip() if len(r) > 54 else ""
                     entry = {"category": cat, "falabella_tipo": fal_tipo, "title": t, "parent": p, "child": c}
                     if c and c not in child_to_cat:

@@ -222,6 +222,14 @@ def traverse_category(engine, category: Dict[str, Any], *, max_pages: int = 200,
         "pages_traversed": len(pages),
         "publications": len(observations),
         "unique_publications": len(seen),
+        # Source counter semantics: reported_count belongs to the SAME filtered
+        # surface (brand + category), while unique_publications counts observed
+        # Nicopoly ids. They are not interchangeable totals.
+        "reported_count": reported,
+        "observed_unique": len(seen),
+        "counter_scope": "BRAND_FILTERED_SURFACE",
+        "counter_status": ("MATCHED" if (reported is not None and len(seen) >= reported)
+                           else ("BELOW_REPORTED" if reported is not None else "NO_COUNTER")),
         "skipped_non_brand": non_brand_skipped,
         "observations": observations,
         "complete": terminal in (EXHAUSTED, REPORTED_REACHED),

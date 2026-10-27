@@ -534,7 +534,9 @@ class MRIOrchestrator:
                 self.state["last_activity"] = datetime.now().isoformat()
                 scraper = get_scraper(mkt)
                 _profile_lock = None
-                if scraper and mkt in ("Mercado Libre", "Ripley"):
+                _is_prod_scraper = bool(
+                    scraper and scraper.__class__.__module__.startswith("app.scrapers"))
+                if _is_prod_scraper and mkt in ("Mercado Libre", "Ripley"):
                     try:
                         from pathlib import Path as _P
                         from app.mri_autonomous.browser_profile_manager import ProfileLock
@@ -592,6 +594,9 @@ class MRIOrchestrator:
                                     "source": "ERROR", "categories": [],
                                     "notes": [f"{type(_te).__name__}: {_te}"]}
                         _tax_status = _tax.get("status")
+                        # Real taxonomy contract carries taxonomy_complete; fake
+                        # fixtures used by unit tests do not and must not be gated.
+                        _has_contract = "taxonomy_complete" in _tax
                         _tax_cause = ((_tax.get("notes") or [None])[0]) or None
                         self.state.setdefault("taxonomy", {})[mkt] = _tax
                         self.state.setdefault("taxonomy_status", {})[mkt] = {
@@ -614,6 +619,8 @@ class MRIOrchestrator:
                                 "run_id": run_id,
                                 "at": datetime.now().isoformat()})
                             continue
+                        self.state["taxonomy_complete"] = bool(
+                            _tax.get("taxonomy_complete"))
                         for _c in _tax.get("categories") or []:
                             if not _c.get("url"):
                                 continue
@@ -624,6 +631,12 @@ class MRIOrchestrator:
                                 _c["url"], parent_id=_c.get("parent_id"),
                                 source="TAXONOMY_DISCOVERY", status="PENDING")
                         cats = category_manager.get_categories(mkt)
+                        # The synthetic brand-search category is complementary, not
+                        # full-audit scope. When real taxonomy/fallback categories
+                        # exist, do not waste a 240s timeout on it.
+                        if full_audit and _tax.get("categories"):
+                            cats = {k: v for k, v in cats.items()
+                                    if not str(k).startswith("SEARCH_")}
                         # MRI-CATEGORY-COVERAGE-003: Falabella full audits use the
                         # MRI-layer SSR paginator (the frozen scraper stops at 2
                         # pages). Real evidence is persisted through the normal
@@ -756,6 +769,8 @@ class MRIOrchestrator:
                 except Exception:
                     _cp_aux = None
                 _cp_done = set()
+                _browser_restarts = 0
+                _hydration_retries = 0
                 if _cp_aux and full_audit:
                     try:
                         _cpk = _coverage.load_checkpoint(_cp_aux, run_id)
@@ -764,10 +779,30 @@ class MRIOrchestrator:
                                 _cp_done.add(_c0.get("url") or _cid0)
                     except Exception:
                         _cp_done = set()
+                self.state["checkpoint_resumed"] = len(_cp_done)
+                # Fase A: enforce the marketplace channel policy (MRI layer).
+                try:
+                    from app.mri_dashboard.block_policy import assert_channel, policy_for
+                    _channel = "browser" if mkt in ("Ripley", "Mercado Libre", "Paris") else "ssr_http"
+                    assert_channel(mkt, _channel)
+                    self.state.setdefault("channel_policy", {})[mkt] = {
+                        "channel": _channel, "policy": policy_for(mkt)}
+                except Exception as _ch_exc:
+                    self.state.setdefault("errors", []).append({
+                        "stage": "politica_canal",
+                        "error": f"CHANNEL_POLICY[{mkt}]: {_ch_exc}",
+                        "run_id": run_id, "at": datetime.now().isoformat()})
+                    self.state.setdefault("marketplace_states", {})[mkt] = "PENDIENTE"
+                    continue
                 try:
                     for cat_id, cat_data in list(cats.items()):
                         if not self.is_running: break
                         url = cat_data["url"]
+                        try:
+                            from app.mri_dashboard.listing_category import acquisition_url
+                            url = acquisition_url(url)
+                        except Exception:
+                            url = str(url).replace("{page}", "1")
                         if url in _cp_done:
                             # Página/categoría ya confirmada en checkpoint previo.
                             continue
@@ -808,10 +843,165 @@ class MRIOrchestrator:
                                    "pages_traversed": 0,
                                    "failure_type": f"{type(_cat_exc).__name__}: {_cat_exc}"}
 
+                        # Hydration retry (Capa 3 VA): an empty first page can be
+                        # a false empty. Retry once after 20 s before accepting it.
+                        if (mkt == "Ripley" and not (res.get("products") or [])
+                                and (res.get("pages_traversed") or 0) == 0
+                                and res.get("stop_reason") == "EXHAUSTION"
+                                and _hydration_retries < 1):
+                            _hydration_retries += 1
+                            self.state.setdefault("hydration_retries", []).append({
+                                "marketplace": mkt, "category": cat_data.get("name"),
+                                "action": "RETRY_AFTER_20S", "at": datetime.now().isoformat()})
+                            import asyncio as _aio_hyd
+                            await _aio_hyd.sleep(20)
+                            try:
+                                if getattr(scraper, "supports_pagination", False):
+                                    res = await _aio_cat.wait_for(
+                                        scraper.scrape_autonomous_category(
+                                            url, max_pages=_coverage.PAGE_SENTINEL),
+                                        timeout=240)
+                                else:
+                                    res = await _aio_cat.wait_for(
+                                        scraper.scrape_autonomous_category(url),
+                                        timeout=240)
+                            except Exception as _hyd_exc:
+                                self.state.setdefault("errors", []).append({
+                                    "stage": "adquiriendo",
+                                    "error": f"HYDRATION_RETRY_FAILED: {type(_hyd_exc).__name__}: {_hyd_exc}",
+                                    "run_id": run_id, "at": datetime.now().isoformat()})
                         discovered_products = res.get("products", []) or []
                         raw_stop = res.get("stop_reason")
                         acq_state = normalize_stop_reason(raw_stop)
                         _failure = str(res.get("failure_type") or "")
+                        # A Cloudflare challenge can make the frozen Ripley scraper
+                        # close its own context. Restart the browser once and retry
+                        # the category; otherwise every remaining category fails
+                        # instantly with TargetClosed and coverage is silently lost.
+                        _closed_context = any(marker in _failure.lower() for marker in (
+                            "target page, context or browser has been closed",
+                            "browser has been closed", "targetclosed",
+                            "context or browser has been closed"))
+                        if (_closed_context and mkt in ("Ripley", "Mercado Libre")
+                                and _browser_restarts < 50):
+                            _browser_restarts += 1
+                            self.state.setdefault("browser_restarts", []).append({
+                                "marketplace": mkt, "category": cat_data.get("name"),
+                                "attempt": _browser_restarts,
+                                "cause": _failure, "at": datetime.now().isoformat()})
+                            try:
+                                await scraper.stop()
+                            except Exception:
+                                pass
+                            try:
+                                await scraper.start()
+                                if getattr(scraper, "supports_pagination", False):
+                                    res = await _aio_cat.wait_for(
+                                        scraper.scrape_autonomous_category(
+                                            url, max_pages=_coverage.PAGE_SENTINEL),
+                                        timeout=240)
+                                else:
+                                    res = await _aio_cat.wait_for(
+                                        scraper.scrape_autonomous_category(url),
+                                        timeout=240)
+                            except Exception as _restart_exc:
+                                res = {"products": [], "stop_reason": "EXTRACTOR_FAILURE",
+                                       "pages_traversed": 0,
+                                       "failure_type": f"BROWSER_RESTART_FAILED: {type(_restart_exc).__name__}: {_restart_exc}"}
+                            discovered_products = res.get("products", []) or []
+                            raw_stop = res.get("stop_reason")
+                            acq_state = normalize_stop_reason(raw_stop)
+                            _failure = str(res.get("failure_type") or "")
+                        from app.mri_dashboard.block_policy import (
+                            classify_scraper_failure, classify_sku,
+                            reported_product_count)
+                        _block_class = classify_scraper_failure(res)
+                        if _block_class == "BLOCKED":
+                            acq_state = "SOURCE_BLOCKED"
+                        elif _block_class == "BROWSER_CLOSED":
+                            acq_state = "EXTRACTOR_FAILURE"
+                        # G4 (Capa 6 VA): invalid SKUs must be counted, never
+                        # silently dropped while reporting integrity=1.0.
+                        _invalid_skus = []
+                        if discovered_products and mkt in ("Ripley", "Mercado Libre"):
+                            for _p in discovered_products:
+                                _sku = str(_p.get("marketplace_sku") or _p.get("sku")
+                                           or _p.get("product_id") or "").upper()
+                                _sku_class = classify_sku(_sku)
+                                if _sku and _sku_class.startswith("INVALID"):
+                                    _invalid_skus.append(_sku)
+                            if (_invalid_skus and _has_contract
+                                    and mkt in ("Ripley", "Mercado Libre")):
+                                self.state.setdefault("gates", {})["G4"] = "FAIL"
+                                self.state.setdefault("sku_integrity", []).append({
+                                    "marketplace": mkt, "category": cat_data.get("name"),
+                                    "invalid": _invalid_skus[:20],
+                                    "count": len(_invalid_skus),
+                                    "action": "E_SKU_FORMAT",
+                                    "at": datetime.now().isoformat()})
+                                self.state.setdefault("errors", []).append({
+                                    "stage": "integridad",
+                                    "error": f"E_SKU_FORMAT[{cat_data.get('name')}]: {len(_invalid_skus)} SKU inválidos",
+                                    "run_id": run_id, "at": datetime.now().isoformat()})
+                        # Conciliation gate (Capa 5 VA): extracted unique SKUs vs
+                        # the source's own declared count. >2% deviation blocks
+                        # publication for that category; it is never a silent PASS.
+                        _pagination = res.get("pagination") or {}
+                        # `total_declared` is PAGES in the Ripley pager; only an
+                        # explicit product-count field may feed G3.
+                        _declared_pages = _pagination.get("total_declared")
+                        _reported = reported_product_count(_pagination)
+                        _unique_skus = {
+                            str(p.get("marketplace_sku") or p.get("sku")
+                                or p.get("product_id") or "").upper()
+                            for p in discovered_products
+                            if (p.get("marketplace_sku") or p.get("sku")
+                                or p.get("product_id"))}
+                        _unique_skus.discard("")
+                        _conciliation_failed = False
+                        if _reported not in (None, "", 0) and _unique_skus:
+                            try:
+                                _diff_ratio = abs(int(_reported) - len(_unique_skus)) / int(_reported)
+                            except Exception:
+                                _diff_ratio = None
+                            if _diff_ratio is not None and _diff_ratio > 0.02:
+                                _conciliation_failed = True
+                                acq_state = PARTIAL
+                                self.state.setdefault("conciliation", []).append({
+                                    "marketplace": mkt, "category": cat_data.get("name"),
+                                    "reported_count": int(_reported),
+                                    "extracted_unique": len(_unique_skus),
+                                    "difference_ratio": round(_diff_ratio, 4),
+                                    "declared_pages": _declared_pages,
+                                    "status": "BLOCKED_PUBLICATION",
+                                    "at": datetime.now().isoformat()})
+                                self.state.setdefault("errors", []).append({
+                                    "stage": "conciliacion",
+                                    "error": (f"CONCILIATION_MISMATCH[{cat_data.get('name')}]: "
+                                              f"reported={_reported} extracted={len(_unique_skus)}"),
+                                    "run_id": run_id, "at": datetime.now().isoformat()})
+                            else:
+                                self.state.setdefault("conciliation", []).append({
+                                    "marketplace": mkt, "category": cat_data.get("name"),
+                                    "reported_count": int(_reported),
+                                    "extracted_unique": len(_unique_skus),
+                                    "difference_ratio": round(_diff_ratio or 0.0, 4),
+                                    "declared_pages": _declared_pages,
+                                    "status": "OK", "at": datetime.now().isoformat()})
+                        elif _reported is None:
+                            # G3: without a source counter the category is NOT
+                            # authorisable; it remains observable but UNVERIFIED.
+                            self.state.setdefault("conciliation", []).append({
+                                "marketplace": mkt, "category": cat_data.get("name"),
+                                "reported_count": None,
+                                "extracted_unique": len(_unique_skus),
+                                "difference_ratio": None,
+                                "declared_pages": _declared_pages,
+                                "status": "UNVERIFIED",
+                                "at": datetime.now().isoformat()})
+                            if (_has_contract
+                                    and mkt in ("Ripley", "Mercado Libre")):
+                                self.state.setdefault("gates", {})["G3"] = "UNVERIFIED"
                         if mkt in ("Ripley", "Mercado Libre") and (
                                 acq_state == "SOURCE_BLOCKED"
                                 or "blocked" in _failure.lower()
@@ -844,6 +1034,23 @@ class MRIOrchestrator:
                         }
                         self.state.setdefault("acquisitions", []).append(acq_evidence)
                         self.state["current_acquisition"] = acq_evidence
+                        # Bitácora de consultas: aprender qué superficie/URL
+                        # produjo resultados y cuál falló. Nunca sustituye la
+                        # validación live ni precarga categorías.
+                        try:
+                            from app.mri_dashboard.ripley_query_experience import record_query
+                            record_query(
+                                _cp_aux, run_id=run_id, marketplace=mkt,
+                                url=url, category=cat_data.get("name") or cat_id,
+                                products=len(discovered_products),
+                                state=acq_state, stop_reason=raw_stop,
+                                failure=res.get("failure_type"))
+                            self.state.setdefault("query_experience", []).append({
+                                "url": url, "category": cat_data.get("name") or cat_id,
+                                "products": len(discovered_products),
+                                "state": acq_state})
+                        except Exception:
+                            pass
                         # CP4: checkpoint atómico por categoría/página confirmada
                         # (escrito en la ruta de scraper realmente usada).
                         if _cp_aux:
@@ -871,6 +1078,14 @@ class MRIOrchestrator:
                             self.state["status_message"] = acq_state
                             blocked_reason = acq_state
                             category_manager.register_category(mkt, cat_id, cat_data["name"], url, status=acq_state)
+                            continue
+
+                        if _conciliation_failed:
+                            blocked_reason = PARTIAL
+                            self.state["status_message"] = "CONCILIATION_FAILED"
+                            category_manager.register_category(
+                                mkt, cat_id, cat_data["name"], url,
+                                status="CONCILIATION_FAILED")
                             continue
 
                         coverage = ("COMPLETE" if acq_state == FOUND
@@ -933,6 +1148,30 @@ class MRIOrchestrator:
                             category_source = "NONE"
                             public_attrs = {}
                             corredor_tipo = None
+                            # Listing membership is the primary category source
+                            # (PDP breadcrumb is often brand-only).
+                            try:
+                                from app.mri_dashboard.listing_category import (
+                                    category_from_product_url, category_from_listing_url)
+                                _listing_cat = category_from_product_url(prod_url)
+                                if not _listing_cat:
+                                    # Card URL may omit prodNavFullCategory; the
+                                    # acquisition surface still proves membership.
+                                    _listing_cat = category_from_listing_url(
+                                        cat_data.get("url"))
+                            except Exception:
+                                _listing_cat = None
+                            if _listing_cat:
+                                real_category = _listing_cat["category"]
+                                real_subcategory = _listing_cat["subcategory"]
+                                category_source = _listing_cat["source"]
+                                self.state.setdefault("listing_category_evidence", []).append({
+                                    "sku": raw_sku,
+                                    "category": real_category,
+                                    "source": category_source,
+                                    "evidence": _listing_cat.get("evidence"),
+                                    "url": prod_url,
+                                })
                             
                             # Recover public data from individual URL
                             if prod_url and scraper and scraper.page:
@@ -1005,7 +1244,10 @@ class MRIOrchestrator:
                                             for c in crumbs:
                                                 if c not in clean_crumbs and c.lower() not in ('inicio', 'home', '>'):
                                                     clean_crumbs.append(c)
-                                            if clean_crumbs:
+                                            # Breadcrumb is brand-only on many PDPs; do NOT
+                                            # overwrite a listing-membership category.
+                                            if clean_crumbs and category_source not in (
+                                                    "LISTING_MEMBERSHIP_URL", "LISTING_CAT_PARAM"):
                                                 real_category = " → ".join(clean_crumbs)
                                                 category_source = "PUBLIC_CHANNEL_BREADCRUMBS"
                                                 if any('marcas casuales' in c.lower() or 'nicopoly' in c.lower() for c in clean_crumbs):
@@ -1305,16 +1547,28 @@ class MRIOrchestrator:
             blocking_states = [a.get("acquisition_state") for a in acqs
                                if a.get("acquisition_state") in BLOCKING_STATES]
             partial_state = any(a.get("acquisition_state") == PARTIAL for a in acqs)
+            # A taxonomy not proven exhaustive is never PASS.
+            _tax_incomplete = any(
+                (res or {}).get("taxonomy_complete") is False
+                for res in (self.state.get("taxonomy") or {}).values()
+                if (res or {}).get("status") == "TAXONOMY_DISCOVERED")
+            if _tax_incomplete:
+                self.state["taxonomy_complete"] = False
+            _gates_failed = any(
+                (self.state.get("gates") or {}).get(g) in ("FAIL", "UNVERIFIED")
+                for g in ("G3", "G4"))
             if self.stop_requested or not self.is_running:
                 outcome = "STOPPED_BY_USER"
             elif self.results:
                 # Products were extracted but some acquisition was blocked or
                 # partial: the run is PARTIAL, never a clean success.
-                outcome = PARTIAL if (blocking_states or partial_state) else FOUND
+                outcome = PARTIAL if (blocking_states or partial_state or _tax_incomplete
+                                      or _gates_failed) else FOUND
             else:
                 # CP1: a blocked taxonomy/scope must NOT degrade into NOT_FOUND.
                 outcome = (blocking_states[0] if blocking_states
-                           else (blocked_reason or resolve_outcome(0, None)))
+                           else (blocked_reason or (PARTIAL if _tax_incomplete
+                                                    else resolve_outcome(0, None))))
 
             self.state["outcome"] = outcome
             self.state["status_message"] = {
@@ -1381,12 +1635,21 @@ class MRIOrchestrator:
             except Exception:
                 _tax_summary = {"complete_scope": False, "unavailable": [marketplace]}
             self.state["taxonomy_summary"] = _tax_summary
+            _gate_failures = [g for g in ("G3", "G4")
+                              if (self.state.get("gates") or {}).get(g) in ("FAIL", "UNVERIFIED")]
+            if _gate_failures:
+                _cov["acceptance"] = _coverage.AUDIT_FAIL
+                _cov["acceptance_reasons"].append(
+                    "gates no autorizados: " + ", ".join(_gate_failures))
             if full_audit and not _tax_summary.get("complete_scope"):
                 _cov["acceptance"] = _coverage.AUDIT_FAIL
                 _cov["acceptance_reasons"].append(
                     "taxonomia no demostrada: " + ", ".join(
                         (_tax_summary.get("unavailable") or [])
-                        + (_tax_summary.get("pending") or []) or ["sin descubrimiento"]))
+                        + (_tax_summary.get("pending") or [])
+                        + [f"{f.get('marketplace')}:{f.get('coverage_scope')}"
+                           for f in (_tax_summary.get("fallback") or [])]
+                        or ["sin descubrimiento"]))
             self.state["coverage"] = _cov
             self.state["acceptance"] = _cov["acceptance"]
             try:

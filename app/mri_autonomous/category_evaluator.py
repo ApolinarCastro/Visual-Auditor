@@ -60,7 +60,22 @@ def evaluate_commercial_category(
     title_norm = normalize_text(product_title)
     exp_norm = normalize_text(expected_category)
     obs_norm = normalize_text(observed_category)
+    # Parent paths can contain contradictory words ("Jeans y Pantalones" for a
+    # Pantalones product). Classify against the LEAF, not the whole breadcrumb.
+    _obs_parts = [x.strip() for x in re.split(r"[→>]", str(observed_category)) if x.strip()]
+    obs_leaf_norm = normalize_text(_obs_parts[-1]) if _obs_parts else obs_norm
     pub_attrs = public_attributes or {}
+
+    # Gating 0: the expected category must be independent evidence. Never infer
+    # it from the observed category and use equality as proof.
+    if exp_norm in ("", "no verificado", "no_verificado", "sin referencia",
+                    "sin_referencia", "none", "category unknown"):
+        return {
+            'decision': 'NO_VERIFICADO',
+            'reason': 'Sin categoría esperada independiente: no se emite dictamen comercial.',
+            'severity': 'INFO',
+            'expected_category_status': 'SIN_REFERENCIA'
+        }
 
     # Gating 1: Identidad no verificada
     # Si falta identidad unívoca con el catálogo maestro, no producir dictamen comercial definitivo
@@ -148,7 +163,7 @@ def evaluate_commercial_category(
         contradictions = GARMENT_FAMILIES[expected_family]['contradictions']
         for c in contradictions:
             pattern = r'\b' + re.escape(c) + r'\b'
-            if re.search(pattern, obs_norm):
+            if re.search(pattern, obs_leaf_norm):
                 return {
                     'decision': 'INCORRECT',
                     'reason': f'Contradicción material: categoría pública "{observed_category}" contradice prenda esperada "{expected_family.upper()}"',
@@ -158,12 +173,32 @@ def evaluate_commercial_category(
     # 5. Categoría observada alineada con la familia
     if expected_family and expected_family in GARMENT_FAMILIES:
         family_keywords = GARMENT_FAMILIES[expected_family]['keywords']
-        if any(re.search(r'\b' + re.escape(kw) + r'\b', obs_norm) for kw in family_keywords):
-            # Verificar si la hoja de la taxonomía del maestro coincide de forma exacta
-            exp_leaf = exp_norm.split('-')[-1].strip()
-            # Si la hoja es por ejemplo "pantalones casuales" o "vestidos de fiesta", comprobar que la categoría observada incluya la hoja completa
+        # Spanish plural tolerance: blazer -> blazers, blusa -> blusas, falda -> faldas
+        if any(re.search(r'\b' + re.escape(kw) + r'(?:s|es)?\b', obs_leaf_norm)
+               for kw in family_keywords):
+            # Verificar si la hoja de la taxonomía del maestro coincide de forma exacta.
+            # Master categories use "Ropa - Ropa Mujer - Chaquetas - Blazers"; the
+            # observed Ripley leaf is "Chaquetas y blazers". Compare the leaf token
+            # (singular/plural tolerant) before falling back to REVIEW.
+            _parts = [p for p in re.split(r"\s*-\s*", exp_norm) if p]
+            exp_leaf = (_parts[-1] if _parts else exp_norm).strip()
+            # The master path can be more specific than the Ripley leaf
+            # ("Blusas - Blusas Manga Larga" vs "Blusas y poleras"). Compare
+            # commercial category segments, not only the final subtype.
+            for _part in _parts:
+                _part_norm = normalize_text(_part).strip()
+                if _part_norm in ("ropa", "ropa mujer", "mujer", ""):
+                    continue
+                _variants = {_part_norm, _part_norm.rstrip("s"), _part_norm + "s"}
+                if any(v and re.search(r'\b' + re.escape(v) + r'\b', obs_leaf_norm)
+                       for v in _variants):
+                    return {
+                        'decision': 'CORRECT',
+                        'reason': f'Categoría pública "{observed_category}" contiene la categoría comercial "{_part}"',
+                        'severity': 'SUCCESS'
+                    }
             leaf_words = [w for w in exp_leaf.split() if len(w) > 3]
-            leaf_full_match = all(re.search(r'\b' + re.escape(w) + r'\b', obs_norm) for w in leaf_words)
+            leaf_full_match = all(re.search(r'\b' + re.escape(w) + r'\b', obs_leaf_norm) for w in leaf_words)
             if leaf_full_match and len(leaf_words) >= 2:
                 return {
                     'decision': 'CORRECT',

@@ -22,8 +22,6 @@ DISCOVERED = "TAXONOMY_DISCOVERED"
 UNAVAILABLE = "TAXONOMY_UNAVAILABLE"
 BLOCKED = "TAXONOMY_BLOCKED"
 NOT_REQUIRED = "TAXONOMY_NOT_REQUIRED"
-
-
 def _cat(cid, name, url, parent=None, level=1, source=None, count=None):
     return {
         "category_id": str(cid) if cid is not None else None,
@@ -38,7 +36,8 @@ def _cat(cid, name, url, parent=None, level=1, source=None, count=None):
     }
 
 
-def _result(marketplace, status, categories, source, notes=None):
+def _result(marketplace, status, categories, source, notes=None, *,
+            complete=False, coverage_scope=None, pending_scope=None):
     return {
         "marketplace": marketplace,
         "status": status,
@@ -46,53 +45,12 @@ def _result(marketplace, status, categories, source, notes=None):
         "categories": categories,
         "notes": notes or [],
         "brand_search_is_complementary": True,
+        # DISCOVERED != COMPLETE. Only explicit exhaustive evidence may set True.
+        "taxonomy_complete": bool(complete),
+        "coverage_scope": coverage_scope or (
+            "EXHAUSTIVE" if complete else "DISCOVERED_NOT_EXHAUSTIVELY_VERIFIED"),
+        "pending_scope": pending_scope or [],
     }
-
-
-def ripely_taxonomy(scraper, hub_url, brand="Nicopoly"):
-    """Discover Ripley categories from the page the scraper already opened."""
-    from app.mri_autonomous.category_discoverer import discover_categories_from_page
-    page = getattr(scraper, "page", None)
-    if page is None:
-        return _result("Ripley", BLOCKED, [], "PLAYWRIGHT_PAGE",
-                       ["el scraper no expone una página abierta"])
-    try:
-        urls = discover_categories_from_page(page, "Ripley", hub_url, brand) or []
-    except Exception as exc:
-        return _result("Ripley", UNAVAILABLE, [], "PLAYWRIGHT_PAGE",
-                       [f"{type(exc).__name__}: {exc}"])
-    cats, seen = [], set()
-    for u in urls:
-        if not isinstance(u, str) or not u.startswith("http") or u in seen:
-            continue
-        seen.add(u)
-        slug = u.rstrip("/").split("/")[-1].split("?")[0]
-        cats.append(_cat(slug, slug.replace("-", " ").title(), u, source="NAVIGATION"))
-    if not cats:
-        # Verified fallback (2026-10-26): Ripley does not expose facet links,
-        # but these commercial surfaces are real and were checked live.
-        verified = [
-            ("blusas-y-poleras", "Blusas y Poleras",
-             "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/blusas-y-poleras?brand=NICOPOLY"),
-            ("chaquetas-y-blazers", "Chaquetas y Blazers",
-             "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/chaquetas-y-blazers?brand=NICOPOLY"),
-            ("pantalones", "Pantalones",
-             "https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/pantalones?brand=NICOPOLY"),
-            ("shorts", "Shorts",
-             "https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/shorts?brand=NICOPOLY"),
-            ("jeans", "Jeans",
-             "https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/jeans?brand=NICOPOLY"),
-            ("vestidos", "Vestidos",
-             "https://simple.ripley.cl/moda-mujer/vestidos-y-enteritos/vestidos?brand=NICOPOLY"),
-            ("faldas", "Faldas",
-             "https://simple.ripley.cl/moda-mujer/vestidos-y-enteritos/faldas?brand=NICOPOLY"),
-        ]
-        cats = [_cat(cid, name, url, source="SEARCH_FALLBACK")
-                for cid, name, url in verified]
-        return _result("Ripley", DISCOVERED, cats, "SEARCH_FALLBACK",
-                       ["facets no expuestos; se usan 7 superficies comerciales verificadas",
-                        "no es el árbol completo de taxonomía: cobertura parcial declarada"])
-    return _result("Ripley", DISCOVERED, cats, "NAVIGATION")
 
 
 def ripely_taxonomy(scraper, hub_url, brand="Nicopoly"):
@@ -126,6 +84,29 @@ async def ripely_taxonomy_async(scraper, hub_url, brand="Nicopoly"):
     except Exception as exc:
         return _result("Ripley", UNAVAILABLE, [], "PLAYWRIGHT_PAGE",
                        [f"{type(exc).__name__}: {exc}"])
+    # The frozen discoverer only recognizes brand-bearing facet anchors; the
+    # live Ripley menu/search page exposes category links without the brand in
+    # the href. Probe them before accepting the static partial fallback.
+    if not urls:
+        try:
+            from app.mri_autonomous.ripley_discovery import discover_live_categories
+            _diag = []
+            _prior = []
+            try:
+                from app.mri_dashboard.ripley_query_experience import read_query_experience
+                from app.mri_autonomous.storage_guard import StorageConfig
+                _rows = read_query_experience(StorageConfig.get_aux_dir())
+                _prior = [r.get("url") for r in _rows if r.get("products")]
+            except Exception:
+                _prior = []
+            urls = await discover_live_categories(
+                page, hub_url, brand, scraper=scraper, diagnostics=_diag,
+                prior_urls=_prior)
+            if not urls:
+                # Keep the diagnostic in the taxonomy result, never invent 7.
+                _discovery_diag = _diag
+        except Exception:
+            urls = []
     cats, seen = [], set()
     for u in urls or []:
         if not isinstance(u, str) or not u.startswith("http") or u in seen:
@@ -134,29 +115,17 @@ async def ripely_taxonomy_async(scraper, hub_url, brand="Nicopoly"):
         slug = u.rstrip("/").split("/")[-1].split("?")[0]
         cats.append(_cat(slug, slug.replace("-", " ").title(), u, source="NAVIGATION"))
     if not cats:
-        # Verified fallback (2026-10-26): Ripley does not expose facet links,
-        # but these commercial surfaces are real and were checked live.
-        verified = [
-            ("blusas-y-poleras", "Blusas y Poleras",
-             "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/blusas-y-poleras?brand=NICOPOLY"),
-            ("chaquetas-y-blazers", "Chaquetas y Blazers",
-             "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/chaquetas-y-blazers?brand=NICOPOLY"),
-            ("pantalones", "Pantalones",
-             "https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/pantalones?brand=NICOPOLY"),
-            ("shorts", "Shorts",
-             "https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/shorts?brand=NICOPOLY"),
-            ("jeans", "Jeans",
-             "https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/jeans?brand=NICOPOLY"),
-            ("vestidos", "Vestidos",
-             "https://simple.ripley.cl/moda-mujer/vestidos-y-enteritos/vestidos?brand=NICOPOLY"),
-            ("faldas", "Faldas",
-             "https://simple.ripley.cl/moda-mujer/vestidos-y-enteritos/faldas?brand=NICOPOLY"),
-        ]
-        cats = [_cat(cid, name, url, source="SEARCH_FALLBACK")
-                for cid, name, url in verified]
-        return _result("Ripley", DISCOVERED, cats, "SEARCH_FALLBACK",
-                       ["facets no expuestos; se usan 7 superficies comerciales verificadas",
-                        "no es el árbol completo de taxonomía: cobertura parcial declarada"])
+        # NEVER substitute a static 7-category list. If the live site does not
+        # expose categories, this is a discovery gap, not a partial taxonomy.
+        _note = "la página no expuso categorías comerciales navegables"
+        try:
+            _note += f" | diagnostico={_discovery_diag[:6]}"
+        except Exception:
+            pass
+        return _result("Ripley", UNAVAILABLE, [], "LIVE_DISCOVERY",
+                       [_note],
+                       complete=False, coverage_scope="NO_CATEGORIES_DISCOVERED",
+                       pending_scope=["COMMERCIAL_TAXONOMY_UNRESOLVED"])
     return _result("Ripley", DISCOVERED, cats, "NAVIGATION")
 
 
@@ -287,7 +256,8 @@ def summarize(taxonomy_map: dict) -> dict:
         status = (res or {}).get("status")
         if status == DISCOVERED:
             out["discovered"].append({"marketplace": mkt,
-                                      "categories": len(res.get("categories") or [])})
+                                      "categories": len(res.get("categories") or []),
+                                      "taxonomy_complete": bool(res.get("taxonomy_complete"))})
         elif status == NOT_REQUIRED:
             out["not_required"].append(mkt)
         elif status == BLOCKED:
@@ -296,9 +266,11 @@ def summarize(taxonomy_map: dict) -> dict:
             out["unavailable"].append(mkt)
     # A run whose requested scope has no taxonomy requirement (e.g. Paris
     # baseline) is complete; any pending/unavailable marketplace is not.
-    out["complete_scope"] = (not out["unavailable"] and not out["pending"])
+    out["complete_scope"] = (not out["unavailable"] and not out["pending"]
+                             and bool(out["discovered"])
+                             and all(d.get("taxonomy_complete") for d in out["discovered"]))
     return out
 
 
-__all__ = ["discover_taxonomy", "summarize", "DISCOVERED", "UNAVAILABLE",
-           "BLOCKED", "NOT_REQUIRED", "classify_commercial_identity"]
+__all__ = ["discover_taxonomy", "summarize", "DISCOVERED",
+           "UNAVAILABLE", "BLOCKED", "NOT_REQUIRED", "classify_commercial_identity"]
