@@ -797,6 +797,10 @@ class MRIOrchestrator:
                 try:
                     for cat_id, cat_data in list(cats.items()):
                         if not self.is_running: break
+                        if cat_data.get("acquisition") is False:
+                            # Reference/menu category for the dashboard, not an
+                            # acquisition target (ML listados are blocked).
+                            continue
                         url = cat_data["url"]
                         try:
                             from app.mri_dashboard.listing_category import acquisition_url
@@ -824,8 +828,16 @@ class MRIOrchestrator:
                         # coverage). Visual Auditor scrapers stay frozen.
                         # Watchdog: a frozen page/DOM must not hang the whole run.
                         import asyncio as _aio_cat
+                        _ml_storefront = (mkt == "Mercado Libre"
+                                           and "tienda/nicopoly" in url
+                                           and "/listado/" not in url)
                         try:
-                            if getattr(scraper, "supports_pagination", False):
+                            if _ml_storefront:
+                                from app.mri_autonomous.meli_ssr_storefront import (
+                                    scrape_storefront_category)
+                                res = await _aio_cat.wait_for(
+                                    scrape_storefront_category(url), timeout=90)
+                            elif getattr(scraper, "supports_pagination", False):
                                 res = await _aio_cat.wait_for(
                                     scraper.scrape_autonomous_category(
                                         url, max_pages=_coverage.PAGE_SENTINEL),

@@ -180,7 +180,7 @@ def test_meli_domain_discovery_shapes_are_parsed(monkeypatch):
     res = T.discover_taxonomy("Mercado Libre")
     assert res["status"] == T.DISCOVERED
     ids = {c["category_id"] for c in res["categories"]}
-    assert ids == {"MLC1", "MLC2"}
+    assert {"MELI_STOREFRONT_NICOPOLY", "MLC1", "MLC2"} == ids
 
 
 def test_meli_found_without_parseable_categories_is_contract_issue(monkeypatch):
@@ -193,8 +193,8 @@ def test_meli_found_without_parseable_categories_is_contract_issue(monkeypatch):
 
     monkeypatch.setattr(MT, "MeliTaxonomyEngine", _Eng)
     res = T.discover_taxonomy("Mercado Libre")
-    assert res["status"] == T.UNAVAILABLE
-    assert "SSR" in res["notes"][0] or "menú SSR" in res["notes"][0]
+    assert res["status"] == T.DISCOVERED
+    assert {c["category_id"] for c in res["categories"]} == {"MELI_STOREFRONT_NICOPOLY"}
 
 
 def test_falabella_incomplete_ssr_can_never_be_audit_pass(monkeypatch):

@@ -199,20 +199,32 @@ def meli_taxonomy(query="nicopoly"):
         return _result("Mercado Libre", BLOCKED, [], "STOREFRONT_SSR",
                        [f"{type(exc).__name__}: {exc}"])
     cats, seen = [], set()
+    # One real acquisition surface: the public storefront root. All 37 visible
+    # polycards come from this SSR page; listados/PDP are blocked by ML.
+    _root_url = "https://www.mercadolibre.cl/tienda/nicopoly"
+    _root = _cat("MELI_STOREFRONT_NICOPOLY", "Tienda Oficial Nicopoly",
+                 _root_url, source="STOREFRONT_SSR")
+    _root["acquisition"] = True
+    cats.append(_root)
     for n in nodes or []:
         cid = str(n.get("category_id") or "").strip()
         name = str(n.get("name") or "").strip()
         if not cid or cid in seen:
             continue
         seen.add(cid)
-        url = n.get("url") or f"https://listado.mercadolibre.cl/tienda/nicopoly/"
-        cats.append(_cat(cid, name, url, source="STOREFRONT_SSR"))
-    if not cats:
-        # VA proved the storefront is the only 200 source; a missing menu is a
-        # discovery gap, not a reason to inject a hardcoded 14-category list.
+        url = n.get("url") or "https://listado.mercadolibre.cl/tienda/nicopoly/"
+        _ref = _cat(cid, name, url, source="STOREFRONT_SSR")
+        # Reference/menu category. Do NOT acquire it through the blocked
+        # listado; the storefront root is the only verified acquisition surface.
+        _ref["acquisition"] = False
+        cats.append(_ref)
+    if not nodes and err not in ("FOUND", None, ""):
         return _result("Mercado Libre", UNAVAILABLE, [], "STOREFRONT_SSR",
                        [f"{err or 'sin respuesta'}: el menú SSR no expuso categorías comerciales"])
-    return _result("Mercado Libre", DISCOVERED, cats, "STOREFRONT_SSR")
+    return _result(
+        "Mercado Libre", DISCOVERED, cats, "STOREFRONT_SSR",
+        [f"SSR expuso {len(nodes or [])} categorías de referencia; "
+         "la adquisición usa la tienda oficial y marca cobertura PARTIAL"])
 
 
 def discover_taxonomy(marketplace, *, scraper=None, hub_url=None, brand="Nicopoly"):

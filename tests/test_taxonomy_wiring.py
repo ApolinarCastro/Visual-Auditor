@@ -90,8 +90,9 @@ def test_meli_uses_official_api_helpers(monkeypatch):
     monkeypatch.setattr(mt, "MeliTaxonomyEngine", Eng)
     res = T.discover_taxonomy("Mercado Libre")
     assert res["status"] == T.DISCOVERED
-    assert len(res["categories"]) == 1
-    assert res["categories"][0]["category_id"] == "MLC123"
+    ids = {c["category_id"] for c in res["categories"]}
+    assert "MELI_STOREFRONT_NICOPOLY" in ids and "MLC123" in ids
+    assert len([c for c in res["categories"] if c.get("acquisition") is False]) == 1
 
 
 def test_summary_marks_scope_incomplete_when_any_market_pending():
