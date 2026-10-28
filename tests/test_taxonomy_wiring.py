@@ -82,10 +82,10 @@ def test_meli_uses_official_api_helpers(monkeypatch):
     import app.mri_autonomous.meli_taxonomy_engine as mt
 
     class Eng:
-        def discover_category_by_domain(self, query):
+        def discover_storefront_categories(self):
             return ([{"category_id": "MLC123", "name": "Poleras",
-                      "path_from_root": [{"name": "Moda"}, {"name": "Poleras"}]},
-                     {"category_id": "MLC123", "name": "Poleras"}], "")
+                      "url": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/poleras/"},
+                     {"category_id": "MLC123", "name": "Poleras"}], "FOUND")
 
     monkeypatch.setattr(mt, "MeliTaxonomyEngine", Eng)
     res = T.discover_taxonomy("Mercado Libre")

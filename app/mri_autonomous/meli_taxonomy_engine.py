@@ -34,21 +34,22 @@ NICOPOLY_SELLER_ID = "386329223"
 
 # 14 Verified Commercial Product Categories on MLC (Excluding Clips)
 NICOPOLY_VERIFIED_CATEGORIES_MLC = [
-    {"id": "MLC158340", "name": "Chaquetas, Parkas y Blazers", "parent_id": "MLC455528", "domain": "MLC-JACKETS_AND_COATS"},
-    {"id": "MLC158425", "name": "Vestidos", "parent_id": "MLC1430", "domain": "MLC-DRESSES"},
-    {"id": "MLC158583", "name": "Pantalones", "parent_id": "MLC1430", "domain": "MLC-PANTS"},
-    {"id": "MLC158342", "name": "Blusas", "parent_id": "MLC1430", "domain": "MLC-BLOUSES"},
-    {"id": "MLC158307", "name": "Bermudas y Shorts", "parent_id": "MLC1430", "domain": "MLC-SHORTS"},
-    {"id": "MLC158457", "name": "Faldas", "parent_id": "MLC1430", "domain": "MLC-SKIRTS"},
-    {"id": "MLC440371", "name": "Chalecos, Sweaters y Cardigans", "parent_id": "MLC455528", "domain": "MLC-SWEATERS_AND_CARDIGANS"},
-    {"id": "MLC158467", "name": "Poleras", "parent_id": "MLC1430", "domain": "MLC-T_SHIRTS"},
-    {"id": "MLC158335", "name": "Camisas", "parent_id": "MLC1430", "domain": "MLC-SHIRTS"},
-    {"id": "MLC440714", "name": "Enteritos", "parent_id": "MLC1430", "domain": "MLC-JUMPSUITS"},
-    {"id": "MLC440654", "name": "Calzas", "parent_id": "MLC1430", "domain": "MLC-LEGGINGS"},
-    {"id": "MLC158382", "name": "Polerones", "parent_id": "MLC455528", "domain": "MLC-SWEATSHIRTS"},
-    {"id": "MLC440679", "name": "Trajes de Baño", "parent_id": "MLC1430", "domain": "MLC-SWIMWEAR"},
-    {"id": "MLC158310", "name": "Accesorios de Moda", "parent_id": "MLC1430", "domain": "MLC-FASHION_ACCESSORIES"}
+    {"id": "MLC158342", "name": "Blusas", "parent_id": "MLC1430", "slug": "blusas"},
+    {"id": "MLC158583", "name": "Pantalones", "parent_id": "MLC1430", "slug": "pantalones"},
+    {"id": "MLC455528", "name": "Abrigos", "parent_id": "MLC1430", "slug": "abrigos"},
+    {"id": "MLC158340", "name": "Chaquetas, Parkas y Blazers", "parent_id": "MLC455528", "slug": "abrigos/chaquetas-parkas-blazers"},
+    {"id": "MLC440371", "name": "Chalecos, Sweaters y Cardigans", "parent_id": "MLC455528", "slug": "abrigos/chalecos-sweaters-cardigans"},
+    {"id": "MLC158467", "name": "Poleras", "parent_id": "MLC1430", "slug": "poleras"},
+    {"id": "MLC158425", "name": "Vestidos", "parent_id": "MLC1430", "slug": "vestidos"},
+    {"id": "MLC158335", "name": "Camisas", "parent_id": "MLC1430", "slug": "camisas"},
+    {"id": "MLC440654", "name": "Calzas", "parent_id": "MLC1430", "slug": "calzas"},
+    {"id": "MLC440714", "name": "Enteritos", "parent_id": "MLC1430", "slug": "enteritos"},
+    {"id": "MLC158457", "name": "Faldas", "parent_id": "MLC1430", "slug": "faldas"},
+    {"id": "MLC440323", "name": "Ropa Interior y de Dormir", "parent_id": "MLC1430", "slug": "ropa-interior-dormir"},
+    {"id": "MLC158307", "name": "Bermudas y Shorts", "parent_id": "MLC1430", "slug": "bermudas-shorts"},
+    {"id": "MLC455550", "name": "Kimonos", "parent_id": "MLC1430", "slug": "kimonos"},
 ]
+MLC_STOREFRONT_URL = "https://www.mercadolibre.cl/tienda/nicopoly"
 
 
 @dataclass
@@ -156,6 +157,63 @@ class MeliTaxonomyEngine:
         if status != "FOUND" or not isinstance(data, list):
             return [], status
         return data, "FOUND"
+
+    def fetch_storefront_html(self) -> Tuple[str, str]:
+        """Fetch the public SSR storefront (the only 200 source verified by VA)."""
+        req = urllib.request.Request(
+            MLC_STOREFRONT_URL,
+            headers={"User-Agent": self.user_agent, "Accept": "text/html"})
+        try:
+            with urllib.request.urlopen(req, timeout=15) as res:
+                return res.read().decode("utf-8", errors="replace"), "FOUND"
+        except urllib.error.HTTPError as e:
+            return "", ("AUTH_REQUIRED" if e.code in (401, 403) else "SOURCE_BLOCKED")
+        except Exception:
+            return "", "SOURCE_BLOCKED"
+
+    @staticmethod
+    def parse_storefront_categories(html: str) -> List[Dict[str, Any]]:
+        """Extract storefront category links from SSR HTML; exclude Clips.
+
+        The menu is the authority for the store's category membership. The
+        verified 14 IDs are used only to resolve a stable ID where the link
+        slug matches; this method does not invent category presence.
+        """
+        import html as _html
+        import re
+        if not html:
+            return []
+        by_slug = {c["slug"]: c for c in NICOPOLY_VERIFIED_CATEGORIES_MLC}
+        # SSR escapes slashes in JSON/embedded strings.
+        text = html.replace("\\u002F", "/").replace("\\/", "/")
+        pattern = re.compile(
+            r'https://listado\.mercadolibre\.cl/tienda/nicopoly/listado/'
+            r'(vestuario-calzado/[^"\'<>?# ]+)', re.I)
+        found = {}
+        for raw in pattern.findall(text):
+            slug = raw.strip().strip('/').split('?')[0].split('#')[0].lower()
+            rel = slug[len('vestuario-calzado/'):] if slug.startswith('vestuario-calzado/') else slug
+            if rel.endswith('clips') or '/clips' in rel:
+                continue
+            name = by_slug.get(rel, {}).get("name")
+            if not name:
+                name = slug.split('/')[-1].replace('-', ' ').replace('_', ' ').title()
+            cid = by_slug.get(rel, {}).get("id") or f"MELI_SLUG_{rel.replace('/','_')}"
+            key = cid
+            if key not in found:
+                found[key] = {
+                    "category_id": cid,
+                    "name": name,
+                    "slug": slug,
+                    "url": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/" + slug + "/",
+                    "source": "STOREFRONT_SSR",
+                }
+        return list(found.values())
+
+    def discover_storefront_categories(self) -> Tuple[List[Dict[str, Any]], str]:
+        html, status = self.fetch_storefront_html()
+        cats = self.parse_storefront_categories(html)
+        return cats, ("FOUND" if cats else status)
 
     def get_official_store_summary(
         self,

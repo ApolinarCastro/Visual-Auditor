@@ -194,39 +194,25 @@ def meli_taxonomy(query="nicopoly"):
     from app.mri_autonomous.meli_taxonomy_engine import MeliTaxonomyEngine
     try:
         engine = MeliTaxonomyEngine()
-        nodes, err = engine.discover_category_by_domain(query)
+        nodes, err = engine.discover_storefront_categories()
     except Exception as exc:
-        return _result("Mercado Libre", BLOCKED, [], "OFFICIAL_API",
+        return _result("Mercado Libre", BLOCKED, [], "STOREFRONT_SSR",
                        [f"{type(exc).__name__}: {exc}"])
-    cats, seen, raw_keys = [], set(), set()
+    cats, seen = [], set()
     for n in nodes or []:
-        if not isinstance(n, dict):
-            n = {"category_id": getattr(n, "category_id", None),
-                 "name": getattr(n, "name", None)}
-        raw_keys.update(str(k) for k in n.keys())
-        cid = (n.get("category_id") or n.get("domain_id")
-               or n.get("categoryId") or n.get("id"))
-        if cid is None or str(cid) in seen:
+        cid = str(n.get("category_id") or "").strip()
+        name = str(n.get("name") or "").strip()
+        if not cid or cid in seen:
             continue
-        seen.add(str(cid))
-        name = (n.get("category_name") or n.get("domain_name")
-                or n.get("name") or n.get("domain"))
-        path = n.get("path_from_root") or n.get("category_path")
-        if isinstance(path, (list, tuple)) and path:
-            last = path[-1]
-            last_name = last.get("name") if isinstance(last, dict) else str(last)
-            url = ("https://listado.mercadolibre.cl/"
-                   + str(last_name).replace(" ", "-").lower())
-        else:
-            slug = str(name or cid).replace(" ", "-").lower()
-            url = f"https://listado.mercadolibre.cl/{slug}"
-        cats.append(_cat(cid, name, url, source="OFFICIAL_API"))
+        seen.add(cid)
+        url = n.get("url") or f"https://listado.mercadolibre.cl/tienda/nicopoly/"
+        cats.append(_cat(cid, name, url, source="STOREFRONT_SSR"))
     if not cats:
-        # Never call this WAF: it is an official-API contract/parse issue.
-        cause = (f"{err}: no parseable categories (keys={sorted(raw_keys)[:10]})"
-                 if err == "FOUND" else (err or "sin respuesta util"))
-        return _result("Mercado Libre", UNAVAILABLE, [], "OFFICIAL_API", [cause])
-    return _result("Mercado Libre", DISCOVERED, cats, "OFFICIAL_API")
+        # VA proved the storefront is the only 200 source; a missing menu is a
+        # discovery gap, not a reason to inject a hardcoded 14-category list.
+        return _result("Mercado Libre", UNAVAILABLE, [], "STOREFRONT_SSR",
+                       [f"{err or 'sin respuesta'}: el menú SSR no expuso categorías comerciales"])
+    return _result("Mercado Libre", DISCOVERED, cats, "STOREFRONT_SSR")
 
 
 def discover_taxonomy(marketplace, *, scraper=None, hub_url=None, brand="Nicopoly"):

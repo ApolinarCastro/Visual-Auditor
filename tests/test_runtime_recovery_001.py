@@ -171,10 +171,10 @@ def test_meli_domain_discovery_shapes_are_parsed(monkeypatch):
     import app.mri_dashboard.taxonomy as T
 
     class _Eng:
-        def discover_category_by_domain(self, query):
-            return ([{"domain_id": "MLC1", "domain_name": "Poleras",
-                      "category_id": "MLC1", "category_name": "Poleras"},
-                     {"domain_id": "MLC2", "domain_name": "Pantalones"}], "FOUND")
+        def discover_storefront_categories(self):
+            return ([{"category_id": "MLC1", "name": "Poleras",
+                      "url": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/poleras/"},
+                     {"category_id": "MLC2", "name": "Pantalones"}], "FOUND")
 
     monkeypatch.setattr(MT, "MeliTaxonomyEngine", _Eng)
     res = T.discover_taxonomy("Mercado Libre")
@@ -188,13 +188,13 @@ def test_meli_found_without_parseable_categories_is_contract_issue(monkeypatch):
     import app.mri_dashboard.taxonomy as T
 
     class _Eng:
-        def discover_category_by_domain(self, query):
+        def discover_storefront_categories(self):
             return ([{"weird_key": 1}], "FOUND")
 
     monkeypatch.setattr(MT, "MeliTaxonomyEngine", _Eng)
     res = T.discover_taxonomy("Mercado Libre")
     assert res["status"] == T.UNAVAILABLE
-    assert "FOUND" in res["notes"][0] and "WAF" not in res["notes"][0]
+    assert "SSR" in res["notes"][0] or "menú SSR" in res["notes"][0]
 
 
 def test_falabella_incomplete_ssr_can_never_be_audit_pass(monkeypatch):
