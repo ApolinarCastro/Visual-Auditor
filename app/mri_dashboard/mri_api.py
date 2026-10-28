@@ -218,6 +218,34 @@ async def index(request: Request):
     return templates.TemplateResponse(request=request, name="index.html")
 
 
+@app.get("/api/mri/sessions")
+async def get_mri_sessions():
+    """Session-cookie status only; cookie values are never returned."""
+    from app.mri_dashboard.session_store import session_status
+    return JSONResponse(content={
+        "ripley": session_status("Ripley"),
+        "mercadolibre": session_status("Mercado Libre"),
+    })
+
+
+@app.post("/api/mri/sessions/{marketplace}")
+async def update_mri_session(marketplace: str, request: Request):
+    """Import a Cookie-Editor JSON array into MRI's own local session store."""
+    from app.mri_dashboard.session_store import save_session
+    name = {"ripley": "Ripley", "mercado_libre": "Mercado Libre",
+            "meli": "Mercado Libre", "mercado libre": "Mercado Libre"}.get(
+                marketplace.strip().lower(), marketplace)
+    try:
+        payload = await request.json()
+        result = save_session(name, payload)
+    except ValueError as exc:
+        return JSONResponse(status_code=400, content={"error": str(exc)})
+    except Exception as exc:
+        return JSONResponse(status_code=400,
+                            content={"error": f"COOKIE_IMPORT_FAILED: {type(exc).__name__}"})
+    return JSONResponse(content={"ok": True, **result})
+
+
 @app.get("/api/state")
 async def get_state():
     st = orchestrator.state or {}

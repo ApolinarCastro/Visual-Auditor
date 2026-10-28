@@ -120,6 +120,28 @@ def verify_product_identity_match(expected_title: str, observed_title: str) -> t
             
     return True, "Identidad de producto coincidente"
 
+async def inject_local_session(scraper, marketplace: str, state: dict) -> int:
+    """Re-inject dashboard-imported cookies into MRI's own context."""
+    if marketplace not in ("Mercado Libre", "Ripley") or not scraper:
+        return 0
+    try:
+        from app.mri_dashboard.session_store import load_cookies
+        cookies = load_cookies(marketplace)
+        page = getattr(scraper, "page", None)
+        if not cookies or page is None:
+            return 0
+        await page.context.add_cookies(cookies)
+        state.setdefault("session_injection", []).append({
+            "marketplace": marketplace, "cookies": len(cookies),
+            "at": datetime.now().isoformat()})
+        return len(cookies)
+    except Exception as exc:
+        state.setdefault("session_injection_errors", []).append({
+            "marketplace": marketplace, "error": type(exc).__name__,
+            "at": datetime.now().isoformat()})
+        return 0
+
+
 def get_scraper(marketplace):
     if marketplace == "Mercado Libre": return MercadoLibreScraper(headless=True)
     elif marketplace == "Paris": return ParisScraper(headless=True)
@@ -578,6 +600,7 @@ class MRIOrchestrator:
                     # MRI-CATEGORY-COVERAGE-002: full audits discover the real
                     # marketplace taxonomy through the EXISTING engines. The
                     # brand search remains complementary, never the whole scope.
+                    await inject_local_session(scraper, mkt, self.state)
                     if full_audit:
                         try:
                             from app.mri_dashboard import taxonomy as _taxonomy
@@ -908,6 +931,7 @@ class MRIOrchestrator:
                                 pass
                             try:
                                 await scraper.start()
+                                await inject_local_session(scraper, mkt, self.state)
                                 if getattr(scraper, "supports_pagination", False):
                                     res = await _aio_cat.wait_for(
                                         scraper.scrape_autonomous_category(

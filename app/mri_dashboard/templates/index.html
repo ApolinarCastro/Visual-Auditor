@@ -402,6 +402,26 @@
                 <div id="coverageResult" style="font-size:0.8rem; color:var(--text-muted); margin-top:8px;"></div>
             </div>
 
+            <div id="sessionPanel" style="margin-top:16px; padding:14px; border:1px solid var(--border); border-radius:8px; background:rgba(255,255,255,0.02);">
+                <h3 style="margin:0 0 6px 0; font-size:1rem; color:#fff;">Control de Sesiones</h3>
+                <p style="color:var(--text-muted); font-size:0.8rem; margin:0 0 10px 0;">
+                    Pega el array JSON exportado por Cookie-Editor. MRI guarda la sesión localmente en su propio perfil y la reutiliza; no resuelve CAPTCHA.
+                </p>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:12px;">
+                    <div>
+                        <div><strong>Ripley</strong> <span id="sessionStatusRipley" class="badge badge-info">—</span></div>
+                        <textarea id="cookiesRipley" placeholder='[{"name":"cf_clearance","value":"...","domain":".ripley.cl"}]' style="width:100%; min-height:74px; margin-top:6px; font-family:monospace; font-size:0.72rem;"></textarea>
+                        <button onclick="updateSession('ripley')" style="margin-top:6px;">Actualizar Sesión Ripley</button>
+                    </div>
+                    <div>
+                        <div><strong>Mercado Libre</strong> <span id="sessionStatusML" class="badge badge-info">—</span></div>
+                        <textarea id="cookiesML" placeholder='[{"name":"ssid","value":"...","domain":".mercadolibre.cl"}]' style="width:100%; min-height:74px; margin-top:6px; font-family:monospace; font-size:0.72rem;"></textarea>
+                        <button onclick="updateSession('mercadolibre')" style="margin-top:6px;">Actualizar Sesión Mercado Libre</button>
+                    </div>
+                </div>
+                <div id="sessionUpdateResult" style="font-size:0.8rem; color:var(--text-muted); margin-top:8px;"></div>
+            </div>
+
             <div id="catalogMetricsPanel" style="display:none; margin-top:20px; padding:16px; border:1px solid var(--border); border-radius:8px; background:rgba(255,255,255,0.02);">
                 <h3 style="margin:0 0 12px 0; font-size:1.05rem; color:#fff;">Conciliación de catálogo (marketplace)</h3>
                 <div id="catalogSummaryProvenance" style="font-size:0.78rem; color:var(--text-muted); margin:-6px 0 10px 0;"></div>
@@ -1276,7 +1296,39 @@
             }
         }
 
+        async function loadSessionStatus() {
+            try {
+                const res = await fetch('/api/mri/sessions');
+                const data = await res.json();
+                const fmt = (x) => x && x.exists
+                    ? `${x.status} · ${x.cookie_count} cookies · ${String(x.updated_at || '').replace('T',' ').split('.')[0]}`
+                    : 'SIN_SESION';
+                document.getElementById('sessionStatusRipley').innerText = fmt(data.ripley);
+                document.getElementById('sessionStatusML').innerText = fmt(data.mercadolibre);
+            } catch (e) { /* status remains visible */ }
+        }
+
+        async function updateSession(marketplace) {
+            const el = document.getElementById(marketplace === 'ripley' ? 'cookiesRipley' : 'cookiesML');
+            const out = document.getElementById('sessionUpdateResult');
+            try {
+                const parsed = JSON.parse(el.value);
+                const res = await fetch('/api/mri/sessions/' + marketplace, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(parsed)
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'No se pudo actualizar');
+                el.value = '';
+                out.innerText = `Sesión actualizada: ${data.count} cookies (${data.marketplace})`;
+                await loadSessionStatus();
+            } catch (e) {
+                out.innerText = 'Error: ' + e.message;
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            loadSessionStatus();
             loadRunSelector();
             const up = document.getElementById('catalogUploadPanel');
             const met = document.getElementById('catalogMetricsPanel');
