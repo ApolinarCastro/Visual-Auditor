@@ -214,9 +214,10 @@ def meli_taxonomy(query="nicopoly"):
         seen.add(cid)
         url = n.get("url") or "https://listado.mercadolibre.cl/tienda/nicopoly/"
         _ref = _cat(cid, name, url, source="STOREFRONT_SSR")
-        # Reference/menu category. Do NOT acquire it through the blocked
-        # listado; the storefront root is the only verified acquisition surface.
-        _ref["acquisition"] = False
+        # Reference/menu category. The managed ML browser can sometimes reach
+        # listados even when anonymous HTTP is blocked; attempt it and keep the
+        # real SOURCE_BLOCKED state if the anti-bot intervenes.
+        _ref["acquisition"] = True
         cats.append(_ref)
     if not nodes and err not in ("FOUND", None, ""):
         return _result("Mercado Libre", UNAVAILABLE, [], "STOREFRONT_SSR",
