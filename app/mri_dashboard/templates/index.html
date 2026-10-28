@@ -441,6 +441,9 @@
             </div>
             
             <div class="controls" style="margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 10px;">
+                <select id="runViewSelect" onchange="selectRunView(this.value)" title="Corrida a visualizar">
+                    <option value="LIVE">Corrida actual</option>
+                </select>
                 <select id="filterMarketplace" onchange="loadCategoryUniverse(selectedRunId || window.__lastRunId, this.value).then(renderMainTable)">
                     <option value="ALL">Canal: Todos</option>
                     <option value="Mercado Libre">Mercado Libre</option>
@@ -1037,6 +1040,8 @@
                 if (payload.run_id) {
                     currentResults = [];
                     selectedRunId = null;
+                    const _runSelStart = document.getElementById('runViewSelect');
+                    if (_runSelStart) _runSelStart.value = 'LIVE';
                     updateDashboardCards();
                     renderMainTable();
                     document.getElementById('lblActiveRun').innerText = payload.run_id;
@@ -1062,6 +1067,7 @@
         
         function startPolling() {
             if(pollInterval) clearInterval(pollInterval);
+            loadRunSelector();
             pollInterval = setInterval(pollState, 1500);
         }
         
@@ -1176,7 +1182,9 @@
                 if (st.pages_processed !== undefined) document.getElementById('lblPagesProcessed').innerText = st.pages_processed;
                 if (st.products_processed !== undefined) document.getElementById('lblProdsProcessed').innerText = st.products_processed;
 
-                if (data.results && data.results.length > 0) {
+                const _liveRunId = data.run_id || st.run_id || null;
+                const _keepHistoricalView = !!(selectedRunId && selectedRunId !== _liveRunId);
+                if (data.results && data.results.length > 0 && !_keepHistoricalView) {
                     currentResults = data.results;
                     if (data.run_id) {
                         const _when = (data.started_at || '').replace('T',' ').split('.')[0] || 'fecha desconocida';
@@ -1269,6 +1277,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            loadRunSelector();
             const up = document.getElementById('catalogUploadPanel');
             const met = document.getElementById('catalogMetricsPanel');
             if (up && met && !document.getElementById('refTools')) {
@@ -1403,6 +1412,39 @@
                 const diff = (m.reported_count != null && m.unique_products != null) ? (m.reported_count - m.unique_products) : '-';
                 return `<tr><td>${m.category || m.category_id}</td><td>${rep}</td><td>${uniq}</td><td>${diff}</td><td>${m.cards ?? '-'}</td><td>${m.terminal || '-'}</td></tr>`;
             }).join('');
+        }
+
+        function renderRunSelector(historyList) {
+            const sel = document.getElementById('runViewSelect');
+            if (!sel) return;
+            const current = selectedRunId || 'LIVE';
+            const live = window.__lastRunId || '';
+            const opts = [`<option value="LIVE">Corrida actual${live ? ' · ' + live : ''}</option>`];
+            (historyList || []).forEach(h => {
+                const label = `${h.run_id} · ${h.marketplace || 'N/D'} · ${(h.timestamp || '').replace('T',' ').split('.')[0]}`;
+                opts.push(`<option value="${h.run_id}">${label}</option>`);
+            });
+            sel.innerHTML = opts.join('');
+            sel.value = current;
+            if (sel.value !== current) sel.value = 'LIVE';
+        }
+
+        async function loadRunSelector() {
+            try {
+                const res = await fetch('/api/history');
+                const data = await res.json();
+                renderRunSelector(data.history || []);
+            } catch (e) { /* selector survives API failure */ }
+        }
+
+        function selectRunView(value) {
+            if (value === 'LIVE') {
+                selectedRunId = null;
+                loadHistory();
+                pollState();
+                return;
+            }
+            selectHistoricalRun(value);
         }
 
         async function loadCategoryUniverse(runId, marketplace) {
@@ -1702,6 +1744,7 @@
                     `;
                 }).join('');
                 tbody.innerHTML = html;
+                renderRunSelector(historyList);
             } catch(e) {
                 console.error("Error al cargar historial:", e);
             }
@@ -1721,6 +1764,8 @@
                                                 category_metrics: data.category_metrics || [] };
                 }
                 selectedRunId = runId;
+                const _runSel = document.getElementById('runViewSelect');
+                if (_runSel) _runSel.value = runId;
                 
                 document.getElementById('lblActiveRun').innerText = `${runId}`;
                 document.getElementById('lblStatus').innerText = "PERSISTED_VIEW";
