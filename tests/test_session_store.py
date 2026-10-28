@@ -34,3 +34,10 @@ def test_session_is_saved_locally_and_status_has_no_values(monkeypatch):
     assert status["cookie_count"] == 1
     assert "sensitive" not in str(status)
     assert ss.load_cookies("Ripley")[0]["name"] == "cf_clearance"
+
+
+def test_accepts_single_cookie_and_mercadolibre_com_domain():
+    one = {"name": "ssid", "value": "x", "domain": ".mercadolibre.com",
+           "expirationDate": 4102444800}
+    assert len(ss.normalize_cookies(one, "Mercado Libre")) == 1
+    assert len(ss.normalize_cookies('{"cookies":[{"name":"ssid","value":"x","domain":".mercadolibre.cl","expirationDate":4102444800}]}', "Mercado Libre")) == 1

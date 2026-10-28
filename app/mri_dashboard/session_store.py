@@ -15,7 +15,9 @@ from pathlib import Path
 
 MARKET_DOMAINS = {
     "Ripley": ("ripley.cl",),
-    "Mercado Libre": ("mercadolibre.cl",),
+    # Cookie-Editor can export auth cookies for .mercadolibre.com while the
+    # Chilean storefront is .cl; accept both and let the browser apply scope.
+    "Mercado Libre": ("mercadolibre.cl", "mercadolibre.com"),
 }
 MARKET_SLUG = {"Ripley": "ripley", "Mercado Libre": "mercado_libre"}
 
@@ -47,19 +49,36 @@ def _same_site(value):
 
 def normalize_cookies(raw, marketplace: str) -> list[dict]:
     """Convert Cookie-Editor/EditThisCookie JSON into Playwright cookies."""
+    # Accept a JSON string, {"cookies":[...]}, or a single cookie object.
+    if isinstance(raw, str):
+        try:
+            raw = json.loads(raw)
+        except Exception as exc:
+            raise ValueError(f"JSON inválido: {type(exc).__name__}") from exc
     if isinstance(raw, dict):
-        raw = raw.get("cookies", [])
+        if "cookies" in raw:
+            raw = raw.get("cookies")
+        elif "name" in raw and "value" in raw:
+            raw = [raw]
+        else:
+            raise ValueError("El objeto JSON no contiene 'cookies' ni una cookie única")
     if not isinstance(raw, list):
-        raise ValueError("Se esperaba un array JSON de cookies")
+        raise ValueError(f"Se esperaba un array JSON de cookies; recibido {type(raw).__name__}")
     out, seen = [], set()
     now = datetime.now().timestamp()
+    stats = {"total": len(raw), "domain": 0, "expired": 0, "shape": 0}
     for item in raw:
         if not isinstance(item, dict):
+            stats["shape"] += 1
             continue
         name = str(item.get("name") or "").strip()
         value = item.get("value")
         domain = str(item.get("domain") or "").strip()
-        if not name or value is None or not _domain_ok(domain, marketplace):
+        if not name or value is None:
+            stats["shape"] += 1
+            continue
+        if not _domain_ok(domain, marketplace):
+            stats["domain"] += 1
             continue
         expires = item.get("expirationDate", item.get("expires"))
         try:
@@ -67,6 +86,7 @@ def normalize_cookies(raw, marketplace: str) -> list[dict]:
         except (TypeError, ValueError):
             expires = None
         if expires is not None and expires <= now:
+            stats["expired"] += 1
             continue  # never import an expired credential
         cookie = {
             "name": name,
@@ -89,7 +109,10 @@ def normalize_cookies(raw, marketplace: str) -> list[dict]:
         if len(out) >= 500:
             break
     if not out:
-        raise ValueError(f"No hay cookies válidas para {marketplace} (dominio/expiración)")
+        raise ValueError(
+            f"No hay cookies válidas para {marketplace}: "
+            f"total={stats['total']}, dominio={stats['domain']}, "
+            f"expiradas={stats['expired']}, inválidas={stats['shape']}")
     return out
 
 
