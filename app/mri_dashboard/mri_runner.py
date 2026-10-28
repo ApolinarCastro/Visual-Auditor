@@ -1203,13 +1203,23 @@ class MRIOrchestrator:
                                             });
                                         }''')
                                         if crumbs and len(crumbs) > 0:
-                                            real_category = crumbs[0]['name']
+                                            # ML breadcrumbs collapse to "Vestuario y Calzado".
+                                            # The acquisition category is the real membership
+                                            # evidence; breadcrumbs remain auxiliary.
+                                            _ml_cat = (cat_data.get("name") or "").strip()
+                                            if _ml_cat and _ml_cat.lower() not in ("tienda oficial nicopoly",):
+                                                real_category = _ml_cat
+                                                category_source = "ACQUISITION_CATEGORY"
+                                                category_manager.register_category(
+                                                    mkt, f"CAT_{_ml_cat.replace(' ', '_')}",
+                                                    _ml_cat, cat_data.get("url") or crumbs[0]['url'],
+                                                    source="OBSERVED", status="VERIFIED")
+                                            else:
+                                                real_category = crumbs[0]['name']
+                                                category_source = "PUBLIC_CHANNEL_BREADCRUMBS"
+                                                category_manager.register_category(mkt, f"CAT_{real_category.replace(' ', '_')}", real_category, crumbs[0]['url'], source="OBSERVED", status="VERIFIED")
                                             if len(crumbs) > 1:
                                                 real_subcategory = crumbs[1]['name']
-                                            category_source = "PUBLIC_CHANNEL_BREADCRUMBS"
-                                            category_manager.register_category(mkt, f"CAT_{real_category.replace(' ', '_')}", real_category, crumbs[0]['url'], source="OBSERVED", status="VERIFIED")
-                                            if len(crumbs) > 1:
-                                                category_manager.register_category(mkt, f"CAT_{real_subcategory.replace(' ', '_')}", real_subcategory, crumbs[1]['url'], parent_id=f"CAT_{real_category.replace(' ', '_')}", source="OBSERVED", status="VERIFIED")
                                                 
                                     elif mkt == "Falabella":
                                         # Breadcrumbs
