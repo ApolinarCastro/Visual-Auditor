@@ -42,7 +42,7 @@ class CategoryManager:
         with open(self.data_path, "w", encoding="utf-8") as f:
             json.dump(self.categories, f, indent=2, ensure_ascii=False)
 
-    def register_category(self, marketplace, category_id, name, url, parent_id=None, source="OBSERVED", status="NOT_TESTED"):
+    def register_category(self, marketplace, category_id, name, url, parent_id=None, source="OBSERVED", status="NOT_TESTED", acquisition=True):
         if marketplace not in self.categories:
             self.categories[marketplace] = {}
             
@@ -56,12 +56,14 @@ class CategoryManager:
                 "parent_id": parent_id,
                 "source": source,
                 "status": status,
+                "acquisition": bool(acquisition),
                 "first_seen": now,
                 "last_seen": now
             }
         else:
             cat = self.categories[marketplace][category_id]
             cat["last_seen"] = now
+            cat["acquisition"] = bool(acquisition)
             if status != "NOT_TESTED" and cat.get("status") == "NOT_TESTED":
                 cat["status"] = status
                 

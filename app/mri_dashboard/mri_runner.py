@@ -629,7 +629,8 @@ class MRIOrchestrator:
                                 _c.get("category_id") or _c["url"],
                                 _c.get("name") or _c.get("category_id") or "CATEGORY",
                                 _c["url"], parent_id=_c.get("parent_id"),
-                                source="TAXONOMY_DISCOVERY", status="PENDING")
+                                source="TAXONOMY_DISCOVERY", status="PENDING",
+                                acquisition=_c.get("acquisition", True))
                         cats = category_manager.get_categories(mkt)
                         # The synthetic brand-search category is complementary, not
                         # full-audit scope. When real taxonomy/fallback categories
