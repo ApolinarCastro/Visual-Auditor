@@ -179,16 +179,10 @@ async def discover_live_categories(page, hub_url: str, brand: str = "NICOPOLY",
             learned.append(_u)
     if diagnostics is not None and learned:
         diagnostics.append({"prior_urls": len(learned)})
-    candidates = learned + [
-        hub_url,
-        f"{BASE}/moda-mujer",
-        f"{BASE}/moda-mujer/marcas-casuales/nicopoly",
-        f"{BASE}/moda-mujer/tops-y-chaquetas",
-        f"{BASE}/moda-mujer/jeans-y-pantalones",
-        f"{BASE}/moda-mujer/vestidos-y-enteritos",
-        f"{BASE}/accesorios-y-complementos",
-        f"{BASE}/",
-    ]
+    # Only the brand hub and the marketplace root are navigation seeds.
+    # Categories must be derived from links/menu/facets on those live pages;
+    # no hardcoded category URLs are acquisition inputs.
+    candidates = learned + [hub_url, f"{BASE}/"]
     seen = set()
     for candidate in candidates:
         if not candidate or candidate in seen:

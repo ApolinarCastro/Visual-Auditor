@@ -546,27 +546,11 @@ class MRIOrchestrator:
                     self.state["last_activity"] = datetime.now().isoformat()
                     continue
 
-                cats = category_manager.get_categories(mkt)
-                
-                # Autonomous Entry Point: If no accessible categories exist, generate brand search URL
-                if not cats:
-                    if mkt == "Mercado Libre":
-                        search_url = "https://listado.mercadolibre.cl/nicopoly"
-                        category_manager.register_category(mkt, "SEARCH_ML", "Búsqueda Nicopoly", search_url, source="AUTONOMOUS_SEARCH", status="VERIFIED")
-                        cats = category_manager.get_categories(mkt)
-                    elif mkt == "Paris":
-                        search_url = "https://www.paris.cl/search?q=nicopoly"
-                        category_manager.register_category(mkt, "SEARCH_PARIS", "Búsqueda Nicopoly", search_url, source="AUTONOMOUS_SEARCH", status="VERIFIED")
-                        cats = category_manager.get_categories(mkt)
-                    elif mkt == "Ripley":
-                        search_url = "https://simple.ripley.cl/search/nicopoly"
-                        category_manager.register_category(mkt, "SEARCH_RIPLEY", "Búsqueda Nicopoly", search_url, source="AUTONOMOUS_SEARCH", status="VERIFIED")
-                        cats = category_manager.get_categories(mkt)
-                    elif mkt == "Falabella":
-                        search_url = "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly"
-                        category_manager.register_category(mkt, "SEARCH_FALABELLA", "Búsqueda Nicopoly", search_url, source="AUTONOMOUS_SEARCH", status="VERIFIED")
-                        cats = category_manager.get_categories(mkt)
-                
+                # Full audits MUST use live taxonomy discovery. Persistent
+                # category_manager routes are display/legacy cache, never an
+                # acquisition source: they can be stale or cross-marketplace.
+                _live_required = mkt in ("Ripley", "Mercado Libre")
+                cats = {} if (full_audit and _live_required) else category_manager.get_categories(mkt)
                 self.state.setdefault("marketplace_states", {})[mkt] = "EN_CURSO"
                 self.state["stage"] = "adquiriendo"
                 self.state["last_activity"] = datetime.now().isoformat()
@@ -706,7 +690,14 @@ class MRIOrchestrator:
                         # taxonomy result. category_manager is persistent and can
                         # contain stale/fallback categories from older runs; using
                         # it here re-injected generic listado URLs into ML scope.
-                        if full_audit and _tax.get("categories"):
+                        if full_audit and mkt in ("Ripley", "Mercado Libre"):
+                            if not _tax.get("categories"):
+                                self.state.setdefault("errors", []).append({
+                                    "stage": "descubrimiento",
+                                    "error": f"NO_LIVE_CATEGORIES[{mkt}]: no se usan rutas persistidas/manuales",
+                                    "run_id": run_id, "at": datetime.now().isoformat()})
+                                self.state.setdefault("marketplace_states", {})[mkt] = "PENDIENTE"
+                                continue
                             from app.mri_dashboard.taxonomy_scope import (
                                 categories_from_taxonomy)
                             cats = categories_from_taxonomy(_tax)

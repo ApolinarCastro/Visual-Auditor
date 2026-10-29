@@ -58,7 +58,7 @@ def _harness(monkeypatch, tmp_aux, scraper, *, taxonomy, marketplace,
         return taxonomy
     monkeypatch.setattr(T, "discover_taxonomy_async", _fake_tax)
     monkeypatch.setattr(category_manager, "get_categories",
-                        lambda mkt: {"C1": {"name": "Moda", "url": "https://m/c1"}})
+                        lambda mkt: {"C1": {"name": "Moda", "url": "https://simple.ripley.cl/c1"}})
     monkeypatch.setattr(category_manager, "register_category", lambda *a, **k: None)
 
     orch = R.orchestrator
@@ -92,7 +92,7 @@ def test_ripley_browser_launch_retry_recovers(monkeypatch):
         taxonomy={"marketplace": "Ripley", "status": "TAXONOMY_DISCOVERED",
                   "source": "NAVIGATION",
                   "categories": [{"category_id": "C1", "name": "Moda",
-                                  "url": "https://m/c1"}]})
+                                  "url": "https://simple.ripley.cl/c1"}]})
     assert scraper.starts == 2                 # un único reintento acotado
     assert orch.state["outcome"] == C.FOUND
     assert len(orch.results) == 1

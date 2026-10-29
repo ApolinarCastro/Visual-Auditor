@@ -119,3 +119,16 @@ Suite MRI total actualizada: 168 tests PASS.
 - Se revisaron las cachés `mri_categories.json`; no contenían URLs cruzadas.
 - El origen observado de la contaminación fue la instancia persistente en memoria;
   el guard la bloquea en la siguiente ejecución.
+
+
+## Autonomía real de descubrimiento
+
+- Eliminada la lista fija de candidatos de categorías de Ripley.
+- La única semilla de Ripley es el hub de marca y la homepage; las categorías
+  deben salir de enlaces/menú/facetas live.
+- `category_manager` ya no es fuente de adquisición para Ripley/ML en full audit.
+- Si no hay taxonomía live, la corrida falla con `NO_LIVE_CATEGORIES` en lugar
+  de navegar rutas persistidas/manuales.
+- Eliminados el grafo y la memoria de rutas sembrados manualmente.
+- Paris/Falabella conservan temporalmente su baseline hasta migración.
+- Suite MRI: 170 tests PASS.
