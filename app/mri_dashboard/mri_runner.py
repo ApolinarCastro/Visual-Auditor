@@ -609,70 +609,22 @@ class MRIOrchestrator:
                     except Exception:
                         pass
                     if full_audit:
+                        _hub = {
+                            "Ripley": "https://simple.ripley.cl/search/nicopoly",
+                            "Falabella": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly",
+                            "Mercado Libre": "https://listado.mercadolibre.cl/nicopoly",
+                        }.get(mkt)
                         try:
-                            from app.mri_dashboard import taxonomy as _taxonomy
-                            _hub = {
-                                "Ripley": "https://simple.ripley.cl/search/nicopoly",
-                                "Falabella": "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly",
-                                "Mercado Libre": "https://listado.mercadolibre.cl/nicopoly",
-                            }.get(mkt)
-                            _tax = await _taxonomy.discover_taxonomy_async(
-                                mkt, scraper=scraper, hub_url=_hub, brand="Nicopoly")
+                            from app.mri_dashboard.category_resolution import (
+                                resolve_categories)
+                            _tax = await resolve_categories(
+                                mkt, scraper, _hub, "Nicopoly", self.state,
+                                inject_local_session, full_audit=True)
                         except Exception as _te:
                             _tax = {"marketplace": mkt,
                                     "status": "TAXONOMY_UNAVAILABLE",
                                     "source": "ERROR", "categories": [],
                                     "notes": [f"{type(_te).__name__}: {_te}"]}
-                        # Ripley often challenges the first page after browser
-                        # start. Recover the session once and retry taxonomy; a
-                        # blocked taxonomy must not silently skip the audit.
-                        if (mkt == "Ripley"
-                                and _tax.get("status") not in (
-                                    "TAXONOMY_DISCOVERED", "TAXONOMY_NOT_REQUIRED")
-                                and scraper):
-                            try:
-                                from app.mri_dashboard.session_supervisor import (
-                                    detect_challenge, recover_session)
-                                _tax_page = getattr(scraper, "page", None)
-                                _tax_challenge = await detect_challenge(_tax_page)
-                                if _tax_challenge or _tax.get("status") == "TAXONOMY_BLOCKED":
-                                    _tax_recovered = await recover_session(
-                                        scraper, mkt, self.state, inject_local_session)
-                                    if _tax_recovered:
-                                        _tax = await _taxonomy.discover_taxonomy_async(
-                                            mkt, scraper=scraper,
-                                            hub_url="https://simple.ripley.cl/search/nicopoly",
-                                            brand="Nicopoly")
-                            except Exception as _tax_sess_exc:
-                                self.state.setdefault("errors", []).append({
-                                    "stage": "sesion",
-                                    "error": f"RIPLEY_TAXONOMY_RECOVERY_FAILED: {_tax_sess_exc}",
-                                    "run_id": run_id, "at": datetime.now().isoformat()})
-                        # Intelligence layer: before failing, escalate to the
-                        # learned Creao route knowledge, host-validated. This is
-                        # not a manual link injection; routes were discovered
-                        # previously and are revalidated live during acquisition.
-                        if (mkt in ("Ripley", "Mercado Libre")
-                                and not _tax.get("categories")):
-                            try:
-                                from app.mri_dashboard.discovery_intelligence import (
-                                    recover_prior_categories)
-                                _prior = recover_prior_categories(mkt, self.state)
-                                if _prior:
-                                    _tax = {
-                                        "marketplace": mkt,
-                                        "status": "TAXONOMY_DISCOVERED",
-                                        "source": "LEARNED_PRIOR_ROUTES",
-                                        "categories": _prior,
-                                        "taxonomy_complete": False,
-                                        "coverage_scope": "PRIOR_ROUTES_RECOVERY",
-                                        "pending_scope": ["LIVE_REVALIDATION"],
-                                    }
-                            except Exception as _intel_exc:
-                                self.state.setdefault("errors", []).append({
-                                    "stage": "descubrimiento",
-                                    "error": f"DISCOVERY_RECOVERY_FAILED[{mkt}]: {_intel_exc}",
-                                    "run_id": run_id, "at": datetime.now().isoformat()})
                         _tax_status = _tax.get("status")
                         # Real taxonomy contract carries taxonomy_complete; fake
                         # fixtures used by unit tests do not and must not be gated.
@@ -1878,6 +1830,8 @@ class MRIOrchestrator:
             # A taxonomy not proven exhaustive is never PASS.
             _tax_incomplete = any(
                 (res or {}).get("taxonomy_complete") is False
+                and (res or {}).get("source") not in (
+                    "LEARNED_PRIOR_ROUTES", "LEGACY_CATEGORY_CACHE")
                 for res in (self.state.get("taxonomy") or {}).values()
                 if (res or {}).get("status") == "TAXONOMY_DISCOVERED")
             if _tax_incomplete:

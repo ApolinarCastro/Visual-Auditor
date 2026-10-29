@@ -145,3 +145,17 @@ Suite MRI total actualizada: 168 tests PASS.
   no convierte el fallo en NOT_FOUND ni inventa publicaciones.
 - Ripley y ML usan recuperación previa; Paris/Falabella mantienen su baseline.
 - Suite MRI: 171 tests PASS.
+
+
+## Resolución única de categorías (sin parches dispersos)
+
+- Nuevo `CategoryResolver` centraliza toda la decisión:
+  1. descubrimiento live;
+  2. recuperación de sesión + reintento live;
+  3. rutas previas de Creao validadas por host;
+  4. cache legacy solo Paris/Falabella.
+- El runner ya no tiene ramas separadas de fallback para Ripley/ML.
+- Toda resolución deja `resolution_strategies` en la taxonomía.
+- Si no hay categorías válidas se reporta el estado real, sin navegar URLs
+  manuales ni de otro marketplace.
+- Suite MRI: 172 tests PASS.
