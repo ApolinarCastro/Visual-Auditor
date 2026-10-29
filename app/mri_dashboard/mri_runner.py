@@ -617,6 +617,13 @@ class MRIOrchestrator:
                     # marketplace taxonomy through the EXISTING engines. The
                     # brand search remains complementary, never the whole scope.
                     await inject_local_session(scraper, mkt, self.state)
+                    # Session-first tactic: warm the real browser on the
+                    # storefront before walking categories.
+                    try:
+                        from app.mri_dashboard.session_supervisor import warmup_page
+                        await warmup_page(getattr(scraper, "page", None), mkt)
+                    except Exception:
+                        pass
                     if full_audit:
                         try:
                             from app.mri_dashboard import taxonomy as _taxonomy
@@ -976,6 +983,37 @@ class MRIOrchestrator:
                                         "error": f"FALLBACK_FAILED[{cat_data.get('name')}]: {_fb_exc}",
                                         "run_id": run_id, "at": datetime.now().isoformat()})
                         _failure = str(res.get("failure_type") or "")
+                        # Challenge recovery in the MRI layer. The frozen
+                        # scraper is not modified; restart + cookie replay are
+                        # owned by MRI and evidenced in state.
+                        if (not discovered_products and mkt in ("Ripley", "Mercado Libre")
+                                and scraper and getattr(scraper, "page", None)):
+                            try:
+                                from app.mri_dashboard.session_supervisor import (
+                                    detect_challenge, recover_session)
+                                _challenge = await detect_challenge(scraper.page)
+                                if _challenge:
+                                    _recovered = await recover_session(
+                                        scraper, mkt, self.state, inject_local_session)
+                                    if _recovered:
+                                        if getattr(scraper, "supports_pagination", False):
+                                            res = await _aio_cat.wait_for(
+                                                scraper.scrape_autonomous_category(
+                                                    url, max_pages=_coverage.PAGE_SENTINEL),
+                                                timeout=240)
+                                        else:
+                                            res = await _aio_cat.wait_for(
+                                                scraper.scrape_autonomous_category(url),
+                                                timeout=240)
+                                        discovered_products = res.get("products", []) or []
+                                        raw_stop = res.get("stop_reason")
+                                        acq_state = normalize_stop_reason(raw_stop)
+                                        _failure = str(res.get("failure_type") or "")
+                            except Exception as _sess_exc:
+                                self.state.setdefault("errors", []).append({
+                                    "stage": "sesion",
+                                    "error": f"SESSION_RECOVERY_FAILED[{cat_data.get('name')}]: {_sess_exc}",
+                                    "run_id": run_id, "at": datetime.now().isoformat()})
                         # A Cloudflare challenge can make the frozen Ripley scraper
                         # close its own context. Restart the browser once and retry
                         # the category; otherwise every remaining category fails

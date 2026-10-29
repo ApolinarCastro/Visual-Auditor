@@ -73,3 +73,17 @@ Correcciones sobre MRI y dos correcciones seguras del VA. No se subieron sesione
 - No se modificaron perfiles, sesiones ni cookies.
 - No se detuvo ni reinició el VA desde el agente.
 - No se hizo push hasta contar con autorización explícita.
+
+
+## Sesión y desafíos (ampliación)
+
+- Calentamiento de homepage antes de recorrer categorías.
+- Detección explícita de challenge: Turnstile, Cloudflare, “verify you are human”, login y bloqueos.
+- Recuperación controlada: stop/start del navegador, reinyección de cookies y warmup.
+- Telemetría `session_recoveries` y errores de recuperación.
+- Reintento único de la categoría solo si la recuperación fue exitosa.
+- Sin resolución de CAPTCHA, sin perfil ajeno y sin bucles infinitos.
+
+Pruebas: `test_session_supervisor.py` y `test_guarded_dispatch.py`.
+
+Suite MRI total actualizada: 168 tests PASS.
