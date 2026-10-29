@@ -10,6 +10,7 @@ class MultivendeLoader:
     def __init__(self, excel_path=MULTIVENDE_EXCEL_PATH):
         self.excel_path = Path(excel_path)
         self._loaded = False
+        self._missing_warned = False
         self._marketplace_indexes = {
             "mercado libre": {},
             "paris": {},
@@ -23,7 +24,10 @@ class MultivendeLoader:
             return True
 
         if not self.excel_path.exists():
-            logger.warning(f"[MultivendeLoader] File not found: {self.excel_path}")
+            # Warn once per process, not once per product/category.
+            if not self._missing_warned:
+                logger.warning(f"[MultivendeLoader] File not found: {self.excel_path}")
+                self._missing_warned = True
             return False
 
         try:

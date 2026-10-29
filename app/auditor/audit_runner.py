@@ -354,6 +354,22 @@ class AuditRunner:
                             )
                             succeeded += 1
                             category_ok = True
+                            # Normal category success must refresh source health.
+                            # Previously only selective reaudits wrote this table,
+                            # leaving source_health stale during daily runs.
+                            try:
+                                _now_health = datetime.now().isoformat()
+                                await self.db.update_source_health({
+                                    "marketplace": marketplace,
+                                    "status": "HEALTHY",
+                                    "consecutive_failures": 0,
+                                    "last_success": _now_health,
+                                    "last_recovery": None,
+                                    "failure_type": None,
+                                    "updated_at": _now_health,
+                                })
+                            except Exception as _health_exc:
+                                logger.warning(f"[{marketplace}/{cat}] source_health update failed: {_health_exc}")
                             # A category is considered incomplete / having "zero values" if:
                             # 1. Nicopoly top 240 visibility count is 0
                             # 2. Or total_canal (Total Canal) is 0
