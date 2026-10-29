@@ -639,6 +639,31 @@ class MRIOrchestrator:
                                     "status": "TAXONOMY_UNAVAILABLE",
                                     "source": "ERROR", "categories": [],
                                     "notes": [f"{type(_te).__name__}: {_te}"]}
+                        # Ripley often challenges the first page after browser
+                        # start. Recover the session once and retry taxonomy; a
+                        # blocked taxonomy must not silently skip the audit.
+                        if (mkt == "Ripley"
+                                and _tax.get("status") not in (
+                                    "TAXONOMY_DISCOVERED", "TAXONOMY_NOT_REQUIRED")
+                                and scraper):
+                            try:
+                                from app.mri_dashboard.session_supervisor import (
+                                    detect_challenge, recover_session)
+                                _tax_page = getattr(scraper, "page", None)
+                                _tax_challenge = await detect_challenge(_tax_page)
+                                if _tax_challenge or _tax.get("status") == "TAXONOMY_BLOCKED":
+                                    _tax_recovered = await recover_session(
+                                        scraper, mkt, self.state, inject_local_session)
+                                    if _tax_recovered:
+                                        _tax = await _taxonomy.discover_taxonomy_async(
+                                            mkt, scraper=scraper,
+                                            hub_url="https://simple.ripley.cl/search/nicopoly",
+                                            brand="Nicopoly")
+                            except Exception as _tax_sess_exc:
+                                self.state.setdefault("errors", []).append({
+                                    "stage": "sesion",
+                                    "error": f"RIPLEY_TAXONOMY_RECOVERY_FAILED: {_tax_sess_exc}",
+                                    "run_id": run_id, "at": datetime.now().isoformat()})
                         _tax_status = _tax.get("status")
                         # Real taxonomy contract carries taxonomy_complete; fake
                         # fixtures used by unit tests do not and must not be gated.

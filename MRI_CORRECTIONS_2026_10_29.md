@@ -96,3 +96,13 @@ Suite MRI total actualizada: 168 tests PASS.
 - `marketplace_states` informa EN_CURSO / FOUND / PARTIAL / FAILED por marketplace.
 - El resultado final agrega los cuatro hijos y decide FOUND/PARTIAL/STOPPED.
 - Los hijos siguen materializando de forma aislada; no se duplica persistencia.
+
+
+## Ripley-only
+
+- La taxonomía de Ripley ahora también pasa por detección de challenge.
+- Si el challenge bloquea la primera página, MRI recupera sesión con stop/start,
+  reinyecta cookies, calienta homepage y reintenta la taxonomía una sola vez.
+- El perfil Ripley es propio (`_integration/data/ripley_profile`); no se copia el perfil del VA.
+- El bloqueo de perfil huérfano se limpia con `ProfileLock` cuando el PID ya no está vivo.
+- Aplica solo a `marketplace=Ripley`; no altera ALL_PARALLEL ni los scrapers congelados.
