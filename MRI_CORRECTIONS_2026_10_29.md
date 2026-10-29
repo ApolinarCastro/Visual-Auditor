@@ -106,3 +106,16 @@ Suite MRI total actualizada: 168 tests PASS.
 - El perfil Ripley es propio (`_integration/data/ripley_profile`); no se copia el perfil del VA.
 - El bloqueo de perfil huérfano se limpia con `ProfileLock` cuando el PID ya no está vivo.
 - Aplica solo a `marketplace=Ripley`; no altera ALL_PARALLEL ni los scrapers congelados.
+
+
+## Guard de alcance por marketplace
+
+- Nueva validación de host antes de navegar una categoría.
+- Ripley solo puede navegar `ripley.cl`.
+- Mercado Libre solo `mercadolibre.cl` / `mercadolibre.com`.
+- Paris y Falabella tienen sus propios hosts.
+- Las categorías con host de otro marketplace se descartan y se registran como
+  `MARKETPLACE_SCOPE_DROPPED` / `MARKETPLACE_URL_REJECTED`.
+- Se revisaron las cachés `mri_categories.json`; no contenían URLs cruzadas.
+- El origen observado de la contaminación fue la instancia persistente en memoria;
+  el guard la bloquea en la siguiente ejecución.

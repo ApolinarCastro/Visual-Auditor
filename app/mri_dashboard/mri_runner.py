@@ -882,6 +882,20 @@ class MRIOrchestrator:
                         "run_id": run_id, "at": datetime.now().isoformat()})
                     self.state.setdefault("marketplace_states", {})[mkt] = "PENDIENTE"
                     continue
+                # Hard scope guard: a category cache from another marketplace
+                # must never be navigated by this marketplace's browser.
+                try:
+                    from app.mri_dashboard.marketplace_scope import (
+                        filter_scope, url_allowed)
+                    cats, _dropped_scope = filter_scope(mkt, cats)
+                    if _dropped_scope:
+                        self.state.setdefault("errors", []).append({
+                            "stage": "alcance",
+                            "error": f"MARKETPLACE_SCOPE_DROPPED[{mkt}]: {len(_dropped_scope)} categorías de otro host",
+                            "examples": _dropped_scope[:5],
+                            "run_id": run_id, "at": datetime.now().isoformat()})
+                except Exception:
+                    url_allowed = lambda _m, _u: True
                 try:
                     _seen_run_ids = set()
                     for cat_id, cat_data in list(cats.items()):
@@ -892,6 +906,12 @@ class MRIOrchestrator:
                             # acquisition target (ML listados are blocked).
                             continue
                         url = cat_data["url"]
+                        if not url_allowed(mkt, url):
+                            self.state.setdefault("errors", []).append({
+                                "stage": "alcance",
+                                "error": f"MARKETPLACE_URL_REJECTED[{mkt}] {url}",
+                                "run_id": run_id, "at": datetime.now().isoformat()})
+                            continue
                         try:
                             from app.mri_dashboard.listing_category import acquisition_url
                             url = acquisition_url(url)
