@@ -87,3 +87,12 @@ Correcciones sobre MRI y dos correcciones seguras del VA. No se subieron sesione
 Pruebas: `test_session_supervisor.py` y `test_guarded_dispatch.py`.
 
 Suite MRI total actualizada: 168 tests PASS.
+
+
+## Dashboard ALL en vivo
+
+- El coordinador ALL sincroniza cada 2 segundos resultados, taxonomía y estado de los hijos.
+- El tablero muestra hallazgos parciales mientras los cuatro marketplaces siguen.
+- `marketplace_states` informa EN_CURSO / FOUND / PARTIAL / FAILED por marketplace.
+- El resultado final agrega los cuatro hijos y decide FOUND/PARTIAL/STOPPED.
+- Los hijos siguen materializando de forma aislada; no se duplica persistencia.

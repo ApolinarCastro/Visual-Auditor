@@ -2219,29 +2219,65 @@ class MRIOrchestrator:
             "last_activity": datetime.now().isoformat(),
         })
         self._parallel_children = []
+        _live_children: dict[str, MRIOrchestrator] = {}
 
         def _slug(m):
             return str(m).lower().replace(" ", "_").replace("é", "e")
+
+        def _sync_children():
+            """Publish child findings while the gather is still running."""
+            agg = []
+            tax = {}
+            for mkt, child in _live_children.items():
+                agg.extend(child.results or [])
+                tax.update(child.state.get("taxonomy") or {})
+                if getattr(child, "is_running", False):
+                    self.state["marketplace_states"][mkt] = "EN_CURSO"
+                else:
+                    self.state["marketplace_states"][mkt] = (
+                        child.state.get("outcome")
+                        or child.state.get("status_message")
+                        or "TERMINADO")
+            self.results = agg
+            self.state["products_processed"] = len(agg)
+            self.state["total"] = len(agg)
+            if tax:
+                self.state["taxonomy"] = tax
+            self.state["last_activity"] = datetime.now().isoformat()
 
         async def _child(mkt):
             child = MRIOrchestrator()
             child._parent_orchestrator = self
             cid = f"{run_id}__{_slug(mkt)}"
             self.state["child_run_ids"][mkt] = cid
+            _live_children[mkt] = child
             try:
                 await child.run_discovery(mkt, max_pages=max_pages,
                                           run_id=cid, limit=limit,
                                           full_audit=True)
             finally:
                 self.state["marketplace_states"][mkt] = (
-                    child.state.get("status_message") or "TERMINADO")
+                    child.state.get("outcome")
+                    or child.state.get("status_message")
+                    or "TERMINADO")
             return child
 
         try:
             tasks = [asyncio.create_task(_child(m)) for m in mkts]
             self._parallel_children = tasks
+            async def _monitor():
+                while True:
+                    _sync_children()
+                    await asyncio.sleep(2)
+            monitor = asyncio.create_task(_monitor())
             done = await asyncio.gather(*tasks, return_exceptions=True)
+            monitor.cancel()
+            try:
+                await monitor
+            except asyncio.CancelledError:
+                pass
             agg = []
+            outcomes = []
             for mkt, child in zip(mkts, done):
                 if isinstance(child, Exception):
                     self.state["errors"].append({
@@ -2249,18 +2285,26 @@ class MRIOrchestrator:
                         "error": f"{type(child).__name__}: {child}",
                         "run_id": run_id, "at": datetime.now().isoformat()})
                     self.state["marketplace_states"][mkt] = "FAILED"
+                    outcomes.append("SOURCE_BLOCKED")
                     continue
                 self.state["marketplace_states"][mkt] = (
-                    child.state.get("status_message") or "TERMINADO")
+                    child.state.get("outcome")
+                    or child.state.get("status_message")
+                    or "TERMINADO")
+                outcomes.append(str(child.state.get("outcome") or "PARTIAL"))
                 agg.extend(child.results or [])
             self.results = agg
             self.state["products_processed"] = len(agg)
             self.state["total"] = len(agg)
             self.state["status_message"] = (
                 "STOPPED_BY_USER" if self.stop_requested else "COMPLETED")
-            self.state["outcome"] = (
-                "PARTIAL" if self.state["errors"] or self.stop_requested
-                else "FOUND")
+            if self.stop_requested:
+                self.state["outcome"] = "STOPPED_BY_USER"
+            elif self.state["errors"] or any(o in ("PARTIAL", "SOURCE_BLOCKED", "EXTRACTOR_FAILURE")
+                                             for o in outcomes):
+                self.state["outcome"] = "PARTIAL"
+            else:
+                self.state["outcome"] = "FOUND"
             try:
                 self.history = self._load_history()
             except Exception:
