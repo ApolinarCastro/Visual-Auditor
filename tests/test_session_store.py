@@ -41,3 +41,27 @@ def test_accepts_single_cookie_and_mercadolibre_com_domain():
            "expirationDate": 4102444800}
     assert len(ss.normalize_cookies(one, "Mercado Libre")) == 1
     assert len(ss.normalize_cookies('{"cookies":[{"name":"ssid","value":"x","domain":".mercadolibre.cl","expirationDate":4102444800}]}', "Mercado Libre")) == 1
+
+
+def test_rejected_domain_diagnostic_is_actionable():
+    import pytest
+    try:
+        ss.normalize_cookies([
+            {"name": "x", "value": "y", "domain": ".ripley.cl", "expirationDate": 4102444800}
+        ], "Mercado Libre")
+    except ValueError as exc:
+        assert "dominios_rechazados" in str(exc)
+        assert "ripley.cl" in str(exc)
+    else:
+        raise AssertionError("se esperaba ValueError")
+
+
+def test_marketplace_alias_accepts_chile_cookie_domain():
+    assert ss.canonical_marketplace("mercadolibre") == "Mercado Libre"
+    cookies = ss.normalize_cookies([
+        {"name": "sid", "value": "x", "domain": ".mercadolibre.cl",
+         "expirationDate": 4102444800},
+        {"name": "art", "value": "y", "domain": ".articulo.mercadolibre.cl",
+         "expirationDate": 4102444800},
+    ], ss.canonical_marketplace("mercadolibre"))
+    assert len(cookies) == 2

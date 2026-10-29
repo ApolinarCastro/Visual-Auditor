@@ -450,7 +450,7 @@
                     <span id="catUniverseCount" style="font-size:0.82rem; color:var(--text-muted);"></span>
                 </div>
                 <div style="overflow-x:auto; margin-top:8px; max-height:240px;">
-                    <table><thead><tr><th>Categoría</th><th>Publicaciones</th><th>Estado</th></tr></thead>
+                    <table><thead><tr><th>Categoría</th><th>Resultados</th><th>Únicas</th><th>Estado</th></tr></thead>
                     <tbody id="tbCategoryUniverse"></tbody></table>
                 </div>
             </div>
@@ -1204,6 +1204,9 @@
 
                 const _liveRunId = data.run_id || st.run_id || null;
                 const _keepHistoricalView = !!(selectedRunId && selectedRunId !== _liveRunId);
+                if (!_keepHistoricalView) {
+                    updateLiveCategoryUniverse(st, data.results || currentResults || []);
+                }
                 if (data.results && data.results.length > 0 && !_keepHistoricalView) {
                     currentResults = data.results;
                     if (data.run_id) {
@@ -1237,6 +1240,11 @@
             } catch(e) {
                 console.error("Error al consultar /api/state:", e);
             }
+        }
+
+        function rowIdentity(r) {
+            const p = (r && r.product) || {};
+            return String((r && (r.observed_sku || r.producto_id || r.marketplace_product_id)) || p.sku || '');
         }
 
         function rowCategories(r) {
@@ -1537,8 +1545,46 @@
             tb.innerHTML = names.length ? names.map(name => {
                 const info = categoryUniverse.get(name) || {};
                 const n = (info.publications || 0);
-                return `<tr><td>${name}</td><td>${n}</td><td>${n ? 'CON PUBLICACIONES' : 'SIN PUBLICACIONES'}</td></tr>`;
+                const obs = (info.observations != null ? info.observations : n);
+                return `<tr><td>${name}</td><td>${obs}</td><td>${n}</td><td>${(obs || n) ? 'CON PUBLICACIONES' : 'SIN PUBLICACIONES'}</td></tr>`;
             }).join('') : '<tr><td colspan="3">Sin categorías descubiertas para esta corrida.</td></tr>';
+        }
+
+        function updateLiveCategoryUniverse(st, rows) {
+            if (selectedRunId) return; // historical view is pinned
+            const universe = new Map();
+            const childParent = {
+                'chaquetas, parkas y blazers': 'Abrigos',
+                'chalecos, sweaters y cardigans': 'Abrigos'
+            };
+            const add = (name, n = 0) => {
+                name = String(name || '').trim();
+                const key = name.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+                if (childParent[key]) name = childParent[key];
+                if (!name) return;
+                const prev = universe.get(name) || {publications: 0};
+                universe.set(name, {publications: Math.max(prev.publications, n),
+                                    status: n > 0 ? 'CON PUBLICACIONES' : 'SIN PUBLICACIONES'});
+            };
+            const taxonomy = (st && st.taxonomy) || {};
+            Object.values(taxonomy).forEach(t => {
+                ((t && t.categories) || []).forEach(c => add(c && (c.name || c.category_id)));
+            });
+            if (st && st.current_category) {
+                add(String(st.current_category).split(' - ').pop());
+            }
+            (rows || []).forEach(r => {
+                rowCategories(r).forEach(c => add(c, 1));
+            });
+            // Count memberships exactly once per observed row.
+            const counts = new Map();
+            (rows || []).forEach(r => {
+                new Set(rowCategories(r)).forEach(c => counts.set(c, (counts.get(c) || 0) + 1));
+            });
+            counts.forEach((n, c) => add(c, n));
+            categoryUniverse = universe;
+            categoryUniverseKey = 'LIVE:' + ((st && st.run_id) || '');
+            renderCategoryUniverse();
         }
 
         function renderMainTable() {
@@ -1595,7 +1641,9 @@
                 return match;
             });
 
-            document.getElementById('lblTableCount').innerText = `Mostrando ${filtered.length} de ${currentResults.length} registros`;
+            const _unique = new Set(currentResults.map(rowIdentity).filter(Boolean)).size;
+            document.getElementById('lblTableCount').innerText =
+                `Mostrando ${filtered.length} observaciones de ${currentResults.length} · ${_unique} productos únicos`;
             renderCatalogMetrics();
 
             const emptyDiv = document.getElementById('emptyOpsTable');

@@ -22,6 +22,17 @@ MARKET_DOMAINS = {
 MARKET_SLUG = {"Ripley": "ripley", "Mercado Libre": "mercado_libre"}
 
 
+def canonical_marketplace(value: str) -> str:
+    """Normalize UI/API aliases before domain validation."""
+    raw = str(value or "").strip()
+    if raw in MARKET_DOMAINS:
+        return raw
+    key = re.sub(r"[^a-z0-9]+", "_", raw.lower()).strip("_")
+    return {"ripley": "Ripley", "mercado_libre": "Mercado Libre",
+            "mercadolibre": "Mercado Libre", "meli": "Mercado Libre"}.get(
+                key, raw)
+
+
 def _session_dir() -> Path:
     root = Path(__file__).resolve().parents[2]
     path = root / "data" / "sessions"
@@ -66,7 +77,8 @@ def normalize_cookies(raw, marketplace: str) -> list[dict]:
         raise ValueError(f"Se esperaba un array JSON de cookies; recibido {type(raw).__name__}")
     out, seen = [], set()
     now = datetime.now().timestamp()
-    stats = {"total": len(raw), "domain": 0, "expired": 0, "shape": 0}
+    stats = {"total": len(raw), "domain": 0, "expired": 0, "shape": 0,
+             "rejected_domains": set()}
     for item in raw:
         if not isinstance(item, dict):
             stats["shape"] += 1
@@ -79,6 +91,7 @@ def normalize_cookies(raw, marketplace: str) -> list[dict]:
             continue
         if not _domain_ok(domain, marketplace):
             stats["domain"] += 1
+            stats["rejected_domains"].add(domain or "(sin dominio)")
             continue
         expires = item.get("expirationDate", item.get("expires"))
         try:
@@ -109,14 +122,17 @@ def normalize_cookies(raw, marketplace: str) -> list[dict]:
         if len(out) >= 500:
             break
     if not out:
+        _domains = sorted(stats.get("rejected_domains") or [])[:8]
         raise ValueError(
             f"No hay cookies válidas para {marketplace}: "
             f"total={stats['total']}, dominio={stats['domain']}, "
-            f"expiradas={stats['expired']}, inválidas={stats['shape']}")
+            f"expiradas={stats['expired']}, inválidas={stats['shape']}, "
+            f"dominios_rechazados={_domains}")
     return out
 
 
 def save_session(marketplace: str, raw) -> dict:
+    marketplace = canonical_marketplace(marketplace)
     cookies = normalize_cookies(raw, marketplace)
     path = session_path(marketplace)
     payload = {
@@ -146,6 +162,7 @@ def load_cookies(marketplace: str) -> list[dict]:
 
 
 def session_status(marketplace: str) -> dict:
+    marketplace = canonical_marketplace(marketplace)
     path = session_path(marketplace)
     cookies = load_cookies(marketplace)
     updated = None

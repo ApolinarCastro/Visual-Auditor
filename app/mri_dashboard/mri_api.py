@@ -218,6 +218,19 @@ async def index(request: Request):
     return templates.TemplateResponse(request=request, name="index.html")
 
 
+@app.get("/api/mri/health")
+async def get_mri_health():
+    """Operational health/census derived from the live run, never synthetic."""
+    st = orchestrator.state or {}
+    return JSONResponse(content={
+        "health": st.get("health"),
+        "source_health": st.get("source_health"),
+        "global_coverage": st.get("global_coverage"),
+        "run_id": st.get("run_id"),
+        "is_running": orchestrator.is_running,
+    })
+
+
 @app.get("/api/mri/sessions")
 async def get_mri_sessions():
     """Session-cookie status only; cookie values are never returned."""
@@ -231,10 +244,9 @@ async def get_mri_sessions():
 @app.post("/api/mri/sessions/{marketplace}")
 async def update_mri_session(marketplace: str, request: Request):
     """Import a Cookie-Editor JSON array into MRI's own local session store."""
-    from app.mri_dashboard.session_store import save_session
-    name = {"ripley": "Ripley", "mercado_libre": "Mercado Libre",
-            "meli": "Mercado Libre", "mercado libre": "Mercado Libre"}.get(
-                marketplace.strip().lower(), marketplace)
+    from app.mri_dashboard.session_store import (
+        canonical_marketplace, save_session)
+    name = canonical_marketplace(marketplace)
     try:
         payload = await request.json()
         result = save_session(name, payload)
@@ -250,6 +262,7 @@ async def update_mri_session(marketplace: str, request: Request):
 async def get_state():
     st = orchestrator.state or {}
     from app.mri_dashboard.acquisition_contract import view_metadata
+    from app.mri_dashboard.observation_reconciliation import summarize_results
     _view = view_metadata(execution_mode=f"{st.get('mode') or 'UNKNOWN'}",
                           run_id=st.get("run_id"), source="LIVE_MEMORY", live=True)
     return JSONResponse(content={
@@ -263,6 +276,7 @@ async def get_state():
         "mode": st.get("mode"),
         "source": "LIVE_MEMORY",
         "results_count": len(orchestrator.results or []),
+        "reconciliation": summarize_results(orchestrator.results or []),
         # acquisition truth (live view only; never a persisted historical run)
         **_view,
         "outcome": st.get("outcome"),
@@ -300,7 +314,7 @@ async def get_run_errors():
     return JSONResponse(content={"errors": _RUN_ERRORS[-50:], "count": len(_RUN_ERRORS)})
 
 
-async def _guarded_run(fn, run_id: str, *args):
+async def _guarded_run(fn, run_id: str, *args, **kwargs):
     """Run a background task and ALWAYS publish a terminal state.
 
     HTTP 202 only means "accepted". On failure the stage and error are recorded,
@@ -316,7 +330,7 @@ async def _guarded_run(fn, run_id: str, *args):
     # the dispatch flag here and let the runner own it for the whole execution.
     orchestrator.is_running = False
     try:
-        _res = fn(*args)
+        _res = fn(*args, **kwargs)
         if inspect.isawaitable(_res):
             await _res
     except Exception as exc:
@@ -415,34 +429,52 @@ async def get_categories_api(marketplace: str, run_id: Optional[str] = None):
         try:
             cur = conn.cursor()
             # If run_id is supplied, query categories active for that run
+            counts = {}
             if run_id:
                 q = """
-                    SELECT DISTINCT c.category_id, c.category_name, c.canonical_url
+                    SELECT c.category_id, c.category_name, c.canonical_url,
+                           COUNT(DISTINCT p.publication_id) AS n
                     FROM mri_categories c
                     JOIN mri_publication_categories pc ON c.category_id = pc.category_id
                     JOIN mri_publications p ON pc.publication_id = p.publication_id
                     WHERE c.marketplace = ? AND p.run_id = ?
                       AND c.category_name != 'CATEGORY_UNKNOWN'
-                    UNION
-                    SELECT DISTINCT c.category_id, c.category_name, c.canonical_url
-                    FROM mri_categories c
-                    JOIN mri_historical_publication_categories hpc ON c.category_id = hpc.category_id
-                    WHERE c.marketplace = ? AND hpc.run_id = ?
-                      AND c.category_name != 'CATEGORY_UNKNOWN'
+                    GROUP BY c.category_id, c.category_name, c.canonical_url
                 """
-                rows = cur.execute(q, (marketplace, run_id, marketplace, run_id)).fetchall()
+                rows = cur.execute(q, (marketplace, run_id)).fetchall()
+                try:
+                    qh = """
+                        SELECT c.category_id, c.category_name, c.canonical_url,
+                               COUNT(DISTINCT hp.publication_id) AS n
+                        FROM mri_categories c
+                        JOIN mri_historical_publication_categories hpc ON c.category_id = hpc.category_id
+                        JOIN mri_historical_publications hp
+                          ON hp.publication_id = hpc.publication_id AND hp.run_id = hpc.run_id
+                        WHERE c.marketplace = ? AND hpc.run_id = ?
+                          AND c.category_name != 'CATEGORY_UNKNOWN'
+                        GROUP BY c.category_id, c.category_name, c.canonical_url
+                    """
+                    for r in cur.execute(qh, (marketplace, run_id)).fetchall():
+                        counts[r[0]] = max(int(r[3] or 0), counts.get(r[0], 0))
+                except Exception:
+                    pass
             else:
                 rows = cur.execute(
                     "SELECT category_id, category_name, canonical_url FROM mri_categories WHERE marketplace = ?",
                     (marketplace,)
                 ).fetchall()
+            _display_aliases = {"ropa interior y de dormir": "Body"}
             for r in rows:
                 cid, cname, curl = r[0], r[1], r[2]
+                cname = _display_aliases.get(str(cname or "").strip().lower(), cname)
+                n = int(r[3] or 0) if len(r) > 3 else int(counts.get(cid, 0))
+                counts[cid] = max(n, counts.get(cid, 0))
                 cats_dict[cid] = {
                     "name": cname,
                     "url": curl or "",
                     "source": "SQLITE_MRI_PERSISTENCE",
-                    "status": "VERIFIED"
+                    "status": "VERIFIED",
+                    "publications": n,
                 }
         except Exception:
             pass
@@ -464,18 +496,43 @@ async def get_categories_api(marketplace: str, run_id: Optional[str] = None):
                     _name = _c.get("name") or _c.get("category_id")
                     _slug = str(_c.get("category_id") or _name or "cat")
                     _key = f"tax_{_slug}"
+                    _n = 0
+                    for _existing in cats_dict.values():
+                        if str(_existing.get("name") or "").strip().lower() == str(_name or "").strip().lower():
+                            _n = int(_existing.get("publications") or 0)
+                            break
                     cats_dict.setdefault(_key, {
                         "name": _name,
                         "url": _c.get("url") or "",
                         "source": "TAXONOMY_DISCOVERED",
                         "status": "PENDING",
-                        "publications": 0,
+                        "publications": _n,
                     })
         except Exception:
             pass
 
+    # Attach raw result counts from the run history. `publications` stays the
+    # unique persisted count; `observations` is the source's result count.
+    if run_id and cats_dict:
+        try:
+            import json as _json
+            import re as _re
+            from app.mri_autonomous.storage_guard import StorageConfig as _SCo
+            _hp = Path(_SCo.get_aux_dir()) / "mri_history.json"
+            _hit2 = next((e for e in _json.loads(_hp.read_text(encoding="utf-8"))
+                          if e.get("run_id") == run_id), None) if _hp.exists() else None
+            from app.mri_dashboard.category_observations import observations_for
+            _acqs = ((_hit2 or {}).get("acquisitions") or [])
+            _obs = observations_for(cats_dict, _acqs)
+            for _cid, _nraw in _obs.items():
+                if _cid in cats_dict:
+                    cats_dict[_cid]["observations"] = _nraw
+        except Exception:
+            pass
+
     if cats_dict:
-        return JSONResponse(content=cats_dict)
+        from app.mri_dashboard.category_hierarchy import rollup
+        return JSONResponse(content=rollup(cats_dict))
 
     from app.mri_dashboard.category_manager import category_manager
     return JSONResponse(content=category_manager.get_categories(marketplace))
@@ -493,6 +550,7 @@ async def start_audit(background_tasks: BackgroundTasks, request: Request):
     marketplace = data.get("marketplace", "ALL")
     limit = data.get("limit", 5)
     mode = data.get("mode", "AUDIT")
+    parallel_all = bool(data.get("parallel", True))
 
     # Mode-specific parameters are parsed and validated BEFORE any RUNNING state
     # is published. A malformed request must never leave the dashboard stuck in
@@ -571,12 +629,24 @@ async def start_audit(background_tasks: BackgroundTasks, request: Request):
     elif mode == "DISCOVERY":
         pages = discovery_pages
         item_limit = discovery_item_limit
+        if marketplace == "ALL" and parallel_all:
+            # First run_id is consumed by _guarded_run for error publication;
+            # the second is the runner argument.
+            background_tasks.add_task(
+                _guarded_run, orchestrator.run_parallel_discovery, run_id, run_id,
+                marketplaces=None, max_pages=pages, limit=item_limit)
+            return JSONResponse(status_code=200, content={
+                "message": "Accepted: Autonomous Discovery (ALL_PARALLEL)",
+                "mode": mode, "run_id": run_id, "state": "RUNNING",
+                "marketplace": marketplace, "max_pages": pages,
+                "execution_strategy": "ALL_PARALLEL"})
         background_tasks.add_task(_guarded_run, orchestrator.run_discovery,
                                   run_id, marketplace, pages, run_id, item_limit)
         return JSONResponse(status_code=200, content={
             "message": "Accepted: Autonomous Discovery", "mode": mode,
             "run_id": run_id, "state": "RUNNING",
-            "marketplace": marketplace, "max_pages": pages})
+            "marketplace": marketplace, "max_pages": pages,
+            "execution_strategy": "SEQUENTIAL"})
     elif mode == "FALABELLA_SSR":
         # Bounded, browser-free acquisition using the CERTIFIED Falabella HTTP/SSR
         # strategy (DECISIONS.md D-016 / FAILURES.md F-010). No new engine: this

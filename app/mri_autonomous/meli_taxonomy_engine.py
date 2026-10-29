@@ -26,6 +26,11 @@ logger = logging.getLogger(__name__)
 
 MELI_API_BASE = "https://api.mercadolibre.com"
 DEFAULT_USER_AGENT = "MRI-Autonomous-Research-Engine/2.0 (AuditBot; +https://nicopoly.cl)"
+# The storefront serves the complete menu only to a normal browser UA; the
+# API keeps its own client identity below.
+STOREFRONT_USER_AGENT = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122 Safari/537.36")
 DEFAULT_SITE_ID = "MLC"
 
 # Nicopoly Ground Truth on Mercado Libre Chile (Snapshot Creao / Oficial)
@@ -162,7 +167,7 @@ class MeliTaxonomyEngine:
         """Fetch the public SSR storefront (the only 200 source verified by VA)."""
         req = urllib.request.Request(
             MLC_STOREFRONT_URL,
-            headers={"User-Agent": self.user_agent, "Accept": "text/html"})
+            headers={"User-Agent": STOREFRONT_USER_AGENT, "Accept": "text/html"})
         try:
             with urllib.request.urlopen(req, timeout=15) as res:
                 return res.read().decode("utf-8", errors="replace"), "FOUND"
@@ -207,6 +212,26 @@ class MeliTaxonomyEngine:
                     "slug": slug,
                     "url": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/" + slug + "/",
                     "source": "STOREFRONT_SSR",
+                }
+        # The current mshops SSR carries the complete 14-item menu in an
+        # escaped JSON script; the DOM exposes only 4 cards. Recover the menu
+        # structurally from the embedded state, never from a hardcoded list.
+        if len(found) < 10:
+            unescaped = html.replace('\\"', '"').replace('\\u002F', '/')
+            menu = re.findall(
+                r'\{"id":"[0-9a-f-]+","name":"([^"]+)","url":"([^"]+)",'
+                r'"type":"[A-Z]+","selected":(?:true|false),"in_header":(?:true|false),'
+                r'"picture":null,"category_id":"?(MLC[0-9]+)"?',
+                unescaped, re.I)
+            for name, url, cid in menu:
+                if not cid or cid in found:
+                    continue
+                found[cid] = {
+                    "category_id": cid,
+                    "name": name,
+                    "slug": url.split('/listado/')[-1].strip('/').lower(),
+                    "url": url.split("?")[0],
+                    "source": "STOREFRONT_SSR_MENU",
                 }
         return list(found.values())
 

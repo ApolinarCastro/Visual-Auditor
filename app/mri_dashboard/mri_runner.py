@@ -142,6 +142,22 @@ async def inject_local_session(scraper, marketplace: str, state: dict) -> int:
         return 0
 
 
+def resolve_master_category_by_title(title: str):
+    """Independent expected category from the master catalog, keyed by title."""
+    try:
+        from app.mri_dashboard.mri_api import get_master_catalog
+        _child, _parent, _titles, _tokens = get_master_catalog()
+        key = "".join(ch for ch in str(title or "").lower() if ch.isalnum())
+        if not key:
+            return None
+        entry = _titles.get(key)
+        if isinstance(entry, dict):
+            return entry.get("category")
+    except Exception:
+        return None
+    return None
+
+
 def get_scraper(marketplace):
     if marketplace == "Mercado Libre": return MercadoLibreScraper(headless=True)
     elif marketplace == "Paris": return ParisScraper(headless=True)
@@ -654,13 +670,16 @@ class MRIOrchestrator:
                                 _c["url"], parent_id=_c.get("parent_id"),
                                 source="TAXONOMY_DISCOVERY", status="PENDING",
                                 acquisition=_c.get("acquisition", True))
-                        cats = category_manager.get_categories(mkt)
-                        # The synthetic brand-search category is complementary, not
-                        # full-audit scope. When real taxonomy/fallback categories
-                        # exist, do not waste a 240s timeout on it.
+                        # Full audits must use the categories discovered in THIS
+                        # taxonomy result. category_manager is persistent and can
+                        # contain stale/fallback categories from older runs; using
+                        # it here re-injected generic listado URLs into ML scope.
                         if full_audit and _tax.get("categories"):
-                            cats = {k: v for k, v in cats.items()
-                                    if not str(k).startswith("SEARCH_")}
+                            from app.mri_dashboard.taxonomy_scope import (
+                                categories_from_taxonomy)
+                            cats = categories_from_taxonomy(_tax)
+                        else:
+                            cats = category_manager.get_categories(mkt)
                         # MRI-CATEGORY-COVERAGE-003: Falabella full audits use the
                         # MRI-layer SSR paginator (the frozen scraper stops at 2
                         # pages). Real evidence is persisted through the normal
@@ -742,16 +761,29 @@ class MRIOrchestrator:
                                     }
                                     # Category-level acquisition is the coverage truth;
                                     # no per-observation acquisition entries.
+                                    _observed_cat = _o.get("category_name")
+                                    _expected_cat = resolve_master_category_by_title(
+                                        _o.get("title") or "")
+                                    if _expected_cat:
+                                        _cat_eval = evaluate_commercial_category(
+                                            product_title=_o.get("title") or "",
+                                            expected_category=_expected_cat,
+                                            observed_category=_observed_cat or "",
+                                            marketplace="Falabella",
+                                            identity_status=_ident.get("state"))
+                                        _decision = _cat_eval.get("decision", "REVIEW_REQUIRED")
+                                    else:
+                                        _decision = "NO_VERIFICADO"
                                     self.results.append({
                                         "producto_id": _o.get("product_id"),
                                         "producto_nombre": _o.get("title"),
                                         "marketplace": "Falabella",
                                         "url_encontrada": _o.get("url"),
                                         "fecha_observacion": datetime.now().isoformat(),
-                                        "real_category": _o.get("category_name"),
+                                        "real_category": _observed_cat,
                                         "category_source": "SSR_TAXONOMY",
-                                        "expected_category": _o.get("category_name"),
-                                        "decision": "NO_VERIFICADO",
+                                        "expected_category": _expected_cat or "SIN_REFERENCIA",
+                                        "decision": _decision,
                                         "identity_status": _ident["state"],
                                         "commercial_attributes": {
                                             "seller": _o.get("seller"),
@@ -819,8 +851,10 @@ class MRIOrchestrator:
                     self.state.setdefault("marketplace_states", {})[mkt] = "PENDIENTE"
                     continue
                 try:
+                    _seen_run_ids = set()
                     for cat_id, cat_data in list(cats.items()):
                         if not self.is_running: break
+                        _cat_started = time.monotonic()
                         if cat_data.get("acquisition") is False:
                             # Reference/menu category for the dashboard, not an
                             # acquisition target (ML listados are blocked).
@@ -909,6 +943,38 @@ class MRIOrchestrator:
                         discovered_products = res.get("products", []) or []
                         raw_stop = res.get("stop_reason")
                         acq_state = normalize_stop_reason(raw_stop)
+                        # A discovered surface can have a public fallback when the
+                        # store-specific route is challenged. Try it only when the
+                        # primary route yields no observations.
+                        if (mkt == "Mercado Libre" and not discovered_products
+                                and cat_data.get("fallback_urls") and scraper):
+                            for _fb_url in cat_data.get("fallback_urls") or []:
+                                try:
+                                    if getattr(scraper, "supports_pagination", False):
+                                        _fb_res = await _aio_cat.wait_for(
+                                            scraper.scrape_autonomous_category(
+                                                _fb_url, max_pages=_coverage.PAGE_SENTINEL),
+                                            timeout=180)
+                                    else:
+                                        _fb_res = await _aio_cat.wait_for(
+                                            scraper.scrape_autonomous_category(_fb_url),
+                                            timeout=180)
+                                    _fb_products = _fb_res.get("products") or []
+                                    if _fb_products:
+                                        res = _fb_res
+                                        discovered_products = _fb_products
+                                        raw_stop = res.get("stop_reason")
+                                        acq_state = normalize_stop_reason(raw_stop)
+                                        self.state.setdefault("fallbacks", []).append({
+                                            "marketplace": mkt, "category": cat_data.get("name"),
+                                            "url": _fb_url, "products": len(_fb_products),
+                                            "at": datetime.now().isoformat()})
+                                        break
+                                except Exception as _fb_exc:
+                                    self.state.setdefault("errors", []).append({
+                                        "stage": "fallback",
+                                        "error": f"FALLBACK_FAILED[{cat_data.get('name')}]: {_fb_exc}",
+                                        "run_id": run_id, "at": datetime.now().isoformat()})
                         _failure = str(res.get("failure_type") or "")
                         # A Cloudflare challenge can make the frozen Ripley scraper
                         # close its own context. Restart the browser once and retry
@@ -949,6 +1015,71 @@ class MRIOrchestrator:
                             raw_stop = res.get("stop_reason")
                             acq_state = normalize_stop_reason(raw_stop)
                             _failure = str(res.get("failure_type") or "")
+                        # ML listado pages expose their own declared result count.
+                        # Capture it for G3 only on a real category surface; the
+                        # storefront root is a rotating 37-39 sample, not a total.
+                        _declared_total = None
+                        if (mkt == "Mercado Libre" and "/listado/" in url
+                                and acq_state == FOUND and scraper
+                                and getattr(scraper, "page", None)):
+                            try:
+                                from app.mri_dashboard.meli_snapshot import (
+                                    parse_declared_total)
+                                _page_text = await scraper.page.inner_text("body", timeout=3000)
+                                _declared_total = parse_declared_total(_page_text)
+                                if _declared_total:
+                                    res.setdefault("pagination", {})[
+                                        "reported_products"] = _declared_total
+                                    self.state.setdefault("declared_totals", {})[
+                                        cat_data.get("name") or url] = _declared_total
+                            except Exception:
+                                pass
+                        # Recovery for a truncated first page: some ML pages do
+                        # not expose a usable 'next' button although the source
+                        # declares more products. Recover the offset explicitly.
+                        if (mkt == "Mercado Libre" and _declared_total
+                                and len(discovered_products) >= 48
+                                and len(discovered_products) < _declared_total
+                                and raw_stop in ("EXHAUSTION", "FOUND")
+                                and scraper):
+                            try:
+                                from app.mri_dashboard.meli_pagination import (
+                                    next_page_url, unique_new_products)
+                                _offset = 49
+                                _recovery_pages = 0
+                                while len(discovered_products) < _declared_total and _recovery_pages < 8:
+                                    _next_url = next_page_url(url, _offset)
+                                    if getattr(scraper, "supports_pagination", False):
+                                        _r2 = await _aio_cat.wait_for(
+                                            scraper.scrape_autonomous_category(
+                                                _next_url, max_pages=_coverage.PAGE_SENTINEL),
+                                            timeout=120)
+                                    else:
+                                        _r2 = await _aio_cat.wait_for(
+                                            scraper.scrape_autonomous_category(_next_url),
+                                            timeout=120)
+                                    _incoming = _r2.get("products") or []
+                                    _new = unique_new_products(discovered_products, _incoming)
+                                    if not _new:
+                                        break
+                                    discovered_products.extend(_new)
+                                    _recovery_pages += 1
+                                    _offset += 48
+                                if _recovery_pages:
+                                    res["products"] = discovered_products
+                                    res["pages_traversed"] = ((res.get("pages_traversed") or 0)
+                                                              + _recovery_pages)
+                                    self.state.setdefault("pagination_recovery", []).append({
+                                        "marketplace": mkt, "category": cat_data.get("name"),
+                                        "declared": _declared_total,
+                                        "recovered_pages": _recovery_pages,
+                                        "products_now": len(discovered_products),
+                                        "at": datetime.now().isoformat()})
+                            except Exception as _pg_exc:
+                                self.state.setdefault("errors", []).append({
+                                    "stage": "paginacion",
+                                    "error": f"PAGINATION_RECOVERY_FAILED[{cat_data.get('name')}]: {_pg_exc}",
+                                    "run_id": run_id, "at": datetime.now().isoformat()})
                         from app.mri_dashboard.block_policy import (
                             classify_scraper_failure, classify_sku,
                             reported_product_count)
@@ -995,36 +1126,40 @@ class MRIOrchestrator:
                             if (p.get("marketplace_sku") or p.get("sku")
                                 or p.get("product_id"))}
                         _unique_skus.discard("")
-                        _conciliation_failed = False
-                        if _reported not in (None, "", 0) and _unique_skus:
-                            try:
-                                _diff_ratio = abs(int(_reported) - len(_unique_skus)) / int(_reported)
-                            except Exception:
-                                _diff_ratio = None
-                            if _diff_ratio is not None and _diff_ratio > 0.02:
-                                _conciliation_failed = True
-                                acq_state = PARTIAL
-                                self.state.setdefault("conciliation", []).append({
-                                    "marketplace": mkt, "category": cat_data.get("name"),
-                                    "reported_count": int(_reported),
-                                    "extracted_unique": len(_unique_skus),
-                                    "difference_ratio": round(_diff_ratio, 4),
-                                    "declared_pages": _declared_pages,
-                                    "status": "BLOCKED_PUBLICATION",
-                                    "at": datetime.now().isoformat()})
-                                self.state.setdefault("errors", []).append({
-                                    "stage": "conciliacion",
-                                    "error": (f"CONCILIATION_MISMATCH[{cat_data.get('name')}]: "
-                                              f"reported={_reported} extracted={len(_unique_skus)}"),
-                                    "run_id": run_id, "at": datetime.now().isoformat()})
-                            else:
-                                self.state.setdefault("conciliation", []).append({
-                                    "marketplace": mkt, "category": cat_data.get("name"),
-                                    "reported_count": int(_reported),
-                                    "extracted_unique": len(_unique_skus),
-                                    "difference_ratio": round(_diff_ratio or 0.0, 4),
-                                    "declared_pages": _declared_pages,
-                                    "status": "OK", "at": datetime.now().isoformat()})
+                        _raw_extracted_count = len(discovered_products)
+                        from app.mri_dashboard.observation_reconciliation import (
+                            reconcile_declared)
+                        _recon = reconcile_declared(
+                            _reported, _raw_extracted_count, len(_unique_skus))
+                        _diff_ratio = _recon.get("difference_ratio")
+                        _conciliation_failed = _recon.get("status") == "PARTIAL"
+                        if _recon.get("status") == "PARTIAL":
+                            acq_state = PARTIAL
+                            self.state.setdefault("conciliation", []).append({
+                                "marketplace": mkt, "category": cat_data.get("name"),
+                                "reported_count": _recon["reported_count"],
+                                "extracted_raw": _recon["extracted_raw"],
+                                "extracted_unique": _recon["extracted_unique"],
+                                "difference_ratio": _recon["difference_ratio"],
+                                "declared_pages": _declared_pages,
+                                "status": "BLOCKED_PUBLICATION",
+                                "at": datetime.now().isoformat()})
+                            self.state.setdefault("errors", []).append({
+                                "stage": "conciliacion",
+                                "error": (f"CONCILIATION_MISMATCH[{cat_data.get('name')}]: "
+                                          f"reported={_recon['reported_count']} "
+                                          f"extracted_raw={_recon['extracted_raw']} "
+                                          f"unique={_recon['extracted_unique']}"),
+                                "run_id": run_id, "at": datetime.now().isoformat()})
+                        elif _recon.get("status") == "OK":
+                            self.state.setdefault("conciliation", []).append({
+                                "marketplace": mkt, "category": cat_data.get("name"),
+                                "reported_count": _recon["reported_count"],
+                                "extracted_raw": _recon["extracted_raw"],
+                                "extracted_unique": _recon["extracted_unique"],
+                                "difference_ratio": _recon["difference_ratio"],
+                                "declared_pages": _declared_pages,
+                                "status": "OK", "at": datetime.now().isoformat()})
                         elif _reported is None:
                             # G3: without a source counter the category is NOT
                             # authorisable; it remains observable but UNVERIFIED.
@@ -1050,6 +1185,36 @@ class MRIOrchestrator:
                                 "at": datetime.now().isoformat()})
                             import asyncio as _aio_cool
                             await _aio_cool.sleep(20)
+                        # Efficiency guard: products already observed in this run
+                        # are not new evidence. This blocks recommendation-carousel
+                        # contamination without touching the frozen scraper.
+                        _raw_products = list(discovered_products)
+                        # Preserve duplicate observations *within* one category
+                        # (CP2 trace), but never re-observe an id already seen in
+                        # a previous category. Persistence still collapses intra-
+                        # category duplicates with explicit trace.
+                        _seen_before_category = set(_seen_run_ids)
+                        _new_products = []
+                        _duplicate_products = 0
+                        _category_ids = set()
+                        for _p in _raw_products:
+                            _pid = str(_p.get("marketplace_sku") or _p.get("sku")
+                                       or _p.get("product_id") or "").upper()
+                            if _pid and _pid in _seen_before_category:
+                                _duplicate_products += 1
+                                continue
+                            _new_products.append(_p)
+                            if _pid:
+                                _category_ids.add(_pid)
+                        _seen_run_ids.update(_category_ids)
+                        if _raw_products and not _new_products:
+                            acq_state = "NO_PROGRESS"
+                            self.state.setdefault("no_progress", []).append({
+                                "marketplace": mkt, "category": cat_data.get("name"),
+                                "raw": len(_raw_products),
+                                "new_unique": 0,
+                                "at": datetime.now().isoformat()})
+                        discovered_products = _new_products
                         try:
                             _observed_url = (scraper.page.url
                                              if getattr(scraper, "page", None) else None)
@@ -1066,11 +1231,28 @@ class MRIOrchestrator:
                             "pages_traversed": res.get("pages_traversed"),
                             "failure_type": res.get("failure_type"),
                             "products_extracted": len(discovered_products),
+                            "products_observed_raw": len(_raw_products),
+                            "duplicate_products": _duplicate_products,
+                            "new_unique_skus": len(discovered_products),
                             "observed_at": datetime.now().isoformat(),
                             "catalog_reference": _catalog.get("status"),
                         }
+                        acq_evidence["duration_ms"] = round(
+                            (time.monotonic() - _cat_started) * 1000, 1)
                         self.state.setdefault("acquisitions", []).append(acq_evidence)
                         self.state["current_acquisition"] = acq_evidence
+                        self.state.setdefault("health_events", []).append({
+                            "marketplace": mkt,
+                            "category": cat_data.get("name") or cat_id,
+                            "url": url,
+                            "state": acq_state,
+                            "duration_ms": acq_evidence["duration_ms"],
+                            "pages": res.get("pages_traversed"),
+                            "raw": len(_raw_products),
+                            "new_unique": len(discovered_products),
+                            "duplicates": _duplicate_products,
+                            "at": datetime.now().isoformat(),
+                        })
                         # Bitácora de consultas: aprender qué superficie/URL
                         # produjo resultados y cuál falló. Nunca sustituye la
                         # validación live ni precarga categorías.
@@ -1627,6 +1809,22 @@ class MRIOrchestrator:
             if self.state.get("taxonomy_blocked"):
                 # Preserve the operational cause; acceptance stays AUDIT_FAIL.
                 self.state["status_message"] = "TAXONOMY_BLOCKED"
+            try:
+                from app.mri_dashboard.run_health import (
+                    build_global_coverage, build_health, build_source_health)
+                _events = self.state.get("health_events") or []
+                _health = build_health(_events)
+                self.state["health"] = _health
+                self.state["source_health"] = build_source_health(_events)
+                _tax_any = next(iter((self.state.get("taxonomy") or {}).values()), {})
+                self.state["global_coverage"] = build_global_coverage(
+                    _tax_any, self.state.get("acquisitions") or [],
+                    self.results, self.state.get("declared_totals") or {})
+            except Exception as _health_exc:
+                self.state.setdefault("errors", []).append({
+                    "stage": "salud",
+                    "error": f"HEALTH_SUMMARY_FAILED: {_health_exc}",
+                    "run_id": run_id, "at": datetime.now().isoformat()})
             identity_summary = summarize_identities(self.results)
             self.state["identity_summary"] = identity_summary
             self.state["extracted_records"] = len(self.results)
@@ -1945,9 +2143,103 @@ class MRIOrchestrator:
             self.is_running = False
             self.stop_requested = False
             
+    async def run_parallel_discovery(self, run_id, marketplaces=None,
+                                     max_pages=5, limit=None):
+        """Run isolated marketplace children concurrently.
+
+        Each child owns its run_id, state, results, browser/profile lock and
+        materialization. Persistence is synchronous inside the event loop, so
+        SQLite/history writes stay serialized. The parent only aggregates state;
+        the original sequential run_discovery remains available as fallback.
+        """
+        import asyncio
+        if self.is_running:
+            return
+        # Compatibility with the old positional dispatch (`run_id, pages,
+        # item_limit`) which passed an int as `marketplaces` and crashed at
+        # startup. Accept it as max_pages instead of iterating an int.
+        if marketplaces is not None and not isinstance(marketplaces, (list, tuple, set)):
+            if isinstance(marketplaces, int):
+                max_pages = marketplaces
+            marketplaces = None
+        mkts = marketplaces or ["Mercado Libre", "Paris", "Ripley", "Falabella"]
+        self.is_running = True
+        self.stop_requested = False
+        self.results = []
+        self.state.update({
+            "run_id": run_id,
+            "started_at": datetime.now().isoformat(),
+            "marketplace": "ALL",
+            "mode": "DISCOVERY",
+            "execution_strategy": "ALL_PARALLEL",
+            "stage": "adquiriendo",
+            "marketplace_states": {m: "PENDIENTE" for m in mkts},
+            "child_run_ids": {},
+            "products_processed": 0,
+            "total_known": False,
+            "errors": [],
+            "last_activity": datetime.now().isoformat(),
+        })
+        self._parallel_children = []
+
+        def _slug(m):
+            return str(m).lower().replace(" ", "_").replace("é", "e")
+
+        async def _child(mkt):
+            child = MRIOrchestrator()
+            child._parent_orchestrator = self
+            cid = f"{run_id}__{_slug(mkt)}"
+            self.state["child_run_ids"][mkt] = cid
+            try:
+                await child.run_discovery(mkt, max_pages=max_pages,
+                                          run_id=cid, limit=limit,
+                                          full_audit=True)
+            finally:
+                self.state["marketplace_states"][mkt] = (
+                    child.state.get("status_message") or "TERMINADO")
+            return child
+
+        try:
+            tasks = [asyncio.create_task(_child(m)) for m in mkts]
+            self._parallel_children = tasks
+            done = await asyncio.gather(*tasks, return_exceptions=True)
+            agg = []
+            for mkt, child in zip(mkts, done):
+                if isinstance(child, Exception):
+                    self.state["errors"].append({
+                        "stage": "adquiriendo", "marketplace": mkt,
+                        "error": f"{type(child).__name__}: {child}",
+                        "run_id": run_id, "at": datetime.now().isoformat()})
+                    self.state["marketplace_states"][mkt] = "FAILED"
+                    continue
+                self.state["marketplace_states"][mkt] = (
+                    child.state.get("status_message") or "TERMINADO")
+                agg.extend(child.results or [])
+            self.results = agg
+            self.state["products_processed"] = len(agg)
+            self.state["total"] = len(agg)
+            self.state["status_message"] = (
+                "STOPPED_BY_USER" if self.stop_requested else "COMPLETED")
+            self.state["outcome"] = (
+                "PARTIAL" if self.state["errors"] or self.stop_requested
+                else "FOUND")
+            try:
+                self.history = self._load_history()
+            except Exception:
+                pass
+        finally:
+            self._parallel_children = []
+            self.is_running = False
+            self.stop_requested = False
+
     def stop(self):
         self.stop_requested = True
         self.is_running = False
+        for task in getattr(self, "_parallel_children", []) or []:
+            try:
+                task.cancel()
+            except Exception:
+                pass
         self.state["status_message"] = "STOPPED_BY_USER"
 
 orchestrator = MRIOrchestrator()

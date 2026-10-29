@@ -167,34 +167,38 @@ def test_falabella_ssr_payload_shape_produces_publications():
 
 
 def test_meli_domain_discovery_shapes_are_parsed(monkeypatch):
-    import app.mri_autonomous.meli_taxonomy_engine as MT
+    import app.mri_dashboard.discovery_kernel as DK
     import app.mri_dashboard.taxonomy as T
 
-    class _Eng:
-        def discover_storefront_categories(self):
-            return ([{"category_id": "MLC1", "name": "Poleras",
-                      "url": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/poleras/"},
-                     {"category_id": "MLC2", "name": "Pantalones"}], "FOUND")
+    class _Kernel:
+        def discover(self, target):
+            return DK.DiscoveryResult(target, "https://store.invalid", [
+                {"name": "Poleras", "url": "https://store.invalid/listado/poleras/",
+                 "source": "TEST", "acquisition": True},
+                {"name": "Pantalones", "url": "https://store.invalid/listado/pantalones/",
+                 "source": "TEST", "acquisition": True},
+            ], ["TEST"], state="DISCOVERED")
 
-    monkeypatch.setattr(MT, "MeliTaxonomyEngine", _Eng)
+    monkeypatch.setattr(DK, "DiscoveryKernel", _Kernel)
     res = T.discover_taxonomy("Mercado Libre")
     assert res["status"] == T.DISCOVERED
-    ids = {c["category_id"] for c in res["categories"]}
-    assert {"MELI_STOREFRONT_NICOPOLY", "MLC1", "MLC2"} == ids
+    names = {c["name"] for c in res["categories"]}
+    assert names == {"Poleras", "Pantalones"}
 
 
-def test_meli_found_without_parseable_categories_is_contract_issue(monkeypatch):
-    import app.mri_autonomous.meli_taxonomy_engine as MT
+def test_meli_no_discovered_categories_is_unavailable(monkeypatch):
+    import app.mri_dashboard.discovery_kernel as DK
     import app.mri_dashboard.taxonomy as T
 
-    class _Eng:
-        def discover_storefront_categories(self):
-            return ([{"weird_key": 1}], "FOUND")
+    class _Kernel:
+        def discover(self, target):
+            return DK.DiscoveryResult(target, None, [], ["NO_SURFACE"],
+                                      state="STORE_BLOCKED")
 
-    monkeypatch.setattr(MT, "MeliTaxonomyEngine", _Eng)
+    monkeypatch.setattr(DK, "DiscoveryKernel", _Kernel)
     res = T.discover_taxonomy("Mercado Libre")
-    assert res["status"] == T.DISCOVERED
-    assert {c["category_id"] for c in res["categories"]} == {"MELI_STOREFRONT_NICOPOLY"}
+    assert res["status"] == T.UNAVAILABLE
+    assert not res["categories"]
 
 
 def test_falabella_incomplete_ssr_can_never_be_audit_pass(monkeypatch):

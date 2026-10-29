@@ -78,20 +78,22 @@ def test_falabella_engine_failure_is_blocked_not_silent(monkeypatch):
     assert "SSR unavailable" in res["notes"][0]
 
 
-def test_meli_uses_official_api_helpers(monkeypatch):
-    import app.mri_autonomous.meli_taxonomy_engine as mt
+def test_meli_uses_discovery_kernel(monkeypatch):
+    import app.mri_dashboard.discovery_kernel as DK
+    import app.mri_dashboard.taxonomy as T
 
-    class Eng:
-        def discover_storefront_categories(self):
-            return ([{"category_id": "MLC123", "name": "Poleras",
-                      "url": "https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/poleras/"},
-                     {"category_id": "MLC123", "name": "Poleras"}], "FOUND")
+    class Kernel:
+        def discover(self, target):
+            return DK.DiscoveryResult(target, "https://store.invalid", [
+                {"name": "Poleras", "url": "https://store.invalid/listado/poleras/",
+                 "source": "TEST", "acquisition": True},
+            ], ["TEST"], state="DISCOVERED")
 
-    monkeypatch.setattr(mt, "MeliTaxonomyEngine", Eng)
+    monkeypatch.setattr(DK, "DiscoveryKernel", Kernel)
     res = T.discover_taxonomy("Mercado Libre")
     assert res["status"] == T.DISCOVERED
-    ids = {c["category_id"] for c in res["categories"]}
-    assert "MELI_STOREFRONT_NICOPOLY" in ids and "MLC123" in ids
+    names = {c["name"] for c in res["categories"]}
+    assert names == {"Poleras"}
     assert all(c.get("acquisition", True) is True for c in res["categories"])
 
 

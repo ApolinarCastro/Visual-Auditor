@@ -184,48 +184,40 @@ def falabella_taxonomy(brand="Nicopoly"):
 
 
 def meli_taxonomy(query="nicopoly"):
-    """Discover Mercado Libre taxonomy through its official API helpers.
+    """Discover ML surfaces and categories through the generic DiscoveryKernel.
 
-    The official domain_discovery payload uses keys like `domain_id`,
-    `domain_name`, `category_id`, `category_name`; the previous parser only
-    accepted `category_id`/`name`, so a FOUND response was reported as
-    TAXONOMY_UNAVAILABLE with cause "FOUND" (misleading, zero pages).
+    No fixed category list and no copied route: the adapter observes the brand
+    storefront, expands through the public category API, marks parent routes as
+    reference when children exist, and stores a continuously updated validation
+    snapshot.
     """
-    from app.mri_autonomous.meli_taxonomy_engine import MeliTaxonomyEngine
-    try:
-        engine = MeliTaxonomyEngine()
-        nodes, err = engine.discover_storefront_categories()
-    except Exception as exc:
-        return _result("Mercado Libre", BLOCKED, [], "STOREFRONT_SSR",
-                       [f"{type(exc).__name__}: {exc}"])
-    cats, seen = [], set()
-    # One real acquisition surface: the public storefront root. All 37 visible
-    # polycards come from this SSR page; listados/PDP are blocked by ML.
-    _root_url = "https://www.mercadolibre.cl/tienda/nicopoly"
-    _root = _cat("MELI_STOREFRONT_NICOPOLY", "Tienda Oficial Nicopoly",
-                 _root_url, source="STOREFRONT_SSR")
-    _root["acquisition"] = True
-    cats.append(_root)
-    for n in nodes or []:
-        cid = str(n.get("category_id") or "").strip()
-        name = str(n.get("name") or "").strip()
-        if not cid or cid in seen:
-            continue
-        seen.add(cid)
-        url = n.get("url") or "https://listado.mercadolibre.cl/tienda/nicopoly/"
-        _ref = _cat(cid, name, url, source="STOREFRONT_SSR")
-        # Reference/menu category. The managed ML browser can sometimes reach
-        # listados even when anonymous HTTP is blocked; attempt it and keep the
-        # real SOURCE_BLOCKED state if the anti-bot intervenes.
-        _ref["acquisition"] = True
-        cats.append(_ref)
-    if not nodes and err not in ("FOUND", None, ""):
-        return _result("Mercado Libre", UNAVAILABLE, [], "STOREFRONT_SSR",
-                       [f"{err or 'sin respuesta'}: el menú SSR no expuso categorías comerciales"])
-    return _result(
-        "Mercado Libre", DISCOVERED, cats, "STOREFRONT_SSR",
-        [f"SSR expuso {len(nodes or [])} categorías de referencia; "
-         "la adquisición usa la tienda oficial y marca cobertura PARTIAL"])
+    from app.mri_dashboard.discovery_kernel import (
+        DiscoveryKernel, DiscoveryTarget)
+    store_url = query if str(query).startswith("http") else None
+    brand = "" if store_url else str(query)
+    result = DiscoveryKernel().discover(DiscoveryTarget(
+        marketplace="Mercado Libre", brand=brand, store_url=store_url))
+    if result.state not in ("DISCOVERED", "DISCOVERED_FROM_GRAPH") or not result.categories:
+        return _result("Mercado Libre", UNAVAILABLE, [], "DISCOVERY_KERNEL",
+                       [result.state] + result.strategies)
+    cats = []
+    for c in result.categories:
+        cats.append({
+            "category_id": c.get("category_id") or c.get("url"),
+            "name": c.get("name") or c.get("url"),
+            "url": c.get("url"),
+            "source": c.get("source"),
+            "parent_url": c.get("parent_url"),
+            "fallback_urls": c.get("fallback_urls") or [],
+            "acquisition": c.get("acquisition", True),
+        })
+    out = _result(
+        "Mercado Libre", DISCOVERED, cats, "DISCOVERY_KERNEL",
+        [f"storefront={result.store_url}",
+         f"estrategias={result.strategies}",
+         f"validación_dinámica={result.validation.get('count', 0)} categorías"])
+    out["validation"] = result.validation
+    return out
 
 
 def discover_taxonomy(marketplace, *, scraper=None, hub_url=None, brand="Nicopoly"):
