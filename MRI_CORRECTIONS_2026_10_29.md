@@ -132,3 +132,16 @@ Suite MRI total actualizada: 168 tests PASS.
 - Eliminados el grafo y la memoria de rutas sembrados manualmente.
 - Paris/Falabella conservan temporalmente su baseline hasta migración.
 - Suite MRI: 170 tests PASS.
+
+
+## Discovery Intelligence (escalado, no rendición)
+
+- Si el descubrimiento live no devuelve categorías, MRI escala a las rutas
+  previamente investigadas por Creao, almacenadas como conocimiento previo.
+- Las rutas previas se validan por host antes de usarse.
+- Se registra `discovery_recovery` con estrategia, candidatos y hosts descartados.
+- No se inyectan URLs nuevas ni se copian links de VA.
+- Si todas las estrategias se agotan, la corrida reporta bloqueo con evidencia;
+  no convierte el fallo en NOT_FOUND ni inventa publicaciones.
+- Ripley y ML usan recuperación previa; Paris/Falabella mantienen su baseline.
+- Suite MRI: 171 tests PASS.

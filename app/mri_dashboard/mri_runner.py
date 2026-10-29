@@ -648,6 +648,31 @@ class MRIOrchestrator:
                                     "stage": "sesion",
                                     "error": f"RIPLEY_TAXONOMY_RECOVERY_FAILED: {_tax_sess_exc}",
                                     "run_id": run_id, "at": datetime.now().isoformat()})
+                        # Intelligence layer: before failing, escalate to the
+                        # learned Creao route knowledge, host-validated. This is
+                        # not a manual link injection; routes were discovered
+                        # previously and are revalidated live during acquisition.
+                        if (mkt in ("Ripley", "Mercado Libre")
+                                and not _tax.get("categories")):
+                            try:
+                                from app.mri_dashboard.discovery_intelligence import (
+                                    recover_prior_categories)
+                                _prior = recover_prior_categories(mkt, self.state)
+                                if _prior:
+                                    _tax = {
+                                        "marketplace": mkt,
+                                        "status": "TAXONOMY_DISCOVERED",
+                                        "source": "LEARNED_PRIOR_ROUTES",
+                                        "categories": _prior,
+                                        "taxonomy_complete": False,
+                                        "coverage_scope": "PRIOR_ROUTES_RECOVERY",
+                                        "pending_scope": ["LIVE_REVALIDATION"],
+                                    }
+                            except Exception as _intel_exc:
+                                self.state.setdefault("errors", []).append({
+                                    "stage": "descubrimiento",
+                                    "error": f"DISCOVERY_RECOVERY_FAILED[{mkt}]: {_intel_exc}",
+                                    "run_id": run_id, "at": datetime.now().isoformat()})
                         _tax_status = _tax.get("status")
                         # Real taxonomy contract carries taxonomy_complete; fake
                         # fixtures used by unit tests do not and must not be gated.
