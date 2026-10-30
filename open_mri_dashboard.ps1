@@ -12,8 +12,17 @@ while ((Get-Date) -lt $deadline) {
         if ($response.StatusCode -ge 200 -and $response.StatusCode -lt 500) {
             break
         }
+    } catch [System.Net.WebException] {
+        $response = $_.Exception.Response
+        if ($response -ne $null) {
+            $code = [int]$response.StatusCode
+            # HTTP 401/403 means Uvicorn is already serving; Basic auth is
+            # handled by Chrome's own prompt. Do not wait for the timeout.
+            if ($code -ge 200 -and $code -lt 500) { break }
+        }
+        Start-Sleep -Milliseconds 500
     } catch {
-        Start-Sleep -Milliseconds 750
+        Start-Sleep -Milliseconds 500
     }
 }
 
