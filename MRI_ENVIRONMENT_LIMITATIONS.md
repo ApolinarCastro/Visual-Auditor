@@ -75,6 +75,11 @@ set MRI_BAT_RESET_DISCOVERY=1
 
 activa la limpieza antes de iniciar el servidor.
 
+## Documento principal del incidente
+
+Ver [MRI_INCIDENT_AND_PRODUCTION_READINESS_2026_10_30.md](MRI_INCIDENT_AND_PRODUCTION_READINESS_2026_10_30.md)
+para cronología, evidencia, riesgos de datos y plan de producción.
+
 ## Marcador de Chrome
 
 `open_mri_dashboard.ps1` escribe:
