@@ -169,3 +169,11 @@ Suite MRI total actualizada: 168 tests PASS.
 - Al salir, un helper PowerShell detiene únicamente Chrome con los perfiles
   Playwright de MRI (`ripley_profile`, `mercado_libre_profile`, etc.).
 - `MRI_BAT_NO_BROWSER=1` conserva el modo sin navegador.
+
+
+## Apertura automática del navegador
+
+- Reemplazado el helper basado en `netstat` por `open_mri_dashboard.ps1`.
+- El helper espera una respuesta HTTP real del puerto y luego abre el navegador.
+- El servidor sigue en primer plano para que Ctrl+C termine Uvicorn.
+- La limpieza de Chrome por perfil se mantiene al salir.

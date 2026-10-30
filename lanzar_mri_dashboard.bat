@@ -127,20 +127,11 @@ if defined MRI_BAT_FOREGROUND (
 echo [5/5] Iniciando servidor MRI en primer plano: 127.0.0.1:%PORT% ...
 echo.
 
-REM Open the dashboard from a small helper that waits for the port.
-set "OPEN_SCRIPT=%TEMP%\mri_open_%PORT%.bat"
-> "%OPEN_SCRIPT%" echo @echo off
->>"%OPEN_SCRIPT%" echo :wait
->>"%OPEN_SCRIPT%" echo ping -n 2 127.0.0.1 ^>nul 2^>^&1
->>"%OPEN_SCRIPT%" echo netstat -ano ^| findstr /r /c:":%PORT% .*LISTENING" ^>nul 2^>^&1
->>"%OPEN_SCRIPT%" echo if not errorlevel 1 goto open
->>"%OPEN_SCRIPT%" echo goto wait
->>"%OPEN_SCRIPT%" echo :open
->>"%OPEN_SCRIPT%" echo start "" "http://127.0.0.1:%PORT%/"
+REM Open the dashboard after the HTTP endpoint is actually ready.
 if defined MRI_BAT_NO_BROWSER (
     echo [INFO] MRI_BAT_NO_BROWSER definido: no se abre el navegador.
 ) else (
-    start "" /b cmd /c "%OPEN_SCRIPT%"
+    start "" /b powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "%~dp0open_mri_dashboard.ps1" -Port %PORT%
 )
 
 REM Cleanup helper: only Chrome processes using MRI's own Playwright profiles.
