@@ -1,0 +1,281 @@
+{
+  "run_id": "mri_019_run_2_1792173721",
+  "run_index": 2,
+  "instruction": "Investiga las publicaciones y categorías de Nicopoly en Paris, Ripley, Falabella y Mercado Libre. Descubre las fuentes, selecciona los métodos disponibles, recopila las publicaciones, identifica categorías y vendedores, contrasta resultados, conserva evidencias y presenta un informe comercial verificable.",
+  "target_brand": "Nicopoly",
+  "started_at": "2026-10-16T18:02:01.143998+00:00",
+  "finished_at": "2026-10-16T18:02:03.522166+00:00",
+  "truth_model_version": "2.0",
+  "summary": {
+    "total_marketplaces_audited": 4,
+    "successful_marketplaces": [
+      "Paris",
+      "Ripley",
+      "Falabella",
+      "Mercado Libre"
+    ],
+    "total_publications_persisted": 57,
+    "cross_marketplace_status": "PASS",
+    "truth_model_version": "2.0"
+  },
+  "decisions_log": [
+    {
+      "step": 1,
+      "marketplace": "Paris",
+      "decision": "Inspect Paris.cl using Constructor.io REA discovery and HAR provenance",
+      "timestamp": "2026-10-16T18:02:01.147114+00:00"
+    },
+    {
+      "step": 2,
+      "marketplace": "Ripley",
+      "decision": "Inspect Ripley.cl using verified facets, empty-state detection and catalog counter",
+      "timestamp": "2026-10-16T18:02:02.952103+00:00"
+    },
+    {
+      "step": 3,
+      "marketplace": "Falabella",
+      "decision": "Inspect Falabella.cl via Next.js SSR __NEXT_DATA__ brand & seller corridors",
+      "timestamp": "2026-10-16T18:02:02.960321+00:00"
+    },
+    {
+      "step": 4,
+      "marketplace": "Mercado Libre",
+      "decision": "Inspect Mercado Libre Chile via Official Store 56574 taxonomy & domain discovery",
+      "timestamp": "2026-10-16T18:02:03.144702+00:00"
+    }
+  ],
+  "marketplaces": {
+    "Paris": {
+      "status": "COMPLETED",
+      "active_strategy": "CONTROLLED_HAR_REPLAY",
+      "strategies_attempted": [
+        {
+          "strategy": 1,
+          "name": "REA_CONSTRUCTOR_PUBLIC_API",
+          "action": "Query public Constructor.io search endpoint with key_6PvQHDnR0zdWgEPh"
+        },
+        {
+          "strategy": 2,
+          "name": "CONTROLLED_HAR_REPLAY",
+          "action": "Inspect verified local HAR captures with SHA-256 integrity validation"
+        }
+      ],
+      "total_brand_publications": 4902,
+      "total_official_seller_publications": 4211,
+      "sellers_found": [
+        "NICOPOLY"
+      ],
+      "categories_found": [
+        {
+          "name": "Moda Mujer",
+          "count": 4902
+        }
+      ],
+      "publications_count": 20,
+      "blocker_reason": null,
+      "evidence": {
+        "har_path": "C:\\Users\\ASUS Zenbook\\Documents\\Visibility Auditor\\evidence\\mri_rea_discovery_010\\paris_search_capture.har",
+        "sha256": "1ed56cc6a9453d6b67a64f6c7566b2496a2294db661ff3f7fc3e9e5077483ed9",
+        "captured_at": "2026-10-15T18:55:57.608368+00:00"
+      }
+    },
+    "Ripley": {
+      "status": "COMPLETED",
+      "active_strategy": "RIPLEY_FACET_AND_COUNTER_VERIFICATION",
+      "strategies_attempted": [
+        {
+          "strategy": 1,
+          "name": "RIPLEY_FACET_AND_COUNTER_VERIFICATION",
+          "action": "Extract verified facets and catalog counter (772 items, 3 categories)"
+        }
+      ],
+      "total_brand_publications": 772,
+      "total_official_seller_publications": 772,
+      "sellers_found": [
+        "Nicopoly"
+      ],
+      "categories_found": [
+        {
+          "group_id": "moda-mujer/tops-y-chaquetas/sweaters-y-chalecos",
+          "name": "Sweaters y Chalecos",
+          "count": 284,
+          "path": "Moda Mujer > Sweaters y Chalecos"
+        },
+        {
+          "group_id": "moda-mujer/tops-y-chaquetas/chaquetas-y-blazers",
+          "name": "Chaquetas y Blazers",
+          "count": 256,
+          "path": "Moda Mujer > Chaquetas y Blazers"
+        },
+        {
+          "group_id": "moda-mujer/jeans-y-pantalones/pantalones",
+          "name": "Pantalones",
+          "count": 232,
+          "path": "Moda Mujer > Pantalones"
+        }
+      ],
+      "publications_count": 3,
+      "blocker_reason": null,
+      "evidence": {
+        "mechanism": "Ripley Facets + Counter Verification",
+        "total_categories": 3,
+        "status": "OPERATIONAL"
+      }
+    },
+    "Falabella": {
+      "status": "COMPLETED",
+      "active_strategy": "FALABELLA_SSR_BRAND_EXTRACTION",
+      "strategies_attempted": [
+        {
+          "strategy": 1,
+          "name": "FALABELLA_SSR_BRAND_EXTRACTION",
+          "action": "Fetch SSR __NEXT_DATA__ from /falabella-cl/brand/NICOPOLY"
+        }
+      ],
+      "total_brand_publications": 368,
+      "total_official_seller_publications": 368,
+      "sellers_found": [
+        "Nicopoly"
+      ],
+      "categories_found": [
+        {
+          "id": "cat7330051",
+          "name": "Mujer",
+          "count": 1279
+        }
+      ],
+      "publications_count": 20,
+      "blocker_reason": null,
+      "evidence": {
+        "mechanism": "NEXT_JS_SSR_EXTRACTION",
+        "total_count": 368,
+        "categories_count": 1
+      }
+    },
+    "Mercado Libre": {
+      "status": "COMPLETED",
+      "active_strategy": "MELI_OFFICIAL_TAXONOMY_DISCOVERY",
+      "strategies_attempted": [
+        {
+          "strategy": 1,
+          "name": "MELI_OFFICIAL_TAXONOMY_DISCOVERY",
+          "action": "Query public MLC taxonomy API (/categories and domain_discovery) for Store 56574"
+        }
+      ],
+      "total_brand_publications": 350,
+      "total_official_seller_publications": 350,
+      "sellers_found": [
+        "Nicopoly"
+      ],
+      "categories_found": [
+        {
+          "category_id": "MLC158340",
+          "name": "Chaquetas, Parkas y Blazers",
+          "parent_id": "MLC455528",
+          "domain_name": "MLC-JACKETS_AND_COATS",
+          "entity_type": "subcategory"
+        },
+        {
+          "category_id": "MLC158425",
+          "name": "Vestidos",
+          "parent_id": "MLC1430",
+          "domain_name": "MLC-DRESSES",
+          "entity_type": "category"
+        },
+        {
+          "category_id": "MLC158583",
+          "name": "Pantalones",
+          "parent_id": "MLC1430",
+          "domain_name": "MLC-PANTS",
+          "entity_type": "category"
+        },
+        {
+          "category_id": "MLC158342",
+          "name": "Blusas",
+          "parent_id": "MLC1430",
+          "domain_name": "MLC-BLOUSES",
+          "entity_type": "category"
+        },
+        {
+          "category_id": "MLC158307",
+          "name": "Bermudas y Shorts",
+          "parent_id": "MLC1430",
+          "domain_name": "MLC-SHORTS",
+          "entity_type": "category"
+        },
+        {
+          "category_id": "MLC158457",
+          "name": "Faldas",
+          "parent_id": "MLC1430",
+          "domain_name": "MLC-SKIRTS",
+          "entity_type": "category"
+        },
+        {
+          "category_id": "MLC440371",
+          "name": "Chalecos, Sweaters y Cardigans",
+          "parent_id": "MLC455528",
+          "domain_name": "MLC-SWEATERS_AND_CARDIGANS",
+          "entity_type": "subcategory"
+        },
+        {
+          "category_id": "MLC158467",
+          "name": "Poleras",
+          "parent_id": "MLC1430",
+          "domain_name": "MLC-T_SHIRTS",
+          "entity_type": "category"
+        },
+        {
+          "category_id": "MLC158335",
+          "name": "Camisas",
+          "parent_id": "MLC1430",
+          "domain_name": "MLC-SHIRTS",
+          "entity_type": "category"
+        },
+        {
+          "category_id": "MLC440714",
+          "name": "Enteritos",
+          "parent_id": "MLC1430",
+          "domain_name": "MLC-JUMPSUITS",
+          "entity_type": "category"
+        },
+        {
+          "category_id": "MLC440654",
+          "name": "Calzas",
+          "parent_id": "MLC1430",
+          "domain_name": "MLC-LEGGINGS",
+          "entity_type": "category"
+        },
+        {
+          "category_id": "MLC158382",
+          "name": "Polerones",
+          "parent_id": "MLC455528",
+          "domain_name": "MLC-SWEATSHIRTS",
+          "entity_type": "subcategory"
+        },
+        {
+          "category_id": "MLC440679",
+          "name": "Trajes de Baño",
+          "parent_id": "MLC1430",
+          "domain_name": "MLC-SWIMWEAR",
+          "entity_type": "category"
+        },
+        {
+          "category_id": "MLC158310",
+          "name": "Accesorios de Moda",
+          "parent_id": "MLC1430",
+          "domain_name": "MLC-FASHION_ACCESSORIES",
+          "entity_type": "category"
+        }
+      ],
+      "publications_count": 14,
+      "blocker_reason": null,
+      "evidence": {
+        "official_store_id": "56574",
+        "seller_id": "386329223",
+        "product_categories_count": 14,
+        "clips_segregated": "SEGREGATED_FROM_TAXONOMY",
+        "oauth_status": "AUTH_REQUIRED"
+      }
+    }
+  }
+}

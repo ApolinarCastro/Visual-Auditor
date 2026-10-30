@@ -1,0 +1,1998 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MRI — Autonomous Marketplace Auditor</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --panel-bg: #1e293b;
+            --border: #334155;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #4ade80;
+            --primary-dark: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #38bdf8;
+            --purple: #c084fc;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        aside {
+            width: 260px;
+            background-color: var(--panel-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+        
+        aside h1 {
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+        
+        .nav-item {
+            padding: 12px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+        }
+        
+        .nav-item.active {
+            background-color: var(--primary);
+            color: #000;
+            font-weight: 600;
+        }
+        
+        main {
+            flex: 1;
+            padding: 25px 30px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .panel {
+            display: none;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+        
+        .panel.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h2 { margin-top: 0; color: #fff; font-size: 1.35rem; margin-bottom: 20px; }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        select, button, input {
+            background-color: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 0.92rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        
+        select:focus, button:focus, input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        button.btn-primary { background-color: var(--primary); color: #000; border-color: var(--primary); font-weight: bold; }
+        button.btn-primary:hover:not(:disabled) { background-color: var(--primary-dark); }
+        button.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        button.btn-danger { background-color: var(--danger); color: #fff; border-color: var(--danger); font-weight: bold; }
+        button.btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+        button.btn-secondary { background-color: var(--panel-bg); color: var(--text); border-color: var(--border); }
+        button.btn-secondary:hover { border-color: var(--primary); }
+        
+        .status-box {
+            background-color: var(--panel-bg);
+            padding: 18px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+        
+        .progress-bar-container {
+            height: 8px;
+            background-color: var(--bg);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            background-color: var(--panel-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        
+        th, td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+        
+        th { 
+            background-color: rgba(15, 23, 42, 0.7); 
+            color: var(--text-muted); 
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+        
+        tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+        
+        .badge-success { background: rgba(74, 222, 128, 0.18); color: var(--primary); border: 1px solid rgba(74, 222, 128, 0.3); }
+        .badge-danger { background: rgba(239, 68, 68, 0.18); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .badge-warning { background: rgba(245, 158, 11, 0.18); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-info { background: rgba(56, 189, 248, 0.18); color: var(--info); border: 1px solid rgba(56, 189, 248, 0.3); }
+        .badge-purple { background: rgba(192, 132, 252, 0.18); color: var(--purple); border: 1px solid rgba(192, 132, 252, 0.3); }
+        
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: 8px;
+        }
+        
+        .card-title { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .card-value { font-size: 1.6rem; font-weight: 700; color: #fff; }
+        
+        .empty-state {
+            padding: 40px;
+            text-align: center;
+            background: var(--panel-bg);
+            border: 1px dashed var(--border);
+            border-radius: 8px;
+            color: var(--text-muted);
+            margin: 20px 0;
+        }
+        .empty-state h3 { color: #fff; margin-bottom: 8px; }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            width: 90%;
+            max-width: 750px;
+            max-height: 85vh;
+            border-radius: 10px;
+            padding: 24px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .modal-header h3 { margin: 0; color: #fff; font-size: 1.25rem; }
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+        .modal-close:hover { color: #fff; }
+        .detail-row {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.9rem;
+        }
+        .detail-label {
+            width: 180px;
+            font-weight: 600;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+        .detail-value {
+            flex: 1;
+            word-break: break-all;
+            color: var(--text);
+        }
+    </style>
+</head>
+<body>
+    <aside>
+        <h1>MRI Auditor</h1>
+        <div class="nav-item active" id="tab-ops" onclick="switchTab('ops')">A. Operaciones y Resultados</div>
+        <div class="nav-item" id="tab-hist" onclick="switchTab('hist')">B. Historial de Ejecuciones</div>
+        <div class="nav-item" id="tab-learn" onclick="switchTab('learn')">C. Aprendizaje y Experiencia</div>
+        <div class="nav-item" id="tab-multi" onclick="switchTab('multi')">D. Inteligencia Multimarketplace</div>
+        <div class="nav-item" id="tab-mgr" onclick="switchTab('mgr')">E. Resumen Gerencial</div>
+    </aside>
+    
+    <main>
+        <div id="globalOpsNote" style="margin-bottom:14px; padding:10px 14px; border-left:3px solid var(--warning); background:rgba(245,158,11,0.08); color:var(--text-muted); font-size:0.82rem; border-radius:4px;">
+            <strong>Nota Operativa:</strong> La incorporación futura de <strong>OpenSEO</strong> (optimización semántica de catálogo) se encuentra formalmente desacoplada del registro de experiencias de adquisición y no representa funcionalidad ejecutada en las auditorías actuales.
+        </div>
+        <!-- A. Operaciones y Resultados -->
+        <div id="ops" class="panel active">
+            <h2>A. Operaciones y Resultados Verificables</h2>
+            <div id="runModeBadge" style="display:inline-block; padding:4px 10px; border-radius:4px; font-size:0.75rem; font-weight:600; letter-spacing:0.04em; background:rgba(148,163,184,0.15); color:var(--text-muted);">SIN CORRIDA</div>
+            <div class="controls">
+                <select id="mktSelect" title="Alcance de la auditoría">
+                    <option value="ALL">Auditoría total · todos los marketplaces</option>
+                    <option value="Mercado Libre">Auditoría · Mercado Libre</option>
+                    <option value="Falabella">Auditoría · Falabella</option>
+                    <option value="Paris">Auditoría · Paris</option>
+                    <option value="Ripley">Auditoría · Ripley</option>
+                </select>
+                <button class="btn-primary" onclick="startAudit()" id="btnStart">Iniciar Auditoría</button>
+                <button class="btn-danger" onclick="stopAudit()" id="btnStop" disabled>Detener</button>
+            </div>
+            <p style="color:var(--text-muted); font-size:0.8rem; margin:8px 0 0 0;">
+                Alcance fijo: <strong>catálogo completo</strong> y <strong>descubrimiento autónomo de categorías</strong>.
+            </p>
+            
+            <div class="status-box">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+                    <div><strong>Estado del Corredor:</strong> <span id="lblStatus" class="badge badge-info">IDLE</span></div>
+                    <div style="font-size:0.85rem; color:var(--text-muted);">
+                        <span>Run ID: <code id="lblActiveRun" style="color:var(--info); font-weight:600;">-</code></span> | 
+                        <span>Inicio: <span id="lblStartTime">-</span></span> | 
+                        <span>Duración: <span id="lblDuration">-</span></span>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px; margin-bottom:12px; font-size:0.85rem; background:rgba(0,0,0,0.2); padding:10px; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
+                    <div><span style="color:var(--text-muted)">Canal / Categoría:</span> <strong id="lblActiveChannel">-</strong></div>
+                    <div><span style="color:var(--text-muted)">Estrategia Activa:</span> <code id="lblActiveStrategy" style="color:var(--primary); font-size:0.8rem;">-</code></div>
+                    <div><span style="color:var(--text-muted)">Fuente / URL:</span> <span id="lblActiveUrl" style="word-break:break-all; font-family:monospace; font-size:0.8rem; color:var(--info);">-</span></div>
+                    <div><span style="color:var(--text-muted)">Páginas / Productos:</span> <strong id="lblPagesProcessed">0</strong> págs / <strong id="lblProdsProcessed">0</strong> prods</div>
+                </div>
+
+                <div style="color: var(--text-muted); font-size:0.9rem;" id="lblStatusMsg">Esperando inicio de auditoría...</div>
+                
+                <div style="margin-top: 12px; display: flex; justify-content: space-between; font-size: 0.85rem">
+                    <span>Progreso: <strong id="lblProgress">0</strong> / <span id="lblTotal">0</span> (<span id="lblPct">0</span>%)</span>
+                    <span>Verificadas: <strong id="lblVerifiedCnt" style="color:var(--primary)">0</strong> | Pendientes: <strong id="lblPendingCnt" style="color:var(--warning)">0</strong></span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+            
+            <div class="grid-cards" id="opsLiveCards">
+                <div class="card" onclick="filterByDecision('ALL')" style="cursor:pointer;" title="Click para ver todas las publicaciones observadas">
+                    <div class="card-title">Adquisición Observada</div>
+                    <div class="card-value" style="color:var(--primary)" id="cntAcquired">0</div>
+                </div>
+                <div class="card" onclick="filterByDecision('CORRECT')" style="cursor:pointer;" title="Click para filtrar por Categoría Correcta">
+                    <div class="card-title">Categoría Correcta</div>
+                    <div class="card-value" style="color:var(--primary)" id="cntCorrect">0</div>
+                </div>
+                <div class="card" onclick="filterByDecision('INCORRECT')" style="cursor:pointer;" title="Click para filtrar por Categoría Incorrecta">
+                    <div class="card-title">Categoría Incorrecta</div>
+                    <div class="card-value" style="color:var(--danger)" id="cntIncorrect">0</div>
+                </div>
+                <div class="card" onclick="filterByDecision('REVIEW_REQUIRED')" style="cursor:pointer;" title="Click para filtrar por Revisión Requerida">
+                    <div class="card-title">Revisión Requerida</div>
+                    <div class="card-value" style="color:var(--purple)" id="cntReview">0</div>
+                </div>
+                <div class="card" onclick="filterByDecision('NOT_VERIFIED')" style="cursor:pointer;" title="Click para filtrar por No Verificado">
+                    <div class="card-title">No Verificado / Sin Evidencia</div>
+                    <div class="card-value" style="color:var(--warning)" id="cntNotVerified">0</div>
+                </div>
+                <div class="card" onclick="filterByDecision('ALL')" style="cursor:pointer;" title="Click para ver publicaciones con categoría pública observada">
+                    <div class="card-title">Categoría Pública Observada</div>
+                    <div class="card-value" style="color:var(--info)" id="cntCatObserved">0</div>
+                </div>
+            </div>
+
+            <div id="catalogUploadPanel" style="margin-top:16px; padding:14px; border:1px solid var(--border); border-radius:8px; background:rgba(255,255,255,0.02);">
+                <h3 style="margin:0 0 8px 0; font-size:1rem; color:#fff;">Catálogo maestro (referencia)</h3>
+                <p style="color:var(--text-muted); font-size:0.82rem; margin:0 0 10px 0;">Sube el .xlsx/.csv del catálogo (SKU_HIJO, SKU_PADRE, NOMBRE_PRODUCTO, MARCA, precios/stock por canal). <strong>Stock 0 ⇒ candidato a descarte inmediato.</strong></p>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                    <input type="file" id="catalogFile" accept=".xlsx,.xls,.csv">
+                    <button onclick="uploadCatalog()" id="btnUploadCatalog">Subir y recargar</button>
+                    <span id="catalogUploadStatus" style="font-size:0.82rem; color:var(--text-muted);"></span>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:8px;">
+                    <input type="file" id="checklistFile" accept=".xlsx,.xls,.csv">
+                    <button onclick="uploadChecklist()" id="btnUploadChecklist">Subir checklist temporada</button>
+                    <span id="checklistUploadStatus" style="font-size:0.82rem; color:var(--text-muted);"></span>
+                </div>
+                <div id="catalogUploadResult" style="font-size:0.8rem; color:var(--text-muted); margin-top:8px;"></div>
+                <div style="display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap;">
+                    <select id="coverageMarketplace">
+                        <option value="falabella">Falabella</option>
+                        <option value="ripley">Ripley</option>
+                        <option value="mercado libre">Mercado Libre</option>
+                        <option value="paris">Paris</option>
+                    </select>
+                    <button onclick="runCoverage()">Ver cobertura publicados/faltantes</button>
+                    <button onclick="runChecklistCoverage()">Ver checklist temporada</button>
+                    <span id="coverageStatus" style="font-size:0.8rem; color:var(--text-muted);"></span>
+                </div>
+                <div id="coverageResult" style="font-size:0.8rem; color:var(--text-muted); margin-top:8px;"></div>
+            </div>
+
+            <div id="sessionPanel" style="margin-top:16px; padding:14px; border:1px solid var(--border); border-radius:8px; background:rgba(255,255,255,0.02);">
+                <h3 style="margin:0 0 6px 0; font-size:1rem; color:#fff;">Control de Sesiones</h3>
+                <p style="color:var(--text-muted); font-size:0.8rem; margin:0 0 10px 0;">
+                    Pega el array JSON exportado por Cookie-Editor. MRI guarda la sesión localmente en su propio perfil y la reutiliza; no resuelve CAPTCHA.
+                </p>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:12px;">
+                    <div>
+                        <div><strong>Ripley</strong> <span id="sessionStatusRipley" class="badge badge-info">—</span></div>
+                        <textarea id="cookiesRipley" placeholder='[{"name":"cf_clearance","value":"...","domain":".ripley.cl"}]' style="width:100%; min-height:74px; margin-top:6px; font-family:monospace; font-size:0.72rem;"></textarea>
+                        <button onclick="updateSession('ripley')" style="margin-top:6px;">Actualizar Sesión Ripley</button>
+                    </div>
+                    <div>
+                        <div><strong>Mercado Libre</strong> <span id="sessionStatusML" class="badge badge-info">—</span></div>
+                        <textarea id="cookiesML" placeholder='[{"name":"ssid","value":"...","domain":".mercadolibre.cl"}]' style="width:100%; min-height:74px; margin-top:6px; font-family:monospace; font-size:0.72rem;"></textarea>
+                        <button onclick="updateSession('mercadolibre')" style="margin-top:6px;">Actualizar Sesión Mercado Libre</button>
+                    </div>
+                </div>
+                <div id="sessionUpdateResult" style="font-size:0.8rem; color:var(--text-muted); margin-top:8px;"></div>
+            </div>
+
+            <div id="catalogMetricsPanel" style="display:none; margin-top:20px; padding:16px; border:1px solid var(--border); border-radius:8px; background:rgba(255,255,255,0.02);">
+                <h3 style="margin:0 0 12px 0; font-size:1.05rem; color:#fff;">Conciliación de catálogo (marketplace)</h3>
+                <div id="catalogSummaryProvenance" style="font-size:0.78rem; color:var(--text-muted); margin:-6px 0 10px 0;"></div>
+                <div class="grid-cards" style="margin-bottom:12px;">
+                    <div class="card"><div class="card-title">Productos padre únicos</div><div class="card-value" style="color:var(--primary)" id="catUnique">0</div></div>
+                    <div class="card"><div class="card-title">Suma rep. por categoría</div><div class="card-value" style="color:var(--info)" id="catRepSum">0</div></div>
+                    <div class="card"><div class="card-title">Diferencia (rep. − únicos)</div><div class="card-value" style="color:var(--warning)" id="catDiff">0</div></div>
+                    <div class="card"><div class="card-title">Productos en &gt;1 categoría</div><div class="card-value" style="color:var(--purple)" id="catOverlap">0</div></div>
+                    <div class="card"><div class="card-title">Claves SKU/ofertas</div><div class="card-value" style="color:var(--info)" id="catSkuKeys">0</div></div>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead><tr><th>Categoría</th><th>rep. (página)</th><th>únicos</th><th>diferencia</th><th>tarjetas</th><th>estado</th></tr></thead>
+                        <tbody id="tbCatMetrics"></tbody>
+                    </table>
+                </div>
+                <label style="display:flex; gap:8px; align-items:center; margin-top:10px; font-size:0.85rem; color:var(--text-muted);">
+                    <input type="checkbox" id="chkOverlapOnly" onchange="renderMainTable()"> Mostrar solo productos en &gt;1 categoría (solapados)
+                </label>
+                <p id="catSemantics" style="color:var(--text-muted); font-size:0.78rem; margin:8px 0 0 0;"></p>
+            </div>
+
+            <div id="categoryUniversePanel" style="margin-top:18px; padding:12px 14px; border:1px solid var(--border); border-radius:8px; background:rgba(255,255,255,0.015);">
+                <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+                    <h3 style="margin:0; font-size:1rem; color:#fff;">Categorías descubiertas (incluye 0 publicaciones)</h3>
+                    <span id="catUniverseCount" style="font-size:0.82rem; color:var(--text-muted);"></span>
+                </div>
+                <div style="overflow-x:auto; margin-top:8px; max-height:240px;">
+                    <table><thead><tr><th>Categoría</th><th>Resultados</th><th>Únicas</th><th>Estado</th></tr></thead>
+                    <tbody id="tbCategoryUniverse"></tbody></table>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; margin-bottom:12px;">
+                <h3 style="margin: 0; font-size: 1.15rem; color: #fff;">Tabla Completa de Publicaciones y Auditoría Comercial</h3>
+                <span id="lblTableCount" style="color:var(--text-muted); font-size:0.85rem"></span>
+            </div>
+            
+            <div class="controls" style="margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 10px;">
+                <select id="runViewSelect" onchange="selectRunView(this.value)" title="Corrida a visualizar">
+                    <option value="LIVE">Corrida actual</option>
+                </select>
+                <select id="filterMarketplace" onchange="loadCategoryUniverse(selectedRunId || window.__lastRunId, this.value).then(renderMainTable)">
+                    <option value="ALL">Canal: Todos</option>
+                    <option value="Mercado Libre">Mercado Libre</option>
+                    <option value="Falabella">Falabella</option>
+                    <option value="Paris">Paris</option>
+                    <option value="Ripley">Ripley</option>
+                </select>
+                <select id="filterStatus" onchange="renderMainTable()">
+                    <option value="ALL">Decisión: Todas</option>
+                    <option value="CORRECT">CORRECTO (Validada)</option>
+                    <option value="INCORRECT">INCORRECTO / MAL UBICADO</option>
+                    <option value="REVIEW_REQUIRED">REVISIÓN REQUERIDA</option>
+                    <option value="NO_VERIFICADO">NO VERIFICADO</option>
+                    <option value="NOT_VERIFIED">NO VERIFICADO (histórico)</option>
+                </select>
+                <select id="filterCategory" onchange="renderMainTable()">
+                    <option value="ALL">Filtro: Todas las Categorías Observadas</option>
+                </select>
+                <select id="filterCoverage" onchange="renderMainTable()">
+                    <option value="ALL">Filtro: Cobertura (Todas)</option>
+                    <option value="COMPLETE">Cobertura: Completa</option>
+                    <option value="PARTIAL">Cobertura: Parcial (General)</option>
+                    <option value="PAGE_BUDGET_EXCEEDED">Cobertura: Presupuesto de Páginas Excedido (Parcial)</option>
+                </select>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Marketplace</th>
+                            <th>Producto (ID / Título)</th>
+                            <th>URL Canónica</th>
+                            <th>Categoría Observada</th>
+                            <th>Categoría Esperada</th>
+                            <th>Decisión Comercial</th>
+                            <th>Acciones / Evidencia</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbMainAudit"></tbody>
+                </table>
+            </div>
+            <div id="emptyOpsTable" class="empty-state" style="display:none;">
+                <h3>Sin resultados para los filtros seleccionados</h3>
+                <p>No se encontraron publicaciones que coincidan con los criterios actuales.</p>
+            </div>
+        </div>
+
+        <!-- B. Historial de Ejecuciones -->
+        <div id="hist" class="panel">
+            <h2>B. Historial de Ejecuciones Persistidas en SQLite</h2>
+            <p style="color:var(--text-muted); margin-bottom:18px; font-size:0.92rem">
+                Seleccione una corrida histórica registrada en la base de datos para cargar y examinar inmediatamente sus publicaciones y evidencias sin repetir la adquisición en vivo.
+            </p>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Run ID</th>
+                            <th>Fecha de Ejecución</th>
+                            <th>Marketplace / Modo</th>
+                            <th>Total Publicaciones</th>
+                            <th>Confirmados</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbHist"></tbody>
+                </table>
+            </div>
+            <div id="emptyHistTable" class="empty-state" style="display:none;">
+                <h3>No hay corridas históricas registradas</h3>
+                <p>Inicie una auditoría o sincronización para registrar ejecuciones en SQLite.</p>
+            </div>
+        </div>
+        
+        <!-- C. Aprendizaje y Experiencia -->
+        <div id="learn" class="panel">
+            <h2>C. Aprendizaje y Experiencia (Experience Store & Recovery)</h2>
+            <div class="grid-cards" style="margin-bottom: 25px;">
+                <div class="card">
+                    <div class="card-title">Identidades Validadas en Memoria</div>
+                    <div class="card-value" style="color:var(--primary)" id="lrnTotal">0</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Reutilizaciones de Conocimiento (Hits)</div>
+                    <div class="card-value" style="color:var(--info)" id="lrnHits">0</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Experiencias de Recuperación</div>
+                    <div class="card-value" style="color:var(--purple)" id="lrnRecoveryCount">0</div>
+                </div>
+            </div>
+            
+            <h3 style="font-size: 1.1rem; color: #fff; margin-bottom: 12px;">Experiencias de Recuperación y Estrategias (visibility.db)</h3>
+            <div style="overflow-x: auto; margin-bottom: 30px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Fecha</th>
+                            <th>Marketplace</th>
+                            <th>Categoría</th>
+                            <th>Estrategia Aplicada</th>
+                            <th>Resultado</th>
+                            <th>Tiempo Rec.</th>
+                            <th>Evidencia Registrada</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbRecExp"></tbody>
+                </table>
+            </div>
+            <div id="emptyRecExpTable" class="empty-state" style="display:none;">
+                <h3>Sin aprendizaje validado todavía</h3>
+                <p>Las experiencias de recuperación se registrarán cuando ocurran eventos de fallback o bloqueos resueltos.</p>
+            </div>
+
+            <h3 style="font-size: 1.1rem; color: #fff; margin-bottom: 12px;">Registros de Conocimiento de Productos y Categorías (ExperienceStore)</h3>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID / Hash</th>
+                            <th>Producto / Valor</th>
+                            <th>Marketplace</th>
+                            <th>Estado</th>
+                            <th>Método</th>
+                            <th>Hits</th>
+                            <th>Evidencia / Referencia</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbLearn"></tbody>
+                </table>
+            </div>
+            <div id="emptyLearnTable" class="empty-state" style="display:none;">
+                <h3>Sin aprendizaje validado todavía</h3>
+                <p>No existen contradicciones, identidades ni adaptadores aprendidos en memoria persistente.</p>
+            </div>
+
+            <div style="margin-top:25px; padding:15px; background:rgba(0,0,0,0.25); border:1px solid var(--border); border-radius:6px; font-size:0.85rem; color:var(--text-muted);">
+                <strong>Nota Operativa:</strong> La incorporación futura de <strong>OpenSEO</strong> (optimización semántica de catálogo) se encuentra formalmente desacoplada del registro de experiencias de adquisición y no representa funcionalidad ejecutada en las auditorías actuales.
+            </div>
+        </div>
+
+        <!-- D. Inteligencia Multimarketplace -->
+        <div id="multi" class="panel">
+            <h2>D. Inteligencia Multimarketplace Nicopoly</h2>
+            <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom: 20px;">
+                Consolidación multimarketplace en vivo: Paris (Constructor.io REA), Falabella (Next.js SSR), Mercado Libre (Taxonomía y Tienda Oficial), y Ripley (Facets).
+            </p>
+
+            <div class="controls">
+                <select id="multiMktSelect" onchange="renderMultiMarketplaceView()">
+                    <option value="ALL">Vista Comparativa Estratégica (4 Marketplaces)</option>
+                    <option value="Falabella">Falabella (SSR __NEXT_DATA__)</option>
+                    <option value="Mercado Libre">Mercado Libre (Catálogo Oficial & Taxonomía)</option>
+                    <option value="Paris">Paris (Constructor.io AI Search)</option>
+                    <option value="Ripley">Ripley (Facets & Catálogo)</option>
+                </select>
+                <button class="btn-primary" onclick="loadMultiMarketplaceData()">Actualizar Multimarketplace</button>
+            </div>
+
+            <div id="multiDetailContainer" style="margin-top:20px;">
+                <!-- Dinámicamente poblado con tablas de Falabella, Meli, Paris, Ripley o Comparativa -->
+            </div>
+        </div>
+
+        <!-- E. Resumen Gerencial (solo lectura; separado de la operación) -->
+        <div id="mgr" class="panel">
+            <h2>E. Resumen Gerencial</h2>
+            <p style="color:var(--text-muted); font-size:0.95rem; margin-bottom:16px;">
+                Vista de dirección: resultados de la última corrida completada y estado por marketplace. No ejecuta auditorías ni modifica datos.
+            </p>
+            <div class="grid-cards" style="margin-bottom:18px;">
+                <div class="card"><div class="card-title">Productos publicados (Falabella)</div><div class="card-value" style="color:var(--primary)" id="mgrPublished">—</div></div>
+                <div class="card"><div class="card-title">Categorías cubiertas</div><div class="card-value" style="color:var(--info)" id="mgrCategories">—</div></div>
+                <div class="card"><div class="card-title">Suma rep. / diferencia</div><div class="card-value" style="color:var(--warning)" id="mgrReconciliation">—</div></div>
+                <div class="card"><div class="card-title">Claves SKU / ofertas</div><div class="card-value" style="color:var(--info)" id="mgrSkus">—</div></div>
+                <div class="card"><div class="card-title">Aceptación última corrida</div><div class="card-value" style="color:var(--primary)" id="mgrAcceptance">—</div></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin:6px 0 10px 0;">
+                <h3 style="margin:0; font-size:1.05rem; color:#fff;">Última corrida completada por marketplace</h3>
+                <button onclick="openReconciliation()">Abrir conciliación operativa</button>
+            </div>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead><tr><th>Marketplace</th><th>Run ID</th><th>Fecha</th><th>Publicaciones</th><th>Estado</th></tr></thead>
+                    <tbody id="tbMgrRuns"></tbody>
+                </table>
+            </div>
+            <p style="color:var(--text-muted); font-size:0.8rem; margin-top:10px;">
+                Cada fila es la última corrida independiente de ese marketplace; no se suman corridas distintas. La conciliación de categorías y la cobertura quedan en Operación → Herramientas.
+            </p>
+        </div>
+
+    </main>
+
+    <!-- Modal Detalle Verificable de Publicación -->
+    <div id="modalDetail" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Detalle Verificable de la Publicación</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modalBody">
+                <!-- Injected via JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentResults = [];
+        let pollInterval = null;
+        let selectedRunId = null;
+        let categoryUniverse = new Map();
+        let categoryUniverseKey = null;
+
+        async function loadManagerView() {
+            const set = (id, val) => { const e = document.getElementById(id); if (e) e.innerText = val; };
+            try {
+                const hist = await fetch('/api/history').then(r => r.json());
+                const items = Array.isArray(hist) ? hist : (hist.history || []);
+                const isDone = i => ['FOUND', 'COMPLETED', 'SUCCESS'].includes(
+                    String(i.terminal_state || i.outcome || '').toUpperCase());
+                const byMkt = {};
+                items.filter(isDone).forEach(i => {
+                    const m = i.marketplace || i.engine || '—';
+                    if (!byMkt[m]) byMkt[m] = i;
+                });
+                const tb = document.getElementById('tbMgrRuns');
+                tb.innerHTML = Object.entries(byMkt).map(([m, i]) =>
+                    `<tr><td>${m}</td><td>${i.run_id || ''}</td><td>${(i.timestamp || i.started_at || '').slice(0, 19)}</td><td>${i.total ?? 0}</td><td>${i.terminal_state || i.outcome || ''}</td></tr>`
+                ).join('') || '<tr><td colspan="5">Sin corridas completadas</td></tr>';
+                const fala = byMkt['Falabella'];
+                if (fala) {
+                    set('mgrPublished', fala.total ?? '—');
+                    try {
+                        const detail = await fetch('/api/history/' + encodeURIComponent(fala.run_id)).then(r => r.json());
+                        const cs = detail.catalog_summary || {};
+                        const cats = (detail.category_metrics || []).filter(m => !m.parent);
+                        if (cs.unique_products != null) set('mgrPublished', cs.unique_products);
+                        set('mgrCategories', cats.length || '—');
+                        set('mgrReconciliation', cs.reported_sum != null ? (cs.reported_sum + ' / ' + cs.difference) : '—');
+                        set('mgrSkus', cs.sku_keys ?? '—');
+                        set('mgrAcceptance', detail.acceptance || fala.acceptance || '—');
+                    } catch (e) { /* métricas históricas opcionales */ }
+                }
+            } catch (err) {
+                const tb = document.getElementById('tbMgrRuns');
+                if (tb) tb.innerHTML = '<tr><td colspan="5">No se pudo cargar el resumen: ' + err.message + '</td></tr>';
+            }
+        }
+
+        function openReconciliation() {
+            switchTab('ops');
+            const tools = document.getElementById('refTools');
+            if (tools) tools.open = true;
+            const target = document.getElementById('catalogMetricsPanel');
+            if (target) target.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            const p = document.getElementById(tabId);
+            if(p) p.classList.add('active');
+            
+            const btn = document.getElementById('tab-' + tabId);
+            if(btn) btn.classList.add('active');
+            
+            if(tabId === 'learn') loadLearning();
+            if(tabId === 'hist') loadHistory();
+            if(tabId === 'multi') loadMultiMarketplaceData();
+            if(tabId === 'mgr') loadManagerView();
+        }
+
+        let multiMarketplaceData = {
+            fala: null,
+            meli: null,
+            paris: null,
+            ripley: null,
+            summary: null,
+            comparativeSummary: null
+        };
+
+        async function loadMultiMarketplaceData() {
+            try {
+                const runParam = selectedRunId ? `?run_id=${encodeURIComponent(selectedRunId)}` : '';
+                const [resFala, resMeli, resParis, resRipley, resSumm, resComp] = await Promise.all([
+                    fetch('/api/falabella/nicopoly' + runParam).then(r => r.json()).catch(() => null),
+                    fetch('/api/meli/nicopoly' + runParam).then(r => r.json()).catch(() => null),
+                    fetch('/api/rea/paris' + runParam).then(r => r.json()).catch(() => null),
+                    fetch('/api/ripley/nicopoly' + runParam).then(r => r.json()).catch(() => null),
+                    fetch('/api/multimarketplace/summary' + runParam).then(r => r.json()).catch(() => null),
+                    fetch('/api/multimarketplace/summary').then(r => r.json()).catch(() => null)
+                ]);
+                multiMarketplaceData.fala = resFala;
+                multiMarketplaceData.meli = resMeli;
+                multiMarketplaceData.paris = resParis;
+                multiMarketplaceData.ripley = resRipley;
+                multiMarketplaceData.summary = resSumm;
+                multiMarketplaceData.comparativeSummary = resComp;
+                renderMultiMarketplaceView();
+            } catch (err) {
+                console.error('Error loading multimarketplace data:', err);
+            }
+        }
+
+        function renderMultiMarketplaceView() {
+            const mkt = document.getElementById('multiMktSelect').value;
+            const container = document.getElementById('multiDetailContainer');
+            if (!container) return;
+
+            if (mkt === 'Falabella') {
+                const fala = multiMarketplaceData.fala;
+                if (!fala) { container.innerHTML = '<div class="empty-state"><h3>Cargando datos de Falabella...</h3></div>'; return; }
+                let rows = '';
+                (fala.l2_subcategories || []).forEach(cat => {
+                    rows += `<tr>
+                        <td><strong>L2</strong></td>
+                        <td>${cat.name}</td>
+                        <td><code>${cat.id}</code></td>
+                        <td><strong>${cat.count}</strong></td>
+                        <td><span class="badge badge-success">EXACT_SSR_MATCH</span></td>
+                    </tr>`;
+                });
+                container.innerHTML = `
+                    <h3 style="color:#fff; margin-bottom:12px;">Falabella.cl — Estructura de Categorías L2 Nicopoly (SSR __NEXT_DATA__)</h3>
+                    <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:15px;">
+                        Departamento: <strong>${fala.l0_department?.name} (${fala.l0_department?.id})</strong> | 
+                        Subcategoría L1: <strong>${fala.l1_subcategory?.name} (${fala.l1_subcategory?.id})</strong> | 
+                        Total Publicaciones de Marca: <strong>${fala.total_brand_publications}</strong> | 
+                        Total Vendedor Oficial: <strong>${fala.total_seller_publications} (Seller ID: ${fala.seller_id})</strong>
+                    </p>
+                    <table>
+                        <thead>
+                            <tr><th>Nivel</th><th>Categoría L2</th><th>ID Oficial</th><th>Publicaciones</th><th>Verificación</th></tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                `;
+            } else if (mkt === 'Mercado Libre') {
+                const meli = multiMarketplaceData.meli;
+                if (!meli) { container.innerHTML = '<div class="empty-state"><h3>Cargando datos de Mercado Libre...</h3></div>'; return; }
+                let rows = '';
+                (meli.product_categories || []).forEach(cat => {
+                    rows += `<tr>
+                        <td><code>${cat.category_id}</code></td>
+                        <td><strong>${cat.name}</strong></td>
+                        <td><code>${cat.parent_id}</code></td>
+                        <td><code>${cat.domain_name}</code></td>
+                        <td><span class="badge badge-info">${cat.entity_type.toUpperCase()}</span></td>
+                    </tr>`;
+                });
+                container.innerHTML = `
+                    <h3 style="color:#fff; margin-bottom:12px;">Mercado Libre Chile (MLC) — 14 Categorías Oficiales Descubiertas</h3>
+                    <div style="background:var(--panel-bg); padding:12px; border-radius:6px; border:1px solid var(--border); margin-bottom:15px; font-size:0.9rem;">
+                        <div><strong>Tienda Oficial:</strong> ${meli.brand} (ID: ${meli.official_store_id}) | <strong>Seller ID:</strong> ${meli.seller_id}</div>
+                        <div><strong>Estado OAuth:</strong> <span class="badge badge-warning">${meli.oauth_status}</span> | <strong>Clips Audiovisuales:</strong> <span class="badge badge-success">${meli.audiovisual_clips?.status}</span></div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr><th>ID Categoría</th><th>Nombre de Categoría</th><th>ID Padre</th><th>Dominio Predictivo</th><th>Tipo</th></tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                `;
+            } else if (mkt === 'Paris') {
+                const paris = multiMarketplaceData.paris;
+                if (!paris) { container.innerHTML = '<div class="empty-state"><h3>Cargando datos de Paris...</h3></div>'; return; }
+                container.innerHTML = `
+                    <h3 style="color:#fff; margin-bottom:12px;">Paris.cl — Inteligencia Comercial (Constructor.io AI Search)</h3>
+                    <div style="background:var(--panel-bg); padding:15px; border-radius:6px; border:1px solid var(--border); margin-bottom:15px; font-size:0.95rem;">
+                        <div><strong>Marca Nicopoly (Catálogo Total):</strong> ${paris.total_brand} publicaciones</div>
+                        <div><strong>Vendedor Oficial (NICOPOLY):</strong> ${paris.total_official_seller} publicaciones</div>
+                        <div><strong>Vendido por Terceros / Reventa:</strong> ${paris.other_sellers_total} publicaciones</div>
+                        <div style="margin-top:8px;"><strong>Mecanismo:</strong> ${paris.discovery_engine} | <strong>Estado:</strong> <span class="badge badge-success">${paris.status}</span></div>
+                    </div>
+                `;
+            } else if (mkt === 'Ripley') {
+                const rip = multiMarketplaceData.ripley;
+                if (!rip) { container.innerHTML = '<div class="empty-state"><h3>Cargando datos de Ripley...</h3></div>'; return; }
+                let rows = '';
+                (rip.categories || []).forEach(cat => {
+                    rows += `<tr>
+                        <td><strong>${cat.name}</strong></td>
+                        <td><code>${cat.group_id}</code></td>
+                        <td>${cat.path}</td>
+                        <td><strong>${cat.count}</strong></td>
+                        <td><span class="badge badge-success">VERIFIED_FACET</span></td>
+                    </tr>`;
+                });
+                container.innerHTML = `
+                    <h3 style="color:#fff; margin-bottom:12px;">Ripley.cl — Categorías Verificadas y Facets Nicopoly</h3>
+                    <div style="background:var(--panel-bg); padding:12px; border-radius:6px; border:1px solid var(--border); margin-bottom:15px; font-size:0.9rem;">
+                        <div><strong>Marca:</strong> ${rip.brand} | <strong>Vendedor Oficial:</strong> ${rip.official_seller}</div>
+                        <div><strong>Total Publicaciones de Marca:</strong> <strong>${rip.total_brand_publications}</strong> | <strong>Total Categorías:</strong> ${rip.total_categories}</div>
+                        <div style="margin-top:6px;"><strong>Mecanismo:</strong> ${rip.mechanism} | <strong>Estado:</strong> <span class="badge badge-success">${rip.status}</span></div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr><th>Categoría</th><th>ID / Slug</th><th>Ruta Jerárquica</th><th>Publicaciones</th><th>Verificación</th></tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                `;
+            } else {
+                // ALL (Cross-marketplace strategic comparative table)
+                // Always render the latest verified run per marketplace from comparativeSummary
+                const comp = multiMarketplaceData.comparativeSummary || multiMarketplaceData.summary;
+                const mkts = comp?.marketplaces || {};
+                let rows = '';
+                for (const [mname, mdata] of Object.entries(mkts)) {
+                    let badgeClass = 'badge-info';
+                    if (mdata.status === 'OPERATIONAL' || mdata.status === 'COMPLETED') badgeClass = 'badge-success';
+                    else if (mdata.status === 'PARTIAL' || mdata.status === 'PARTIALLY_OPERATIONAL') badgeClass = 'badge-warning';
+                    else if (mdata.status === 'BLOCKED' || mdata.status === 'FAILED') badgeClass = 'badge-danger';
+                    else if (mdata.status === 'AUTH_REQUIRED') badgeClass = 'badge-purple';
+
+                    // Absence of execution must NEVER be rendered as zero
+                    // publications: those cells stay empty with an explicit mark.
+                    const notExecuted = mdata.status === 'NOT_EXECUTED';
+                    const runMeta = [mdata.run_id, mdata.source, mdata.run_date,
+                                     mdata.engine || mdata.execution_mode].filter(Boolean).join(' · ');
+                    const runLabel = runMeta
+                        ? `<br><small style="color:var(--text-muted); font-family:monospace;">${runMeta} · VISTA PERSISTIDA</small>`
+                        : '';
+                    rows += `<tr>
+                        <td><strong>${mname}</strong>${runLabel}</td>
+                        <td>${mdata.mechanism}</td>
+                        <td><strong>${notExecuted ? '—' : (mdata.brand_publications ?? '-')}</strong></td>
+                        <td>${notExecuted ? '—' : (mdata.official_seller_publications ?? '-')}</td>
+                        <td>${notExecuted ? '—' : (mdata.categories_count || mdata.product_categories_count || '-')}</td>
+                        <td><span class="badge ${badgeClass}">${mdata.status}</span></td>
+                    </tr>`;
+                }
+
+                let runScopedSection = '';
+                if (selectedRunId && multiMarketplaceData.summary && multiMarketplaceData.summary.run_id === selectedRunId) {
+                    const runMkts = multiMarketplaceData.summary.marketplaces || {};
+                    let runRows = '';
+                    for (const [rmName, rmData] of Object.entries(runMkts)) {
+                        let rBadge = 'badge-info';
+                        if (rmData.status === 'OPERATIONAL' || rmData.status === 'COMPLETED') rBadge = 'badge-success';
+                        else if (rmData.status === 'PARTIAL') rBadge = 'badge-warning';
+                        else if (rmData.status === 'FAILED') rBadge = 'badge-danger';
+                        else if (rmData.status === 'NOT_EXECUTED') rBadge = 'badge-purple';
+
+                        const rmNotExecuted = rmData.status === 'NOT_EXECUTED';
+                        runRows += `<tr>
+                            <td><strong>${rmName}</strong></td>
+                            <td>${rmData.mechanism}</td>
+                            <td><strong>${rmNotExecuted ? '—' : (rmData.brand_publications ?? '-')}</strong></td>
+                            <td>${rmNotExecuted ? '—' : (rmData.official_seller_publications ?? '-')}</td>
+                            <td>${rmNotExecuted ? '—' : (rmData.categories_count || '-')}</td>
+                            <td><span class="badge ${rBadge}">${rmData.status}</span></td>
+                        </tr>`;
+                    }
+                    runScopedSection = `
+                        <div style="margin-top:25px; padding:15px; background:rgba(0,0,0,0.2); border:1px solid var(--border); border-radius:6px;">
+                            <h4 style="color:#fff; margin-bottom:8px;">Resultados Específicos de la Corrida Seleccionada (<code>${selectedRunId}</code>)</h4>
+                            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:10px;">
+                                Aislamiento estricto: Muestra únicamente lo ejecutado dentro de este run_id particular. Los marketplaces no auditados en esta corrida figuran como NOT_EXECUTED.
+                            </p>
+                            <table>
+                                <thead>
+                                    <tr><th>Marketplace</th><th>Mecanismo</th><th>Pubs Marca</th><th>Pubs Seller Oficial</th><th>Categorías</th><th>Estado en esta Corrida</th></tr>
+                                </thead>
+                                <tbody>${runRows}</tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+
+                container.innerHTML = `
+                    <h3 style="color:#fff; margin-bottom:8px;">Comparativa Estratégica 360° — Última Corrida Verificada por Marketplace</h3>
+                    <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">
+                        Contrato comparativo: Cada canal refleja su propia evidencia más reciente (run_id independiente, fecha y fuente). No se suman corridas dispares como si fueran una única auditoría conjunta.
+                    </p>
+                    <table>
+                        <thead>
+                            <tr><th>Marketplace / Corrida</th><th>Mecanismo de Descubrimiento</th><th>Pubs Marca</th><th>Pubs Seller Oficial</th><th>Categorías</th><th>Estado Operativo</th></tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                    ${runScopedSection}
+                `;
+            }
+        }
+        
+        const SPANISH_LABELS = {
+            'CORRECT': 'CORRECTO',
+            'INCORRECT': 'INCORRECTO',
+            'REVIEW_REQUIRED': 'REVISIÓN REQUERIDA',
+            'NOT_VERIFIED': 'NO VERIFICADO',
+            'IDENTIDAD_NO_VERIFICADA': 'IDENTIDAD NO VERIFICADA',
+            'PARENT_IDENTITY_VERIFIED': 'IDENTIDAD PADRE VERIFICADA',
+            'TARGET_IDENTITY_VERIFIED': 'IDENTIDAD VERIFICADA',
+            'IDENTITY_NOT_LINKED': 'IDENTIDAD NO VINCULADA',
+            'TIENDA_DE_MARCA': 'TIENDA DE MARCA',
+            'BRAND_STORE': 'TIENDA DE MARCA',
+            'BRAND_HUB': 'CORREDOR DE MARCA',
+            'SOURCE_BLOCKED': 'FUENTE BLOQUEADA',
+            'OBSERVED': 'OBSERVADO',
+            'CONFIRMED': 'CONFIRMADO',
+            'LIVE_OBSERVATION_CONFIRMED': 'CONFIRMADO EN VIVO',
+            'NOT_CONFIRMED': 'NO CONFIRMADO',
+            'SUCCESS': 'ÉXITO',
+            'RUNNING': 'EN EJECUCIÓN',
+            'IDLE': 'INACTIVO / EN ESPERA',
+            'COMPLETED': 'COMPLETADO',
+            'FAILED': 'FALLIDO',
+            'PUBLIC_CHANNEL_BREADCRUMBS': 'MIGAS DE PAN (CANAL PÚBLICO)',
+            'PUBLIC_CHANNEL_ATTRIBUTES': 'ATRIBUTOS DE ESPECIFICACIONES (CANAL PÚBLICO)',
+            'MIGA_DE_PAN_CANAL_PUBLICO': 'MIGAS DE PAN (CANAL PÚBLICO)',
+            'SEARCH_OR_STORE': 'BÚSQUEDA / TIENDA OFICIAL',
+            'LIVE_OBSERVATION': 'OBSERVACIÓN EN VIVO',
+            'PERSISTED_VIEW': 'VISTA HISTÓRICA PERSISTIDA',
+            'SQLITE_PERSISTED': 'PERSISTIDO EN BASE DE DATOS',
+            'ADAPTER_HARVEST': 'EXTRACCIÓN POR ADAPTADOR',
+            'PAGINATED_ADAPTER_HARVEST': 'EXTRACCIÓN POR ADAPTADOR PAGINADO',
+            'DERIVED_PRICE_RECONSTRUCTION': 'RECONSTRUCCIÓN DERIVADA DE PRECIOS',
+            'PAGE_BUDGET_EXCEEDED': 'PRESUPUESTO DE PÁGINAS EXCEDIDO',
+            'PARTIAL': 'PARCIAL',
+            'COMPLETE': 'COMPLETO',
+            'RATE_LIMIT': 'LÍMITE DE VELOCIDAD / WAF',
+            'EXTRACTOR_FAILURE': 'FALLA DE EXTRACTOR',
+            'INSUFFICIENT_EVIDENCE': 'EVIDENCIA INSUFICIENTE',
+            'NON_NICOPOLY_CONFIRMED': 'NO NICOPOLY CONFIRMADO',
+            'NICOPOLY_CONFIRMED': 'NICOPOLY CONFIRMADO',
+            'STOPPED_BY_USER': 'DETENIDO POR USUARIO',
+            'CONSOLIDATED_RECOVERY': 'RECUPERACIÓN CONSOLIDADA'
+        };
+
+        function getSpanishLabel(status) {
+            if (!status) return 'NO VERIFICADO';
+            const s = String(status).trim().toUpperCase();
+            return SPANISH_LABELS[s] || s;
+        }
+
+        function getBadge(status) {
+            if(!status) return '<span class="badge">NO VERIFICADO</span>';
+            const s = String(status).toUpperCase();
+            const label = getSpanishLabel(s);
+            if(s === 'CORRECT' || s === 'CORRECTO' || s === 'CONFIRMED' || s === 'NICOPOLY_CONFIRMED' || s === 'SUCCESS' || s === 'OBSERVED' || s === 'PROMOTED' || s === 'TARGET_IDENTITY_VERIFIED') {
+                return '<span class="badge badge-success">' + label + '</span>';
+            }
+            if(s === 'INCORRECT' || s === 'INCORRECTO' || s === 'FAIL') {
+                return '<span class="badge badge-danger">' + label + '</span>';
+            }
+            if(s === 'SOURCE_BLOCKED' || s === 'FUENTE_BLOQUEADA' || s === 'INCONCLUSIVE' || s === 'INSUFFICIENT_EVIDENCE' || s === 'NOT_FOUND' || s === 'BLOCKED' || s === 'NOT_VERIFIED' || s === 'NO_VERIFICADO') {
+                return '<span class="badge badge-warning">' + label + '</span>';
+            }
+            if(s === 'REVIEW_REQUIRED' || s === 'REVISIÓN REQUERIDA' || s === 'IDENTIDAD_NO_VERIFICADA' || s === 'PARENT_IDENTITY_VERIFIED' || s === 'TIENDA_DE_MARCA' || s === 'NON_NICOPOLY_CONFIRMED') {
+                return '<span class="badge badge-purple">' + label + '</span>';
+            }
+            return '<span class="badge badge-info">' + label + '</span>';
+        }
+
+        async function startAudit() {
+            const mkt = document.getElementById('mktSelect').value;
+            // Fixed contract: full catalog + autonomous category discovery.
+            const lim = 'ALL';
+            const mode = 'DISCOVERY';
+
+            const btnStart = document.getElementById('btnStart');
+            const btnStop = document.getElementById('btnStop');
+
+            // Do NOT paint a running state yet: the server verifies write
+            // authorization first. A 409 must leave the UI untouched.
+            btnStart.disabled = true;
+            btnStop.disabled = true;
+
+            try {
+                const res = await fetch('/api/audit/start', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({marketplace: mkt, limit: lim, mode: mode})
+                });
+                let payload = {};
+                try { payload = await res.json(); } catch(e) { payload = {}; }
+
+                if (!res.ok) {
+                    btnStart.disabled = false;
+                    btnStop.disabled = true;
+                    document.getElementById('lblStatus').innerText = "NO INICIADO";
+                    document.getElementById('lblStatusMsg').innerText =
+                        "Error " + res.status + ": " +
+                        (payload.message || payload.error || "no se pudo iniciar la auditoría");
+                    return;
+                }
+
+                // Accepted: only now a running state is legitimate.
+                if (payload.run_id) {
+                    currentResults = [];
+                    selectedRunId = null;
+                    const _runSelStart = document.getElementById('runViewSelect');
+                    if (_runSelStart) _runSelStart.value = 'LIVE';
+                    updateDashboardCards();
+                    renderMainTable();
+                    document.getElementById('lblActiveRun').innerText = payload.run_id;
+                }
+                document.getElementById('lblStatus').innerText = "INICIANDO...";
+                document.getElementById('lblStatusMsg').innerText =
+                    "Corrida " + (payload.run_id || '') + " · " + (payload.mode || mode) +
+                    " · " + (payload.marketplace || mkt) + " · FUENTE: OPERATIVA (LIVE)";
+                btnStop.disabled = false;
+                startPolling();
+            } catch(e) {
+                btnStart.disabled = false;
+                btnStop.disabled = true;
+                document.getElementById('lblStatus').innerText = "NO INICIADO";
+                document.getElementById('lblStatusMsg').innerText = "Excepción de red: " + e.message;
+            }
+        }
+        
+        async function stopAudit() {
+            await fetch('/api/audit/stop', { method: 'POST' });
+            document.getElementById('btnStop').disabled = true;
+        }
+        
+        function startPolling() {
+            if(pollInterval) clearInterval(pollInterval);
+            loadRunSelector();
+            pollInterval = setInterval(pollState, 1500);
+        }
+        
+        async function pollState() {
+            try {
+                const res = await fetch('/api/state');
+                const data = await res.json();
+                
+                const isRun = data.is_running;
+                const st = data.state || {};
+                const _badge = document.getElementById('runModeBadge');
+                if (_badge) {
+                    if (data.is_running) {
+                        _badge.innerText = '● EN VIVO · ' + (st.run_id || '');
+                        _badge.style.background = 'rgba(34,197,94,0.15)';
+                        _badge.style.color = 'var(--primary)';
+                    } else {
+                        _badge.innerText = 'ÚLTIMA COMPLETADA · ' + (st.run_id || 'sin corrida');
+                        _badge.style.background = 'rgba(148,163,184,0.15)';
+                        _badge.style.color = 'var(--text-muted)';
+                    }
+                }
+                const _rid = st.run_id || null;
+                if (window.__lastRunId !== _rid) {
+                    window.__lastRunId = _rid;
+                    // A new run starts: never show the previous run's reconciliation
+                    // as if it belonged to the current one.
+                    if (data.is_running || !st.falabella_ssr_audit) {
+                        window.__falabellaAudit = null;
+                    }
+                }
+                window.__falabellaAudit = st.falabella_ssr_audit || window.__falabellaAudit || null;
+                if (typeof renderCatalogMetrics === 'function') renderCatalogMetrics();
+                
+                const _term = ["FAILED", "COMPLETED", "STOPPED_BY_USER", "ABORTED"];
+                document.getElementById('lblStatus').innerText =
+                    isRun ? "RUNNING" : (st.status_message || "IDLE");
+                document.getElementById('lblProgress').innerText = st.progress || 0;
+                document.getElementById('lblTotal').innerText = st.total || 0;
+
+                // Progress is only a percentage when the total work is KNOWN.
+                const _known = !!(st.total_known && st.total > 0);
+                let pct = _known ? Math.round(((st.progress || 0) / st.total) * 100) : 0;
+                document.getElementById('lblPct').innerText = _known ? Math.min(pct, 100) : "?";
+                const _bar = document.getElementById('progressBar');
+                _bar.style.width = _known ? Math.min(pct, 100) + '%' : '100%';
+                _bar.style.opacity = _known ? '1' : '0.35';
+
+                // Human-readable live status: stage ? channel/category ? counts ?
+                // marketplace states ? last activity ? concrete errors.
+                const _parts = [];
+                _parts.push("Etapa: " + (st.stage || "preparando"));
+                if (st.current_category) _parts.push("Categor?a: " + st.current_category);
+                if (!_known) _parts.push("progreso indeterminado (total a?n no conocido)");
+                _parts.push("procesados: " + (st.products_processed || st.progress || 0));
+                if (st.confirmed !== undefined) _parts.push("confirmados: " + st.confirmed);
+                const _ms = st.marketplace_states || {};
+                const _mk = Object.keys(_ms);
+                if (_mk.length) _parts.push("mkts: " + _mk.map(m => m + "=" + _ms[m]).join(", "));
+                if (st.last_activity) _parts.push("?ltima actividad: " + String(st.last_activity).split('T').pop().split('.')[0]);
+                if (st.error) _parts.push("ERROR [" + (st.failed_stage || '') + "]: " + st.error);
+                // Acquisition truth: engine, terminal outcome, identity split and
+                // the reference-catalog limitation must be visible, never implied.
+                if (data.engine) _parts.push("motor: " + data.engine);
+                if (data.outcome) _parts.push("resultado: " + data.outcome);
+                if (data.identity_summary) {
+                    const _is = data.identity_summary;
+                    _parts.push("oficiales: " + (_is.official_verified || 0) +
+                                " · terceros: " + ((_is.third_party_new || 0) + (_is.third_party_used || 0)) +
+                                " · sin verificar: " + (_is.seller_unverified || 0));
+                }
+                const _acq = (data.acquisitions || []);
+                if (_acq.length) {
+                    const _a = _acq[_acq.length - 1];
+                    if (_a.acquisition_state) {
+                        _parts.push("adquisición: " + _a.acquisition_state +
+                                    ( _a.raw_stop_reason ? " (" + _a.raw_stop_reason + ")" : ""));
+                    }
+                }
+                if (data.catalog_reference && data.catalog_reference.status === 'CATALOG_REFERENCE_MISSING') {
+                    _parts.push("CATALOG_REFERENCE_MISSING: identidad/precio/stock sin catálogo maestro");
+                }
+                // MRI-RUNTIME-RECOVERY-001: taxonomía, cobertura y aceptación
+                // reales visibles; nunca sustituir un fallo técnico por ausencia.
+                if (st.taxonomy_status && Object.keys(st.taxonomy_status).length) {
+                    _parts.push("taxonomía: " + Object.keys(st.taxonomy_status).map(function(m){
+                        var t = st.taxonomy_status[m] || {};
+                        return m + "=" + (t.status || "?") + (t.cause ? " (" + t.cause + ")" : "");
+                    }).join(", "));
+                }
+                if (st.coverage) {
+                    _parts.push("cobertura: categorías=" + (st.coverage.categories_discovered || 0) +
+                                " · páginas=" + (st.coverage.pages_observed || 0) +
+                                " · aceptación=" + (data.acceptance || st.coverage.acceptance || "?"));
+                }
+                const _errs = st.errors || [];
+                if (!st.error && _errs.length) {
+                    const _e = _errs[_errs.length - 1];
+                    _parts.push("ERROR [" + (_e.stage || '') + "]: " + (_e.error || ''));
+                }
+                document.getElementById('lblStatusMsg').innerText =
+                    (st.status_message || "En espera") + " ? " + _parts.join(" ? ");
+
+                if (st.run_id) document.getElementById('lblActiveRun').innerText = st.run_id;
+                if (st.started_at) document.getElementById('lblStartTime').innerText = st.started_at.split('T')[1]?.split('.')[0] || st.started_at;
+                if (st.duration) document.getElementById('lblDuration').innerText = st.duration;
+                if (st.marketplace || st.current_category) {
+                    document.getElementById('lblActiveChannel').innerText = `${st.marketplace || 'Todos'} / ${st.current_category || 'General'}`;
+                }
+                if (st.active_strategy) document.getElementById('lblActiveStrategy').innerText = st.active_strategy;
+                if (st.source_url) document.getElementById('lblActiveUrl').innerText = st.source_url;
+                if (st.pages_processed !== undefined) document.getElementById('lblPagesProcessed').innerText = st.pages_processed;
+                if (st.products_processed !== undefined) document.getElementById('lblProdsProcessed').innerText = st.products_processed;
+
+                const _liveRunId = data.run_id || st.run_id || null;
+                const _keepHistoricalView = !!(selectedRunId && selectedRunId !== _liveRunId);
+                if (!_keepHistoricalView) {
+                    updateLiveCategoryUniverse(st, data.results || currentResults || []);
+                }
+                if (data.results && data.results.length > 0 && !_keepHistoricalView) {
+                    currentResults = data.results;
+                    if (data.run_id) {
+                        const _when = (data.started_at || '').replace('T',' ').split('.')[0] || 'fecha desconocida';
+                        document.getElementById('lblActiveRun').innerText = data.run_id;
+                        document.getElementById('lblStatusMsg').innerText =
+                            `Corrida ${data.run_id} · ${data.marketplace || 'N/D'} · ${_when} · FUENTE: EN MEMORIA (LIVE)`;
+                    }
+                    const ver = currentResults.filter(r => (r.decision || r.estado_final || '').toUpperCase() === 'CORRECT').length;
+                    const pen = currentResults.filter(r => (r.decision || r.estado_final || '').toUpperCase() === 'REVIEW_REQUIRED').length;
+                    document.getElementById('lblVerifiedCnt').innerText = ver;
+                    document.getElementById('lblPendingCnt').innerText = pen;
+                    updateDashboardCards();
+                    renderMainTable();
+                }
+                
+                if(!isRun && st.status_message && st.status_message !== "IDLE" && !st.status_message.includes("INICIANDO")) {
+                    clearInterval(pollInterval);
+                    document.getElementById('btnStart').disabled = false;
+                    document.getElementById('btnStop').disabled = true;
+                    if (st.run_id) {
+                        const _when = (data.started_at || '').replace('T',' ').split('.')[0] || 'fecha desconocida';
+                        document.getElementById('lblActiveRun').innerText = st.run_id;
+                        document.getElementById('lblStatusMsg').innerText =
+                            `Corrida ${st.run_id} · ${data.marketplace || 'N/D'} · ${_when} · ` +
+                            `FUENTE: EN MEMORIA (LIVE) · ESTADO: ${getSpanishLabel(st.status_message)}`;
+                        // make the just-finished run immediately selectable
+                        loadHistory();
+                    }
+                }
+            } catch(e) {
+                console.error("Error al consultar /api/state:", e);
+            }
+        }
+
+        function rowIdentity(r) {
+            const p = (r && r.product) || {};
+            return String((r && (r.observed_sku || r.producto_id || r.marketplace_product_id)) || p.sku || '');
+        }
+
+        function rowCategories(r) {
+            // Observación multi-categoría: un producto puede pertenecer a varias L2.
+            let cats = r.categories_observed;
+            if (!Array.isArray(cats) || cats.length === 0) {
+                const ca = r.commercial_attributes || {};
+                cats = ((ca.observed_attributes || {}).categories_observed)
+                    || ca.categories_observed || [];
+            }
+            if (!Array.isArray(cats) || cats.length === 0) {
+                cats = (r.real_category && r.real_category !== 'NO_VERIFICADO')
+                    ? [r.real_category] : [];
+            }
+            return cats;
+        }
+
+        function updateDashboardCards() {
+            let acq=0, cor=0, inc=0, rev=0, notv=0, catObs=0;
+            
+            currentResults.forEach(r => {
+                const acqSt = (r.acquisition_status || 'OBSERVED').toUpperCase();
+                if(acqSt === 'OBSERVED' || acqSt === 'CONFIRMED' || acqSt === 'LIVE_OBSERVATION_CONFIRMED') acq++;
+
+                const dec = (r.decision || r.estado_final || r.status || '').toUpperCase();
+                if(dec === 'CORRECT') cor++;
+                else if(dec === 'INCORRECT') inc++;
+                else if(dec === 'REVIEW_REQUIRED') rev++;
+                else if(dec === 'NOT_VERIFIED') notv++;
+                
+                if(r.real_category && r.real_category !== 'CATEGORY_UNKNOWN' && r.real_category !== 'NO_VERIFICADO') catObs++;
+            });
+            
+            document.getElementById('cntAcquired').innerText = acq;
+            document.getElementById('cntCorrect').innerText = cor;
+            document.getElementById('cntIncorrect').innerText = inc;
+            document.getElementById('cntReview').innerText = rev;
+            document.getElementById('cntNotVerified').innerText = notv;
+            document.getElementById('cntCatObserved').innerText = catObs;
+        }
+        
+        function populateDropdown(id, options) {
+            const select = document.getElementById(id);
+            if(!select) return;
+            const currentVal = select.value;
+            const firstOpt = select.options.length > 0 ? select.options[0].text : 'Todos';
+            select.innerHTML = `<option value="ALL">${firstOpt}</option>` + 
+                Array.from(options).filter(Boolean).sort().map(opt => `<option value="${opt}">${opt}</option>`).join('');
+            if (options.has(currentVal)) select.value = currentVal;
+        }
+
+        function filterByDecision(decision) {
+            const sel = document.getElementById('filterStatus');
+            if(sel) {
+                sel.value = decision;
+                renderMainTable();
+            }
+        }
+
+        async function loadSessionStatus() {
+            try {
+                const res = await fetch('/api/mri/sessions');
+                const data = await res.json();
+                const fmt = (x) => x && x.exists
+                    ? `${x.status} · ${x.cookie_count} cookies · ${String(x.updated_at || '').replace('T',' ').split('.')[0]}`
+                    : 'SIN_SESION';
+                document.getElementById('sessionStatusRipley').innerText = fmt(data.ripley);
+                document.getElementById('sessionStatusML').innerText = fmt(data.mercadolibre);
+            } catch (e) { /* status remains visible */ }
+        }
+
+        async function updateSession(marketplace) {
+            const el = document.getElementById(marketplace === 'ripley' ? 'cookiesRipley' : 'cookiesML');
+            const out = document.getElementById('sessionUpdateResult');
+            try {
+                const parsed = JSON.parse(el.value);
+                const res = await fetch('/api/mri/sessions/' + marketplace, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(parsed)
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'No se pudo actualizar');
+                el.value = '';
+                out.innerText = `Sesión actualizada: ${data.count} cookies (${data.marketplace})`;
+                await loadSessionStatus();
+            } catch (e) {
+                out.innerText = 'Error: ' + e.message;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSessionStatus();
+            loadRunSelector();
+            const up = document.getElementById('catalogUploadPanel');
+            const met = document.getElementById('catalogMetricsPanel');
+            if (up && met && !document.getElementById('refTools')) {
+                const wrap = document.createElement('details');
+                wrap.id = 'refTools';
+                wrap.style.cssText = 'margin-top:18px; padding:10px 14px; border:1px solid var(--border); border-radius:8px; background:rgba(255,255,255,0.015);';
+                const sum = document.createElement('summary');
+                sum.textContent = 'Herramientas de referencia y conciliación (catálogo, checklist, cobertura)';
+                sum.style.cssText = 'cursor:pointer; color:var(--text-muted); font-size:0.9rem;';
+                wrap.appendChild(sum);
+                up.parentNode.insertBefore(wrap, up);
+                wrap.appendChild(up);
+                wrap.appendChild(met);
+            }
+        });
+
+        async function runChecklistCoverage() {
+            const mkt = document.getElementById('coverageMarketplace').value;
+            const status = document.getElementById('coverageStatus');
+            const out = document.getElementById('coverageResult');
+            status.innerText = 'Verificando checklist de temporada…'; out.innerHTML = '';
+            try {
+                const resp = await fetch('/api/checklist/coverage?marketplace=' + encodeURIComponent(mkt));
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data.detail || ('HTTP ' + resp.status));
+                const c = data.coverage;
+                status.innerText = 'Referencia de validación (no alimenta búsqueda)';
+                const missing = (data.missing || []).slice(0, 10)
+                    .map(x => `<div>${x.parent} — ${x.name}</div>`).join('');
+                out.innerHTML = `<div><strong>Checklist ${data.marketplace}</strong>: productos ${data.total_products} · publicados ${c.published_verified} · faltantes ${c.missing} · no verificables ${c.unverified} · extra ${c.extra_not_in_checklist}</div>` + missing;
+            } catch (err) { status.innerText = 'Error: ' + err.message; }
+        }
+
+        async function runCoverage() {
+            const mkt = document.getElementById('coverageMarketplace').value;
+            const status = document.getElementById('coverageStatus');
+            const out = document.getElementById('coverageResult');
+            status.innerText = 'Calculando cobertura…'; out.innerHTML = '';
+            try {
+                const resp = await fetch('/api/catalog/coverage?marketplace=' + encodeURIComponent(mkt));
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data.detail || ('HTTP ' + resp.status));
+                const c = data.coverage, m = data.master;
+                status.innerText = data.run_complete ? 'Corrida completa' : 'Corrida incompleta: sin faltantes definitivos';
+                const missing = (data.missing || []).slice(0, 10)
+                    .map(x => `<div>${x.sku_master} — ${x.name}</div>`).join('');
+                out.innerHTML = `<div><strong>${data.marketplace}</strong>: esperados ${m.expected} · publicados ${c.published_verified} · faltantes ${c.missing} · no verificables ${c.unverified} · sin stock ${m.discarded_no_stock} · extra ${c.extra_not_in_master}</div>` + missing;
+            } catch (err) { status.innerText = 'Error: ' + err.message; }
+        }
+
+        async function uploadChecklist() {
+            const input = document.getElementById('checklistFile');
+            const status = document.getElementById('checklistUploadStatus');
+            if (!input || !input.files || !input.files.length) {
+                status.innerText = 'Selecciona el checklist primero';
+                return;
+            }
+            const file = input.files[0];
+            status.innerText = 'Subiendo checklist (puede tardar por tamaño)…';
+            try {
+                const resp = await fetch('/api/checklist/upload', {
+                    method: 'POST',
+                    headers: {'X-Filename': file.name,
+                              'Content-Type': file.type || 'application/octet-stream'},
+                    body: file
+                });
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data.detail || ('HTTP ' + resp.status));
+                status.innerText = 'Checklist cargado: ' + data.products + ' registros';
+            } catch (err) {
+                status.innerText = 'Error: ' + err.message;
+            }
+        }
+
+        async function uploadCatalog() {
+            const input = document.getElementById('catalogFile');
+            const status = document.getElementById('catalogUploadStatus');
+            const result = document.getElementById('catalogUploadResult');
+            if (!input || !input.files || !input.files.length) {
+                status.innerText = 'Selecciona un archivo primero';
+                return;
+            }
+            const file = input.files[0];
+            status.innerText = 'Subiendo y recargando catálogo…';
+            result.innerHTML = '';
+            try {
+                const resp = await fetch('/api/catalog/upload', {
+                    method: 'POST',
+                    headers: {'X-Filename': file.name,
+                              'Content-Type': file.type || 'application/octet-stream'},
+                    body: file
+                });
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data.detail || ('HTTP ' + resp.status));
+                status.innerText = 'Cargado: ' + data.master_items + ' registros maestros';
+                const lines = Object.entries(data.channels || {}).map(([mkt, c]) =>
+                    `<div><strong>${mkt}</strong>: esperados ${c.expected} · sin stock ${c.discarded_no_stock} · stock desconocido ${c.unverified_stock} · no esperados ${c.not_expected}</div>`);
+                result.innerHTML = lines.join('');
+            } catch (err) {
+                status.innerText = 'Error: ' + err.message;
+            }
+        }
+
+        function renderCatalogMetrics() {
+            const panel = document.getElementById('catalogMetricsPanel');
+            if (!panel) return;
+            const audit = window.__falabellaAudit || {};
+            const summary = audit.catalog_summary || null;
+            const metrics = audit.category_metrics || [];
+            // Semántica específica por marketplace: solo Falabella publica este contrato hoy.
+            if (!summary || (summary.marketplace && summary.marketplace !== 'Falabella')) {
+                panel.style.display = 'none';
+                return;
+            }
+            const _prov = document.getElementById('catalogSummaryProvenance');
+            if (_prov) {
+                _prov.innerText = 'Última corrida completada: ' + (window.__lastRunId || '') +
+                    ' · ' + (summary.level || '');
+            }
+            panel.style.display = 'block';
+            document.getElementById('catUnique').innerText = summary.unique_products ?? 0;
+            document.getElementById('catRepSum').innerText = summary.reported_sum ?? 0;
+            document.getElementById('catDiff').innerText = summary.difference ?? 0;
+            document.getElementById('catOverlap').innerText = summary.overlap_products ?? 0;
+            document.getElementById('catSkuKeys').innerText = summary.sku_keys ?? 0;
+            document.getElementById('catSemantics').innerText =
+                (summary.semantics && summary.semantics.reported_sum) ? summary.semantics.reported_sum : '';
+            const tb = document.getElementById('tbCatMetrics');
+            tb.innerHTML = metrics.filter(m => !m.parent).map(m => {
+                const rep = m.reported_count == null ? '-' : m.reported_count;
+                const uniq = m.unique_products == null ? '-' : m.unique_products;
+                const diff = (m.reported_count != null && m.unique_products != null) ? (m.reported_count - m.unique_products) : '-';
+                return `<tr><td>${m.category || m.category_id}</td><td>${rep}</td><td>${uniq}</td><td>${diff}</td><td>${m.cards ?? '-'}</td><td>${m.terminal || '-'}</td></tr>`;
+            }).join('');
+        }
+
+        function renderRunSelector(historyList) {
+            const sel = document.getElementById('runViewSelect');
+            if (!sel) return;
+            const current = selectedRunId || 'LIVE';
+            const live = window.__lastRunId || '';
+            const opts = [`<option value="LIVE">Corrida actual${live ? ' · ' + live : ''}</option>`];
+            (historyList || []).forEach(h => {
+                const label = `${h.run_id} · ${h.marketplace || 'N/D'} · ${(h.timestamp || '').replace('T',' ').split('.')[0]}`;
+                opts.push(`<option value="${h.run_id}">${label}</option>`);
+            });
+            sel.innerHTML = opts.join('');
+            sel.value = current;
+            if (sel.value !== current) sel.value = 'LIVE';
+        }
+
+        async function loadRunSelector() {
+            try {
+                const res = await fetch('/api/history');
+                const data = await res.json();
+                renderRunSelector(data.history || []);
+            } catch (e) { /* selector survives API failure */ }
+        }
+
+        function selectRunView(value) {
+            if (value === 'LIVE') {
+                selectedRunId = null;
+                loadHistory();
+                pollState();
+                return;
+            }
+            selectHistoricalRun(value);
+        }
+
+        async function loadCategoryUniverse(runId, marketplace) {
+            if (!runId) return;
+            const mkts = (marketplace && marketplace !== 'ALL')
+                ? [marketplace]
+                : [...new Set(currentResults.map(r => r.marketplace).filter(Boolean))];
+            if (!mkts.length) return;
+            const key = runId + '|' + mkts.join(',');
+            if (categoryUniverseKey === key) return;
+            const universe = new Map();
+            for (const m of mkts) {
+                try {
+                    const resp = await fetch('/api/categories/' + encodeURIComponent(m) +
+                        '?run_id=' + encodeURIComponent(runId));
+                    if (!resp.ok) continue;
+                    const cats = await resp.json();
+                    Object.values(cats || {}).forEach(c => {
+                        const name = (c && c.name) || c;
+                        if (name) universe.set(name, {
+                            publications: Number(c.publications || 0),
+                            status: c.status || c.source || 'DISPONIBLE'
+                        });
+                    });
+                } catch (e) { /* la tabla puede seguir con resultados */ }
+            }
+            categoryUniverse = universe;
+            categoryUniverseKey = key;
+            renderCategoryUniverse();
+        }
+
+        function renderCategoryUniverse() {
+            const tb = document.getElementById('tbCategoryUniverse');
+            const cnt = document.getElementById('catUniverseCount');
+            if (!tb) return;
+            const names = [...categoryUniverse.keys()].sort((a, b) => a.localeCompare(b));
+            if (cnt) cnt.innerText = names.length + ' categorías';
+            tb.innerHTML = names.length ? names.map(name => {
+                const info = categoryUniverse.get(name) || {};
+                const n = (info.publications || 0);
+                const obs = (info.observations != null ? info.observations : n);
+                return `<tr><td>${name}</td><td>${obs}</td><td>${n}</td><td>${(obs || n) ? 'CON PUBLICACIONES' : 'SIN PUBLICACIONES'}</td></tr>`;
+            }).join('') : '<tr><td colspan="3">Sin categorías descubiertas para esta corrida.</td></tr>';
+        }
+
+        function updateLiveCategoryUniverse(st, rows) {
+            if (selectedRunId) return; // historical view is pinned
+            const universe = new Map();
+            const childParent = {
+                'chaquetas, parkas y blazers': 'Abrigos',
+                'chalecos, sweaters y cardigans': 'Abrigos'
+            };
+            const add = (name, n = 0) => {
+                name = String(name || '').trim();
+                const key = name.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+                if (childParent[key]) name = childParent[key];
+                if (!name) return;
+                const prev = universe.get(name) || {publications: 0};
+                universe.set(name, {publications: Math.max(prev.publications, n),
+                                    status: n > 0 ? 'CON PUBLICACIONES' : 'SIN PUBLICACIONES'});
+            };
+            const taxonomy = (st && st.taxonomy) || {};
+            Object.values(taxonomy).forEach(t => {
+                ((t && t.categories) || []).forEach(c => add(c && (c.name || c.category_id)));
+            });
+            if (st && st.current_category) {
+                add(String(st.current_category).split(' - ').pop());
+            }
+            (rows || []).forEach(r => {
+                rowCategories(r).forEach(c => add(c, 1));
+            });
+            // Count memberships exactly once per observed row.
+            const counts = new Map();
+            (rows || []).forEach(r => {
+                new Set(rowCategories(r)).forEach(c => counts.set(c, (counts.get(c) || 0) + 1));
+            });
+            counts.forEach((n, c) => add(c, n));
+            categoryUniverse = universe;
+            categoryUniverseKey = 'LIVE:' + ((st && st.run_id) || '');
+            renderCategoryUniverse();
+        }
+
+        function renderMainTable() {
+            // Dynamic categories from currentResults
+            const cats = new Set(categoryUniverse.keys());
+            currentResults.forEach(r => {
+                rowCategories(r).forEach(c => { if (c) cats.add(c); });
+            });
+            populateDropdown('filterCategory', cats);
+            // Dual metrics: unique by membership + reported count per category.
+            const _uniq = {};
+            currentResults.forEach(r => {
+                rowCategories(r).forEach(c => { if (c) _uniq[c] = (_uniq[c] || 0) + 1; });
+            });
+            const _rep = {};
+            ((window.__falabellaAudit || {}).category_metrics || []).forEach(m => {
+                if (m && m.category) _rep[m.category] = m.reported_count;
+            });
+            Array.from(document.querySelectorAll('#filterCategory option')).forEach(o => {
+                if (o.value !== 'ALL') {
+                    const u = _uniq[o.value] || 0;
+                    const r = _rep[o.value];
+                    o.textContent = o.value + ' — ' + u + ' únicos' + (r != null ? ' / ' + r + ' rep.' : '');
+                }
+            });
+
+            const filterMkt = document.getElementById('filterMarketplace').value;
+            const filterStatus = document.getElementById('filterStatus').value;
+            const filterCategory = document.getElementById('filterCategory').value;
+            const filterCoverage = document.getElementById('filterCoverage').value;
+
+            let filtered = currentResults.filter(r => {
+                const dec = (r.decision || r.estado_final || r.status || '').toUpperCase();
+                let match = true;
+                
+                if (filterMkt !== "ALL" && r.marketplace !== filterMkt) match = false;
+                
+                if (filterStatus !== "ALL") {
+                    if (dec !== filterStatus) match = false;
+                }
+                if (filterCategory !== "ALL" && !rowCategories(r).includes(filterCategory)) match = false;
+                const overlapOnly = document.getElementById('chkOverlapOnly');
+                if (overlapOnly && overlapOnly.checked && rowCategories(r).length <= 1) match = false;
+                if (filterCoverage !== "ALL") {
+                    if (filterCoverage === "PARTIAL") {
+                        if (r.coverage !== "PARTIAL" && r.coverage !== "PAGE_BUDGET_EXCEEDED") match = false;
+                    } else if (filterCoverage === "PAGE_BUDGET_EXCEEDED") {
+                        if (r.coverage !== "PAGE_BUDGET_EXCEEDED") match = false;
+                    } else if (r.coverage !== filterCoverage) {
+                        match = false;
+                    }
+                }
+                
+                return match;
+            });
+
+            const _unique = new Set(currentResults.map(rowIdentity).filter(Boolean)).size;
+            document.getElementById('lblTableCount').innerText =
+                `Mostrando ${filtered.length} observaciones de ${currentResults.length} · ${_unique} productos únicos`;
+            renderCatalogMetrics();
+
+            const emptyDiv = document.getElementById('emptyOpsTable');
+            const tbody = document.getElementById('tbMainAudit');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '';
+                emptyDiv.style.display = 'block';
+                return;
+            } else {
+                emptyDiv.style.display = 'none';
+            }
+
+            // Render at most 250 rows to keep DOM highly responsive
+            const slice = filtered.slice(0, 250);
+
+            const html = slice.map((r, idx) => {
+                const prod = r.product || {};
+                const evs = r.evidencia_identidad || r.evidence || [];
+                const motivo = r.motivo_verificable || r.reason || 'NO_VERIFICADO';
+                const url = r.url_encontrada || r.url || '';
+                
+                const urlLink = url.startsWith('http') 
+                    ? `<a href="${url}" target="_blank" style="color:var(--info); text-decoration:none; font-weight:500;">Abrir Publicación &rarr;</a>`
+                    : '<span style="color:var(--text-muted)">NO_VERIFICADO</span>';
+
+                const catBadgeClass = (r.real_category && r.real_category !== 'CATEGORY_UNKNOWN' && r.real_category !== 'NO_VERIFICADO') 
+                    ? 'badge-info' : 'badge-danger';
+
+                const dec = r.decision || r.estado_final || r.status;
+
+                return `
+                <tr>
+                    <td><strong>${r.marketplace || 'N/A'}</strong></td>
+                    <td>
+                        <strong>${r.producto_nombre || prod.title || 'N/A'}</strong><br>
+                        <small style="color:var(--text-muted)">SKU: ${r.producto_id || prod.sku || 'N/A'}</small>
+                    </td>
+                    <td>
+                        ${urlLink}<br>
+                        <small style="color:var(--text-muted)">${r.fecha_observacion ? r.fecha_observacion.split('T')[0] : 'NO_VERIFICADO'}</small>
+                    </td>
+                    <td><span class="badge ${catBadgeClass}">${r.real_category || 'NO_VERIFICADO'}</span></td>
+                    <td><span class="badge badge-purple">${r.expected_category || 'NO_VERIFICADO'}</span></td>
+                    <td>${getBadge(dec)}</td>
+                    <td>
+                        <button class="btn-secondary" style="padding:4px 10px; font-size:0.8rem;" onclick="openDetailModal('${(r.producto_id || prod.sku || '').replace(/'/g, "\\'")}')">Ver Detalle</button>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+            
+            tbody.innerHTML = html;
+        }
+
+        function openDetailModal(productId) {
+            const r = currentResults.find(p => (p.producto_id || p.observed_sku || '') === productId);
+            if (!r) return;
+            
+            const evs = r.evidencia_identidad || r.evidence || [];
+            const evText = evs.length > 0 ? evs.join('<br>') : 'NO_VERIFICADO';
+            const url = r.url_encontrada || r.url || 'NO_VERIFICADO';
+            const urlDisplay = url.startsWith('http') 
+                ? `<a href="${url}" target="_blank" style="color:var(--info)">${url}</a>`
+                : url;
+
+            const modalHtml = `
+                <div class="detail-row">
+                    <div class="detail-label">Marketplace:</div>
+                    <div class="detail-value"><strong>${r.marketplace || 'NO_VERIFICADO'}</strong></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Identificador (SKU):</div>
+                    <div class="detail-value"><code>${r.producto_id || r.observed_sku || 'NO_VERIFICADO'}</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Nombre Publicación:</div>
+                    <div class="detail-value">${r.producto_nombre || 'NO_VERIFICADO'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">URL Canónica:</div>
+                    <div class="detail-value">${urlDisplay}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Estado de Adquisición:</div>
+                    <div class="detail-value">${getBadge(r.acquisition_status || 'OBSERVED')}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Estado de Identidad:</div>
+                    <div class="detail-value">${getBadge(r.identity_status || 'IDENTIDAD_NO_VERIFICADA')}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Categoría Pública Observada:</div>
+                    <div class="detail-value"><span class="badge badge-info">${r.real_category || 'NO VERIFICADO'}</span></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Ruta de Navegación Literal:</div>
+                    <div class="detail-value"><code>${r.real_category || 'NO VERIFICADO'}</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Fuente de Procedencia:</div>
+                    <div class="detail-value"><code>${getSpanishLabel(r.category_source || 'MIGA_DE_PAN_CANAL_PUBLICO')}</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Clasificación Maestro:</div>
+                    <div class="detail-value"><span class="badge badge-purple">${r.expected_category || 'Vestuario Femenino / Nicopoly'}</span></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Dictamen Comercial:</div>
+                    <div class="detail-value">${getBadge(r.decision || r.estado_final || r.status)}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Cobertura y Límite:</div>
+                    <div class="detail-value"><span class="badge ${r.coverage === 'COMPLETE' ? 'badge-success' : 'badge-warning'}">${getSpanishLabel(r.coverage || 'PARTIAL')}</span></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Tienda / Corredor de Marca:</div>
+                    <div class="detail-value"><code>${r.brand_corridor || 'NINGUNO (CATEGORÍA DEPARTAMENTAL)'}</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Producto Padre (Master):</div>
+                    <div class="detail-value"><code>${r.parent_sku || 'NO_VINCULADO'}</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Variantes en Catálogo:</div>
+                    <div class="detail-value"><code>${(r.candidate_variants && r.candidate_variants.length > 0) ? r.candidate_variants.join(', ') : (r.variant_sku || 'NO_DIFERENCIADA')}</code></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Fecha y Hora de Observación:</div>
+                    <div class="detail-value">${r.fecha_observacion || r.timestamp || 'NO_VERIFICADO'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Procedencia HAR (Primaria):</div>
+                    <div class="detail-value" style="font-family:monospace; font-size:0.83rem">
+                        ${(() => {
+                            const evMatch = (r.evidence || []).find(e => typeof e === 'string' && (e.includes('HAR SHA-256:') || e.includes('Procedencia HAR:') || e.includes('PROVENANCE_INCOMPLETE')));
+                            if (evMatch) return evMatch;
+                            return 'PROVENANCE_INCOMPLETE (Sin correspondencia verificada en captura HAR)';
+                        })()}
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Evidencia y Diagnóstico:</div>
+                    <div class="detail-value" style="background:rgba(0,0,0,0.2); padding:8px; border-radius:4px; font-size:0.85rem">
+                        ${evText}
+                        <div style="margin-top:6px; color:#fff"><strong>Diagnóstico y Motivo:</strong> ${r.motivo_verificable || r.reason || 'NO_VERIFICADO'}</div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('modalBody').innerHTML = modalHtml;
+            document.getElementById('modalDetail').style.display = 'flex';
+        }
+
+        function closeModal(event) {
+            document.getElementById('modalDetail').style.display = 'none';
+        }
+        
+        async function loadHistory() {
+            try {
+                const res = await fetch('/api/history');
+                const data = await res.json();
+                const historyList = data.history || [];
+                
+                const emptyDiv = document.getElementById('emptyHistTable');
+                const tbody = document.getElementById('tbHist');
+
+                if (historyList.length === 0) {
+                    tbody.innerHTML = '';
+                    emptyDiv.style.display = 'block';
+                    return;
+                }
+                emptyDiv.style.display = 'none';
+
+                const html = historyList.map(h => {
+                    const isSelected = h.run_id === selectedRunId;
+                    return `
+                    <tr style="${isSelected ? 'background:rgba(74,222,128,0.1); border-left:3px solid var(--primary);' : ''}">
+                        <td style="font-family:monospace; font-weight:600; color:var(--info)">${h.run_id}</td>
+                        <td>${h.timestamp.split('T').join(' ').split('.')[0]}</td>
+                        <td>
+                            <strong>${h.marketplace}</strong><br>
+                            <small style="color:var(--text-muted)">Modo: ${h.mode || 'RECOVERY'}</small><br>
+                            ${h.source === 'PROTECTED'
+                                ? '<span class="badge badge-info">PROTEGIDO</span>'
+                                : (h.source === 'LIVE_MEMORY'
+                                    ? '<span class="badge badge-warning">EN MEMORIA</span>'
+                                    : '<span class="badge badge-success">OPERATIVA</span>')}
+                        </td>
+                        <td><strong>${h.total}</strong></td>
+                        <td><span class="badge badge-success">${h.confirmed}</span></td>
+                        <td>
+                            <button class="btn-primary" style="padding:5px 12px; font-size:0.85rem;" onclick="selectHistoricalRun('${h.run_id}')">
+                                ${isSelected ? '&check; Seleccionada' : 'Ver resultados'}
+                            </button>
+                        </td>
+                    </tr>
+                    `;
+                }).join('');
+                tbody.innerHTML = html;
+                renderRunSelector(historyList);
+            } catch(e) {
+                console.error("Error al cargar historial:", e);
+            }
+        }
+
+        async function selectHistoricalRun(runId) {
+            try {
+                const res = await fetch(`/api/history/${encodeURIComponent(runId)}`);
+                if(!res.ok) {
+                    alert("No se pudieron recuperar las publicaciones de la corrida: " + runId);
+                    return;
+                }
+                const data = await res.json();
+                currentResults = data.publications || [];
+                if (data.catalog_summary !== undefined) {
+                    window.__falabellaAudit = { catalog_summary: data.catalog_summary,
+                                                category_metrics: data.category_metrics || [] };
+                }
+                selectedRunId = runId;
+                const _runSel = document.getElementById('runViewSelect');
+                if (_runSel) _runSel.value = runId;
+                
+                document.getElementById('lblActiveRun').innerText = `${runId}`;
+                document.getElementById('lblStatus').innerText = "PERSISTED_VIEW";
+                const _srcLabel = data.source === 'PROTECTED'
+                    ? 'PROTEGIDA (solo lectura)'
+                    : 'OPERATIVA';
+                const _idSummary = data.identity_summary || {};
+                const _catalog = data.catalog_reference || {};
+                const _extra = [
+                    "MOTOR: " + (data.engine || 'DESCONOCIDO'),
+                    "RESULTADO: " + (data.outcome || data.status || 'N/D'),
+                    "oficiales: " + (_idSummary.OFFICIAL_VERIFIED || 0),
+                    "terceros: " + ((_idSummary.THIRD_PARTY_NEW || 0) + (_idSummary.THIRD_PARTY_USED || 0)),
+                    "sin verificar: " + (_idSummary.SELLER_UNVERIFIED || 0),
+                ];
+                if (_catalog.status === 'CATALOG_REFERENCE_MISSING') {
+                    _extra.push("CATALOG_REFERENCE_MISSING: identidad/precio/stock sin catálogo maestro");
+                }
+                document.getElementById('lblStatusMsg').innerText =
+                    `VISTA PERSISTIDA (no es una adquisición nueva) · Corrida ${runId} · ` +
+                    `FUENTE: ${_srcLabel} · ` + _extra.join(" · ");
+                document.getElementById('lblProgress').innerText = currentResults.length;
+                document.getElementById('lblTotal').innerText = currentResults.length;
+                document.getElementById('lblPct').innerText = '100';
+                document.getElementById('lblVerifiedCnt').innerText = currentResults.filter(r => (r.decision || r.estado_final || '').toUpperCase() === 'CORRECT').length;
+                document.getElementById('lblPendingCnt').innerText = currentResults.filter(r => (r.decision || r.estado_final || '').toUpperCase() === 'REVIEW_REQUIRED').length;
+                document.getElementById('progressBar').style.width = '100%';
+
+                await loadCategoryUniverse(runId, data.marketplace || 'ALL');
+                updateDashboardCards();
+                renderMainTable();
+                // Invalidate and reload multimarketplace data scoped to this selectedRunId
+                loadMultiMarketplaceData();
+                switchTab('ops');
+            } catch(e) {
+                alert("Error de conexión al cargar la corrida: " + e.message);
+            }
+        }
+        
+        async function loadLearning() {
+            try {
+                const res = await fetch('/api/learning');
+                const data = await res.json();
+                
+                document.getElementById('lrnTotal').innerText = data.total_validated || 0;
+                document.getElementById('lrnHits').innerText = data.total_reused || 0;
+                
+                const recExps = data.recovery_experiences || [];
+                document.getElementById('lrnRecoveryCount').innerText = recExps.length;
+                
+                const tbRec = document.getElementById('tbRecExp');
+                const emptyRec = document.getElementById('emptyRecExpTable');
+                if (recExps.length === 0) {
+                    tbRec.innerHTML = '';
+                    emptyRec.style.display = 'block';
+                } else {
+                    emptyRec.style.display = 'none';
+                    tbRec.innerHTML = recExps.map(rx => `
+                        <tr>
+                            <td><code>${rx.id}</code></td>
+                            <td>${rx.timestamp.split('T')[0]}</td>
+                            <td><strong>${rx.marketplace}</strong></td>
+                            <td>${rx.category || 'N/A'}</td>
+                            <td><code>${rx.strategy}</code></td>
+                            <td>${getBadge(rx.result)}</td>
+                            <td>${rx.recovery_seconds ? rx.recovery_seconds + 's' : 'N/A'}</td>
+                            <td style="font-size:0.85rem">${rx.evidence || 'N/A'}</td>
+                        </tr>
+                    `).join('');
+                }
+
+                const exps = data.experiences || [];
+                const tbLrn = document.getElementById('tbLearn');
+                const emptyLrn = document.getElementById('emptyLearnTable');
+                if (exps.length === 0) {
+                    tbLrn.innerHTML = '';
+                    emptyLrn.style.display = 'block';
+                } else {
+                    emptyLrn.style.display = 'none';
+                    tbLrn.innerHTML = exps.map(e => `
+                        <tr>
+                            <td style="font-family:monospace; color:var(--text-muted)">${e.hash}</td>
+                            <td><strong>${e.product_name}</strong></td>
+                            <td>${e.marketplace}</td>
+                            <td>${getBadge(e.status)}</td>
+                            <td><code>${e.method}</code></td>
+                            <td><strong style="color:var(--primary)">${e.hits}</strong></td>
+                            <td style="font-size:0.85rem">${e.evidence || 'N/A'}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch(e) {
+                console.error("Error al cargar aprendizaje:", e);
+            }
+        }
+        
+        // Initial setup: Auto-load latest certified SQLite run if state is IDLE
+        async function initialSetup() {
+            try {
+                const stateRes = await fetch('/api/state');
+                const stateData = await stateRes.json();
+                
+                if (stateData.results && stateData.results.length > 0) {
+                    currentResults = stateData.results;
+                    if (stateData.run_id) {
+                        const _w = (stateData.started_at || '').replace('T',' ').split('.')[0] || 'fecha desconocida';
+                        document.getElementById('lblActiveRun').innerText = stateData.run_id;
+                        document.getElementById('lblStatusMsg').innerText =
+                            `Corrida ${stateData.run_id} · ${stateData.marketplace || 'N/D'} · ${_w} · FUENTE: EN MEMORIA (LIVE)`;
+                    }
+                    updateDashboardCards();
+                    renderMainTable();
+                } else {
+                    // Pre-load latest persisted run from history
+                    const histRes = await fetch('/api/history');
+                    const histData = await histRes.json();
+                    if (histData.history && histData.history.length > 0) {
+                        const latest = histData.history[0];
+                        await selectHistoricalRun(latest.run_id);
+                    }
+                }
+            } catch(e) {
+                console.error("Error en configuración inicial:", e);
+            }
+        }
+
+        initialSetup();
+    </script>
+</body>
+</html>

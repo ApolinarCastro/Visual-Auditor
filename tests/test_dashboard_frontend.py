@@ -2,7 +2,10 @@ import pytest
 import subprocess
 import time
 import os
-import requests
+
+# LIVE E2E test is disabled by default; do not break collection when the
+# optional `requests` client is absent from the runtime environment.
+requests = pytest.importorskip("requests")
 from playwright.sync_api import sync_playwright
 
 

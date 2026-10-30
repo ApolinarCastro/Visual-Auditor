@@ -1,0 +1,357 @@
+{
+  "task_id": "MRI-AUTONOMY-TRUTH-REPAIR-021",
+  "run_id": "mri_021_real_run_1792178186",
+  "instruction": "Investiga las publicaciones y categorías de Nicopoly en Paris, Ripley, Falabella y Mercado Libre. Descubre las fuentes, selecciona los métodos disponibles, recopila las publicaciones, identifica categorías y vendedores, contrasta resultados, conserva evidencias y presenta un informe comercial verificable.",
+  "target_brand": "Nicopoly",
+  "started_at": "2026-10-16T19:16:26.421422+00:00",
+  "finished_at": "2026-10-16T19:18:04.196239+00:00",
+  "duration_seconds": 97.77,
+  "truth_model_version": "2.0",
+  "synthetic_publications_count": 0,
+  "summary": {
+    "total_marketplaces_audited": 4,
+    "successful_marketplaces": [
+      "Paris",
+      "Falabella",
+      "Mercado Libre"
+    ],
+    "total_publications_persisted": 60,
+    "cross_marketplace_status": "PARTIAL",
+    "truth_model_version": "2.0"
+  },
+  "marketplaces": {
+    "Paris": {
+      "status": "COMPLETED",
+      "active_strategy": "REA_CONSTRUCTOR_PUBLIC_API",
+      "total_brand_publications": 4904,
+      "total_official_seller_publications": 4904,
+      "sellers_found": [
+        "NICOPOLY"
+      ],
+      "categories_count": 19,
+      "publications_count": 20,
+      "blocker_reason": null,
+      "evidence": {
+        "source": "Constructor.io AI Search",
+        "total_brand": 4904,
+        "total_official_seller": 4904,
+        "facets_count": 18
+      },
+      "strategies_attempted": [
+        {
+          "strategy": 1,
+          "name": "REA_CONSTRUCTOR_PUBLIC_API",
+          "action": "Query public Constructor.io search endpoint with key_6PvQHDnR0zdWgEPh"
+        }
+      ]
+    },
+    "Ripley": {
+      "status": "PARTIAL",
+      "active_strategy": "RIPLEY_FACET_AND_COUNTER_VERIFICATION",
+      "total_brand_publications": 772,
+      "total_official_seller_publications": 772,
+      "sellers_found": [
+        "Nicopoly"
+      ],
+      "categories_count": 3,
+      "publications_count": 0,
+      "blocker_reason": "Ripley catalog protected by WAF/Turnstile; extracted facet metadata only (0 real publications acquired)",
+      "evidence": {
+        "mechanism": "Ripley Facets + Counter Verification",
+        "total_categories": 3,
+        "status": "PARTIAL_COVERAGE"
+      },
+      "strategies_attempted": [
+        {
+          "strategy": 1,
+          "name": "RIPLEY_HEADLESS_SCRAPER",
+          "action": "Extract genuine publications from Ripley catalog (https://simple.ripley.cl/search/nicopoly)"
+        },
+        {
+          "strategy": 2,
+          "name": "RIPLEY_FACET_AND_COUNTER_VERIFICATION",
+          "action": "Extract verified facets and catalog counter without synthetic items"
+        }
+      ]
+    },
+    "Falabella": {
+      "status": "COMPLETED",
+      "active_strategy": "FALABELLA_SSR_BRAND_EXTRACTION",
+      "total_brand_publications": 368,
+      "total_official_seller_publications": 368,
+      "sellers_found": [
+        "Nicopoly"
+      ],
+      "categories_count": 1,
+      "publications_count": 20,
+      "blocker_reason": null,
+      "evidence": {
+        "mechanism": "NEXT_JS_SSR_EXTRACTION",
+        "total_count": 368,
+        "categories_count": 1,
+        "source_url": "https://www.falabella.com/falabella-cl/brand/NICOPOLY?page=1",
+        "source_sha256": "a11b433a29cc941f74424222688fe8d4e408d6e4bb9df01cfa3cf53df56ae8ed",
+        "observed_at": "2026-10-16T19:16:49.287223+00:00"
+      },
+      "strategies_attempted": [
+        {
+          "strategy": 1,
+          "name": "FALABELLA_SSR_BRAND_EXTRACTION",
+          "action": "Fetch SSR __NEXT_DATA__ from /falabella-cl/brand/NICOPOLY"
+        }
+      ]
+    },
+    "Mercado Libre": {
+      "status": "COMPLETED",
+      "active_strategy": "MELI_HEADLESS_CATALOG_SCRAPER",
+      "total_brand_publications": 537,
+      "total_official_seller_publications": 537,
+      "sellers_found": [
+        "Nicopoly"
+      ],
+      "categories_count": 1,
+      "publications_count": 20,
+      "blocker_reason": null,
+      "evidence": {
+        "mechanism": "MELI_HEADLESS_CATALOG_SCRAPER",
+        "total_count": 537,
+        "source_url": "https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly"
+      },
+      "strategies_attempted": [
+        {
+          "strategy": 1,
+          "name": "MELI_HEADLESS_CATALOG_SCRAPER",
+          "action": "Extract genuine publications from official store public corridor (https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly)"
+        }
+      ]
+    }
+  },
+  "decisions_log": [
+    {
+      "step": 1,
+      "marketplace": "Paris",
+      "decision": "Inspect Paris.cl using Constructor.io REA discovery and HAR provenance",
+      "timestamp": "2026-10-16T19:16:26.486597+00:00"
+    },
+    {
+      "step": 2,
+      "marketplace": "Ripley",
+      "decision": "Inspect Ripley.cl using verified facets, empty-state detection and catalog counter",
+      "timestamp": "2026-10-16T19:16:49.112087+00:00"
+    },
+    {
+      "step": 3,
+      "marketplace": "Falabella",
+      "decision": "Inspect Falabella.cl via Next.js SSR __NEXT_DATA__ brand & seller corridors",
+      "timestamp": "2026-10-16T19:16:49.143471+00:00"
+    },
+    {
+      "step": 4,
+      "marketplace": "Mercado Libre",
+      "decision": "Inspect Mercado Libre Chile via Official Store 56574 taxonomy & domain discovery",
+      "timestamp": "2026-10-16T19:16:49.330616+00:00"
+    }
+  ],
+  "persisted_sample": [
+    {
+      "publication_id": null,
+      "marketplace": "Falabella",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    },
+    {
+      "publication_id": null,
+      "marketplace": "Falabella",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    },
+    {
+      "publication_id": null,
+      "marketplace": "Falabella",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    },
+    {
+      "publication_id": null,
+      "marketplace": "Falabella",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    },
+    {
+      "publication_id": null,
+      "marketplace": "Falabella",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    },
+    {
+      "publication_id": null,
+      "marketplace": "Falabella",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    },
+    {
+      "publication_id": null,
+      "marketplace": "Falabella",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    },
+    {
+      "publication_id": null,
+      "marketplace": "Falabella",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    },
+    {
+      "publication_id": null,
+      "marketplace": "Falabella",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    },
+    {
+      "publication_id": null,
+      "marketplace": "Falabella",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    },
+    {
+      "publication_id": null,
+      "marketplace": "Falabella",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    },
+    {
+      "publication_id": null,
+      "marketplace": "Falabella",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    },
+    {
+      "publication_id": null,
+      "marketplace": "Falabella",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    },
+    {
+      "publication_id": null,
+      "marketplace": "Falabella",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    },
+    {
+      "publication_id": null,
+      "marketplace": "Falabella",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    },
+    {
+      "publication_id": null,
+      "marketplace": "Falabella",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    },
+    {
+      "publication_id": null,
+      "marketplace": "Falabella",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    },
+    {
+      "publication_id": null,
+      "marketplace": "Falabella",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    },
+    {
+      "publication_id": null,
+      "marketplace": "Falabella",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    },
+    {
+      "publication_id": null,
+      "marketplace": "Falabella",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    },
+    {
+      "publication_id": null,
+      "marketplace": "Mercado Libre",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    },
+    {
+      "publication_id": null,
+      "marketplace": "Mercado Libre",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    },
+    {
+      "publication_id": null,
+      "marketplace": "Mercado Libre",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    },
+    {
+      "publication_id": null,
+      "marketplace": "Mercado Libre",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    },
+    {
+      "publication_id": null,
+      "marketplace": "Mercado Libre",
+      "sku": null,
+      "canonical_url": null,
+      "evidence_type": null,
+      "commercial_attributes": null
+    }
+  ]
+}

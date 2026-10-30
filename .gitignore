@@ -1,0 +1,8 @@
+node_modules
+# Local secrets - never commit (VA-FINAL-RESOLUTION-LOOP-001)
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+

@@ -80,6 +80,20 @@ CREATE TABLE IF NOT EXISTS mri_runs (
     created_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS mri_run_marketplace_states (
+    run_id TEXT NOT NULL,
+    marketplace TEXT NOT NULL,
+    terminal_state TEXT,
+    source_method TEXT,
+    execution_mode TEXT,
+    started_at TEXT,
+    finished_at TEXT,
+    status TEXT NOT NULL,
+    created_at TEXT,
+    PRIMARY KEY (run_id, marketplace),
+    FOREIGN KEY (run_id) REFERENCES mri_runs(run_id)
+);
+
 CREATE TABLE IF NOT EXISTS mri_evidence_ledger (
     evidence_id TEXT PRIMARY KEY,
     run_id TEXT NOT NULL,

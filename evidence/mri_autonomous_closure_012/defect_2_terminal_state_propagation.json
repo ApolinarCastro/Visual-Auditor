@@ -1,0 +1,6 @@
+{
+  "run_id": "run_audit012_page_budget",
+  "terminal_state_in_sql": "PAGE_BUDGET_EXCEEDED",
+  "status_in_sql": "STOPPED",
+  "propagation_verified": true
+}

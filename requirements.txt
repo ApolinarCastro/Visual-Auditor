@@ -1,0 +1,38 @@
+# Visual Auditor / MRI — runtime dependencies (INDISPENSABLE)
+#
+# B-01 remediation 2026-10-21.
+# At commit 114de63 NO dependency manifest was tracked in git at all, and the
+# only local requirements.txt omitted `slowapi`, which app/dashboard/api.py
+# imports unconditionally at line 27 -> fresh-machine startup died with
+# ModuleNotFoundError before uvicorn could bind.
+#
+# Versions below are pinned to the verified-working set from
+# visibility_auditor_env (Python 3.14.2) — not guessed.
+#
+# NOTE on the name `anansi`: the distribution is published as `anansi-scraper`
+# (import name `anansi`). Declaring `anansi==...` makes pip spin in resolution.
+# It is optional (see requirements-dev.txt) because all four scrapers guard it
+# with try/except ImportError.
+
+# --- Web backend / dashboards ---
+# app/dashboard/api.py, app/mri_dashboard/mri_api.py
+fastapi==0.136.1
+uvicorn[standard]==0.46.0
+Jinja2==3.1.6
+slowapi==0.1.10                # B-01: was missing; imported at api.py:27
+python-dotenv==1.2.2
+httpx==0.28.1                  # FastAPI TestClient + evidence harnesses
+
+# --- Browser automation ---
+# app/scrapers/*.py
+playwright==1.59.0
+playwright-stealth==2.0.3
+
+# --- Parsing / data ---
+beautifulsoup4==4.14.3
+lxml==6.1.0
+openpyxl==3.1.5
+pandas==3.0.2
+
+# --- Persistence ---
+aiosqlite==0.22.1

@@ -1,0 +1,47 @@
+{
+  "order": "Investiga las publicaciones y categorías de Nicopoly en Paris, Ripley, Falabella y Mercado Libre. Descubre las fuentes, selecciona los métodos disponibles, recopila las publicaciones, identifica categorías y vendedores, contrasta resultados, conserva evidencias y presenta un informe comercial verificable.",
+  "runs": [
+    {
+      "run_index": 1,
+      "run_id": "mri_019_run_1_1792173695",
+      "evidence_file": "evidence\\mri_autonomous_operation_019\\run_1_evidence.json",
+      "status": "PASS",
+      "total_marketplaces": 4,
+      "successful_marketplaces": [
+        "Paris",
+        "Ripley",
+        "Falabella",
+        "Mercado Libre"
+      ],
+      "total_publications": 57
+    },
+    {
+      "run_index": 2,
+      "run_id": "mri_019_run_2_1792173721",
+      "evidence_file": "evidence\\mri_autonomous_operation_019\\run_2_evidence.json",
+      "status": "PASS",
+      "total_marketplaces": 4,
+      "successful_marketplaces": [
+        "Paris",
+        "Ripley",
+        "Falabella",
+        "Mercado Libre"
+      ],
+      "total_publications": 57
+    },
+    {
+      "run_index": 3,
+      "run_id": "mri_019_run_3_1792173723",
+      "evidence_file": "evidence\\mri_autonomous_operation_019\\run_3_evidence.json",
+      "status": "PASS",
+      "total_marketplaces": 4,
+      "successful_marketplaces": [
+        "Paris",
+        "Ripley",
+        "Falabella",
+        "Mercado Libre"
+      ],
+      "total_publications": 57
+    }
+  ]
+}

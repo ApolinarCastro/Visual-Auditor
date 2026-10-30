@@ -76,17 +76,21 @@ async def main():
     )
     parser.add_argument(
         "command",
-        choices=["audit-all", "audit", "dashboard", "schedule", "health"],
+        choices=["audit-all", "audit", "dashboard", "schedule", "health", "mri"],
         help=(
             "audit-all   — Audit all marketplaces\n"
             "audit       — Audit one marketplace (--marketplace required)\n"
             "dashboard   — Launch web dashboard\n"
             "schedule    — Run on automatic schedule\n"
-            "health      — Print health report"
+            "health      — Print health report\n"
+            "mri         — Launch MRI dashboard/API (loopback, authenticated)"
         ),
     )
     parser.add_argument("--marketplace", help="Marketplace name (for 'audit' command)")
-    parser.add_argument("--port", type=int, default=8000, help="Dashboard port (default: 8000)")
+    parser.add_argument("--port", type=int, default=None,
+                        help="Port (dashboard default: 8000, mri default: 8055)")
+    parser.add_argument("--host", default="127.0.0.1", help="MRI host (default: 127.0.0.1)")
+    parser.add_argument("--db", default=None, help="MRI SQLite path override")
     parser.add_argument("--interval-hours", type=float, help="Scheduler interval in hours")
     parser.add_argument("--daily-at", default="03:00", help="Scheduler daily run time HH:MM")
 
@@ -112,8 +116,19 @@ async def main():
 
         elif args.command == "dashboard":
             from app.dashboard.api import start_dashboard
-            logger.info(f"Starting dashboard on http://localhost:{args.port}")
-            await start_dashboard(port=args.port)
+            dash_port = args.port or 8000
+            logger.info(f"Starting dashboard on http://localhost:{dash_port}")
+            await start_dashboard(port=dash_port)
+
+        elif args.command == "mri":
+            # B-03: the MRI server is a blocking uvicorn app. It must NOT be
+            # started from inside this coroutine: uvicorn.run() calls
+            # asyncio.run() internally, which fails with "cannot be called from
+            # a running event loop". `__main__` dispatches `mri` synchronously
+            # before asyncio.run(main()) for exactly this reason.
+            raise RuntimeError(
+                "mri must be dispatched synchronously from __main__, not from main()"
+            )
 
         elif args.command == "schedule":
             from app.scheduler.audit_scheduler import AuditScheduler
@@ -150,7 +165,7 @@ async def main():
                 for e in summary["recent_errors"][:3]:
                     print(f"    [{e['marketplace']}] {e['event_type']} — {e['detail']}")
             print()
-    except (KeyboardInterrupt, SystemExit):
+    except (KeyboardInterrupt, SystemExit) as exc:
         logger.info("Process interrupted. Cleaning up active tasks and closing browsers...")
         # Cancel all running tasks so their finally blocks run
         tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
@@ -159,7 +174,29 @@ async def main():
         if tasks:
             await asyncio.gather(*tasks, return_exceptions=True)
         logger.info("Graceful shutdown completed.")
+        # B-03: do not swallow SystemExit — it carries the process exit code.
+        # Without this, `run.py mri` returning a preflight/startup error (2..5)
+        # was silently converted into a success (rc=0).
+        if isinstance(exc, SystemExit):
+            raise
 
 
 if __name__ == "__main__":
+    # B-03: `run.py mri` runs a blocking uvicorn server. Dispatch it before the
+    # asyncio runner so uvicorn can own the event loop (nested asyncio.run()
+    # raises "cannot be called from a running event loop").
+    # Operational DB bootstrap: uses the OFFICIAL additive schema initializer.
+    # Idempotent, never overwrites an existing database.
+    if len(sys.argv) > 1 and sys.argv[1] == "init-db":
+        from app.mri_dashboard.mri_entrypoint import ensure_operational_db
+        target = None
+        if "--db" in sys.argv:
+            i = sys.argv.index("--db")
+            if i + 1 < len(sys.argv):
+                target = sys.argv[i + 1]
+        raise SystemExit(0 if ensure_operational_db(target) else 1)
+
+    if len(sys.argv) > 1 and sys.argv[1] == "mri":
+        from app.mri_dashboard.mri_entrypoint import main as mri_main
+        raise SystemExit(mri_main(sys.argv[2:]))
     asyncio.run(main())
