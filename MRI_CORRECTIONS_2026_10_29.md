@@ -177,3 +177,12 @@ Suite MRI total actualizada: 168 tests PASS.
 - El helper espera una respuesta HTTP real del puerto y luego abre el navegador.
 - El servidor sigue en primer plano para que Ctrl+C termine Uvicorn.
 - La limpieza de Chrome por perfil se mantiene al salir.
+
+
+## Apertura explícita en Google Chrome
+
+- `open_mri_dashboard.ps1` busca Chrome en Program Files, Program Files (x86)
+  y LOCALAPPDATA.
+- Si lo encuentra, abre una ventana nueva con `--new-window`.
+- Si no, usa el navegador por defecto como fallback.
+- El helper espera la respuesta HTTP antes de abrir.
