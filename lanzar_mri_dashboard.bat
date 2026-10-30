@@ -124,61 +124,40 @@ if defined MRI_BAT_FOREGROUND (
     exit /b %RC%
 )
 
-echo [5/5] Iniciando servidor MRI en 127.0.0.1:%PORT% ...
+echo [5/5] Iniciando servidor MRI en primer plano: 127.0.0.1:%PORT% ...
 echo.
 
-REM Build a tiny helper script so the server invocation needs NO nested quoting
-REM (nested quotes are the classic failure mode of `start ... cmd /k "..."`).
-REM /k keeps the window open after exit, so a preflight/startup error stays
-REM readable instead of vanishing together with the window.
-set "SRV_SCRIPT=%TEMP%\mri_server_%PORT%.bat"
-> "%SRV_SCRIPT%" echo @echo off
->>"%SRV_SCRIPT%" echo cd /d "%~dp0"
->>"%SRV_SCRIPT%" echo "%VENV_PY%" "%~dp0run.py" mri --port %PORT% %DBARG%
->>"%SRV_SCRIPT%" echo echo.
->>"%SRV_SCRIPT%" echo echo [MRI] servidor detenido. Puede cerrar esta ventana.
->>"%SRV_SCRIPT%" echo if not defined MRI_BAT_NO_PAUSE pause
-start "MRI Server :%PORT%" cmd /k "%SRV_SCRIPT%"
-
-REM ---- wait until the port actually accepts connections ---------------------
-REM NOTE: `timeout /t 1` is unusable when stdin is redirected (it aborts
-REM immediately), which made this loop exhaust its retries in milliseconds and
-REM report a false "server did not start" while the server was still booting.
-REM `ping -n 2` is a portable ~1s delay that works with or without a console.
-set /a TRIES=0
-:wait_server
-ping -n 2 127.0.0.1 >nul 2>&1
-netstat -ano | findstr /r /c:":%PORT% .*LISTENING" >nul 2>&1
-if not errorlevel 1 goto :server_ready
-set /a TRIES+=1
-if %TRIES% GEQ 45 goto :server_timeout
-goto :wait_server
-
-:server_ready
-echo.
-echo ===========================================
-echo   MRI activo en: http://127.0.0.1:%PORT%/
-echo   Autenticacion: HTTP Basic (obligatoria)
-echo.
-echo   Use el usuario y la clave definidos en .env
-echo   No se lanza ninguna auditoria automaticamente.
-echo ===========================================
+REM Open the dashboard from a small helper that waits for the port.
+set "OPEN_SCRIPT=%TEMP%\mri_open_%PORT%.bat"
+> "%OPEN_SCRIPT%" echo @echo off
+>>"%OPEN_SCRIPT%" echo :wait
+>>"%OPEN_SCRIPT%" echo ping -n 2 127.0.0.1 ^>nul 2^>^&1
+>>"%OPEN_SCRIPT%" echo netstat -ano ^| findstr /r /c:":%PORT% .*LISTENING" ^>nul 2^>^&1
+>>"%OPEN_SCRIPT%" echo if not errorlevel 1 goto open
+>>"%OPEN_SCRIPT%" echo goto wait
+>>"%OPEN_SCRIPT%" echo :open
+>>"%OPEN_SCRIPT%" echo start "" "http://127.0.0.1:%PORT%/"
 if defined MRI_BAT_NO_BROWSER (
     echo [INFO] MRI_BAT_NO_BROWSER definido: no se abre el navegador.
 ) else (
-    start "" "http://127.0.0.1:%PORT%/"
+    start "" /b cmd /c "%OPEN_SCRIPT%"
 )
-echo.
-echo Cierre la ventana "MRI Server" para detener el servicio.
-endlocal
-exit /b 0
 
-:server_timeout
+REM Cleanup helper: only Chrome processes using MRI's own Playwright profiles.
+set "CLEAN_PS=%TEMP%\mri_cleanup_%PORT%.ps1"
+> "%CLEAN_PS%" echo $profiles = @('%~dp0data\ripley_profile','%~dp0data\mercado_libre_profile','%~dp0data\paris_profile','%~dp0data\falabella_profile')
+>>"%CLEAN_PS%" echo Get-CimInstance Win32_Process -Filter "Name='chrome.exe'" ^| ForEach-Object {
+>>"%CLEAN_PS%" echo   $cmd = $_.CommandLine
+>>"%CLEAN_PS%" echo   foreach ($p in $profiles) { if ($cmd -like ('*' + $p + '*')) { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue; break } }
+>>"%CLEAN_PS%" echo }
+
+REM Foreground server: Ctrl+C reaches Python/Uvicorn and then runs cleanup.
+"%VENV_PY%" "%~dp0run.py" mri --port %PORT% %DBARG%
+set "RC=%ERRORLEVEL%"
+if exist "%CLEAN_PS%" powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%CLEAN_PS%" >nul 2>&1
 echo.
-echo [ERROR] El servidor no comenzo a escuchar en %PORT% tras 45 segundos.
-echo         Revise la ventana "MRI Server :%PORT%" para ver el error real.
-if not defined MRI_BAT_NO_PAUSE pause
-exit /b 1
+echo [MRI] servidor detenido. Codigo %RC%.
+exit /b %RC%
 
 :no_credentials
 echo [ERROR] Faltan credenciales en "%~dp0.env".

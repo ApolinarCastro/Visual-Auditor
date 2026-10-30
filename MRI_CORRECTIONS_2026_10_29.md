@@ -159,3 +159,13 @@ Suite MRI total actualizada: 168 tests PASS.
 - Si no hay categorías válidas se reporta el estado real, sin navegar URLs
   manuales ni de otro marketplace.
 - Suite MRI: 172 tests PASS.
+
+
+## Launcher MRI
+
+- El servidor ya no se lanza en una ventana separada con `start cmd /k`.
+- `run.py mri` corre en primer plano: Ctrl+C llega a Python/Uvicorn.
+- Un helper abre el dashboard automáticamente cuando el puerto está listo.
+- Al salir, un helper PowerShell detiene únicamente Chrome con los perfiles
+  Playwright de MRI (`ripley_profile`, `mercado_libre_profile`, etc.).
+- `MRI_BAT_NO_BROWSER=1` conserva el modo sin navegador.
