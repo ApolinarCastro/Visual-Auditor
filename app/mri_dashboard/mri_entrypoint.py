@@ -344,6 +344,13 @@ def serve(
     print(f"  usuario       : {info['user']}")
     print(f"  escuchando en : http://{host}:{port}")
     print(f"  autenticación : HTTP Basic (obligatoria)")
+    try:
+        from app.mri_dashboard.build_info import build_info
+        _bi = build_info()
+        print(f"  build         : {_bi['build_id']} ({_bi['branch']})")
+    except Exception as _build_exc:
+        _bi = {"build_id": "unknown", "branch": "unknown"}
+        print(f"  build         : unknown ({type(_build_exc).__name__})")
     _st = storage_summary()
     _dest = authorize_run_destinations()
     print(f"  auxiliares    : {_st.get('aux_dir')}")
