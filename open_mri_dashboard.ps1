@@ -24,12 +24,19 @@ $chromeCandidates = @(
 )
 $chrome = $chromeCandidates | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
 
+$marker = Join-Path $PSScriptRoot 'data\runtime_tmp\mri_browser_launch.json'
+New-Item -ItemType Directory -Force -Path (Split-Path $marker) | Out-Null
+
 if ($chrome) {
     # Explicitly open a real Chrome window; this also triggers the Basic-auth prompt.
-    Start-Process -FilePath $chrome -ArgumentList "--new-window", $url
+    $proc = Start-Process -FilePath $chrome -ArgumentList "--new-window", $url -PassThru
+    @{ opened_at = (Get-Date).ToString('o'); browser = $chrome; url = $url; pid = $proc.Id } |
+        ConvertTo-Json | Set-Content -Encoding UTF8 $marker
     exit 0
 }
 
 # Fallback: system default browser.
-Start-Process $url
+$proc = Start-Process $url -PassThru
+@{ opened_at = (Get-Date).ToString('o'); browser = 'DEFAULT'; url = $url; pid = $proc.Id } |
+    ConvertTo-Json | Set-Content -Encoding UTF8 $marker
 exit 0

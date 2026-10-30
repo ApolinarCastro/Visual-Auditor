@@ -124,6 +124,17 @@ if defined MRI_BAT_FOREGROUND (
     exit /b %RC%
 )
 
+REM Optional, explicit discovery-state reset (backup + manifest + delete caches).
+if defined MRI_BAT_RESET_DISCOVERY (
+    echo [INFO] MRI_BAT_RESET_DISCOVERY=1: respaldando y limpiando estado derivado...
+    "%VENV_PY%" "%~dp0scripts\reset_discovery_state.py" --apply
+    if errorlevel 1 (
+        echo [ERROR] Fallo la limpieza de estado; no se inicia el servidor.
+        if not defined MRI_BAT_NO_PAUSE pause
+        exit /b 1
+    )
+)
+
 echo [5/5] Iniciando servidor MRI en primer plano: 127.0.0.1:%PORT% ...
 echo.
 

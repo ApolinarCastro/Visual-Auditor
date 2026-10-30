@@ -353,6 +353,17 @@ def serve(
     print("  Ctrl+C para detener.")
 
     try:
+        from app.mri_dashboard.instance_lock import InstanceLock
+        _lock = InstanceLock(port=port, build_id=str(_bi.get("build_id")))
+        _ok, _lock_info = _lock.acquire()
+        if not _ok:
+            print("[MRI] ERROR: instancia unica rechazada: "
+                  + str(_lock_info), file=sys.stderr)
+            return 6
+    except Exception as _lock_exc:
+        print(f"[MRI] ERROR al verificar instancia: {_lock_exc}", file=sys.stderr)
+        return 6
+    try:
         import uvicorn
         # Make `--db` authoritative for the served app, not just for preflight.
         if db_path is not None:

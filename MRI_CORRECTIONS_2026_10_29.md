@@ -186,3 +186,19 @@ Suite MRI total actualizada: 168 tests PASS.
 - Si lo encuentra, abre una ventana nueva con `--new-window`.
 - Si no, usa el navegador por defecto como fallback.
 - El helper espera la respuesta HTTP antes de abrir.
+
+
+## Build verificable, instancia única y limpieza transparente
+
+- `build_info.py`: build-id desde commit + estado dirty; `/api/version` y campo
+  `build` en `/api/state`.
+- `instance_lock.py`: lock por PID/puerto; rechaza segunda instancia y elimina
+  locks de procesos muertos.
+- `scripts/reset_discovery_state.py`: dry-run por defecto; `--apply` crea backup,
+  sha256, manifest y elimina solo categorías/grafo/memoria de descubrimiento.
+- Launcher: `MRI_BAT_RESET_DISCOVERY=1` ejecuta la limpieza explícita antes de
+  iniciar el servidor.
+- `open_mri_dashboard.ps1`: escribe `mri_browser_launch.json` con URL, navegador
+  y PID para verificar la apertura sin WMI.
+- `MRI_ENVIRONMENT_LIMITATIONS.md`: límites del agente y procedimiento transparente.
+- Suite MRI: 175 tests PASS.

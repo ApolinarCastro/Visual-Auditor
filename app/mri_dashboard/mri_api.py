@@ -258,6 +258,12 @@ async def update_mri_session(marketplace: str, request: Request):
     return JSONResponse(content={"ok": True, **result})
 
 
+@app.get("/api/version")
+async def get_version():
+    from app.mri_dashboard.build_info import build_info
+    return JSONResponse(content=build_info())
+
+
 @app.get("/api/state")
 async def get_state():
     st = orchestrator.state or {}
@@ -276,6 +282,7 @@ async def get_state():
         "mode": st.get("mode"),
         "source": "LIVE_MEMORY",
         "results_count": len(orchestrator.results or []),
+        "build": __import__("app.mri_dashboard.build_info", fromlist=["build_info"]).build_info(),
         "reconciliation": summarize_results(orchestrator.results or []),
         # acquisition truth (live view only; never a persisted historical run)
         **_view,
