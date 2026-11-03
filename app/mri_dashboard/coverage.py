@@ -21,7 +21,7 @@ AUDIT_FAIL = "AUDIT_FAIL"
 #: It is a safety bound, never a coverage target: a run that reaches it is FAIL.
 PAGE_SENTINEL = 100000
 
-TERMINAL_STOPS = {"EXHAUSTION", "FOUND", "COMPLETE", "COMPLETED"}
+TERMINAL_STOPS = {"EXHAUSTION", "FOUND", "COMPLETE", "COMPLETED", "EMPTY", "EMPTY_DUPLICATE_ONLY"}
 
 
 def new_coverage(run_id: str, marketplace: str, categories: dict) -> dict:
@@ -86,6 +86,7 @@ def finalize(coverage: dict, *, unique_publications: int = 0) -> dict:
     failed = [k for k, c in cats.items() if c.get("status") == "FAILED"]
     pending = [k for k, c in cats.items() if c.get("status") == "PENDING"]
 
+    coverage["categories_discovered"] = len(cats)
     coverage["categories_traversed_completely"] = len(complete)
     coverage["unique_publications"] = int(unique_publications or 0)
     coverage["pages_pending"] = None if pending else 0

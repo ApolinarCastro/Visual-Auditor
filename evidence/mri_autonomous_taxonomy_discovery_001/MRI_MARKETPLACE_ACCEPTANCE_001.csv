@@ -1,0 +1,5 @@
+marketplace,taxonomy_status,taxonomy_complete,hierarchy_status,categories_observed,categories_complete,categories_blocked,frontier_status,category_observation,audit_status,live_validation,reason,evidence
+Falabella,PARTIAL,FALSE,FAIL,14,14,0,PARTIAL_NO_GLOBAL_DENOMINATOR,PARTIAL,FAIL,BLOCKED_ENVIRONMENT,"No root taxonomy, no persisted parent relationships, no independent global completeness evidence.",run_mri_discovery_1793624983__falabella
+Mercado Libre,PARTIAL,FALSE,FAIL,13,5,8,PARTIAL,PARTIAL,FAIL,BLOCKED_ENVIRONMENT,"No root taxonomy, no persisted parent relationships, no independent global completeness evidence.",run_mri_discovery_1793641074
+Ripley,PARTIAL,FALSE,FAIL,40,40,0,PARTIAL_NO_GLOBAL_DENOMINATOR,PARTIAL,FAIL,BLOCKED_ENVIRONMENT,"No root taxonomy, no persisted parent relationships, no independent global completeness evidence.",run_mri_discovery_1793630598
+Paris,FAIL,FALSE,FAIL,1,1,0,PARTIAL_NO_GLOBAL_DENOMINATOR,PARTIAL,FAIL,BLOCKED_ENVIRONMENT,"No root taxonomy, no persisted parent relationships, no independent global completeness evidence.",run_mri_discovery_1793624983__paris

@@ -1,0 +1,182 @@
+marketplace,run_id,category_id,category_name,discovery_status,frontier_state,pages_observed,publications,pending_reason
+Falabella,run_mri_discovery_1793624983__falabella,brand:NICOPOLY,brand:NICOPOLY,COMPLETE,EXHAUSTED,10,406,
+Falabella,run_mri_discovery_1793624983__falabella,category:cat850040,category:cat850040,COMPLETE,EXHAUSTED,3,72,
+Falabella,run_mri_discovery_1793624983__falabella,category:cat850036,category:cat850036,COMPLETE,EXHAUSTED,4,98,
+Falabella,run_mri_discovery_1793624983__falabella,category:CATG35031,category:CATG35031,COMPLETE,EXHAUSTED,3,61,
+Falabella,run_mri_discovery_1793624983__falabella,category:cat850030,category:cat850030,COMPLETE,EXHAUSTED,3,66,
+Falabella,run_mri_discovery_1793624983__falabella,category:cat14330023,category:cat14330023,COMPLETE,EXHAUSTED,3,54,
+Falabella,run_mri_discovery_1793624983__falabella,category:cat850034,category:cat850034,COMPLETE,EXHAUSTED,3,52,
+Falabella,run_mri_discovery_1793624983__falabella,category:cat850042,category:cat850042,COMPLETE,EXHAUSTED,2,7,
+Falabella,run_mri_discovery_1793624983__falabella,category:cat850044,category:cat850044,COMPLETE,EXHAUSTED,2,19,
+Falabella,run_mri_discovery_1793624983__falabella,category:CATG34996,category:CATG34996,COMPLETE,EXHAUSTED,2,11,
+Falabella,run_mri_discovery_1793624983__falabella,category:CATG34997,category:CATG34997,COMPLETE,EXHAUSTED,3,61,
+Falabella,run_mri_discovery_1793624983__falabella,category:CATG36075,category:CATG36075,COMPLETE,EXHAUSTED,28,1,
+Falabella,run_mri_discovery_1793624983__falabella,category:CATG36076,category:CATG36076,COMPLETE,EXHAUSTED,4,0,
+Falabella,run_mri_discovery_1793624983__falabella,search:nicopoly,search:nicopoly,COMPLETE,EXHAUSTED,10,406,
+Mercado Libre,run_mri_discovery_1793641074,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/abrigos/chaquetas-parkas-blazers/,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/abrigos/chaquetas-parkas-blazers/,BLOCKED,PENDING_OR_BLOCKED,1,0,BLOCKED
+Mercado Libre,run_mri_discovery_1793641074,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/blusas/,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/blusas/,BLOCKED,PENDING_OR_BLOCKED,1,0,BLOCKED
+Mercado Libre,run_mri_discovery_1793641074,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/pantalones/,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/pantalones/,BLOCKED,PENDING_OR_BLOCKED,1,0,BLOCKED
+Mercado Libre,run_mri_discovery_1793641074,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/vestidos/,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/vestidos/,BLOCKED,PENDING_OR_BLOCKED,1,0,BLOCKED
+Mercado Libre,run_mri_discovery_1793641074,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/abrigos/chalecos-sweaters-cardigans/,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/abrigos/chalecos-sweaters-cardigans/,BLOCKED,PENDING_OR_BLOCKED,1,0,BLOCKED
+Mercado Libre,run_mri_discovery_1793641074,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/poleras/,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/poleras/,BLOCKED,PENDING_OR_BLOCKED,1,0,BLOCKED
+Mercado Libre,run_mri_discovery_1793641074,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/camisas/,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/camisas/,BLOCKED,PENDING_OR_BLOCKED,1,0,BLOCKED
+Mercado Libre,run_mri_discovery_1793641074,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/calzas/,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/calzas/,BLOCKED,PENDING_OR_BLOCKED,1,0,BLOCKED
+Mercado Libre,run_mri_discovery_1793641074,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/enteritos/,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/enteritos/,COMPLETE,EXHAUSTED,1,2,
+Mercado Libre,run_mri_discovery_1793641074,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/faldas/,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/faldas/,COMPLETE,EXHAUSTED,1,15,
+Mercado Libre,run_mri_discovery_1793641074,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/ropa-interior-dormir/,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/ropa-interior-dormir/,COMPLETE,EXHAUSTED,1,4,
+Mercado Libre,run_mri_discovery_1793641074,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/bermudas-shorts/,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/bermudas-shorts/,COMPLETE,EXHAUSTED,1,18,
+Mercado Libre,run_mri_discovery_1793641074,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/kimonos/,https://listado.mercadolibre.cl/tienda/nicopoly/listado/vestuario-calzado/kimonos/,COMPLETE,EXHAUSTED,1,1,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/vestidos-y-enteritos/vestidos?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/vestidos-y-enteritos/vestidos?brand=NICOPOLY,COMPLETE,EXHAUSTED,2,68,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/blusas-y-poleras?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/blusas-y-poleras?brand=NICOPOLY,COMPLETE,EXHAUSTED,6,262,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-hombre/tops-y-chaquetas/poleras?brand=NICOPOLY,https://simple.ripley.cl/moda-hombre/tops-y-chaquetas/poleras?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-infantil/ropa-de-nina/poleras-y-blusas?brand=NICOPOLY,https://simple.ripley.cl/moda-infantil/ropa-de-nina/poleras-y-blusas?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-infantil/ropa-de-nino/poleras-y-camisas?brand=NICOPOLY,https://simple.ripley.cl/moda-infantil/ropa-de-nino/poleras-y-camisas?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-infantil/ropa-de-bebe/poleras-camisas-y-blusas?brand=NICOPOLY,https://simple.ripley.cl/moda-infantil/ropa-de-bebe/poleras-camisas-y-blusas?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-infantil/ropa-de-bebe/vestidos-y-faldas?brand=NICOPOLY,https://simple.ripley.cl/moda-infantil/ropa-de-bebe/vestidos-y-faldas?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/jeans?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/jeans?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,25,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/pantalones?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/pantalones?brand=NICOPOLY,COMPLETE,EXHAUSTED,3,105,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/vestidos-y-enteritos/faldas?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/vestidos-y-enteritos/faldas?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,25,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/chaquetas-y-blazers?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/chaquetas-y-blazers?brand=NICOPOLY,COMPLETE,EXHAUSTED,5,180,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/sweaters-y-chalecos?source=menu&type=catalog&s=mdco&brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/sweaters-y-chalecos?source=menu&type=catalog&s=mdco&brand=NICOPOLY,COMPLETE,EXHAUSTED,2,45,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/abrigos?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/abrigos?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,22,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/parkas?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/parkas?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,3,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/polerones?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/polerones?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/kimonos?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/kimonos?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,1,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/lenceria-y-corseteria/sostenes-y-bralettes?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/lenceria-y-corseteria/sostenes-y-bralettes?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/lenceria-y-corseteria/calzones?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/lenceria-y-corseteria/calzones?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/ropa-interior-y-pijamas/fajas-y-modeladores?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/ropa-interior-y-pijamas/fajas-y-modeladores?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/shorts?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/shorts?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,25,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/trajes-de-bano/bikini?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/trajes-de-bano/bikini?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/trajes-de-bano/pareos-y-salidas-de-bano?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/trajes-de-bano/pareos-y-salidas-de-bano?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/trajes-de-bano/tops?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/trajes-de-bano/tops?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/flare?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/flare?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/wideleg?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/wideleg?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/straight?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/straight?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/balloon-barrel?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/balloon-barrel?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/skinny?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/skinny?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/baggy?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/baggy?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/buzos?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/buzos?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/calzas?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/jeans-y-pantalones/calzas?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,3,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/lo-nuevo?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/lo-nuevo?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/vestidos-y-enteritos/enteritos?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/vestidos-y-enteritos/enteritos?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,2,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/moda-mujer/vestidos-y-enteritos/jardineras?brand=NICOPOLY,https://simple.ripley.cl/moda-mujer/vestidos-y-enteritos/jardineras?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/accesorios-y-complementos/carteras-y-bolsos/carteras-y-carteras-de-mano?source=menu&type=catalog&s=mdco&brand=NICOPOLY,https://simple.ripley.cl/accesorios-y-complementos/carteras-y-bolsos/carteras-y-carteras-de-mano?source=menu&type=catalog&s=mdco&brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/accesorios-y-complementos/vestuario/bufandas?brand=NICOPOLY,https://simple.ripley.cl/accesorios-y-complementos/vestuario/bufandas?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/accesorios-y-complementos/vestuario/guantes?brand=NICOPOLY,https://simple.ripley.cl/accesorios-y-complementos/vestuario/guantes?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/accesorios-y-complementos/vestuario/ponchos-chals-y-ruanas?brand=NICOPOLY,https://simple.ripley.cl/accesorios-y-complementos/vestuario/ponchos-chals-y-ruanas?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/accesorios-y-complementos/vestuario/panuelos?brand=NICOPOLY,https://simple.ripley.cl/accesorios-y-complementos/vestuario/panuelos?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Ripley,run_mri_discovery_1793630598,https://simple.ripley.cl/accesorios-y-complementos/vestuario/cinturones-y-suspensores?brand=NICOPOLY,https://simple.ripley.cl/accesorios-y-complementos/vestuario/cinturones-y-suspensores?brand=NICOPOLY,COMPLETE,EXHAUSTED,1,0,
+Paris,run_mri_discovery_1793624983__paris,https://www.paris.cl/search?q=nicopoly,https://www.paris.cl/search?q=nicopoly,COMPLETE,EXHAUSTED,20,598,
+Paris,,PARIS_CategFulfillment,Fulfillment,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_mujModBlusasPoleras,Poleras y Blusas,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_tag-moda-dscto-adicional-vestuario,Tag Moda Dscto Adicional Vestuario,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_tag-marketplace-categoria-fulfillment-4,Tag Marketplace Categoria Fulfillment 4,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_tag-marketplace-categoria-fulfillment-11,Tag Marketplace Categoria Fulfillment 11,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_tag-marketplace-categoria-fulfillment-24,Tag Marketplace Categoria Fulfillment 24,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_tag-marketplace-categoria-fulfillment-8,Tag Marketplace Categoria Fulfillment 8,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_tag-marketplace-categoria-fulfillment-9,Tag Marketplace Categoria Fulfillment 9,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_tag-marketplace-categoria-fulfillment-7,Tag Marketplace Categoria Fulfillment 7,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_tag-moda-dscto-adicional-vestuario-5,Tag Moda Dscto Adicional Vestuario 5,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_tag-prueba-categoria-1-mujmoda,Tag Prueba Categoria 1 Mujmoda,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_tag-marketplace-categoria-fulfillment-14,Tag Marketplace Categoria Fulfillment 14,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_tag-marketplace-categoria-fulfillment-19,Tag Marketplace Categoria Fulfillment 19,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_tag-marketplace-categoria-fulfillment-15,Tag Marketplace Categoria Fulfillment 15,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_tag-marketplace-categoria-fulfillment-16,Tag Marketplace Categoria Fulfillment 16,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_tag-moda-dscto-en-vestuario-cyber,Tag Moda Dscto En Vestuario Cyber,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_tag-marketplace-categoria-fulfillment-23,Tag Marketplace Categoria Fulfillment 23,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_tag-marketplace-categoria-fulfillment-22,Tag Marketplace Categoria Fulfillment 22,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_tag-marketplace-categoria-fulfillment-12,Tag Marketplace Categoria Fulfillment 12,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_tag-marketplace-categoria-fulfillment-13,Tag Marketplace Categoria Fulfillment 13,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_tag-marketplace-categoria-fulfillment-6,Tag Marketplace Categoria Fulfillment 6,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_tag-marketplace-categoria-fulfillment-17,Tag Marketplace Categoria Fulfillment 17,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_tag-marketplace-categoria-fulfillment-18,Tag Marketplace Categoria Fulfillment 18,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_tag-marketplace-categoria-fulfillment-10,Tag Marketplace Categoria Fulfillment 10,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_tag-marketplace-categoria-fulfillment-21,Tag Marketplace Categoria Fulfillment 21,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_mujModAbrigosChaquetasParkas,"Blazers, Chaquetas y Abrigos",KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_mujMrcNicopoly,Nicopoly,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_mujModa,Moda Mujer,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_mujModJeansPantalones,Jeans y Pantalones,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,PARIS_EventoLiquidacion,10 Cuotas sin Interés,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,FALA_CAT_G08020402,G08020402,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,FALA_CAT_FALA_BRAND_NICOPOLY,NICOPOLY,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,FALA_CAT_cat7330051,Mujer,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,FALA_CAT_G08020501,G08020501,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,FALA_CAT_G08020502,G08020502,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_a9b895e4,Mujer - Moda Mujer → Abrigos y Chaquetas,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_c566ed48,CATEGORY_UNKNOWN,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Ripley,,cat_rip_7187d229,Moda infantil → Marcas destacadas → Ver todo,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Mercado Libre,,cat_mer_358cc25d,CATEGORY_UNKNOWN,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_b4edc6fd,Mujer,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_cd5b8b38,G08020601,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_6c8d56f4,G08020401,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_b2741926,G08020402,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_22b13ab1,G08020501,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_343208a2,G08020602,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_f730edff,G08020502,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_c65fe0b5,G08020501 (L2: Blusas Mujer / Poleras Mujer),KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_2fb78de3,G08020502 (L2: Abrigos y Chaquetas / Parkas Mujer / Sweaters y chalecos),KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_7a9441c8,G08020602 (L2: Vestidos de Fiesta / Vestidos y enteritos),KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Ripley,,cat_rip_5b113a5b,Moda Mujer → Vestidos y Enteritos → Lo Nuevo,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Ripley,,cat_rip_5279df4e,Moda Mujer → Marcas Casuales → Nicopoly,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Ripley,,cat_rip_43c54e7e,CATEGORY_UNKNOWN,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,cat_par_5de56af9,CATEGORY_UNKNOWN,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Ripley,,cat_rip_5cbfadc7,Accesorios y complementos → Vestuario,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Mercado Libre,,cat_mer_3384a747,Tienda → Nicopoly,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Mercado Libre,,cat_mer_e1c67ba0,Vestuario Calzado → Faldas,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Mercado Libre,,cat_mer_c3a1a1eb,Abrigos,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Mercado Libre,,cat_mer_2321940c,Vestuario y Calzado,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Mercado Libre,,cat_mer_1ab623f2,Ropa Interior y de Dormir,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_e70debdb,Parkas Mujer,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,cat_par_43d519ad,Mujer → Accesorios Moda → Pañuelos y Bufandas,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Mercado Libre,,cat_mer_f769113f,Accesorios de Moda,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Ripley,,cat_rip_48116dd0,Accesorios y complementos → Vestuario → Bufandas,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_ee96d178,G08020502 (L2: Abrigos y Chaquetas / Sweaters y chalecos),KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Mercado Libre,,cat_mer_7314bac6,"Chalecos, Sweaters y Cardigans",KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Mercado Libre,,cat_mer_b452bc90,Poleras,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Mercado Libre,,cat_mer_20d2c7be,Camisas,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Mercado Libre,,cat_mer_1c3a811d,Calzas,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Mercado Libre,,cat_mer_9d959a48,Enteritos,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_d1c17a2c,Vestidos de Fiesta,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_1a333f58,Faldas,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_95c61625,Pantalones,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_13f66eb8,Blusas Mujer,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_3796d1b2,Jeans Mujer,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_7f8ff350,Pantalones Mujer,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_c4312132,Abrigos y Chaquetas,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_ddc4e812,Poleras Mujer,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_54d6c724,Vestidos y enteritos,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_6bec0759,Shorts,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Falabella,,cat_fal_5664f252,Sweaters y chalecos,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,cat_par_439653a7,Mujer → Moda Mujer → Shorts,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,cat_par_8b1cd873,Mujer → Moda Mujer → Enteritos y Jardineras,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,cat_par_ca1e83b0,Moda Circular → Compra Ropa de Segunda Mano → Mujer,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,cat_par_dd151738,Mujer → Colecciones → Fiesta,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,cat_par_31b46d3b,Mujer → Moda Mujer → Vestidos y Faldas,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,cat_par_a6d1d263,"Mujer → Moda Mujer → Buzos, Joggers y Calzas",KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,cat_par_e85df9c1,"Mujer → Moda Mujer → Blazers, Chaquetas y Abrigos",KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,cat_par_a1c341ec,Search,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,cat_par_bcaae8c3,Mujer → Moda Mujer → Poleras y Blusas,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,cat_par_499129b6,"Mujer → Moda Mujer → Sweaters, Chalecos y Tejidos",KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Paris,,cat_par_20656238,Mujer → Moda Mujer → Jeans y Pantalones,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Mercado Libre,,cat_mer_4995a9c8,"Chaquetas, Parkas y Blazers",KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Mercado Libre,,cat_mer_359e11c9,Blusas,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Mercado Libre,,cat_mer_d6e6587c,Pantalones,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Mercado Libre,,cat_mer_0684f1c0,Vestidos,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Ripley,,cat_rip_acc87eca,Moda Mujer → Vestidos y Enteritos → Vestidos,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Ripley,,cat_rip_d7f76376,Moda Mujer → Tops y chaquetas → Blusas y poleras,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Ripley,,cat_rip_b23cd9ab,Moda Mujer → Jeans y Pantalones → Jeans,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Ripley,,cat_rip_0be2db0d,Moda Mujer → Jeans y Pantalones → Pantalones,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Ripley,,cat_rip_1f4f905e,Moda Mujer → Vestidos y Enteritos → Faldas,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Ripley,,cat_rip_61596eed,Moda Mujer → Tops y chaquetas → Chaquetas y blazers,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Ripley,,cat_rip_6e38f8dd,Moda Mujer → Tops y chaquetas → Sweaters y chalecos,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Ripley,,cat_rip_5b4e81c6,Moda Mujer → Tops y chaquetas → Abrigos,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Ripley,,cat_rip_b6591bc5,Moda Mujer → Tops y chaquetas → Parkas,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Ripley,,cat_rip_077a8ecd,Moda Mujer → Tops y chaquetas → Kimonos,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Ripley,,cat_rip_b020984f,Moda Mujer → Jeans y Pantalones → Shorts,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Ripley,,cat_rip_9db6e6cf,Moda Mujer → Jeans y Pantalones → Calzas,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Ripley,,cat_rip_49af5581,Moda Mujer → Vestidos y Enteritos → Enteritos,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Mercado Libre,,cat_mer_35f29c43,Tienda → Nicopoly → Listado → Vestuario Calzado,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Mercado Libre,,cat_mer_8050d285,Faldas,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Mercado Libre,,cat_mer_7db8bdad,Body,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Mercado Libre,,cat_mer_1181993c,Bermudas y Shorts,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT
+Mercado Libre,,cat_mer_ddfbad73,Kimonos,KNOWN_CACHED_NOT_OBSERVED,NOT_VISITED_OR_UNKNOWN,0,0,NOT_IN_LATEST_CHECKPOINT

@@ -1,0 +1,42 @@
+{
+  "master_rows": 15879,
+  "unique_variants": 15833,
+  "unique_parents": 4337,
+  "expected_counts": {
+    "Falabella": 1640,
+    "Mercado Libre": 2315,
+    "Ripley": 2315,
+    "Paris": 2315
+  },
+  "expected_status_counts": {
+    "Falabella": {
+      "DESCARTADO_SIN_STOCK": 13518,
+      "EXPECTED": 1640,
+      "NO_EXPECTED_NO_PRICE": 675
+    },
+    "Mercado Libre": {
+      "DESCARTADO_SIN_STOCK": 13518,
+      "EXPECTED": 2315
+    },
+    "Ripley": {
+      "DESCARTADO_SIN_STOCK": 13518,
+      "EXPECTED": 2315
+    },
+    "Paris": {
+      "DESCARTADO_SIN_STOCK": 13518,
+      "EXPECTED": 2315
+    }
+  },
+  "observed_categories": {
+    "Falabella": 14,
+    "Mercado Libre": 13,
+    "Ripley": 40,
+    "Paris": 1
+  },
+  "category_universe_rows": 242,
+  "coverage_matrix_rows": 198,
+  "reference_gaps": 8,
+  "history_rows": 15833,
+  "db_integrity": "ok",
+  "db_publications": 13128
+}

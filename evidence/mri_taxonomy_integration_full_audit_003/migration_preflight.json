@@ -1,0 +1,28 @@
+{
+  "timestamp": "2026-11-02T16:10:27.203490",
+  "source": "data\\sqlite\\mri_operational\\visibility.db",
+  "backup": "_integration\\evidence\\mri_taxonomy_integration_full_audit_003\\visibility_pre_migration_003.db",
+  "source_sha256": "600d44c7c8757186e4a2695b2a8229b40dab57a79071cb81cdd5f911e792ddc1",
+  "backup_sha256": "600d44c7c8757186e4a2695b2a8229b40dab57a79071cb81cdd5f911e792ddc1",
+  "source_integrity": "ok",
+  "backup_integrity": "ok",
+  "source_categories": 113,
+  "backup_categories": 113,
+  "test_copy_integrity": "ok",
+  "test_copy_categories": 113,
+  "migration_version": 1,
+  "migration_rows": [
+    [
+      1,
+      "a60bdd293fc43d8ede4ae402c934db27087a9da489b7e6f5f45e780fb0baa22e"
+    ]
+  ],
+  "tables": [
+    "mri_taxonomy_frontier_summary",
+    "mri_taxonomy_learning",
+    "mri_taxonomy_node_history",
+    "mri_taxonomy_nodes",
+    "mri_taxonomy_schema_migrations"
+  ],
+  "production_migration": "NOT_EXECUTED"
+}

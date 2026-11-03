@@ -65,6 +65,16 @@ STOP_REASON_MAP = {
 
 BLOCKING_STATES = (SOURCE_BLOCKED, EXTRACTOR_FAILURE)
 
+
+def empty_page_is_incomplete(products: int, pages: int) -> bool:
+    """True when an empty result has no traversed page.
+
+    An empty category after real page traversal can be legitimate. An empty
+    result with pages=0 means no page was observed: it must not be promoted to
+    NOT_FOUND by itself.
+    """
+    return int(products or 0) == 0 and int(pages or 0) == 0
+
 # ── Commercial identity states ───────────────────────────────────────────────
 OFFICIAL_VERIFIED = "OFFICIAL_VERIFIED"
 THIRD_PARTY_NEW = "THIRD_PARTY_NEW"

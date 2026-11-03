@@ -647,8 +647,13 @@ async def start_audit(background_tasks: BackgroundTasks, request: Request):
                 "mode": mode, "run_id": run_id, "state": "RUNNING",
                 "marketplace": marketplace, "max_pages": pages,
                 "execution_strategy": "ALL_PARALLEL"})
-        background_tasks.add_task(_guarded_run, orchestrator.run_discovery,
-                                  run_id, marketplace, pages, run_id, item_limit)
+        # Pin the full-audit contract explicitly. Without this, a future
+        # positional/signature change can silently select the legacy cache
+        # path (no taxonomy, category_manager URLs). D-001/D-002.
+        background_tasks.add_task(
+            _guarded_run, orchestrator.run_discovery,
+            run_id, marketplace, pages, run_id, item_limit,
+            full_audit=True)
         return JSONResponse(status_code=200, content={
             "message": "Accepted: Autonomous Discovery", "mode": mode,
             "run_id": run_id, "state": "RUNNING",

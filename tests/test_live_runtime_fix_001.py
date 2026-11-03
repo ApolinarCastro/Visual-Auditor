@@ -77,7 +77,7 @@ def _run(monkeypatch, tmp_aux, products, *, run_id=None, taxonomy_result, market
     monkeypatch.setattr(T, "discover_taxonomy_async", _fake_tax)
     monkeypatch.setattr(category_manager, "get_categories",
                         lambda mkt: {} if not products else {
-                            "CAT1": {"name": "Moda", "url": "https://m/falabella/cat1"}})
+                            "CAT1": {"name": "Moda", "url": "https://simple.ripley.cl/moda/cat1"}})
     monkeypatch.setattr(category_manager, "register_category", lambda *a, **k: None)
 
     orch = R.orchestrator
@@ -127,7 +127,7 @@ def test_cp2_duplicate_identifier_is_discarded_with_trace(monkeypatch):
         taxonomy_result={"marketplace": "Ripley", "status": "TAXONOMY_DISCOVERED",
                          "source": "NAVIGATION",
                          "categories": [{"category_id": "CAT1", "name": "Moda",
-                                         "url": "https://m/falabella/cat1"}]})
+                                         "url": "https://simple.ripley.cl/moda/cat1"}]})
     print('DEBUG_STATE', orch.state.get('outcome'), orch.state.get('error'),
           orch.state.get('failed_stage'), orch.state.get('taxonomy_status'))
     assert len(orch.results) == 2
@@ -150,11 +150,11 @@ def test_cp4_checkpoint_written_per_category_and_resumable(monkeypatch):
         taxonomy_result={"marketplace": "Ripley", "status": "TAXONOMY_DISCOVERED",
                          "source": "SSR_NEXT_DATA",
                          "categories": [{"category_id": "CAT1", "name": "Moda",
-                                         "url": "https://m/falabella/cat1"}]})
+                                         "url": "https://simple.ripley.cl/moda/cat1"}]})
     cp = aux / f"mri_coverage_checkpoint_{orch._fixture_run_id}.json"
     assert cp.exists(), "per-category checkpoint must exist"
     data = json.loads(cp.read_text(encoding="utf-8"))
-    cat = data["categories"]["https://m/falabella/cat1"]
+    cat = data["categories"]["https://simple.ripley.cl/moda/cat1"]
     assert cat["pages_observed"] == 2
     assert cat["status"] == "COMPLETE"
     assert not list(aux.glob("*.tmp"))
@@ -167,7 +167,7 @@ def test_cp4_resume_skips_confirmed_category_and_keeps_checkpoint(monkeypatch):
     tax = {'marketplace': 'Ripley', 'status': 'TAXONOMY_DISCOVERED',
            'source': 'NAVIGATION',
            'categories': [{'category_id': 'CAT1', 'name': 'Moda',
-                           'url': 'https://m/falabella/cat1'}]}
+                           'url': 'https://simple.ripley.cl/moda/cat1'}]}
     products = [{'title': 'Polera Nicopoly', 'marketplace_sku': 'SKU-9',
                  'url': 'https://m/p9', 'price': 1000, 'vendor': 'Nicopoly',
                  'position_absolute': 1}]
@@ -176,4 +176,35 @@ def test_cp4_resume_skips_confirmed_category_and_keeps_checkpoint(monkeypatch):
     second, _ = _run(monkeypatch, aux, products, run_id=rid, taxonomy_result=tax)
     assert second.results == []          # categoria confirmada: no se re-adquiere
     data = json.loads((aux / f'mri_coverage_checkpoint_{rid}.json').read_text(encoding='utf-8'))
-    assert data['categories']['https://m/falabella/cat1']['status'] == 'COMPLETE'
+    assert data['categories']['https://simple.ripley.cl/moda/cat1']['status'] == 'COMPLETE'
+
+
+# ── P0 recovery 002: taxonomy must be published in live state ──────────────
+def test_full_audit_publishes_taxonomy_and_runtime_context(monkeypatch):
+    aux = Path("evidence_local_validation/p0_recovery_002")
+    aux.mkdir(parents=True, exist_ok=True)
+    orch, _ = _run(
+        monkeypatch, aux, [],
+        taxonomy_result={
+            "marketplace": "Ripley", "status": "TAXONOMY_DISCOVERED",
+            "source": "TEST", "taxonomy_complete": False,
+            "categories": [{"category_id": "C1", "name": "Moda",
+                            "url": "https://simple.ripley.cl/moda"}]})
+    assert orch.state["runtime_context"]["full_audit"] is True
+    assert orch.state["taxonomy"]["Ripley"]["categories"]
+    assert orch.state["category_selection"]["Ripley"]["count"] == 1
+
+
+def test_foreign_taxonomy_url_is_rejected_before_acquisition(monkeypatch):
+    aux = Path("evidence_local_validation/p0_recovery_002")
+    aux.mkdir(parents=True, exist_ok=True)
+    orch, _ = _run(
+        monkeypatch, aux, [],
+        taxonomy_result={
+            "marketplace": "Ripley", "status": "TAXONOMY_DISCOVERED",
+            "source": "TEST", "taxonomy_complete": False,
+            "categories": [{"category_id": "BAD", "name": "ML",
+                            "url": "https://listado.mercadolibre.cl/vestuario-calzado/blusas/"}]})
+    assert orch.state["taxonomy"]["Ripley"]["categories"] == []
+    assert any("TAXONOMY_HOST_REJECTED" in (e.get("error") or "")
+               for e in orch.state.get("errors") or [])

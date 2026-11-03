@@ -42,7 +42,7 @@ from app.auditor.nicopoly_matcher import is_nicopoly
 from mri_commercial_materialization_golden_slice.v001.materializer_engine import GenericCommercialMaterializer
 from app.mri_dashboard.acquisition_contract import (
     ACQUISITION_STATES, BLOCKING_STATES, SOURCE_BLOCKED, EXTRACTOR_FAILURE,
-    PARTIAL, FOUND, NOT_FOUND,
+    PARTIAL, FOUND, NOT_FOUND, empty_page_is_incomplete,
     normalize_stop_reason, resolve_outcome, classify_commercial_identity,
     identity_is_official_kpi, summarize_identities, catalog_reference_status,
     classification_basis, historical_reference_status,
@@ -399,7 +399,13 @@ class MRIOrchestrator:
                             limit=None, full_audit=True):
         if self.is_running:
             return
-            
+
+        # D-001/D-002: Ripley and Mercado Libre must never execute the legacy
+        # cache path. Enforce the contract at the runner boundary, not only in
+        # the API dispatcher.
+        if marketplace in ("Ripley", "Mercado Libre"):
+            full_audit = True
+
         self.is_running = True
         self.results = []
         
@@ -422,6 +428,18 @@ class MRIOrchestrator:
             "marketplace": marketplace,
             "mode": "DISCOVERY",
         })
+        try:
+            from app.mri_dashboard.build_info import build_info
+            _build = build_info()
+        except Exception:
+            _build = {"build_id": "unknown"}
+        self.state["runtime_context"] = {
+            "entrypoint": "run_discovery",
+            "module": __file__,
+            "build_id": _build.get("build_id"),
+            "full_audit": bool(full_audit),
+            "marketplace": marketplace,
+        }
         store = _safe_experience_store()
         
         from app.mri_dashboard.category_manager import category_manager
@@ -498,14 +516,58 @@ class MRIOrchestrator:
                             "categories_discovered": 0, "categories_used": []}
                     self.state["falabella_ssr_audit"] = {
                         k: v for k, v in _audit.items() if k != "observations"}
-                    self.state.setdefault("taxonomy", {})["Falabella"] = {
-                        "marketplace": "Falabella", "status": "TAXONOMY_DISCOVERED",
-                        "source": "SSR_BRAND_SURFACES",
-                        "categories": [{"category_id": c}
-                                       for c in _audit.get("categories_used") or []]}
-                    self.state.setdefault("taxonomy_status", {})["Falabella"] = {
-                        "status": "TAXONOMY_DISCOVERED", "cause": None,
-                        "source": "SSR_BRAND_SURFACES"}
+                    # ROOT_DISCOVERY is independent from ACQUISITION. The SSR
+                    # audit above remains the source of the 406 observations.
+                    _fba_root = None
+                    _fba_root_cause = None
+                    try:
+                        from app.mri_autonomous.taxonomy_roots import (
+                            discover_falabella_roots as _discover_fba_roots)
+                        _fba_root = await _aio_fba.to_thread(_discover_fba_roots)
+                    except Exception as _fbr_exc:
+                        _fba_root_cause = f"{type(_fbr_exc).__name__}: {_fbr_exc}"
+                    if _fba_root is not None and _fba_root.categories:
+                        self.state.setdefault("taxonomy", {})["Falabella"] = (
+                            _fba_root.as_taxonomy_result())
+                        self.state.setdefault("taxonomy_status", {})["Falabella"] = {
+                            "status": "TAXONOMY_DISCOVERED",
+                            "cause": None, "source": _fba_root.source}
+                        self.state["falabella_root_discovery"] = {
+                            "status": "PASS",
+                            "roots": _fba_root.roots_discovered,
+                            "nodes": _fba_root.nodes_discovered,
+                            "source": _fba_root.source,
+                        }
+                        try:
+                            from app.mri_autonomous.storage_guard import StorageConfig as _SCroot
+                            from app.mri_autonomous.taxonomy_store import (
+                                persist_taxonomy_result as _persist_root)
+                            _root_persisted = _persist_root(
+                                _SCroot.get_sqlite_path(), "Falabella",
+                                _fba_root.as_taxonomy_result(), run_id=run_id)
+                            self.state.setdefault("taxonomy_persistence", {})["Falabella"] = {
+                                "status": "RECORDED", "run_id": run_id,
+                                "counts": _root_persisted}
+                        except Exception as _fbrp_exc:
+                            self.state.setdefault("taxonomy_persistence", {})["Falabella"] = {
+                                "status": "NOT_RECORDED",
+                                "error": f"{type(_fbrp_exc).__name__}: {_fbrp_exc}"}
+                    else:
+                        _fba_root_cause = _fba_root_cause or "ROOT_DISCOVERY_NO_CATEGORIES"
+                        self.state["falabella_root_discovery"] = {
+                            "status": "FAIL", "cause": _fba_root_cause}
+                        self.state.setdefault("taxonomy", {})["Falabella"] = {
+                            "marketplace": "Falabella",
+                            "status": "TAXONOMY_DISCOVERED",
+                            "source": "SSR_BRAND_SURFACES",
+                            "categories": [{"category_id": c}
+                                           for c in _audit.get("categories_used") or []],
+                            "root_discovery_status": "FAIL",
+                            "root_discovery_cause": _fba_root_cause}
+                        self.state.setdefault("taxonomy_status", {})["Falabella"] = {
+                            "status": "TAXONOMY_DISCOVERED",
+                            "cause": _fba_root_cause,
+                            "source": "SSR_BRAND_SURFACES"}
                     for _r in (_fba.to_runner_results(
                             _audit.get("observations") or [],
                             catalog_status=_catalog.get("status")) if _fba else []):
@@ -625,6 +687,32 @@ class MRIOrchestrator:
                                     "status": "TAXONOMY_UNAVAILABLE",
                                     "source": "ERROR", "categories": [],
                                     "notes": [f"{type(_te).__name__}: {_te}"]}
+                        # Never persist a foreign-host category as Ripley/ML
+                        # taxonomy. This is the origin-side guard, not only the
+                        # navigation-side guard.
+                        if mkt in ("Ripley", "Mercado Libre"):
+                            try:
+                                from app.mri_dashboard.marketplace_scope import url_allowed
+                                _kept, _bad = [], []
+                                for _c in (_tax.get("categories") or []):
+                                    _u = (_c or {}).get("url")
+                                    if _u and url_allowed(mkt, _u):
+                                        _kept.append(_c)
+                                    else:
+                                        _bad.append({"category": (_c or {}).get("name"),
+                                                     "url": _u})
+                                _tax["categories"] = _kept
+                                if _bad:
+                                    self.state.setdefault("errors", []).append({
+                                        "stage": "descubrimiento",
+                                        "error": f"TAXONOMY_HOST_REJECTED[{mkt}]: {len(_bad)} categorías",
+                                        "examples": _bad[:5],
+                                        "run_id": run_id, "at": datetime.now().isoformat()})
+                            except Exception as _scope_exc:
+                                self.state.setdefault("errors", []).append({
+                                    "stage": "descubrimiento",
+                                    "error": f"TAXONOMY_SCOPE_CHECK_FAILED[{mkt}]: {_scope_exc}",
+                                    "run_id": run_id, "at": datetime.now().isoformat()})
                         _tax_status = _tax.get("status")
                         # Real taxonomy contract carries taxonomy_complete; fake
                         # fixtures used by unit tests do not and must not be gated.
@@ -634,6 +722,24 @@ class MRIOrchestrator:
                         self.state.setdefault("taxonomy_status", {})[mkt] = {
                             "status": _tax_status, "cause": _tax_cause,
                             "source": _tax.get("source")}
+                        # Persist the discovered hierarchy additively (never in
+                        # mri_categories, never deleting history). A missing
+                        # write capability is reported but does not abort the
+                        # acquisition; the audit remains PARTIAL/FAIL.
+                        if _tax.get("categories"):
+                            try:
+                                from app.mri_autonomous.storage_guard import StorageConfig as _SCtax
+                                from app.mri_autonomous.taxonomy_store import (
+                                    persist_taxonomy_result as _persist_tax)
+                                _persist_tax(
+                                    _SCtax.get_sqlite_path(), mkt, _tax,
+                                    run_id=run_id)
+                                self.state.setdefault("taxonomy_persistence", {})[mkt] = {
+                                    "status": "RECORDED", "run_id": run_id}
+                            except Exception as _tp_exc:
+                                self.state.setdefault("taxonomy_persistence", {})[mkt] = {
+                                    "status": "NOT_RECORDED",
+                                    "error": f"{type(_tp_exc).__name__}: {_tp_exc}"}
                         if full_audit and _tax_status not in (
                                 "TAXONOMY_DISCOVERED", "TAXONOMY_NOT_REQUIRED"):
                             # CP1: la ausencia de taxonomía NUNCA se convierte en
@@ -680,6 +786,11 @@ class MRIOrchestrator:
                             cats = categories_from_taxonomy(_tax)
                         else:
                             cats = category_manager.get_categories(mkt)
+                        self.state.setdefault("category_selection", {})[mkt] = {
+                            "full_audit": bool(full_audit),
+                            "source": ((_tax.get("source") if full_audit else "LEGACY_CACHE")),
+                            "count": len(cats),
+                        }
                         # MRI-CATEGORY-COVERAGE-003: Falabella full audits use the
                         # MRI-layer SSR paginator (the frozen scraper stops at 2
                         # pages). Real evidence is persisted through the normal
@@ -885,6 +996,13 @@ class MRIOrchestrator:
                             url = acquisition_url(url)
                         except Exception:
                             url = str(url).replace("{page}", "1")
+                        # Defense in depth: URL transformation must not escape scope.
+                        if not url_allowed(mkt, url):
+                            self.state.setdefault("errors", []).append({
+                                "stage": "alcance",
+                                "error": f"TRANSFORMED_URL_REJECTED[{mkt}] {url}",
+                                "run_id": run_id, "at": datetime.now().isoformat()})
+                            continue
                         if url in _cp_done:
                             # Página/categoría ya confirmada en checkpoint previo.
                             continue
@@ -935,9 +1053,10 @@ class MRIOrchestrator:
 
                         # Hydration retry (Capa 3 VA): an empty first page can be
                         # a false empty. Retry once after 20 s before accepting it.
-                        if (mkt == "Ripley" and not (res.get("products") or [])
+                        if (mkt in ("Ripley", "Paris")
+                                and not (res.get("products") or [])
                                 and (res.get("pages_traversed") or 0) == 0
-                                and res.get("stop_reason") == "EXHAUSTION"
+                                and res.get("stop_reason") in ("EXHAUSTION", "EMPTY")
                                 and _hydration_retries < 1):
                             _hydration_retries += 1
                             self.state.setdefault("hydration_retries", []).append({
@@ -963,12 +1082,28 @@ class MRIOrchestrator:
                         discovered_products = res.get("products", []) or []
                         raw_stop = res.get("stop_reason")
                         acq_state = normalize_stop_reason(raw_stop)
+                        # Paris is a single browser search surface. An empty
+                        # result with zero traversed pages is an incomplete page,
+                        # never proof that the publication set is empty.
+                        if (mkt == "Paris"
+                                and empty_page_is_incomplete(
+                                    len(discovered_products),
+                                    res.get("pages_traversed"))):
+                            res["stop_reason"] = "EMPTY_PAGE_NOT_LOADED"
+                            res["failure_type"] = "EMPTY_PAGE_NOT_LOADED"
+                            acq_state = PARTIAL
                         # A discovered surface can have a public fallback when the
                         # store-specific route is challenged. Try it only when the
                         # primary route yields no observations.
                         if (mkt == "Mercado Libre" and not discovered_products
                                 and cat_data.get("fallback_urls") and scraper):
                             for _fb_url in cat_data.get("fallback_urls") or []:
+                                if not url_allowed(mkt, _fb_url):
+                                    self.state.setdefault("errors", []).append({
+                                        "stage": "alcance",
+                                        "error": f"FALLBACK_URL_REJECTED[{mkt}] {_fb_url}",
+                                        "run_id": run_id, "at": datetime.now().isoformat()})
+                                    continue
                                 try:
                                     if getattr(scraper, "supports_pagination", False):
                                         _fb_res = await _aio_cat.wait_for(
@@ -1100,6 +1235,12 @@ class MRIOrchestrator:
                                 _recovery_pages = 0
                                 while len(discovered_products) < _declared_total and _recovery_pages < 8:
                                     _next_url = next_page_url(url, _offset)
+                                    if not url_allowed(mkt, _next_url):
+                                        self.state.setdefault("errors", []).append({
+                                            "stage": "alcance",
+                                            "error": f"PAGINATION_URL_REJECTED[{mkt}] {_next_url}",
+                                            "run_id": run_id, "at": datetime.now().isoformat()})
+                                        break
                                     if getattr(scraper, "supports_pagination", False):
                                         _r2 = await _aio_cat.wait_for(
                                             scraper.scrape_autonomous_category(
@@ -1224,7 +1365,14 @@ class MRIOrchestrator:
                                 "at": datetime.now().isoformat()})
                             if (_has_contract
                                     and mkt in ("Ripley", "Mercado Libre")):
-                                self.state.setdefault("gates", {})["G3"] = "UNVERIFIED"
+                                # Ripley does not expose a product-count field
+                                # in this surface; that is NOT_APPLICABLE, not a
+                                # source failure and not a fake verified count.
+                                if mkt == "Ripley":
+                                    self.state.setdefault("gates", {})["G3"] = "NOT_APPLICABLE"
+                                    self.state["gates"]["G3_reason"] = "NO_SOURCE_PRODUCT_COUNT"
+                                else:
+                                    self.state.setdefault("gates", {})["G3"] = "UNVERIFIED"
                         if mkt in ("Ripley", "Mercado Libre") and (
                                 acq_state == "SOURCE_BLOCKED"
                                 or "blocked" in _failure.lower()
@@ -1849,7 +1997,7 @@ class MRIOrchestrator:
             else:
                 # CP1: a blocked taxonomy/scope must NOT degrade into NOT_FOUND.
                 outcome = (blocking_states[0] if blocking_states
-                           else (blocked_reason or (PARTIAL if _tax_incomplete
+                           else (blocked_reason or (PARTIAL if (partial_state or _tax_incomplete)
                                                     else resolve_outcome(0, None))))
 
             self.state["outcome"] = outcome
@@ -1898,11 +2046,24 @@ class MRIOrchestrator:
                     "name": _a.get("requested_url"), "url": _a.get("requested_url"),
                     "status": "PENDING", "pages_observed": 0, "termination": None,
                     "publications": 0, "last_id": None, "stop_reason": None}
+                _acq_state = _a.get("acquisition_state")
+                _acq_products = int(_a.get("products_extracted") or 0)
+                # A traversed category with zero observations is EMPTY, not a
+                # positive FOUND. Coverage still counts it as fully traversed.
+                if _acq_products == 0 and _acq_state in ("FOUND", "COMPLETE"):
+                    _acq_state = "EMPTY"
+                # All raw rows were already observed in an earlier category:
+                # the surface was traversed, it is not an extraction failure.
+                if (_acq_products == 0 and _acq_state == "NO_PROGRESS"
+                        and int(_a.get("products_observed_raw") or 0) > 0
+                        and int(_a.get("duplicate_products") or 0)
+                        >= int(_a.get("products_observed_raw") or 0)):
+                    _acq_state = "EMPTY_DUPLICATE_ONLY"
                 _coverage.record_category(
                     _cov, _cid,
                     pages=_a.get("pages_traversed") or 0,
-                    stop_state=_a.get("acquisition_state"),
-                    publications=_a.get("products_extracted") or 0)
+                    stop_state=_acq_state,
+                    publications=_acq_products)
             # CP4: a resumed run that skipped already-confirmed categories must
             # not erase those entries from the coverage/checkpoint.
             if _cp_aux:
@@ -1945,9 +2106,10 @@ class MRIOrchestrator:
                     "taxonomia no demostrada: " + ", ".join(
                         (_tax_summary.get("unavailable") or [])
                         + (_tax_summary.get("pending") or [])
+                        + (_tax_summary.get("incomplete") or [])
                         + [f"{f.get('marketplace')}:{f.get('coverage_scope')}"
                            for f in (_tax_summary.get("fallback") or [])]
-                        or ["sin descubrimiento"]))
+                        or ["taxonomia incompleta"]))
             self.state["coverage"] = _cov
             self.state["acceptance"] = _cov["acceptance"]
             try:

@@ -95,3 +95,16 @@ def test_discovery_restarts_browser_after_closed_context():
         scraper=scraper, diagnostics=[]))
     assert scraper.stops == 1 and scraper.starts == 1
     assert len(urls) == 14
+
+
+def test_filter_ripley_urls_rejects_cross_marketplace_priors():
+    from app.mri_autonomous.ripley_discovery import filter_ripley_urls
+    urls = [
+        "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/blusas-y-poleras?brand=NICOPOLY",
+        "https://www.paris.cl/search?q=nicopoly",
+        "https://www.mercadolibre.cl/tienda/nicopoly",
+        "https://listado.mercadolibre.cl/vestuario-calzado/blusas/",
+    ]
+    kept = filter_ripley_urls(urls)
+    assert len(kept) == 1
+    assert kept[0].startswith("https://simple.ripley.cl/")

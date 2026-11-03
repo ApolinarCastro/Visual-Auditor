@@ -1,0 +1,123 @@
+{
+  "runs_reconciled": 8,
+  "expected_sku_channel_relations": 8585,
+  "confirmed_links": 0,
+  "unlinked_expectations": 8585,
+  "observed_unique_by_market": {
+    "Falabella": 619,
+    "Mercado Libre": 573,
+    "Ripley": 766,
+    "Paris": 598
+  },
+  "exact_sku_text_matches": 0,
+  "direct_id_equalities": 0,
+  "mri_variants_rows": 0,
+  "run_rows": [
+    {
+      "run_id": "run_mri_discovery_1793622915",
+      "marketplace": "Falabella",
+      "observed_occurrences": 404,
+      "unique_identities": 404,
+      "active_records": 213,
+      "historical_records": 191,
+      "category_memberships": 595,
+      "duplicates": 0,
+      "source_blocked": 0,
+      "scope_differences": "complete_symmetric_diff=0; this=14; latest=14; latest_run=run_mri_discovery_1793624983__falabella",
+      "persistence_differences": "occurrences 404 vs unique 404; active 213; historical 191"
+    },
+    {
+      "run_id": "run_mri_discovery_1793623173",
+      "marketplace": "Mercado Libre",
+      "observed_occurrences": 585,
+      "unique_identities": 571,
+      "active_records": 176,
+      "historical_records": 395,
+      "category_memberships": 966,
+      "duplicates": 14,
+      "source_blocked": 0,
+      "scope_differences": "complete_symmetric_diff=8; this=13; latest=5; latest_run=run_mri_discovery_1793641074",
+      "persistence_differences": "occurrences 585 vs unique 571; active 176; historical 395"
+    },
+    {
+      "run_id": "run_mri_discovery_1793624983__mercado_libre",
+      "marketplace": "Mercado Libre",
+      "observed_occurrences": 357,
+      "unique_identities": 357,
+      "active_records": 357,
+      "historical_records": 0,
+      "category_memberships": 357,
+      "duplicates": 0,
+      "source_blocked": 9,
+      "scope_differences": "complete_symmetric_diff=9; this=4; latest=5; latest_run=run_mri_discovery_1793641074",
+      "persistence_differences": "occurrences 357 vs unique 357; active 357; historical 0"
+    },
+    {
+      "run_id": "run_mri_discovery_1793624983__paris",
+      "marketplace": "Paris",
+      "observed_occurrences": 598,
+      "unique_identities": 598,
+      "active_records": 598,
+      "historical_records": 0,
+      "category_memberships": 598,
+      "duplicates": 0,
+      "source_blocked": 0,
+      "scope_differences": "complete_symmetric_diff=0; this=1; latest=1; latest_run=run_mri_discovery_1793624983__paris",
+      "persistence_differences": "occurrences 598 vs unique 598; active 598; historical 0"
+    },
+    {
+      "run_id": "run_mri_discovery_1793624983__ripley",
+      "marketplace": "Ripley",
+      "observed_occurrences": 766,
+      "unique_identities": 766,
+      "active_records": 5,
+      "historical_records": 761,
+      "category_memberships": 1527,
+      "duplicates": 0,
+      "source_blocked": 0,
+      "scope_differences": "complete_symmetric_diff=0; this=40; latest=40; latest_run=run_mri_discovery_1793630598",
+      "persistence_differences": "occurrences 766 vs unique 766; active 5; historical 761"
+    },
+    {
+      "run_id": "run_mri_discovery_1793624983__falabella",
+      "marketplace": "Falabella",
+      "observed_occurrences": 406,
+      "unique_identities": 406,
+      "active_records": 406,
+      "historical_records": 0,
+      "category_memberships": 406,
+      "duplicates": 0,
+      "source_blocked": 0,
+      "scope_differences": "complete_symmetric_diff=0; this=14; latest=14; latest_run=run_mri_discovery_1793624983__falabella",
+      "persistence_differences": "occurrences 406 vs unique 406; active 406; historical 0"
+    },
+    {
+      "run_id": "run_mri_discovery_1793630598",
+      "marketplace": "Ripley",
+      "observed_occurrences": 766,
+      "unique_identities": 761,
+      "active_records": 761,
+      "historical_records": 0,
+      "category_memberships": 761,
+      "duplicates": 5,
+      "source_blocked": 0,
+      "scope_differences": "complete_symmetric_diff=0; this=40; latest=40; latest_run=run_mri_discovery_1793630598",
+      "persistence_differences": "occurrences 766 vs unique 761; active 761; historical 0"
+    },
+    {
+      "run_id": "run_mri_discovery_1793641074",
+      "marketplace": "Mercado Libre",
+      "observed_occurrences": 40,
+      "unique_identities": 40,
+      "active_records": 40,
+      "historical_records": 0,
+      "category_memberships": 40,
+      "duplicates": 0,
+      "source_blocked": 8,
+      "scope_differences": "complete_symmetric_diff=0; this=5; latest=5; latest_run=run_mri_discovery_1793641074",
+      "persistence_differences": "occurrences 40 vs unique 40; active 40; historical 0"
+    }
+  ],
+  "db_integrity": "ok",
+  "db_publications": 13128
+}

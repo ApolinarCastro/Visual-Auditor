@@ -96,7 +96,9 @@ async def ripely_taxonomy_async(scraper, hub_url, brand="Nicopoly"):
                 from app.mri_dashboard.ripley_query_experience import read_query_experience
                 from app.mri_autonomous.storage_guard import StorageConfig
                 _rows = read_query_experience(StorageConfig.get_aux_dir())
-                _prior = [r.get("url") for r in _rows if r.get("products")]
+                from app.mri_autonomous.ripley_discovery import filter_ripley_urls
+                _prior = filter_ripley_urls(
+                    [r.get("url") for r in _rows if r.get("products")])
             except Exception:
                 _prior = []
             urls = await discover_live_categories(
@@ -133,20 +135,24 @@ async def discover_taxonomy_async(marketplace, *, scraper=None, hub_url=None,
                                   brand="Nicopoly"):
     """Async-safe taxonomy discovery for the MRI runner.
 
-    - Ripley: awaits the Playwright-based discovery on the MAIN event loop
-      (Playwright objects are loop-bound; they cannot be moved to a thread).
-    - Falabella/Mercado Libre: blocking HTTP/API calls are moved OFF the event
-      loop so the dashboard and /api/state keep responding during discovery.
-    - Paris: untouched baseline.
+    - Ripley/Paris: await the existing Playwright page parser (loop-bound).
+    - Falabella/Mercado Libre: blocking HTTP/API calls are moved OFF the loop.
+    - Paris discovery is MRI-only; the Legacy scraper/baseline is untouched.
     """
     import asyncio
     try:
         if marketplace == "Paris":
-            return _result("Paris", NOT_REQUIRED, [], "PARIS_VALIDATED_BASELINE")
+            from app.mri_autonomous.taxonomy_roots import discover_paris_roots_async
+            result = await discover_paris_roots_async(
+                scraper, hub_url or "https://www.paris.cl/")
+            return _result("Paris", DISCOVERED if result.categories else UNAVAILABLE,
+                           result.categories, result.source, result.notes,
+                           complete=False,
+                           coverage_scope="PARIS_MRI_ROOT_DISCOVERED",
+                           pending_scope=result.as_taxonomy_result().get("pending_scope"))
         if marketplace == "Ripley":
             return await ripely_taxonomy_async(
-                scraper, hub_url or f"https://simple.ripley.cl/search/{brand.lower()}",
-                brand)
+                scraper, hub_url or "https://simple.ripley.cl/", brand)
         return await asyncio.to_thread(
             discover_taxonomy, marketplace, scraper=scraper, hub_url=hub_url,
             brand=brand)
@@ -156,7 +162,16 @@ async def discover_taxonomy_async(marketplace, *, scraper=None, hub_url=None,
 
 
 def falabella_taxonomy(brand="Nicopoly"):
-    """Discover Falabella taxonomy from the SSR payload already fetchable."""
+    """Discover Falabella roots from SSR; brand catalog is only a fallback."""
+    from app.mri_autonomous.taxonomy_roots import discover_falabella_roots
+    root = discover_falabella_roots()
+    if root.categories:
+        return _result("Falabella", DISCOVERED, root.categories, root.source,
+                       root.notes, complete=False,
+                       coverage_scope="SSR_ROOT_DISCOVERED",
+                       pending_scope=["TAXONOMY_DEPTH_PENDING"])
+    # Existing brand catalog fallback is preserved for compatibility, but it
+    # is never presented as an exhaustive root taxonomy.
     from app.mri_autonomous.falabella_ssr_engine import FalabellaSSREngine
     try:
         engine = FalabellaSSREngine()
@@ -180,17 +195,44 @@ def falabella_taxonomy(brand="Nicopoly"):
     if not cats:
         return _result("Falabella", UNAVAILABLE, [], "SSR_NEXT_DATA",
                        ["el payload SSR no expuso taxonomía"])
-    return _result("Falabella", DISCOVERED, cats, "SSR_NEXT_DATA")
+    return _result("Falabella", DISCOVERED, cats, "SSR_NEXT_DATA",
+                   ["fallback brand catalog; root taxonomy not demonstrated"],
+                   complete=False,
+                   coverage_scope="BRAND_FALLBACK_NOT_ROOT_TAXONOMY",
+                   pending_scope=["ROOT_TAXONOMY_UNRESOLVED"])
 
 
 def meli_taxonomy(query="nicopoly"):
-    """Discover ML surfaces and categories through the generic DiscoveryKernel.
+    """Discover ML roots through the official category API, then fallback kernel.
 
-    No fixed category list and no copied route: the adapter observes the brand
-    storefront, expands through the public category API, marks parent routes as
-    reference when children exist, and stores a continuously updated validation
-    snapshot.
+    The root list is not a fixed category list. If the official API is blocked,
+    the storefront DiscoveryKernel remains the existing fallback and its result
+    is explicitly partial.
     """
+    from app.mri_autonomous.taxonomy_roots import discover_meli_roots
+    root = discover_meli_roots()
+    if root.categories:
+        cats = []
+        for c in root.categories:
+            cats.append({
+                "category_id": c.get("category_id"),
+                "name": c.get("name"),
+                "url": c.get("url"),
+                "parent_id": c.get("parent_id"),
+                "hierarchical_path": c.get("hierarchical_path"),
+                "source": c.get("source"),
+                "reported_count": None,
+                "commercial_relevance": "DEPARTMENT",
+            })
+        out = _result("Mercado Libre", DISCOVERED, cats, root.source,
+                      root.notes, complete=False,
+                      coverage_scope="OFFICIAL_ROOT_API_DISCOVERED",
+                      pending_scope=["TAXONOMY_DEPTH_PENDING"])
+        out["validation"] = {"source": root.source,
+                             "roots_discovered": root.roots_discovered,
+                             "nodes_discovered": root.nodes_discovered}
+        return out
+    # Existing storefront fallback, preserved for compatibility.
     from app.mri_dashboard.discovery_kernel import (
         DiscoveryKernel, DiscoveryTarget)
     store_url = query if str(query).startswith("http") else None
@@ -215,7 +257,9 @@ def meli_taxonomy(query="nicopoly"):
         "Mercado Libre", DISCOVERED, cats, "DISCOVERY_KERNEL",
         [f"storefront={result.store_url}",
          f"estrategias={result.strategies}",
-         f"validación_dinámica={result.validation.get('count', 0)} categorías"])
+         f"validación_dinámica={result.validation.get('count', 0)} categorías"],
+        complete=False, coverage_scope="STOREFRONT_FALLBACK_NOT_ROOT_TAXONOMY",
+        pending_scope=["ROOT_TAXONOMY_UNRESOLVED"])
     out["validation"] = result.validation
     return out
 
@@ -242,13 +286,15 @@ def summarize(taxonomy_map: dict) -> dict:
     """Coverage-facing summary of taxonomy discovery."""
     out = {"marketplaces": taxonomy_map,
            "discovered": [], "unavailable": [], "pending": [],
-           "not_required": []}
+           "not_required": [], "incomplete": []}
     for mkt, res in (taxonomy_map or {}).items():
         status = (res or {}).get("status")
         if status == DISCOVERED:
             out["discovered"].append({"marketplace": mkt,
                                       "categories": len(res.get("categories") or []),
                                       "taxonomy_complete": bool(res.get("taxonomy_complete"))})
+            if not res.get("taxonomy_complete"):
+                out["incomplete"].append(mkt)
         elif status == NOT_REQUIRED:
             out["not_required"].append(mkt)
         elif status == BLOCKED:

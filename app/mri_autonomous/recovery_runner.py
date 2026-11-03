@@ -76,7 +76,9 @@ def cleanup_ghost_unknown_memberships(conn) -> int:
             JOIN mri_categories c2 ON c2.category_id = pc.category_id
             WHERE c2.category_name != 'CATEGORY_UNKNOWN')
     """)
-    conn.commit()
+    # Do not commit here: the caller owns the persistence transaction. An
+    # early commit would leave a run row confirmed even if the later
+    # publication insert fails and the caller rolls back.
     return cur.rowcount
 
 
@@ -637,6 +639,7 @@ class AcquisitionRecoveryRunner:
                     FROM mri_publications WHERE publication_id = ?
                 """, (pub_id,)).fetchone()
                 if existing and existing[7] and existing[7] != run_id:
+                    used_run_id = existing[7]
                     c.execute("""
                         INSERT OR REPLACE INTO mri_historical_publications (
                             history_id, publication_id, product_id, marketplace, marketplace_product_id,
@@ -651,6 +654,31 @@ class AcquisitionRecoveryRunner:
                         existing[10], existing[11], existing[12], existing[13], existing[14], existing[15],
                         existing[16], existing[17], existing[18], existing[19], existing[20]
                     ))
+                    # Archive category membership BEFORE deleting the active
+                    # junction. The current-state junction has no run_id; without
+                    # this copy, a new run destroys the previous run's category
+                    # evidence while keeping its publication row.
+                    c.execute("""
+                        CREATE TABLE IF NOT EXISTS mri_historical_publication_categories (
+                            history_id TEXT PRIMARY KEY,
+                            publication_id TEXT NOT NULL,
+                            category_id TEXT NOT NULL,
+                            run_id TEXT,
+                            observed_at TEXT NOT NULL,
+                            FOREIGN KEY (history_id) REFERENCES mri_historical_publications(history_id),
+                            FOREIGN KEY (category_id) REFERENCES mri_categories(category_id)
+                        )
+                    """)
+                    old_links = c.execute(
+                        "SELECT category_id, observed_at FROM mri_publication_categories WHERE publication_id = ?",
+                        (pub_id,)).fetchall()
+                    for old_cat, old_observed in old_links:
+                        c.execute("""
+                            INSERT OR REPLACE INTO mri_historical_publication_categories (
+                                history_id, publication_id, category_id, run_id, observed_at
+                            ) VALUES (?, ?, ?, ?, ?)
+                        """, (f"hist_{used_run_id}_{pub_id}_{old_cat}",
+                              pub_id, old_cat, used_run_id, old_observed))
 
                 c.execute("""
                     INSERT OR REPLACE INTO mri_publications (

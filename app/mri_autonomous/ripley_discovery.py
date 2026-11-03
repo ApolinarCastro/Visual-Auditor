@@ -10,10 +10,20 @@ from urllib.parse import urljoin, urlparse, parse_qs, urlencode
 
 BASE = "https://simple.ripley.cl"
 PRODUCT_MARKERS = ("-mpm", "/p/", "/mp/", "/producto", "/product/")
-NON_CATEGORY_MARKERS = ("/search", "/tienda/", "/marcas/", "/marca/", "/cuenta",
+NON_CATEGORY_MARKERS = ("/search", "/tienda/", "/marcas/", "/marcas-destacadas/", "/marca/", "/cuenta",
                         "/login", "/carrito", "/ayuda", "/seguimiento")
 CATEGORY_PREFIXES = ("/moda-mujer", "/moda-infantil", "/moda-hombre",
                      "/accesorios", "/calzado")
+
+
+def filter_ripley_urls(urls) -> list[str]:
+    """Keep only Ripley-host URLs; prior experience is cross-marketplace."""
+    out = []
+    for raw in urls or []:
+        cleaned = _clean_url(str(raw or ""))
+        if cleaned and cleaned not in out:
+            out.append(cleaned)
+    return out
 
 
 def _clean_url(href: str) -> str | None:
@@ -94,6 +104,9 @@ async def _read_anchors(page) -> list[dict]:
 
 async def _navigate_via_va(scraper, page, url: str) -> bool:
     """Use VA's Ripley navigator (challenge detection + session harvest)."""
+    # Single choke point: never hand a pagination template to the browser.
+    url = str(url).replace("&page={page}", "").replace("?page={page}", "")
+    url = url.replace("page={page}", "page=1").replace("{page}", "1")
     if scraper is not None:
         nav = getattr(scraper, "_navigate_ripley", None)
         if nav is not None:
@@ -171,14 +184,22 @@ async def discover_live_categories(page, hub_url: str, brand: str = "NICOPOLY",
     # Verified query experience goes first. This is learned runtime knowledge,
     # not a fixed category list; it only changes probe order.
     learned = []
+    _rejected_prior = []
     for _u in (prior_urls or []):
         if not _u:
             continue
         _u = str(_u).replace("&page={page}", "").replace("?page={page}", "")
-        if _u.startswith("http") and _u not in learned:
-            learned.append(_u)
-    if diagnostics is not None and learned:
-        diagnostics.append({"prior_urls": len(learned)})
+        _clean = _clean_url(_u)
+        if _clean:
+            if _clean not in learned:
+                learned.append(_clean)
+        else:
+            _rejected_prior.append(_u)
+    if diagnostics is not None:
+        if learned:
+            diagnostics.append({"prior_urls": len(learned)})
+        if _rejected_prior:
+            diagnostics.append({"prior_urls_rejected_host": _rejected_prior[:5]})
     # Only the brand hub and the marketplace root are navigation seeds.
     # Categories must be derived from links/menu/facets on those live pages;
     # no hardcoded category URLs are acquisition inputs.
@@ -187,6 +208,15 @@ async def discover_live_categories(page, hub_url: str, brand: str = "NICOPOLY",
     for candidate in candidates:
         if not candidate or candidate in seen:
             continue
+        # Last barrier before browser navigation: never navigate a foreign
+        # host. The hub/root are allowed because they are discovery seeds,
+        # not category URLs.
+        if candidate not in (hub_url, f"{BASE}/") and _clean_url(candidate) is None:
+            if diagnostics is not None:
+                diagnostics.append({"candidate_rejected_host": candidate})
+            continue
+        # Discovery itself must not navigate the literal pagination template.
+        candidate = candidate.replace("page={page}", "page=1").replace("{page}", "1")
         seen.add(candidate)
         ok = await _navigate_via_va(scraper, page, candidate)
         if not ok:
