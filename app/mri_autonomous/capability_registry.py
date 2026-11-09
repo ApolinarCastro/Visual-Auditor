@@ -1,4 +1,4 @@
-"""
+﻿"""
 app/mri_autonomous/capability_registry.py
 MRI Capability Registry (RG-01 to RG-08)
 Maintains registered capabilities, execution adapters, and marketplace capability matrices.
@@ -20,6 +20,48 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# MRI-LEARNING-CIRCUIT-REPAIR-007: persisted capability knowledge.
+#
+# Capability outcomes are stored in the existing `experience` table (no new
+# table, no new SQLite database) under a system-scope brand, because a
+# capability belongs to a marketplace + adapter, not to one commercial brand.
+# ---------------------------------------------------------------------------
+CAPABILITY_KNOWLEDGE_TYPE = "CAPABILITY"
+CAPABILITY_SYSTEM_BRAND = "__SYSTEM__"
+CAPABILITY_STRATEGY_TYPE = "CAPABILITY"
+# A single isolated success never promotes a capability to HEALTHY.
+MIN_SUCCESS_EVIDENCE = 2
+
+# Explicit, auditable strategy_id -> capability_id bindings.
+# Only exact (strategy_type, strategy_id) relations verified by an execution
+# adapter belong here. Legacy execution-strategy rows (nav::*, facet::ui::*,
+# skip:*) have no registry capability: they resolve to None and are never used
+# to select a capability. Rows written by report_outcome use strategy_type
+# "CAPABILITY" with strategy_id == capability_id (identity by construction).
+STRATEGY_CAPABILITY_BINDINGS: Dict[Tuple[str, str], str] = {}
+
+
+def register_strategy_capability_binding(strategy_type: str, strategy_id: str, capability_id: str) -> None:
+    """Declare one verified strategy -> capability relation (exact match only)."""
+    STRATEGY_CAPABILITY_BINDINGS[(strategy_type, strategy_id)] = capability_id
+
+
+def resolve_strategy_capability(
+    strategy_type: str,
+    strategy_id: str,
+    registry: Optional["CapabilityRegistry"] = None,
+) -> Optional[str]:
+    """Resolve a persisted strategy identity to a registered capability id.
+
+    No name-similarity heuristics: identity rows resolve to themselves only
+    when the capability is actually registered; any other relation must be
+    explicitly registered. Unknown rows resolve to None.
+    """
+    if strategy_type == CAPABILITY_STRATEGY_TYPE and registry is not None and registry.get(strategy_id) is not None:
+        return strategy_id
+    return STRATEGY_CAPABILITY_BINDINGS.get((strategy_type, strategy_id))
 
 
 class CapabilityType(str, enum.Enum):
@@ -91,11 +133,129 @@ class CapabilityRegistry:
     All capabilities initialize in UNKNOWN state until probe_capability() or verify_environment() is run.
     """
 
-    def __init__(self, auto_probe: bool = False):
+    def __init__(self, auto_probe: bool = False, experience_store: Any = None, persistence_enabled: bool = False):
         self._capabilities: Dict[str, CapabilityDefinition] = {}
+        self._experience_store = experience_store
+        self._persistence_enabled = bool(persistence_enabled) and experience_store is not None
+        self._persistence_errors: List[str] = []
         self._init_default_capabilities()
         if auto_probe:
             self.probe_all_capabilities()
+        if self._experience_store is not None:
+            self.hydrate_from_experience()
+
+    # ------------------------------------------------------------------
+    # MRI-LEARNING-CIRCUIT-REPAIR-007: durable capability knowledge
+    # ------------------------------------------------------------------
+
+    def bind_experience_store(self, experience_store: Any, enable_persistence: bool = True) -> None:
+        """Attach the authorized ExperienceStore and optionally persist outcomes."""
+        self._experience_store = experience_store
+        self._persistence_enabled = bool(enable_persistence) and experience_store is not None
+        if experience_store is not None:
+            self.hydrate_from_experience(experience_store)
+
+    def _experience(self) -> Any:
+        return self._experience_store if self._persistence_enabled else None
+
+    def _persist_capability_outcome(self, cap: CapabilityDefinition, success: bool, evidence: str) -> None:
+        """Write one capability outcome through the existing ExperienceStore API."""
+        store = self._experience()
+        if store is None:
+            return
+        result = "SUCCESS" if success else "FAILED"
+        confidence = cap.success_rate
+        try:
+            store.record_experience(
+                marketplace=cap.marketplace,
+                brand=CAPABILITY_SYSTEM_BRAND,
+                knowledge_type=CAPABILITY_KNOWLEDGE_TYPE,
+                value=cap.capability_id,
+                page_type=cap.adapter_mode.value,
+                status="VALIDATED" if success else "FAILED",
+                is_success=success,
+                evidence_reference=(evidence or "")[:900],
+            )
+            store.record_strategy(
+                marketplace=cap.marketplace,
+                brand=CAPABILITY_SYSTEM_BRAND,
+                strategy_id=cap.capability_id,
+                strategy_type=CAPABILITY_STRATEGY_TYPE,
+                surface=cap.adapter_mode.value,
+                hypothesis="verified capability outcome (learning circuit)",
+                attempt=1,
+                result=result,
+                evidence=(evidence or "")[:400],
+                confidence=confidence,
+            )
+        except Exception as exc:  # persistence is fail-open: execution keeps its result
+            self._persistence_errors.append(f"{cap.capability_id}: {type(exc).__name__}: {exc}")
+            logger.warning(f"Capability persistence failed for {cap.capability_id}: {exc}")
+
+    def hydrate_from_experience(self, experience_store: Any = None,
+                                min_success_evidence: int = MIN_SUCCESS_EVIDENCE) -> Dict[str, str]:
+        """Restore operational capability state from persisted, authorized experience.
+
+        - no evidence -> stays UNKNOWN
+        - isolated success (below min_success_evidence) -> DEGRADED, never HEALTHY
+        - >= min successes with no consecutive failure -> HEALTHY
+        - consecutive failures >= 3 -> BLOCKED
+        """
+        store = experience_store or self._experience_store
+        if store is None:
+            return {}
+        restored: Dict[str, str] = {}
+        for cap in self._capabilities.values():
+            try:
+                row = store.get_experience_item(
+                    cap.marketplace, CAPABILITY_SYSTEM_BRAND,
+                    CAPABILITY_KNOWLEDGE_TYPE, cap.capability_id)
+            except Exception:
+                continue
+            if not row:
+                continue
+            successes = int(row.get("success_count") or 0)
+            failures = int(row.get("failure_count") or 0)
+            consecutive = int(row.get("consecutive_failures") or 0)
+            if successes == 0 and failures == 0:
+                continue
+            if consecutive >= 3:
+                health = CapabilityHealth.BLOCKED
+            elif successes >= min_success_evidence and consecutive == 0:
+                health = CapabilityHealth.HEALTHY
+            elif successes == 0 and failures > 0:
+                health = CapabilityHealth.DEGRADED
+            elif successes > 0:
+                health = CapabilityHealth.DEGRADED
+            else:
+                continue
+            cap.health = health
+            cap.failure_count = consecutive
+            cap.success_rate = successes / float(successes + failures)
+            cap.last_verified_at = row.get("last_seen_at") or cap.last_verified_at
+            cap.metadata["experience_evidence"] = {
+                "experience_id": row.get("id"),
+                "success_count": successes,
+                "failure_count": failures,
+                "consecutive_failures": consecutive,
+                "status": row.get("status"),
+                "last_seen_at": row.get("last_seen_at"),
+            }
+            restored[cap.capability_id] = health.value
+        return restored
+
+    def capability_evidence(self, capability_id: str, experience_store: Any = None) -> Optional[Dict[str, Any]]:
+        """Read the persisted evidence row for one capability (or None)."""
+        store = experience_store or self._experience_store
+        cap = self.get(capability_id)
+        if store is None or cap is None:
+            return None
+        try:
+            return store.get_experience_item(
+                cap.marketplace, CAPABILITY_SYSTEM_BRAND,
+                CAPABILITY_KNOWLEDGE_TYPE, capability_id)
+        except Exception:
+            return None
 
     def _init_default_capabilities(self):
         """Initializes canonical capabilities across 4 marketplaces in UNKNOWN state."""
@@ -109,8 +269,7 @@ class CapabilityRegistry:
                 supported_surfaces=["search", "browse", "groups"],
                 health=CapabilityHealth.UNKNOWN,
                 cost_weight=1.0,
-                metadata={"provider": "Constructor.io",
-                          "credential_source": "env:PARIS_CONSTRUCTOR_KEY"},
+                metadata={"provider": "Constructor.io", "credential_source": "env:PARIS_CONSTRUCTOR_KEY"},
             )
         )
         self.register(
@@ -235,13 +394,37 @@ class CapabilityRegistry:
             res = [c for c in res if c.health in (CapabilityHealth.HEALTHY, CapabilityHealth.DEGRADED)]
         return res
 
-    def report_outcome(self, capability_id: str, success: bool, error_message: Optional[str] = None) -> None:
+    def report_outcome(self, capability_id: str, success: bool, error_message: Optional[str] = None,
+                       scope: str = "capability", route_id: Optional[str] = None,
+                       marketplace: Optional[str] = None, state: Optional[str] = None,
+                       evidence: Optional[str] = None) -> None:
         """
         Updates capability health and success metrics following real execution (RG-04).
-        Transitions health based on verified execution evidence.
+
+        MRI-005: ``scope="route"`` records a per-route result without touching the
+        capability counters/health. Only ``scope="capability"`` (default) preserves
+        the historical behaviour. A single bad URL must never block every route of
+        the same marketplace.
         """
         cap = self.get(capability_id)
         if not cap:
+            return
+        if scope == "route":
+            store = self._experience()
+            if store is not None and route_id:
+                try:
+                    store.record_experience(
+                        marketplace=marketplace or cap.marketplace,
+                        brand="Nicopoly",
+                        knowledge_type="ROUTE_STATE",
+                        value=route_id,
+                        page_type=state or ("VALIDATED" if success else "FAILED"),
+                        status="VALIDATED" if success else "FAILED",
+                        is_success=success,
+                        evidence_reference=(evidence or "")[:900],
+                    )
+                except Exception as exc:
+                    self._persistence_errors.append(f"ROUTE_STATE:{route_id}:{type(exc).__name__}: {exc}")
             return
 
         cap.last_verified_at = datetime.now(timezone.utc).isoformat()
@@ -259,6 +442,10 @@ class CapabilityRegistry:
                 logger.warning(f"Capability {capability_id} transitioned to BLOCKED due to {cap.failure_count} consecutive failures.")
             elif cap.failure_count >= 1:
                 cap.health = CapabilityHealth.DEGRADED
+
+        # MRI-LEARNING-CIRCUIT-REPAIR-007: the learned outcome is durable when
+        # an authorized ExperienceStore is attached (production/runner wiring).
+        self._persist_capability_outcome(cap, success, error_message or "")
 
     def probe_capability(self, capability_id: str) -> CapabilityHealth:
         """
@@ -341,3 +528,4 @@ class CapabilityRegistry:
             caps = self.list_capabilities(marketplace=m, only_healthy=False)
             matrix[m] = [c.to_dict() for c in caps]
         return matrix
+
