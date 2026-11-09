@@ -2429,10 +2429,17 @@ class MRIOrchestrator:
             self.state["child_run_ids"][mkt] = cid
             _live_children[mkt] = child
             try:
+                if self.stop_requested:
+                    child.stop_requested = True
+                    return child
                 await child.run_discovery(mkt, max_pages=max_pages,
                                           run_id=cid, limit=limit,
                                           full_audit=True)
             finally:
+                try:
+                    child.stop_requested = True
+                except Exception:
+                    pass
                 self.state["marketplace_states"][mkt] = (
                     child.state.get("outcome")
                     or child.state.get("status_message")
@@ -2440,29 +2447,67 @@ class MRIOrchestrator:
             return child
 
         try:
-            tasks = [asyncio.create_task(_child(m)) for m in mkts]
-            self._parallel_children = tasks
-            async def _monitor():
-                while True:
-                    _sync_children()
-                    await asyncio.sleep(2)
-            monitor = asyncio.create_task(_monitor())
-            done = await asyncio.gather(*tasks, return_exceptions=True)
-            monitor.cancel()
+            # MRI-013: MRI_MAX_BROWSER_CONCURRENCY is a real limit, not a flag.
+            import os as _os
             try:
-                await monitor
-            except asyncio.CancelledError:
-                pass
+                _max_browser = int(_os.environ.get("MRI_MAX_BROWSER_CONCURRENCY", "1"))
+            except ValueError:
+                _max_browser = 1
+            if _max_browser <= 1:
+                # One browser/profile owner at a time (safe default).
+                self.state["execution_strategy"] = "ALL_SEQUENTIAL_AUTO"
+                done = []
+                for _m in mkts:
+                    if self.stop_requested:
+                        break
+                    try:
+                        done.append(await _child(_m))
+                    except Exception as _child_exc:
+                        done.append(_child_exc)
+                    _sync_children()
+            else:
+                _semaphore = asyncio.Semaphore(max(1, _max_browser))
+
+                async def _child_limited(mkt):
+                    async with _semaphore:
+                        return await _child(mkt)
+
+                tasks = [asyncio.create_task(_child_limited(m)) for m in mkts]
+                self._parallel_children = tasks
+
+                async def _monitor():
+                    while True:
+                        _sync_children()
+                        if self.stop_requested:
+                            for _c in list(_live_children.values()):
+                                try:
+                                    _c.stop_requested = True
+                                except Exception:
+                                    pass
+                            for _t in tasks:
+                                if not _t.done():
+                                    _t.cancel()
+                            break
+                        await asyncio.sleep(2)
+
+                monitor = asyncio.create_task(_monitor())
+                done = await asyncio.gather(*tasks, return_exceptions=True)
+                monitor.cancel()
+                try:
+                    await monitor
+                except asyncio.CancelledError:
+                    pass
             agg = []
             outcomes = []
             for mkt, child in zip(mkts, done):
-                if isinstance(child, Exception):
+                if isinstance(child, BaseException) or not hasattr(child, "state"):
                     self.state["errors"].append({
                         "stage": "adquiriendo", "marketplace": mkt,
                         "error": f"{type(child).__name__}: {child}",
                         "run_id": run_id, "at": datetime.now().isoformat()})
-                    self.state["marketplace_states"][mkt] = "FAILED"
-                    outcomes.append("SOURCE_BLOCKED")
+                    self.state["marketplace_states"][mkt] = (
+                        "STOPPED" if self.stop_requested else "FAILED")
+                    outcomes.append("STOPPED" if self.stop_requested else "SOURCE_BLOCKED")
                     continue
                 self.state["marketplace_states"][mkt] = (
                     child.state.get("outcome")

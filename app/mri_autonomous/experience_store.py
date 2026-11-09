@@ -36,7 +36,14 @@ class ExperienceStore:
         from app.mri_autonomous.storage_guard import StorageConfig
         StorageConfig.ensure_writable(self.db_path, reason="ExperienceStore persistence",
                                       explicit=self._explicit_db)
-        conn = sqlite3.connect(self.db_path)
+        # MRI-013: multi-market parallel writers require WAL + busy_timeout.
+        conn = sqlite3.connect(self.db_path, timeout=30)
+        try:
+            conn.execute("PRAGMA journal_mode=WAL")
+            conn.execute("PRAGMA busy_timeout=30000")
+            conn.execute("PRAGMA synchronous=NORMAL")
+        except sqlite3.Error:
+            pass
         conn.row_factory = sqlite3.Row
         return conn
 

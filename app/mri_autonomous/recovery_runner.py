@@ -93,6 +93,18 @@ def deterministic_category_id(marketplace: str, category_name: str) -> str:
     return f"cat_{mkt_slug.lower()}_{h}"
 
 
+def _connect_sqlite_parallel(path):
+    """MRI-013: WAL + busy_timeout for concurrent marketplace writers."""
+    conn = sqlite3.connect(path, timeout=30)
+    try:
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute("PRAGMA busy_timeout=30000")
+        conn.execute("PRAGMA synchronous=NORMAL")
+    except sqlite3.Error:
+        pass
+    return conn
+
+
 class AcquisitionRecoveryRunner:
     """
     Reproducible operational acquisition pipeline across 4 marketplaces.
@@ -335,7 +347,7 @@ class AcquisitionRecoveryRunner:
                 "without the historical master catalog; unresolved items are NO_VERIFICADO.")
 
         # Load SQLite snapshots
-        conn = sqlite3.connect(self.db_path)
+        conn = _connect_sqlite_parallel(self.db_path)
         c = conn.cursor()
         snapshot_lookup = {}
         for r in c.execute("SELECT id, product_title, sku_master, price, marketplace_sku, category, audit_date, position_absolute FROM product_snapshots"):
@@ -562,7 +574,7 @@ class AcquisitionRecoveryRunner:
         from app.mri_autonomous.storage_guard import StorageConfig
         StorageConfig.ensure_writable(self.db_path, reason="AcquisitionRecoveryRunner persistence")
 
-        conn = sqlite3.connect(self.db_path)
+        conn = _connect_sqlite_parallel(self.db_path)
         c = conn.cursor()
         now_str = datetime.now().isoformat()
 
