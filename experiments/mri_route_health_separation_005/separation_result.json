@@ -1,0 +1,131 @@
+{
+  "runs": [
+    {
+      "run": 1,
+      "routes_selected": 2,
+      "routes": [
+        {
+          "url": "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/abrigos?brand=NICOPOLY",
+          "state": "SOURCE_BLOCKED",
+          "failure_class": "SOURCE_FAILURE",
+          "scraper_started": true,
+          "strategy": "ripley_headless_catalog_scraper"
+        },
+        {
+          "url": "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/blusas-y-poleras?brand=NICOPOLY",
+          "state": "FOUND",
+          "failure_class": null,
+          "scraper_started": true,
+          "strategy": "ripley_headless_catalog_scraper"
+        }
+      ],
+      "capability_status": null,
+      "capability_successes": null,
+      "capability_failures": null,
+      "bad_calls": 1,
+      "good_calls": 1
+    },
+    {
+      "run": 2,
+      "routes_selected": 2,
+      "routes": [
+        {
+          "url": "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/abrigos?brand=NICOPOLY",
+          "state": "SOURCE_BLOCKED",
+          "failure_class": "SOURCE_FAILURE",
+          "scraper_started": true,
+          "strategy": "ripley_headless_catalog_scraper"
+        },
+        {
+          "url": "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/blusas-y-poleras?brand=NICOPOLY",
+          "state": "FOUND",
+          "failure_class": null,
+          "scraper_started": true,
+          "strategy": "ripley_headless_catalog_scraper"
+        }
+      ],
+      "capability_status": null,
+      "capability_successes": null,
+      "capability_failures": null,
+      "bad_calls": 2,
+      "good_calls": 2
+    },
+    {
+      "run": 3,
+      "routes_selected": 2,
+      "routes": [
+        {
+          "url": "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/abrigos?brand=NICOPOLY",
+          "state": "SOURCE_BLOCKED",
+          "failure_class": "SOURCE_FAILURE",
+          "scraper_started": true,
+          "strategy": "ripley_headless_catalog_scraper"
+        },
+        {
+          "url": "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/blusas-y-poleras?brand=NICOPOLY",
+          "state": "FOUND",
+          "failure_class": null,
+          "scraper_started": true,
+          "strategy": "ripley_headless_catalog_scraper"
+        }
+      ],
+      "capability_status": null,
+      "capability_successes": null,
+      "capability_failures": null,
+      "bad_calls": 3,
+      "good_calls": 3
+    },
+    {
+      "run": 4,
+      "routes_selected": 2,
+      "routes": [
+        {
+          "url": "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/abrigos?brand=NICOPOLY",
+          "state": "ROUTE_SKIPPED",
+          "failure_class": "ROUTE_SKIPPED",
+          "scraper_started": false,
+          "strategy": null
+        },
+        {
+          "url": "https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/blusas-y-poleras?brand=NICOPOLY",
+          "state": "FOUND",
+          "failure_class": null,
+          "scraper_started": true,
+          "strategy": "ripley_headless_catalog_scraper"
+        }
+      ],
+      "capability_status": null,
+      "capability_successes": null,
+      "capability_failures": null,
+      "bad_calls": 3,
+      "good_calls": 4
+    }
+  ],
+  "bad_route_state": {
+    "id": 3,
+    "marketplace": "Ripley",
+    "brand": "Nicopoly",
+    "knowledge_type": "ROUTE_STATE",
+    "value": "exp_1",
+    "source_url": null,
+    "page_type": "SOURCE_BLOCKED",
+    "taxonomy_type": null,
+    "parent_identity": null,
+    "discovery_method": null,
+    "extractor_used": null,
+    "first_seen_at": "2026-11-09T12:55:11.683418",
+    "last_seen_at": "2026-11-09T12:55:12.861422",
+    "last_success_at": null,
+    "last_failure_at": "2026-11-09T12:55:12.861422",
+    "success_count": 0,
+    "failure_count": 3,
+    "consecutive_failures": 3,
+    "confidence": 1.0,
+    "status": "FAILED",
+    "evidence_reference": "{\"run_id\": \"RUN_SEP_3\", \"route_id\": \"exp_1\", \"state\": \"SOURCE_BLOCKED\", \"failure_class\": \"SOURCE_FAILURE\", \"reason\": \"FAKE_BLOCK\"}"
+  },
+  "acquisition_calls": {
+    "bad": 3,
+    "good": 4
+  }
+}
