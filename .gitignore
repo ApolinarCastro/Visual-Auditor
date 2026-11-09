@@ -6,3 +6,47 @@ __pycache__/
 *.pyo
 *.pyd
 
+# MRI operational database (runtime data, created by lanzar_mri_dashboard.bat).
+# The protected historical database stays outside version control as before.
+data/sqlite/mri_operational/
+
+# === MRI-SAFE-CLEANUP-PHASE-1-003 (2026-11-09) ===
+# Data & Evidence (generated / runtime)
+data/
+evidence/
+outputs/
+_integration/data/
+_integration/evidence*/
+_integration/logs/
+logs/
+*.db
+*.db-wal
+*.db-journal
+
+# Temp & Cache
+tmp*/
+pytest-cache-files-*/
+pytest-of-*/
+__pycache__/
+.pytest_cache/
+*.log
+*.tmp
+*.html
+# Protect the served dashboard template from the blanket *.html rule
+!_integration/app/mri_dashboard/templates/*.html
+*.exe
+
+# Legacy & Backups
+_recovery_test/
+_integration_plan/
+_pristine_*/
+_engine_review/
+read_only_mri_dashboard/
+shadow_execution_build/
+mri_backup_*/
+backup_production_*/
+oya-browser/
+node_modules/
+
+# Local heavy artifacts moved out of the repo root
+_local_ignored/
