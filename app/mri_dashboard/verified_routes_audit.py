@@ -259,34 +259,40 @@ def load_verified_routes(
     # no CATEGORY rows yet while the authorized experience DB holds the verified
     # routes. Read the authorized source read-only instead of migrating/merging.
     experience_source = "ExperienceStore"
+    strict_autonomy = str(os.getenv("MRI_STRICT_AUTONOMY", "")).lower() in ("1", "true", "yes")
     if sum(len(v) for v in rows_by_market.values()) == 0:
-        try:
-            import sqlite3 as _sqlite
-            from app.mri_autonomous.storage_guard import StorageConfig as _SC
-            _repo_root = Path(__file__).resolve().parents[3]
-            candidates = [os.getenv("MRI_EXPERIENCE_DB"),
-                          str(_repo_root / "data" / "mri_experience.db"),
-                          str(getattr(_SC, "PRODUCTION_EXPERIENCE", ""))]
-            for authorized in [c for c in candidates if c and os.path.exists(str(c))]:
-                conn = _sqlite.connect("file:" + str(authorized).replace("\\", "/") + "?mode=ro",
-                                       uri=True)
-                conn.row_factory = _sqlite.Row
-                fetched_any = False
-                try:
-                    for mkt in markets_to_run:
-                        fetched = [dict(r) for r in conn.execute(
-                            "SELECT * FROM experience WHERE marketplace=? AND brand=? "
-                            "AND knowledge_type='CATEGORY'", (mkt, brand))]
-                        if fetched:
-                            fetched_any = True
-                        rows_by_market[mkt] = fetched
-                finally:
-                    conn.close()
-                if fetched_any and any(rows_by_market.values()):
-                    experience_source = f"authorized_experience_read_only:{authorized}"
-                    break
-        except Exception:
-            pass
+        if strict_autonomy:
+            # MRI-008: never read an external/historical experience file when the
+            # own store is empty. The caller must run DISCOVERY first.
+            experience_source = "STRICT_AUTONOMY_NO_EXTERNAL_READ"
+        else:
+            try:
+                import sqlite3 as _sqlite
+                from app.mri_autonomous.storage_guard import StorageConfig as _SC
+                _repo_root = Path(__file__).resolve().parents[3]
+                candidates = [os.getenv("MRI_EXPERIENCE_DB"),
+                              str(_repo_root / "data" / "mri_experience.db"),
+                              str(getattr(_SC, "PRODUCTION_EXPERIENCE", ""))]
+                for authorized in [c for c in candidates if c and os.path.exists(str(c))]:
+                    conn = _sqlite.connect("file:" + str(authorized).replace("\\", "/") + "?mode=ro",
+                                           uri=True)
+                    conn.row_factory = _sqlite.Row
+                    fetched_any = False
+                    try:
+                        for mkt in markets_to_run:
+                            fetched = [dict(r) for r in conn.execute(
+                                "SELECT * FROM experience WHERE marketplace=? AND brand=? "
+                                "AND knowledge_type='CATEGORY'", (mkt, brand))]
+                            if fetched:
+                                fetched_any = True
+                            rows_by_market[mkt] = fetched
+                    finally:
+                        conn.close()
+                    if fetched_any and any(rows_by_market.values()):
+                        experience_source = f"authorized_experience_read_only:{authorized}"
+                        break
+            except Exception:
+                pass
 
     for mkt in markets_to_run:
         rows = rows_by_market.get(mkt) or []
@@ -360,12 +366,16 @@ def load_verified_routes(
         f"scope={scope}; deterministic order=success_count DESC,url ASC; "
         f"eligible={total_eligible}; selected={total_selected}"
     )
+    if strict_autonomy and total_selected == 0:
+        selection_reason = ("NO_ROUTES_FOUND: strict autonomy prohibits external experience reads; "
+                            "run DISCOVERY first to populate MRI's own store")
     return {
         "mode": "AUDIT_VERIFIED_ROUTES",
         "marketplace": marketplace,
         "scope": scope,
         "brand": brand,
         "experience_source": experience_source,
+        "strict_autonomy": strict_autonomy,
         "routes_available": total_available,
         "routes_eligible": total_eligible,
         "routes_selected": total_selected,
@@ -395,6 +405,8 @@ def preview_verified_routes(marketplace: str = "ALL", scope: str = "ALL_VERIFIED
         "routes_selected": selection["routes_selected"],
         "routes_skipped": selection["routes_skipped"],
         "routes_by_marketplace": selection["routes_by_marketplace"],
+        "selection_reason": selection.get("selection_reason"),
+        "strict_autonomy": selection.get("strict_autonomy"),
         "total_scope_claim": selection["total_scope_claim"],
         "experience_source": selection.get("experience_source"),
         "sample": [{"marketplace": r["marketplace"], "url": r["url"],
