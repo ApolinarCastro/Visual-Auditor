@@ -241,6 +241,47 @@ async def get_mri_sessions():
     })
 
 
+@app.post("/api/mri/chrome/open-debug")
+async def open_chrome_debug():
+    """Open a dedicated Chrome profile with CDP port 9222 for ML login/cookies."""
+    import os, socket, subprocess, tempfile, time, urllib.request
+    try:
+        with socket.create_connection(("127.0.0.1", 9222), timeout=1):
+            return JSONResponse(status_code=200, content={
+                "ok": True, "status": "ALREADY_OPEN", "port": 9222})
+    except Exception:
+        pass
+    paths = [
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+    ]
+    exe = next((x for x in paths if os.path.exists(x)), None)
+    if not exe:
+        return JSONResponse(status_code=404, content={"ok": False, "error": "CHROME_NOT_FOUND"})
+    profile = os.path.join(tempfile.gettempdir(), "mri_chrome_profile")
+    try:
+        proc = subprocess.Popen([
+            exe, "--remote-debugging-port=9222",
+            f"--user-data-dir={profile}", "--no-first-run",
+            "--new-window", "https://www.mercadolibre.cl",
+        ], creationflags=getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0))
+    except Exception as exc:
+        return JSONResponse(status_code=500, content={
+            "ok": False, "error": f"{type(exc).__name__}: {exc}"})
+    for _ in range(20):
+        time.sleep(0.4)
+        try:
+            with urllib.request.urlopen("http://127.0.0.1:9222/json/version", timeout=1) as r:
+                if r.status == 200:
+                    return JSONResponse(status_code=200, content={
+                        "ok": True, "status": "OPEN", "port": 9222,
+                        "pid": proc.pid, "profile": profile})
+        except Exception:
+            pass
+    return JSONResponse(status_code=202, content={
+        "ok": True, "status": "STARTING", "pid": proc.pid, "profile": profile})
+
+
 @app.post("/api/mri/cookies/import")
 async def import_chrome_cookies():
     """Import ML cookies directly from the user's Chrome profile."""

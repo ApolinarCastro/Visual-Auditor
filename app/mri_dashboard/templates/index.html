@@ -446,6 +446,7 @@
                 <h3 style="margin:0 0 6px 0; font-size:1rem; color:#fff;">Administrador de cookies y navegador</h3>
                 <div style="margin:8px 0 4px 0;">
                     <button onclick="importChromeCookies()">IMPORTAR COOKIES DESDE CHROME</button>
+                    <button onclick="openChromeForML()">ABRIR CHROME PARA ML</button>
                 </div>
                 <p style="color:var(--text-muted); font-size:0.8rem; margin:0 0 10px 0;">
                     Abre el navegador visible con el perfil de MRI, inicia sesión manualmente y guarda la sesión.
@@ -1488,6 +1489,18 @@
         }
 
         const SESSION_HEADERS = {'Content-Type': 'application/json', 'X-MRI-CSRF': '1'};
+        async function openChromeForML() {
+            const out = document.getElementById('sessionManagerStatus');
+            if (out) out.innerText = 'Abriendo Chrome con depuración…';
+            try {
+                const res = await fetch('/api/mri/chrome/open-debug', {method: 'POST'});
+                const data = await res.json();
+                if (out) out.innerText = data.ok ? `Chrome: ${data.status} · puerto ${data.port || 9222}` : `Error: ${data.error}`;
+            } catch (e) {
+                if (out) out.innerText = 'Error: ' + e.message;
+            }
+        }
+
         async function importChromeCookies() {
             const out = document.getElementById('sessionManagerStatus');
             if (out) out.innerText = 'Importando cookies desde Chrome…';

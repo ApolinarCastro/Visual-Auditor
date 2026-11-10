@@ -27,11 +27,15 @@ def _chrome_cookie_files() -> List[str]:
 
 
 def get_meli_cookies(domain: str = ".mercadolibre.cl") -> Dict[str, str]:
-    """Read ML cookies from Coffee/Chrome profiles via browser_cookie3.
-
-    Handles a locked Chrome database by copying it to a workspace temp file.
-    Returns {} (with no fabricated values) when Chrome is open and unreadable.
-    """
+    """Read ML cookies via Chrome CDP first, then browser_cookie3 fallback."""
+    try:
+        from app.mri_autonomous.cookie_extractor_cdp import get_cookies_via_cdp
+        cdp = get_cookies_via_cdp(domain)
+        if cdp.get("cookies"):
+            return {c.get("name"): c.get("value") for c in cdp["cookies"]
+                    if c.get("name")}
+    except Exception:
+        pass
     _temp_dir()
     try:
         import browser_cookie3
@@ -65,6 +69,17 @@ def get_meli_cookies(domain: str = ".mercadolibre.cl") -> Dict[str, str]:
 
 
 def get_meli_cookie_status() -> Dict[str, object]:
+    try:
+        from app.mri_autonomous.cookie_extractor_cdp import get_cookies_via_cdp
+        cdp = get_cookies_via_cdp()
+        if cdp.get("cookies"):
+            cookies = {c.get("name"): c.get("value") for c in cdp["cookies"]
+                       if c.get("name")}
+            return {"marketplace": "mercadolibre", "status": "IMPORTED",
+                    "count": len(cookies), "cookies": sorted(cookies.keys()),
+                    "source": "cdp", "cdp_status": cdp.get("status")}
+    except Exception:
+        pass
     cookies = get_meli_cookies()
     return {
         "marketplace": "mercadolibre",
