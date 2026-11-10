@@ -85,3 +85,14 @@ PUBLICATIONS=532
 COVERAGE=LIMITED_HUB (Falabella full SSR)
 NEXT=PAGINATE_HTTP_FOR_FULL_COVERAGE
 ```
+
+---
+
+## Actualización 022 — Paginación HTTP
+
+- Paris: 400 productos (10 páginas, 14.7 s).
+- Ripley: 258 productos (6 páginas, 8.9 s).
+- ML: 39 productos; paginación del storefront no expuesta y API pública 403.
+- Falabella: 1 328 SSR.
+- Memoria mínima: 4 739 MB; sin navegadores.
+- Cobertura >100: Paris/Ripley SÍ; ML pendiente de API autenticada.
