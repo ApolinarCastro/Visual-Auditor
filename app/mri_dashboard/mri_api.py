@@ -258,11 +258,16 @@ async def open_chrome_debug():
     exe = next((x for x in paths if os.path.exists(x)), None)
     if not exe:
         return JSONResponse(status_code=404, content={"ok": False, "error": "CHROME_NOT_FOUND"})
-    profile = os.path.join(tempfile.gettempdir(), "mri_chrome_profile")
+    # Chrome 136+: remote debugging requires a non-default, dedicated profile.
+    profile = os.path.join(os.environ.get("LOCALAPPDATA", tempfile.gettempdir()),
+                           "MRI_Chrome_Profile")
+    os.makedirs(profile, exist_ok=True)
     try:
         proc = subprocess.Popen([
             exe, "--remote-debugging-port=9222",
-            f"--user-data-dir={profile}", "--no-first-run",
+            f"--user-data-dir={profile}",
+            "--remote-allow-origins=*",
+            "--no-first-run", "--no-default-browser-check",
             "--new-window", "https://www.mercadolibre.cl",
         ], creationflags=getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0))
     except Exception as exc:
