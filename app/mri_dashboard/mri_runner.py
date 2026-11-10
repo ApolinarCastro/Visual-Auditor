@@ -489,9 +489,11 @@ class MRIOrchestrator:
 
                 # MRI-018: real dashboard path for Paris without Playwright.
                 import os as _os_http
+                _va_parity = str(_os_http.getenv("MRI_VA_PARITY", "0")).lower() in ("1", "true", "yes")
                 if (mkt in ("Paris", "Ripley", "Mercado Libre") and full_audit
                         and str(_os_http.getenv("MRI_HTTP_FIRST", "1")).lower()
-                        not in ("0", "false", "no")):
+                        not in ("0", "false", "no")
+                        and not (_va_parity and mkt in ("Paris", "Ripley"))):
                     try:
                         from app.mri_autonomous.autonomous_pipeline import _http_first_discovery
                         _http_paris = await _http_first_discovery(mkt, "Nicopoly")
@@ -2513,7 +2515,10 @@ class MRIOrchestrator:
             if isinstance(marketplaces, int):
                 max_pages = marketplaces
             marketplaces = None
-        mkts = marketplaces or ["Mercado Libre", "Paris", "Ripley", "Falabella"]
+        _va_parity_mode = str(__import__("os").environ.get("MRI_VA_PARITY", "0")).lower() in ("1", "true", "yes")
+        mkts = marketplaces or (["Paris", "Ripley", "Mercado Libre", "Falabella"]
+                                if _va_parity_mode
+                                else ["Mercado Libre", "Paris", "Ripley", "Falabella"])
         self.is_running = True
         self.stop_requested = False
         self.results = []
@@ -2584,8 +2589,9 @@ class MRIOrchestrator:
 
         try:
             # MRI-017: HTTP children run freely; only ONE browser at a time.
-            self.state["execution_strategy"] = "ALL_PARALLEL_HTTP_FIRST"
-            _browser_mkts = {"Mercado Libre", "Ripley"}
+            self.state["execution_strategy"] = ("ALL_SEQUENTIAL_VA_PARITY" if _va_parity_mode else "ALL_PARALLEL_HTTP_FIRST")
+            _browser_mkts = ({"Paris", "Ripley", "Mercado Libre"}
+                             if _va_parity_mode else {"Mercado Libre", "Ripley"})
             _browser_sem = asyncio.Semaphore(1)
 
             async def _child_limited(mkt):
