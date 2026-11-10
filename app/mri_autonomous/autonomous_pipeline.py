@@ -375,24 +375,38 @@ async def _http_first_discovery(marketplace: str, brand: str, max_categories: in
         if marketplace.lower() == "paris":
             from app.mri_autonomous.rea_paris_engine import REAParisEngine
             engine = REAParisEngine()
-            payload = engine.search("nicopoly", page=1, num_results=40)
-            response = payload.get("response", {}) if isinstance(payload, dict) else {}
-            for item in response.get("results") or []:
-                value = (item.get("data") if isinstance(item, dict) and isinstance(item.get("data"), dict) else (item.get("value") if isinstance(item, dict) and isinstance(item.get("value"), dict) else item))
-                if not isinstance(value, dict):
-                    continue
-                products.append({
-                    "marketplace_sku": str(value.get("id") or value.get("sku") or ""),
-                    "title": str(value.get("name") or value.get("title") or ""),
-                    "product_title": str(value.get("name") or value.get("title") or ""),
-                    "url": str(value.get("url") or value.get("canonical_url") or ""),
-                    "brand": str(value.get("brand") or "Nicopoly"),
-                    "vendor": "Nicopoly",
-                    "price": float(value.get("price") or 0),
-                    "position_absolute": len(products) + 1,
-                })
+            max_pages = int(__import__("os").environ.get("MRI_HTTP_MAX_PAGES", "10"))
+            seen = set()
+            for page in range(1, max_pages + 1):
+                payload = engine.search("nicopoly", page=page, num_results=40)
+                response = payload.get("response", {}) if isinstance(payload, dict) else {}
+                results = response.get("results") or []
+                new = 0
+                for item in results:
+                    value = (item.get("data") if isinstance(item, dict) and isinstance(item.get("data"), dict)
+                             else (item.get("value") if isinstance(item, dict) and isinstance(item.get("value"), dict)
+                                   else item))
+                    if not isinstance(value, dict):
+                        continue
+                    sku = str(value.get("id") or value.get("sku") or "")
+                    if not sku or sku in seen:
+                        continue
+                    seen.add(sku)
+                    products.append({
+                        "marketplace_sku": sku,
+                        "title": str(value.get("name") or value.get("title") or ""),
+                        "product_title": str(value.get("name") or value.get("title") or ""),
+                        "url": str(value.get("url") or value.get("canonical_url") or ""),
+                        "brand": str(value.get("brand") or "Nicopoly"),
+                        "vendor": "Nicopoly",
+                        "price": float(value.get("price") or 0),
+                        "position_absolute": len(products) + 1,
+                    })
+                    new += 1
+                if not results or new == 0:
+                    break
             category_url = "https://www.paris.cl/search?q=nicopoly"
-            method = "HTTP_CONSTRUCTOR"
+            method = "HTTP_CONSTRUCTOR_PAGINATED"
         elif marketplace.lower() == "ripley":
             from app.mri_autonomous.ripley_http_engine import RipleyHTTPEngine
             import asyncio as _aio_rip
