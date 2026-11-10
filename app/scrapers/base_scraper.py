@@ -7,7 +7,21 @@ Enhanced Base Scraper v3
 - Process Zombie protection
 """
 # pyrefly: ignore [missing-import]
-from playwright.async_api import async_playwright
+from playwright.async_api import async_playwright as _pw_async
+
+
+def _async_playwright_factory():
+    """MRI-032: Patchright stealth engine for Mercado Libre fallback."""
+    import os as _os
+    if (_os.environ.get("MRI_USE_PATCHRIGHT", "").lower() in ("1", "true", "yes")
+            and _os.environ.get("MRI_MARKETPLACE_PATCHRIGHT", "mercado libre").lower()
+            in ("mercado libre", "meli", "all")):
+        try:
+            from patchright.async_api import async_playwright as _pr_async
+            return _pr_async
+        except Exception:
+            pass
+    return _pw_async
 import asyncio
 import logging
 import random
@@ -153,7 +167,7 @@ class BaseScraper:
 
         async with _playwright_lock:
             if _global_playwright is None:
-                _global_playwright = await async_playwright().start()
+                _global_playwright = await _async_playwright_factory()().start()
         self._playwright = _global_playwright
 
         if self.is_using_obscura:
