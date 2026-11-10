@@ -506,7 +506,7 @@ class MRIOrchestrator:
                         self.results.extend(_prods)
                         self.state["products_processed"] = len(self.results)
                         self.state["confirmed"] = len(self.results)
-                        self.state["marketplace_states"]["Paris"] = (
+                        self.state["marketplace_states"][mkt] = (
                             "FOUND" if _prods else "EMPTY_VERIFIED")
                         self.state["http_first"] = {
                             "marketplace": mkt,
@@ -543,7 +543,25 @@ class MRIOrchestrator:
                             self.state["routes_persisted"] = _persisted
                         except Exception as _rp_exc:
                             print(f"Error persisting routes: {_rp_exc}")
-                        continue
+                        # MRI-031: sequential Playwright fallback only for
+                        # Ripley/ML when HTTP coverage is insufficient.
+                        _min_http = int(__import__("os").environ.get(
+                            "MRI_MIN_HTTP_PRODUCTS", "100"))
+                        _fallback_on = str(__import__("os").environ.get(
+                            "MRI_PLAYWRIGHT_FALLBACK", "1")).lower() not in ("0", "false", "no")
+                        _needs_browser = (
+                            mkt in ("Ripley", "Mercado Libre")
+                            and len(_prods) < _min_http and _fallback_on)
+                        if _needs_browser:
+                            self.state.setdefault("playwright_fallback", []).append({
+                                "marketplace": mkt,
+                                "http_products": len(_prods),
+                                "threshold": _min_http,
+                                "reason": "HTTP_COVERAGE_BELOW_THRESHOLD"})
+                            # Do not continue: the existing marketplace browser
+                            # path below will run sequentially (parent semaphore=1).
+                        else:
+                            continue
                     except Exception as _http_exc:
                         self.state.setdefault("errors", []).append({
                             "stage": "adquiriendo", "marketplace": "Paris",
