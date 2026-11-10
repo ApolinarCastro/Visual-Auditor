@@ -2471,17 +2471,6 @@ class MRIOrchestrator:
             cid = f"{run_id}__{_slug(mkt)}"
             self.state["child_run_ids"][mkt] = cid
             _live_children[mkt] = child
-            if mkt in ("Mercado Libre", "Ripley"):
-                try:
-                    _browser_limit = int(__import__("os").environ.get(
-                        "MRI_MAX_BROWSER_CONCURRENCY", "0"))
-                except ValueError:
-                    _browser_limit = 0
-                if _browser_limit <= 0:
-                    child.state["status_message"] = "BROWSER_DISABLED"
-                    child.state["outcome"] = "SOURCE_BLOCKED"
-                    self.state["marketplace_states"][mkt] = "SOURCE_BLOCKED"
-                    return child
             try:
                 if self.stop_requested:
                     child.stop_requested = True
