@@ -177,9 +177,13 @@ class BaseScraper:
 
         # FIX ML-2 (14-Ago): forzar headless=False para ML y Ripley.
         # Sin ventana real, ML redirige a account-verification (deteccion de bot).
-        if self.marketplace.lower() in ("ripley", "mercado libre"):
+        _force_headless = str(__import__("os").environ.get("MRI_FORCE_HEADLESS", "")).lower() in ("1", "true", "yes")
+        if self.marketplace.lower() in ("ripley", "mercado libre") and not _force_headless:
             self.headless = False
             logger.info(f"[{self.marketplace}] Forcing headless=False to bypass Akamai/WAF bot shield natively.")
+        if _force_headless:
+            self.headless = True
+            logger.info(f"[{self.marketplace}] MRI_FORCE_HEADLESS=1: headless=True")
 
         chromium_args = [
             "--no-sandbox",
@@ -193,6 +197,17 @@ class BaseScraper:
             "--disable-extensions",
             "--disable-plugins",
         ]
+        # MRI-018: low-memory browser profile.
+        if str(__import__("os").environ.get("MRI_LIGHT_BROWSER", "1")).lower() not in ("0", "false", "no"):
+            chromium_args += [
+                "--disable-background-networking",
+                "--disable-background-timer-throttling",
+                "--disable-renderer-backgrounding",
+                "--blink-settings=imagesEnabled=false",
+                "--js-flags=--max-old-space-size=512",
+            ]
+            if str(__import__("os").environ.get("MRI_SINGLE_PROCESS", "")).lower() in ("1", "true", "yes"):
+                chromium_args.append("--single-process")
 
         if self.marketplace.lower() in ["ripley", "mercado libre"]:
             chrome_paths = [

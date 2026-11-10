@@ -487,6 +487,42 @@ class MRIOrchestrator:
             for mkt in mkts_to_run:
                 if not self.is_running: break
 
+                # MRI-018: real dashboard path for Paris without Playwright.
+                import os as _os_http
+                if (mkt in ("Paris", "Ripley", "Mercado Libre") and full_audit
+                        and str(_os_http.getenv("MRI_HTTP_FIRST", "1")).lower()
+                        not in ("0", "false", "no")):
+                    try:
+                        from app.mri_autonomous.autonomous_pipeline import _http_first_discovery
+                        _http_paris = await _http_first_discovery(mkt, "Nicopoly")
+                        _prods = list(_http_paris.get("products") or [])
+                        for _p in _prods:
+                            _p.setdefault("marketplace", mkt)
+                            _p.setdefault("brand", "Nicopoly")
+                            _p.setdefault("vendor", "Nicopoly")
+                            # Evidence contract: publication_id must never be null.
+                            _p.setdefault("observed_sku", _p.get("marketplace_sku") or "")
+                            _p.setdefault("producto_id", _p.get("marketplace_sku") or "")
+                        self.results.extend(_prods)
+                        self.state["products_processed"] = len(self.results)
+                        self.state["confirmed"] = len(self.results)
+                        self.state["marketplace_states"]["Paris"] = (
+                            "FOUND" if _prods else "EMPTY_VERIFIED")
+                        self.state["http_first"] = {
+                            "marketplace": "Paris",
+                            "browser_used": False,
+                            "products": len(_prods),
+                            "method": _http_paris.get("discovery_method"),
+                            "evidence": _http_paris.get("evidence_notes"),
+                        }
+                        continue
+                    except Exception as _http_exc:
+                        self.state.setdefault("errors", []).append({
+                            "stage": "adquiriendo", "marketplace": "Paris",
+                            "error": f"HTTP_FIRST_ERROR: {type(_http_exc).__name__}: {_http_exc}",
+                            "run_id": run_id, "at": datetime.now().isoformat()})
+                        # HTTP failure falls back to the existing path.
+
                 # MRI-RUNTIME-RECOVERY-001 / Falabella: autonomous SSR audit.
                 # Verified mechanism (creao.ai evidence): __NEXT_DATA__, brand +
                 # brand-filtered L2 categories + search, union/dedupe, no browser,
@@ -2152,7 +2188,14 @@ class MRIOrchestrator:
                 obs_to_persist = []
                 _seen_pid, _discards = set(), []
                 for res in self.results:
-                    _pid = res.get("observed_sku") or res.get("producto_id")
+                    _pid = (res.get("observed_sku") or res.get("producto_id")
+                            or res.get("marketplace_sku") or res.get("url"))
+                    if not _pid:
+                        _discards.append({
+                            "publication_id": None, "url": res.get("url"),
+                            "position": res.get("position_observed"),
+                            "reason": "MISSING_PUBLICATION_ID"})
+                        continue
                     if _pid in _seen_pid:
                         # CP2: no fabricar registros para igualar contadores;
                         # registrar el descarte con su identificador y motivo.
@@ -2428,6 +2471,17 @@ class MRIOrchestrator:
             cid = f"{run_id}__{_slug(mkt)}"
             self.state["child_run_ids"][mkt] = cid
             _live_children[mkt] = child
+            if mkt in ("Mercado Libre", "Ripley"):
+                try:
+                    _browser_limit = int(__import__("os").environ.get(
+                        "MRI_MAX_BROWSER_CONCURRENCY", "0"))
+                except ValueError:
+                    _browser_limit = 0
+                if _browser_limit <= 0:
+                    child.state["status_message"] = "BROWSER_DISABLED"
+                    child.state["outcome"] = "SOURCE_BLOCKED"
+                    self.state["marketplace_states"][mkt] = "SOURCE_BLOCKED"
+                    return child
             try:
                 if self.stop_requested:
                     child.stop_requested = True
@@ -2447,56 +2501,42 @@ class MRIOrchestrator:
             return child
 
         try:
-            # MRI-013: MRI_MAX_BROWSER_CONCURRENCY is a real limit, not a flag.
-            import os as _os
-            try:
-                _max_browser = int(_os.environ.get("MRI_MAX_BROWSER_CONCURRENCY", "1"))
-            except ValueError:
-                _max_browser = 1
-            if _max_browser <= 1:
-                # One browser/profile owner at a time (safe default).
-                self.state["execution_strategy"] = "ALL_SEQUENTIAL_AUTO"
-                done = []
-                for _m in mkts:
-                    if self.stop_requested:
-                        break
-                    try:
-                        done.append(await _child(_m))
-                    except Exception as _child_exc:
-                        done.append(_child_exc)
-                    _sync_children()
-            else:
-                _semaphore = asyncio.Semaphore(max(1, _max_browser))
+            # MRI-017: HTTP children run freely; only ONE browser at a time.
+            self.state["execution_strategy"] = "ALL_PARALLEL_HTTP_FIRST"
+            _browser_mkts = {"Mercado Libre", "Ripley"}
+            _browser_sem = asyncio.Semaphore(1)
 
-                async def _child_limited(mkt):
-                    async with _semaphore:
+            async def _child_limited(mkt):
+                if mkt in _browser_mkts:
+                    async with _browser_sem:
                         return await _child(mkt)
+                return await _child(mkt)
 
-                tasks = [asyncio.create_task(_child_limited(m)) for m in mkts]
-                self._parallel_children = tasks
+            tasks = [asyncio.create_task(_child_limited(m)) for m in mkts]
+            self._parallel_children = tasks
 
-                async def _monitor():
-                    while True:
-                        _sync_children()
-                        if self.stop_requested:
-                            for _c in list(_live_children.values()):
-                                try:
-                                    _c.stop_requested = True
-                                except Exception:
-                                    pass
-                            for _t in tasks:
-                                if not _t.done():
-                                    _t.cancel()
-                            break
-                        await asyncio.sleep(2)
+            async def _monitor():
+                while True:
+                    _sync_children()
+                    if self.stop_requested:
+                        for _c in list(_live_children.values()):
+                            try:
+                                _c.stop_requested = True
+                            except Exception:
+                                pass
+                        for _t in tasks:
+                            if not _t.done():
+                                _t.cancel()
+                        break
+                    await asyncio.sleep(2)
 
-                monitor = asyncio.create_task(_monitor())
-                done = await asyncio.gather(*tasks, return_exceptions=True)
-                monitor.cancel()
-                try:
-                    await monitor
-                except asyncio.CancelledError:
-                    pass
+            monitor = asyncio.create_task(_monitor())
+            done = await asyncio.gather(*tasks, return_exceptions=True)
+            monitor.cancel()
+            try:
+                await monitor
+            except asyncio.CancelledError:
+                pass
             agg = []
             outcomes = []
             for mkt, child in zip(mkts, done):

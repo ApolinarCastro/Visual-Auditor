@@ -213,6 +213,58 @@ def make_category_done_payload(
     return payload
 
 
+def build_experience_route_candidates(marketplace: str, brand: str, prior_experiences, max_routes: int = 12):
+    """Build navigation candidates from persisted VERIFIED category routes.
+
+    Only LAST_GOOD/VALIDATED routes with a real URL, at least one recorded
+    success and no active failure streak are reused. They are revalidated by
+    the normal acquisition loop (navigate + scrape + re-record); validity is
+    never assumed from the record alone.
+    """
+    candidates, seen = [], set()
+    for exp in prior_experiences or []:
+        if exp.get("knowledge_type") != "CATEGORY":
+            continue
+        if exp.get("status") not in ("LAST_GOOD", "VALIDATED"):
+            continue
+        url = exp.get("source_url")
+        if not url or not str(url).startswith("http"):
+            continue
+        if int(exp.get("consecutive_failures") or 0) >= 3:
+            continue
+        if int(exp.get("success_count") or 0) < 1:
+            continue
+        if url in seen:
+            continue
+        seen.add(url)
+        from urllib.parse import urlparse as _urlparse
+        try:
+            label = exp.get("value") or _urlparse(url).path.strip("/").split("/")[-1] or "route"
+        except Exception:
+            label = exp.get("value") or "route"
+        candidates.append({
+            "candidate_id": "exp-" + hashlib.sha1(str(url).encode("utf-8")).hexdigest()[:10],
+            "url": url,
+            "label": str(label)[:80],
+            "parent": None,
+            "depth": 1,
+            "discovery_method": "experience_reuse",
+            "evidence_locator": f"experience:{exp.get('id')}",
+            "hypothesis": True,
+            "route_source": "experience_store",
+            "experience_id": exp.get("id"),
+            "success_count": int(exp.get("success_count") or 0),
+            "reuse_status": exp.get("status"),
+            "classification": {
+                "surface_type": "COMMERCIAL_CATEGORY",
+                "evidence": [f"persisted:{exp.get('status')}"],
+            },
+        })
+        if len(candidates) >= max_routes:
+            break
+    return candidates
+
+
 def sanitize_surfaces(categories, marketplace: str, hub_url: str):
     """Pure surface sanitizer (no I/O): dedupes by base URL, rejects ML
     facet variants, and drops any facet that IS the seed hub URL
@@ -311,7 +363,120 @@ def merge_observed_memberships(existing, incoming, surface_name, surface_url):
     existing["_discovered_category_urls"] = [url for _, url in edges]
 
 
-async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopoly", max_categories: int = 12, headless: bool = True, category_budget_seconds: int = 300, progress_sink=None, max_batches: int = None, resume_state: Dict[str, Any] = None, no_progress_limit: int = 12) -> Dict[str, Any]:
+async def _http_first_discovery(marketplace: str, brand: str, max_categories: int = 12):
+    """Lightweight HTTP-only discovery for marketplaces with public APIs/SSR."""
+    from app.mri_autonomous.brand_hubs import brand_hub_for
+    hub = brand_hub_for(marketplace, brand)
+    hub_url = hub.canonical_reference
+    products = []
+    category_url = hub_url
+    method = "HTTP_FIRST"
+    try:
+        if marketplace.lower() == "paris":
+            from app.mri_autonomous.rea_paris_engine import REAParisEngine
+            engine = REAParisEngine()
+            payload = engine.search("nicopoly", page=1, num_results=40)
+            response = payload.get("response", {}) if isinstance(payload, dict) else {}
+            for item in response.get("results") or []:
+                value = (item.get("data") if isinstance(item, dict) and isinstance(item.get("data"), dict) else (item.get("value") if isinstance(item, dict) and isinstance(item.get("value"), dict) else item))
+                if not isinstance(value, dict):
+                    continue
+                products.append({
+                    "marketplace_sku": str(value.get("id") or value.get("sku") or ""),
+                    "title": str(value.get("name") or value.get("title") or ""),
+                    "product_title": str(value.get("name") or value.get("title") or ""),
+                    "url": str(value.get("url") or value.get("canonical_url") or ""),
+                    "brand": str(value.get("brand") or "Nicopoly"),
+                    "vendor": "Nicopoly",
+                    "price": float(value.get("price") or 0),
+                    "position_absolute": len(products) + 1,
+                })
+            category_url = "https://www.paris.cl/search?q=nicopoly"
+            method = "HTTP_CONSTRUCTOR"
+        elif marketplace.lower() == "ripley":
+            from app.mri_autonomous.ripley_http_engine import RipleyHTTPEngine
+            import asyncio as _aio_rip
+            category_url = ("https://simple.ripley.cl/moda-mujer/tops-y-chaquetas/"
+                            "blusas-y-poleras?brand=NICOPOLY")
+            _rip = await _aio_rip.to_thread(
+                RipleyHTTPEngine().scrape_category, category_url)
+            for _p in _rip.get("products") or []:
+                products.append({
+                    "marketplace_sku": _p.get("marketplace_sku"),
+                    "title": _p.get("title"),
+                    "product_title": _p.get("product_title"),
+                    "url": _p.get("url"),
+                    "brand": _p.get("brand") or "Nicopoly",
+                    "vendor": "Nicopoly",
+                    "price": float(_p.get("price") or 0),
+                    "position_absolute": len(products) + 1,
+                })
+            method = "HTTP_RIPLEY_SSR"
+        elif marketplace.lower() in ("mercado libre", "mercadolibre", "meli"):
+            from app.mri_autonomous.meli_http_engine import MeliHTTPEngine
+            category_url = "https://www.mercadolibre.cl/tienda/nicopoly"
+            _meli = await MeliHTTPEngine().scrape_storefront()
+            for _p in _meli.get("products") or []:
+                products.append({
+                    "marketplace_sku": _p.get("marketplace_sku"),
+                    "title": _p.get("title"),
+                    "product_title": _p.get("product_title"),
+                    "url": _p.get("url"),
+                    "brand": _p.get("brand") or "Nicopoly",
+                    "vendor": "Nicopoly",
+                    "price": float(_p.get("price") or 0),
+                    "position_absolute": len(products) + 1,
+                })
+            method = "HTTP_MELI_SSR"
+        else:
+            from app.mri_autonomous.falabella_ssr_engine import FalabellaSSREngine
+            engine = FalabellaSSREngine()
+            payload = engine.search_catalog("nicopoly", page=1)
+            normalized, _entities = engine.harvest_sample_publications(
+                brand="NICOPOLY", max_items=48, page_payload=payload)
+            for pub in normalized:
+                products.append({
+                    "marketplace_sku": str(getattr(pub, "sku", "") or ""),
+                    "title": str(getattr(pub, "title", "") or ""),
+                    "product_title": str(getattr(pub, "title", "") or ""),
+                    "url": str(getattr(pub, "canonical_url", "") or ""),
+                    "brand": "Nicopoly",
+                    "vendor": "Nicopoly",
+                    "price": float(getattr(pub, "price", 0) or 0),
+                    "position_absolute": len(products) + 1,
+                })
+            category_url = "https://www.falabella.com/falabella-cl/search?Ntt=nicopoly"
+            method = "HTTP_SSR"
+    except Exception as exc:
+        return {
+            "marketplace": marketplace, "target_brand": brand, "hub_url": hub_url,
+            "discovered_categories": [], "products_by_category": {}, "products": [],
+            "coverage_status": "SOURCE_BLOCKED",
+            "evidence_notes": [f"HTTP_FIRST_ERROR: {type(exc).__name__}: {exc}"],
+            "discovery_method": "HTTP_FIRST_BLOCKED",
+            "run_id": "", "diagnostic": {"http_first": True, "error": str(exc)},
+        }
+    category = {
+        "category_url": category_url, "url": category_url,
+        "category_name": "HTTP_HUB", "name": "HTTP_HUB",
+        "pages_traversed": 1, "pages_observed": 1,
+        "publication_count": len(products), "publications": len(products),
+        "stop_reason": "EXHAUSTION" if products else "NO_PROGRESS",
+        "coverage_status": "FOUND" if products else "EMPTY_VERIFIED",
+        "node_type": "COMMERCIAL_HUB",
+    }
+    return {
+        "marketplace": marketplace, "target_brand": brand, "hub_url": hub_url,
+        "discovered_categories": [category], "products_by_category": {category_url: products},
+        "products": products,
+        "coverage_status": "FOUND" if products else "EMPTY_VERIFIED",
+        "evidence_notes": [f"HTTP_FIRST: {method}; products={len(products)}"],
+        "discovery_method": method,
+        "run_id": "", "diagnostic": {"http_first": True, "browser_used": False},
+    }
+
+
+async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopoly", max_categories: int = 12, headless: bool = True, category_budget_seconds: int = 300, progress_sink=None, max_batches: int = None, resume_state: Dict[str, Any] = None, no_progress_limit: int = 12, run_id: str = "") -> Dict[str, Any]:
     """
     Real autonomous discovery for a single marketplace.
     Returns discovered_categories with evidence and products.
@@ -325,6 +490,10 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
     """
     hub = brand_hub_for(marketplace, brand)
     hub_url = hub.canonical_reference
+    import os as _os
+    if (marketplace.lower() in ("paris", "falabella")
+            and str(_os.getenv("MRI_HTTP_FIRST", "1")).lower() not in ("0", "false", "no")):
+        return await _http_first_discovery(marketplace, brand, max_categories)
     discovered_categories: List[Dict[str, Any]] = []
     products_by_category: Dict[str, List[Dict]] = {}
     all_products: List[Dict] = []
@@ -337,6 +506,25 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
     _facet_remainder_accounting: Dict[str, int] = {"raw": 0, "relevant": 0, "pruned": 0}
     _remainder_nodes = []
     brand_first_gap = None
+    # Function-scope default: a scraper that fails before navigation must yield
+    # a BLOCKED state, not an UnboundLocalError in the final accounting.
+    nav_candidates: List[Dict[str, Any]] = []
+    nav_strategy: Optional[str] = None
+    nav_opened: Optional[Any] = None
+    nav_anchors_total: Optional[int] = None
+    _route_reuse: Dict[str, int] = {"recovered": 0, "selected": 0, "navigated": 0, "reused": 0}
+    _route_reuse_evidence: List[Dict[str, Any]] = []
+    _trace_run_id = run_id or f"pipeline_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    _prior_failed: List[Dict[str, Any]] = []
+    _prior_ok: List[Dict[str, Any]] = []
+    # Accounting defaults for the fail-closed path: a scraper that cannot start
+    # must report a real BLOCKED status, not an UnboundLocalError.
+    facet_probe_count = 0
+    facet_applied_count = 0
+    _nav_decisions: List[Dict[str, Any]] = []
+    _facet_decisions: List[Dict[str, Any]] = []
+    strategy_attempts: List[Dict[str, Any]] = []
+    experience_decisions: List[Dict[str, Any]] = []
 
 
     # Lazy imports to avoid hard dependency at import time
@@ -397,12 +585,15 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
         facet_urls = await discover_categories_from_page(scraper.page, marketplace, hub_url, brand=brand)
 
         # Merge with prior LAST_GOOD / VALIDATED categories from Experience Store
+        _experience_route_index: Dict[str, Dict[str, Any]] = {}
         for exp in prior_experiences:
             if exp["knowledge_type"] == "CATEGORY" and exp["status"] in ("LAST_GOOD", "VALIDATED"):
                 u = exp["source_url"] or exp["value"]
-                if u and u.startswith("http") and u not in facet_urls:
-                    facet_urls.insert(0, u)
-                    logger.info(f"[{marketplace}] LAST_GOOD_SELECTED & REVALIDATION_STARTED: {u}")
+                if u and u.startswith("http"):
+                    _experience_route_index[u] = exp
+                    if u not in facet_urls:
+                        facet_urls.insert(0, u)
+                        logger.info(f"[{marketplace}] LAST_GOOD_SELECTED & REVALIDATION_STARTED: {u}")
         # Also try to infer categories from visible filter chips text if no URLs
         if not facet_urls:
             try:
@@ -503,6 +694,8 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
                 "classification_evidence": cls["evidence"],
                 "node_certified": False,
                 "node_type": None,
+                "route_source": ("experience_store" if url in _experience_route_index else None),
+                "experience_id": ((_experience_route_index.get(url) or {}).get("id")),
             })
         
         # Sanitize URLs to prevent Cartesian edge explosion (e.g., ML sorting/facet variants)
@@ -833,12 +1026,61 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
             exp_store.record_experience(marketplace, brand, knowledge_type="EVENT", value="EXPERIENCE_HIT", source_url="global_discovery", page_type="nav", status="INFO", is_success=True)
             exp_store.record_experience(marketplace, brand, knowledge_type="EVENT", value="EXPERIENCE_USED", source_url="global_discovery", page_type="nav", status="INFO", is_success=True)
 
+        # MRI-LEARNING-CIRCUIT-REPAIR-007: navigation-strategy knowledge is
+        # loaded once and reused on BOTH the normal and the failure path.
+        _prior_failed: List[Dict[str, Any]] = []
+        _prior_ok: List[Dict[str, Any]] = []
+        try:
+            _all_nav = exp_store.get_strategies(marketplace, brand) or []
+            _prior_failed = [s for s in _all_nav if s.get("result") == "FAILED"]
+            _prior_ok = _all_nav
+        except Exception:
+            pass
+        _route_reuse = {"recovered": 0, "selected": 0, "navigated": 0, "reused": 0}
+        _route_reuse_evidence: List[Dict[str, Any]] = []
+        _trace_run_id = run_id or f"pipeline_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+
         # ---- MRI-AUTONOMY-003: NAVIGATION SOURCE (network JSON) + fallback (menu anchors) ----
         try:
             if not brand_first_gap:
                 evidence_notes.append("GLOBAL_DISCOVERY_ALLOWED = FALSE (No BRAND_FIRST_GAP observed)")
-                logger.info(f"[{marketplace}] No BRAND_FIRST_GAP. Skipping global discovery.")
-                nav_candidates = []
+                logger.info(f"[{marketplace}] No BRAND_FIRST_GAP. Reusing persisted verified routes.")
+                # Global discovery stays disabled (no menu harvesting), but
+                # verified persisted routes ARE reused and revalidated by the
+                # normal acquisition loop below. This is the repaired path:
+                # reuse no longer depends on a prior failure.
+                nav_candidates = build_experience_route_candidates(marketplace, brand, prior_experiences)
+                _route_reuse["recovered"] = len(nav_candidates)
+                if nav_candidates:
+                    nav_candidates = prioritize_children(nav_candidates, _cert_urls)
+                    nav_strategy, _nav_decision = choose_navigation_strategy(_prior_failed, _prior_ok)
+                    if _nav_decision:
+                        _nav_decisions.append(_nav_decision)
+                        await _emit_progress({"kind": "EXPERIENCE_DECISION", "marketplace": marketplace, **_nav_decision})
+                    _route_reuse["selected"] = len(nav_candidates)
+                    experience_decisions.append({
+                        "event": "ROUTES_RECOVERED",
+                        "marketplace": marketplace,
+                        "count": len(nav_candidates),
+                        "strategy": nav_strategy,
+                        "route_source": "experience_store",
+                    })
+                    try:
+                        exp_store.record_strategy(
+                            marketplace, brand,
+                            strategy_id="nav::experience_reuse::normal_path",
+                            strategy_type="discover_navigation",
+                            surface=hub_url,
+                            hypothesis="persisted verified routes are reusable on a healthy run",
+                            attempt=1, result="SUCCESS",
+                            evidence=f"routes_selected={len(nav_candidates)} strategy={nav_strategy}",
+                            confidence=0.8)
+                    except Exception:
+                        pass
+                else:
+                    nav_strategy = None
+                nav_opened = None
+                nav_anchors_total = None
                 _nav_source = None
             else:
                 evidence_notes.append(f"BRAND_FIRST_GAP identified: {brand_first_gap}. Enabling GLOBAL_DISCOVERY fallback.")
@@ -946,6 +1188,8 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
                                          "evidence_locator": c["evidence_locator"],
                                          "classification_evidence": c["classification"].get("evidence", []),
                                          "nav_parent": c.get("parent"), "nav_depth": c.get("depth"),
+                                          "route_source": c.get("route_source"),
+                                          "experience_id": c.get("experience_id"),
                                          "stop_reason": "QUEUED",
                                          "coverage_status": "QUEUED"})
                 _seed_items = [c for c in sanitized_categories if c.get("is_seed_surface")]
@@ -972,6 +1216,25 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
                 logger.info(f"[{marketplace}] RESUME_SKIP {cat['category_name']}")
                 cat["stop_reason"] = "RESUME_SKIPPED"
                 continue
+            _is_reused_route = cat.get("route_source") == "experience_store"
+            if _is_reused_route:
+                _route_reuse["navigated"] += 1
+                _route_reuse_evidence.append({
+                    "run_id": _trace_run_id,
+                    "marketplace": marketplace,
+                    "surface_id": url,
+                    "route_id": cat.get("experience_id"),
+                    "route_source": "experience_store",
+                    "experience_id": cat.get("experience_id"),
+                    "discovery_method": cat.get("discovery_method"),
+                    "navigation_state": "ATTEMPTED",
+                })
+                await _emit_progress({"kind": "ROUTE_REUSED", "marketplace": marketplace,
+                                      "batch_number": batch_number,
+                                      "category_name": cat["category_name"],
+                                      "category_url": url,
+                                      "route_source": "experience_store",
+                                      "experience_id": cat.get("experience_id")})
             batch_number += 1
             batch_started_at = datetime.now().isoformat()
             before_unique = len(global_product_map)
@@ -1009,7 +1272,22 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
                                               "checkbox_count": _fprobe.get("checkbox_count"),
                                               "evidence_locator": _fprobe.get("evidence_locator")})
                         _mtype = (facet_mechanism.get("mechanism_type") or facet_mechanism.get("type") or "") if facet_mechanism else ""
-                        if facet_mechanism and (_mtype == "URL_QUERY" or _mtype.startswith("URL_QUERY")):
+                        _url_query_available = bool(facet_mechanism and (_mtype == "URL_QUERY" or _mtype.startswith("URL_QUERY")))
+                        _ui_available = bool(_brand_opt and _fprobe.get("panel_opened") and not _fprobe.get("unscoped"))
+                        # MRI-LEARNING-CIRCUIT-REPAIR-007: the persisted facet
+                        # strategy decides WHICH method runs first; the executed
+                        # method and any fallback are recorded, never assumed.
+                        _f_dec = choose_facet_strategy_decision(
+                            exp_store, marketplace, brand, url,
+                            {"url_query_available": _url_query_available, "ui_available": _ui_available})
+                        _facet_decisions.append(_f_dec)
+                        await _emit_progress({"kind": "EXPERIENCE_DECISION", "marketplace": marketplace,
+                                              "batch_number": batch_number, **_f_dec})
+                        _facet_selected = _f_dec.get("selected") or "unavailable"
+                        _facet_executed = None
+                        _facet_fallback_reason = None
+                        _furl = None
+                        if _url_query_available and _f_dec.get("selected") in ("url_query", "unavailable"):
                             _furl = build_facet_url(url, brand, facet_mechanism)
                             if _furl:
                                 _sig_before = await scraper.page_signature()
@@ -1022,6 +1300,7 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
                                 _facet_state["applied"] = bool(_verified)
                                 if _verified:
                                     facet_applied_count += 1
+                                    _facet_executed = "url_query"
                                     cat["facet_applied_url"] = scraper.page.url
                                     cat["brand_context_hint"] = True
                                 await _emit_progress({"kind": "facet_application", "marketplace": marketplace,
@@ -1032,11 +1311,20 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
                                                       "facet_url": _furl,
                                                       "verified": bool(_verified),
                                                       "signals": str({"before": _sig_before, "after": _sig_after})[:400]})
-                        if _brand_opt and _fprobe.get("panel_opened") and not _fprobe.get("unscoped"):
-                            _f_dec = choose_facet_strategy_decision(exp_store, marketplace, brand, url)
-                            _facet_decisions.append(_f_dec)
-                            await _emit_progress({"kind": "EXPERIENCE_DECISION", "marketplace": marketplace,
-                                                  "batch_number": batch_number, **_f_dec})
+                                try:
+                                    exp_store.record_strategy(
+                                        marketplace, brand,
+                                        strategy_id=f"facet::url_query::{url}",
+                                        strategy_type="facet_apply", surface=url,
+                                        hypothesis="brand facet via URL_QUERY narrows the surface",
+                                        attempt=1, result=("SUCCESS" if _verified else "FAILED"),
+                                        evidence=f"facet_url={_furl}"[:250], confidence=0.7)
+                                except Exception:
+                                    pass
+                        if _ui_available and _facet_executed is None:
+                            if _facet_selected == "url_query":
+                                _facet_fallback_reason = (
+                                    "url_query selected but not verified; ui_keyboard fallback executed")
                             _sig_before = await scraper.page_signature()
                             _fres = await scraper.apply_brand_facet(brand) or {}
                             _sig_after = _fres.get("after") or {}
@@ -1044,6 +1332,7 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
                             _facet_state["applied"] = bool(_verified)
                             if _verified:
                                 facet_applied_count += 1
+                                _facet_executed = "ui_keyboard"
                                 cat["facet_applied_url"] = scraper.page.url
                             await _emit_progress({"kind": "facet_application", "marketplace": marketplace,
                                                   "batch_number": batch_number,
@@ -1064,6 +1353,18 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
                                                                   str(_sig_after)[:180])
                             except Exception:
                                 pass
+                        if _facet_executed:
+                            cat["facet_strategy_selected"] = f"facet::{_facet_selected}"
+                            cat["facet_strategy_executed"] = f"facet::{_facet_executed}"
+                            cat["facet_fallback_reason"] = _facet_fallback_reason
+                            experience_decisions.append({
+                                "event": "FACET_STRATEGY_APPLIED",
+                                "marketplace": marketplace,
+                                "surface_url": url,
+                                "strategy_selected": f"facet::{_facet_selected}",
+                                "strategy_executed": f"facet::{_facet_executed}",
+                                "fallback_reason": _facet_fallback_reason,
+                            })
                     except Exception as _fe:
                         evidence_notes.append(f"facet step failed (non-fatal) {cat.get('category_name')}: {_fe}")
                 # Recovery chain: primary extractor first; on TIMEOUT a single
@@ -1177,6 +1478,36 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
                         
                 products_by_category[cat["category_name"]] = prods
                 cat["products_found"] = len(prods)
+
+                if _is_reused_route:
+                    _route_reuse["reused"] += 1
+                    cat["route_reused"] = True
+                    try:
+                        exp_store.record_experience(
+                            marketplace=marketplace, brand=brand,
+                            knowledge_type="ROUTE_TRACE",
+                            value=f"{_trace_run_id}:{marketplace}:{url}",
+                            source_url=url, page_type="CATEGORY_GRID",
+                            status="VALIDATED", is_success=True,
+                            evidence_reference=json.dumps({
+                                "run_id": _trace_run_id,
+                                "marketplace": marketplace,
+                                "surface_id": url,
+                                "route_id": cat.get("experience_id"),
+                                "route_source": "experience_store",
+                                "experience_ids_consulted": [cat.get("experience_id")],
+                                "capability_id": None,
+                                "strategy_selected": cat.get("facet_strategy_selected"),
+                                "strategy_executed": cat.get("facet_strategy_executed"),
+                                "strategy_selection_reason": "persisted verified route + facet strategy",
+                                "fallback_reason": cat.get("facet_fallback_reason"),
+                                "acquisition_outcome": stop_reason,
+                                "publications_observed": len(prods),
+                                "evidence_reference": f"experience:{cat.get('experience_id')}",
+                            }, ensure_ascii=False)[:3500],
+                        )
+                    except Exception as _rte:
+                        evidence_notes.append(f"route trace persistence failed (non-fatal): {_rte}")
 
                 # Node certification (systemic model fix): a surface becomes a
                 # taxonomy node ONLY with direct commercial evidence, i.e.
@@ -1425,6 +1756,11 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
         _multi_count = 0
     _nav_summary = {"strategy": nav_strategy, "menu_opened": nav_opened,
                     "anchors_total": nav_anchors_total, "candidates": len(nav_candidates),
+                    "routes_recovered": _route_reuse["recovered"],
+                    "routes_selected": _route_reuse["selected"],
+                    "routes_actually_navigated": _route_reuse["navigated"],
+                    "routes_reused": _route_reuse["reused"],
+                    "route_source": "experience_store" if _route_reuse["recovered"] else None,
                     "navigation_discovery_status": ("PASS" if nav_candidates else "BLOCKED")}
     _facets_summary = {"surfaces_probed": facet_probe_count, "applied_verified": facet_applied_count}
     _exp_count = len(_nav_decisions) + len(_facet_decisions)
@@ -1475,6 +1811,9 @@ async def autonomous_discover_marketplace(marketplace: str, brand: str = "Nicopo
         "brand_first_gap": brand_first_gap,
         "navigation": _nav_summary,
         "facets": _facets_summary,
+        "run_id": _trace_run_id,
+        "route_reuse": dict(_route_reuse),
+        "route_reuse_evidence": _route_reuse_evidence,
         "multi_membership_products": _multi_count,
         "experience_decisions_count": _exp_count,
         "experience_decisions": experience_decisions if 'experience_decisions' in locals() else [],
