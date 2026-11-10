@@ -2401,6 +2401,53 @@ class MRIOrchestrator:
             self.is_running = False
             self.stop_requested = False
             
+    async def run_verified_routes_audit(self, run_id, marketplace="ALL",
+                                       scope="ALL_VERIFIED", limit=None,
+                                       selected_routes=None, resume_run_id=None):
+        """Dashboard adapter for the verified-routes audit engine."""
+        if self.is_running:
+            return
+        self.is_running = True
+        self.results = []
+        self.stop_requested = False
+        self.state.update({
+            "run_id": run_id,
+            "mode": "AUDIT_VERIFIED_ROUTES",
+            "marketplace": marketplace,
+            "scope": scope,
+            "status_message": "RUNNING",
+            "stage": "auditando_rutas",
+            "started_at": datetime.now().isoformat(),
+            "last_activity": datetime.now().isoformat(),
+            "marketplace_states": {m: "EN_CURSO" for m in
+                                   (["Mercado Libre", "Paris", "Ripley", "Falabella"]
+                                    if marketplace == "ALL" else [marketplace])},
+            "errors": [],
+        })
+        try:
+            from app.mri_dashboard.verified_routes_audit import execute_verified_routes_audit
+            result = await execute_verified_routes_audit(
+                run_id=run_id, marketplace=marketplace, scope=scope,
+                limit=limit, selected_routes=selected_routes,
+                resume_run_id=resume_run_id)
+            self.results = list(result.get("routes") or [])
+            acceptance = result.get("acceptance") or {}
+            self.state["acceptance"] = acceptance
+            self.state["routes_selected"] = result.get("routes_selected")
+            self.state["routes_processed"] = result.get("routes_processed")
+            self.state["status_message"] = result.get("run_status") or "RUN_COMPLETED"
+            self.state["outcome"] = acceptance.get("scope_acceptance") or (
+                "FOUND" if result.get("run_status") == "RUN_COMPLETED" else "PARTIAL")
+            states = {}
+            for row in self.results:
+                mkt = row.get("marketplace") or marketplace
+                states[mkt] = row.get("state") or "UNKNOWN"
+            if states:
+                self.state["marketplace_states"] = states
+            self.state["last_activity"] = datetime.now().isoformat()
+        finally:
+            self.is_running = False
+
     async def run_parallel_discovery(self, run_id, marketplaces=None,
                                      max_pages=5, limit=None):
         """Run isolated marketplace children concurrently.
