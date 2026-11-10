@@ -312,16 +312,16 @@
                     <option value="Paris">Auditoría · Paris</option>
                     <option value="Ripley">Auditoría · Ripley</option>
                 </select>
-                <button class="btn-primary" onclick="startAudit()" id="btnStart">Iniciar Auditoría</button>
+                <button class="btn-primary" onclick="startAudit()" id="btnStart">Descubrir rutas</button>
                 <button class="btn-danger" onclick="stopAudit()" id="btnStop" disabled>Detener</button>
             </div>
             <p style="color:var(--text-muted); font-size:0.8rem; margin:8px 0 0 0;">
-                Alcance fijo: <strong>catálogo completo</strong> y <strong>descubrimiento autónomo de categorías</strong>.
+                <strong>Descubre rutas una vez. Luego audita las rutas verificadas sin volver a descubrir.</strong>
             </p>
             
             <!-- AUDIT_VERIFIED_ROUTES: separate from discovery, manual start only -->
             <div style="margin-top:14px; padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:6px; background:rgba(0,0,0,0.15);">
-                <div style="font-weight:600; font-size:0.9rem; margin-bottom:8px;">Auditar rutas verificadas (experiencia persistente)</div>
+                <div style="font-weight:600; font-size:0.9rem; margin-bottom:8px;">Auditar rutas verificadas (usa el ExperienceStore, no descubre)</div>
                 <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
                     <select id="vrScope" title="Alcance de rutas verificadas">
                         <option value="ALL_VERIFIED">Todas las rutas elegibles</option>

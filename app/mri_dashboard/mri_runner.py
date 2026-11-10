@@ -509,12 +509,40 @@ class MRIOrchestrator:
                         self.state["marketplace_states"]["Paris"] = (
                             "FOUND" if _prods else "EMPTY_VERIFIED")
                         self.state["http_first"] = {
-                            "marketplace": "Paris",
+                            "marketplace": mkt,
                             "browser_used": False,
                             "products": len(_prods),
                             "method": _http_paris.get("discovery_method"),
                             "evidence": _http_paris.get("evidence_notes"),
                         }
+                        # MRI-030: persist single-market DISCOVERY routes.
+                        try:
+                            _st = _safe_experience_store()
+                            _persisted = 0
+                            for _p in _prods:
+                                _url = str(_p.get("url") or "").strip()
+                                if not _url.startswith("http"):
+                                    continue
+                                _rec = _st.record_experience(
+                                    marketplace=mkt, brand="Nicopoly",
+                                    knowledge_type="CATEGORY", value=_url,
+                                    source_url=_url, page_type="COMMERCIAL_HUB",
+                                    status="LAST_GOOD", is_success=True,
+                                    discovery_method="DASHBOARD_DISCOVERY_HTTP",
+                                    evidence_reference="MRI-030 discovered route")
+                                _rid = (_rec or {}).get("id")
+                                if _rid:
+                                    _st.record_experience(
+                                        marketplace=mkt, brand="Nicopoly",
+                                        knowledge_type="ROUTE_STATE",
+                                        value=f"exp_{_rid}", status="OBSERVED",
+                                        is_success=True,
+                                        discovery_method="DASHBOARD_DISCOVERY_HTTP",
+                                        evidence_reference=_url)
+                                _persisted += 1
+                            self.state["routes_persisted"] = _persisted
+                        except Exception as _rp_exc:
+                            print(f"Error persisting routes: {_rp_exc}")
                         continue
                     except Exception as _http_exc:
                         self.state.setdefault("errors", []).append({
@@ -2594,6 +2622,37 @@ class MRIOrchestrator:
             self.results = agg
             self.state["products_processed"] = len(agg)
             self.state["total"] = len(agg)
+            # MRI-030: persist every discovered URL so AUDIT can reuse it
+            # without another DISCOVERY run.
+            try:
+                _store = _safe_experience_store()
+                _seen_routes = set()
+                for _mkt, _child in zip(mkts, done):
+                    if isinstance(_child, BaseException) or not hasattr(_child, "state"):
+                        continue
+                    for _row in (_child.results or []):
+                        _url = str(_row.get("url") or _row.get("url_encontrada") or "").strip()
+                        if not _url.startswith("http") or (_mkt, _url) in _seen_routes:
+                            continue
+                        _seen_routes.add((_mkt, _url))
+                        _rec = _store.record_experience(
+                            marketplace=_mkt, brand="Nicopoly",
+                            knowledge_type="CATEGORY", value=_url,
+                            source_url=_url, page_type="COMMERCIAL_HUB",
+                            status="LAST_GOOD", is_success=True,
+                            discovery_method="DASHBOARD_DISCOVERY_HTTP",
+                            evidence_reference="MRI-030 discovered route")
+                        _rid = (_rec or {}).get("id")
+                        if _rid:
+                            _store.record_experience(
+                                marketplace=_mkt, brand="Nicopoly",
+                                knowledge_type="ROUTE_STATE", value=f"exp_{_rid}",
+                                status="OBSERVED", is_success=True,
+                                discovery_method="DASHBOARD_DISCOVERY_HTTP",
+                                evidence_reference=_url)
+                self.state["routes_persisted"] = len(_seen_routes)
+            except Exception as _route_exc:
+                print(f"Error persisting discovered routes: {_route_exc}")
             self.state["status_message"] = (
                 "STOPPED_BY_USER" if self.stop_requested else "COMPLETED")
             if self.stop_requested:
