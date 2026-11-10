@@ -17,12 +17,26 @@ UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
 
 
 class MeliHTTPEngine:
+    def _cookies(self) -> Dict[str, str]:
+        import os as _os
+        if str(_os.environ.get("USE_CHROME_COOKIES", "")).lower() not in ("1", "true", "yes"):
+            return {}
+        try:
+            from app.mri_autonomous.cookie_extractor import get_meli_cookies
+            return get_meli_cookies()
+        except Exception:
+            return {}
+
     def fetch_html(self, url: str = STOREFRONT_URL, timeout: int = 20) -> str:
-        req = urllib.request.Request(url, headers={
+        headers = {
             "User-Agent": UA,
             "Accept-Language": "es-CL,es;q=0.9",
             "Accept": "text/html,application/xhtml+xml",
-        })
+        }
+        cookies = self._cookies()
+        if cookies:
+            headers["Cookie"] = "; ".join(f"{k}={v}" for k, v in cookies.items())
+        req = urllib.request.Request(url, headers=headers)
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return resp.read().decode("utf-8", "ignore")
 

@@ -2556,10 +2556,101 @@ class MRIOrchestrator:
                 self.state["outcome"] = "PARTIAL"
             else:
                 self.state["outcome"] = "FOUND"
+            # MRI-025: persist the parent run and HTTP coverage so the
+            # dashboard shows the complete ALL audit, not only child rows.
+            try:
+                from app.mri_autonomous.recovery_runner import AcquisitionRecoveryRunner
+                AcquisitionRecoveryRunner().persist_to_sqlite(
+                    {"observations": [], "terminal_state": self.state["outcome"]},
+                    run_id,
+                    run_meta={
+                        "marketplace": "MULTI_MARKETPLACE",
+                        "execution_mode": "DISCOVERY::ALL_HTTP_FIRST",
+                        "source_method": "DASHBOARD_DISCOVERY_HTTP",
+                        "terminal_state": self.state["outcome"],
+                        "started_at": self.state.get("started_at"),
+                    })
+            except Exception as _parent_exc:
+                print(f"Error persisting parent run: {_parent_exc}")
+
+            try:
+                from app.mri_dashboard import coverage as _covp
+                from app.mri_autonomous.storage_guard import StorageConfig as _SCp
+                _auxp = _SCp.get_aux_dir()
+                for _mkt, _child in zip(mkts, done):
+                    if isinstance(_child, BaseException) or not hasattr(_child, "state"):
+                        continue
+                    # Falabella owns a full SSR checkpoint; do not overwrite it
+                    # with the limited HTTP-hub summary.
+                    if _mkt == "Falabella":
+                        continue
+                    _rows = len(_child.results or [])
+                    if not _rows:
+                        continue
+                    _rid = f"{run_id}__{_slug(_mkt)}"
+                    _cv = _covp.new_coverage(_rid, _mkt, {
+                        "HTTP_HUB": {"name": "HTTP_HUB", "url": None}})
+                    _cv["scope"] = "HTTP_HUB_LIMITED"
+                    _covp.record_category(_cv, "HTTP_HUB", pages=1,
+                                         stop_state="EXHAUSTION", publications=_rows)
+                    _cv = _covp.finalize(_cv, unique_publications=_rows)
+                    _cv["scope_note"] = "HTTP hub coverage only; full pagination not claimed"
+                    _covp.save_checkpoint(_auxp, _cv)
+            except Exception as _cov_exc:
+                print(f"Error writing HTTP coverage: {_cov_exc}")
+
+            try:
+                import sqlite3 as _sqle
+                import hashlib as _hashlib
+                from app.mri_autonomous.storage_guard import StorageConfig as _SCe
+                _edb = _SCe.get_sqlite_path()
+                _ec = _sqle.connect(_edb, timeout=30)
+                _now = datetime.now().isoformat()
+                for _mkt, _child in zip(mkts, done):
+                    if isinstance(_child, BaseException) or not hasattr(_child, "state"):
+                        continue
+                    _cr = len(_child.results or [])
+                    if not _cr:
+                        continue
+                    _erid = f"{run_id}__{_slug(_mkt)}"
+                    _eid = "ev_http_" + _hashlib.sha1(
+                        f"{_erid}|{_cr}|{_now}".encode("utf-8")).hexdigest()[:14]
+                    _ec.execute(
+                        "INSERT OR REPLACE INTO mri_evidence_ledger "
+                        "(evidence_id,run_id,marketplace,brand,claim_type,claim_value,"
+                        "source_surface,method,observed_at,confidence,status,raw_reference,"
+                        "content_hash,truth_model_version) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                        (_eid, _erid, _mkt, "Nicopoly", "HTTP_ACQUISITION",
+                         str(_child.state.get("outcome") or "FOUND"), "HTTP_HUB",
+                         "HTTP_FIRST", _now, 1.0, "VALIDATED",
+                         f"results={_cr}", _hashlib.sha256(
+                             f"{_erid}|{_cr}".encode("utf-8")).hexdigest(), "2.0"))
+                _ec.commit()
+                _ec.close()
+            except Exception as _ev_exc:
+                print(f"Error writing HTTP evidence: {_ev_exc}")
+
             try:
                 self.history = self._load_history()
-            except Exception:
-                pass
+                if not any(h.get("run_id") == run_id for h in self.history):
+                    self.history.append({
+                        "run_id": run_id,
+                        "timestamp": datetime.now().isoformat(),
+                        "marketplace": "MULTI_MARKETPLACE",
+                        "total": len(agg),
+                        "confirmed": len(agg),
+                        "mode": "DISCOVERY",
+                        "terminal_state": self.state["status_message"],
+                        "outcome": self.state.get("outcome"),
+                        "engine": "DISCOVERY::ALL_HTTP_FIRST",
+                        "execution_strategy": self.state.get("execution_strategy"),
+                        "child_run_ids": dict(self.state.get("child_run_ids") or {}),
+                        "marketplace_states": dict(self.state.get("marketplace_states") or {}),
+                        "source_method": "DASHBOARD_DISCOVERY_HTTP",
+                    })
+                    self._save_history()
+            except Exception as _hist_exc:
+                print(f"Error saving parent history: {_hist_exc}")
         finally:
             self._parallel_children = []
             self.is_running = False

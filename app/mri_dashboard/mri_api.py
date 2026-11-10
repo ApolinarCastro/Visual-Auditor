@@ -241,11 +241,34 @@ async def get_mri_sessions():
     })
 
 
+@app.post("/api/mri/cookies/import")
+async def import_chrome_cookies():
+    """Import ML cookies directly from the user's Chrome profile."""
+    try:
+        from app.mri_autonomous.cookie_extractor import get_meli_cookie_status
+        return JSONResponse(status_code=200, content=get_meli_cookie_status())
+    except Exception as exc:
+        return JSONResponse(status_code=500, content={
+            "status": "ERROR", "count": 0,
+            "error": f"{type(exc).__name__}: {exc}"})
+
+
+@app.get("/api/mri/sessions/{marketplace}")
+async def get_mri_session(marketplace: str):
+    from app.mri_dashboard.session_store import session_status
+    name, err = _session_marketplace_or_error(marketplace)
+    if err:
+        return err
+    return JSONResponse(content=session_status(name))
+
+
 @app.post("/api/mri/sessions/{marketplace}")
 async def update_mri_session(marketplace: str, request: Request):
     """Import a Cookie-Editor JSON array into MRI's own local session store."""
     from app.mri_dashboard.session_store import (
         canonical_marketplace, save_session)
+    if not _session_csrf_ok(request):
+        return JSONResponse(status_code=403, content={"error": "CSRF_REJECTED"})
     name = canonical_marketplace(marketplace)
     try:
         payload = await request.json()
@@ -256,6 +279,181 @@ async def update_mri_session(marketplace: str, request: Request):
         return JSONResponse(status_code=400,
                             content={"error": f"COOKIE_IMPORT_FAILED: {type(exc).__name__}"})
     return JSONResponse(content={"ok": True, **result})
+
+
+def _session_csrf_ok(request: Request) -> bool:
+    if request.headers.get("x-mri-csrf") != "1":
+        return False
+    origin = (request.headers.get("origin") or "").lower()
+    if origin and not any(h in origin for h in ("127.0.0.1", "localhost", "[::1]")):
+        return False
+    return True
+
+
+def _session_marketplace_or_error(marketplace: str):
+    from app.mri_dashboard.session_store import canonical_marketplace, MARKET_DOMAINS
+    name = canonical_marketplace(marketplace)
+    if name not in MARKET_DOMAINS:
+        return None, JSONResponse(status_code=404,
+                                  content={"error": "MARKETPLACE_NOT_SUPPORTED"})
+    return name, None
+
+
+@app.get("/api/mri/sessions/{marketplace}/cookies")
+async def list_session_cookies(marketplace: str, reveal: bool = False):
+    from app.mri_dashboard.session_store import list_cookies, session_status
+    name, err = _session_marketplace_or_error(marketplace)
+    if err:
+        return err
+    return JSONResponse(content={
+        "marketplace": name,
+        "session": session_status(name),
+        "revealed": bool(reveal),
+        "cookies": list_cookies(name, reveal=bool(reveal)),
+    })
+
+
+@app.post("/api/mri/sessions/{marketplace}/cookies")
+async def upsert_session_cookie(marketplace: str, request: Request):
+    from app.mri_dashboard.session_store import upsert_cookie, session_status
+    if not _session_csrf_ok(request):
+        return JSONResponse(status_code=403, content={"error": "CSRF_REJECTED"})
+    name, err = _session_marketplace_or_error(marketplace)
+    if err:
+        return err
+    try:
+        payload = await request.json()
+        result = upsert_cookie(name, payload)
+    except ValueError as exc:
+        return JSONResponse(status_code=400, content={"error": str(exc)})
+    except Exception as exc:
+        return JSONResponse(status_code=400,
+                            content={"error": f"COOKIE_WRITE_FAILED: {type(exc).__name__}"})
+    return JSONResponse(content={"ok": True, **result, "session": session_status(name)})
+
+
+@app.delete("/api/mri/sessions/{marketplace}/cookies")
+async def delete_session_cookie(marketplace: str, request: Request,
+                                name: str, domain: str = "", path: str = "/"):
+    from app.mri_dashboard.session_store import delete_cookie, session_status
+    if not _session_csrf_ok(request):
+        return JSONResponse(status_code=403, content={"error": "CSRF_REJECTED"})
+    mkt, err = _session_marketplace_or_error(marketplace)
+    if err:
+        return err
+    return JSONResponse(content={"ok": True,
+                                 **delete_cookie(mkt, name, domain, path),
+                                 "session": session_status(mkt)})
+
+
+@app.post("/api/mri/sessions/{marketplace}/cookies/delete-selected")
+async def delete_selected_session_cookies(marketplace: str, request: Request):
+    from app.mri_dashboard.session_store import delete_selected, session_status
+    if not _session_csrf_ok(request):
+        return JSONResponse(status_code=403, content={"error": "CSRF_REJECTED"})
+    mkt, err = _session_marketplace_or_error(marketplace)
+    if err:
+        return err
+    payload = await request.json()
+    keys = payload.get("cookies") if isinstance(payload, dict) else None
+    return JSONResponse(content={"ok": True,
+                                 **delete_selected(mkt, keys or []),
+                                 "session": session_status(mkt)})
+
+
+@app.post("/api/mri/sessions/{marketplace}/import")
+async def import_session_json(marketplace: str, request: Request):
+    """CSRF-protected import endpoint used by the file selector."""
+    return await update_mri_session(marketplace, request)
+
+
+@app.get("/api/mri/sessions/{marketplace}/export")
+async def export_session_json(marketplace: str, request: Request,
+                              confirm: bool = False):
+    from app.mri_dashboard.session_store import export_cookies
+    if not confirm:
+        return JSONResponse(status_code=409,
+                            content={"error": "EXPORT_REQUIRES_CONFIRMATION"})
+    if not _session_csrf_ok(request):
+        return JSONResponse(status_code=403, content={"error": "CSRF_REJECTED"})
+    name, err = _session_marketplace_or_error(marketplace)
+    if err:
+        return err
+    return JSONResponse(content=export_cookies(name),
+                        headers={"Content-Disposition":
+                                 f'attachment; filename="{name}_cookies.json"'})
+
+
+@app.delete("/api/mri/sessions/{marketplace}")
+async def delete_session(marketplace: str, request: Request):
+    from app.mri_dashboard.session_store import delete_session as _delete
+    if not _session_csrf_ok(request):
+        return JSONResponse(status_code=403, content={"error": "CSRF_REJECTED"})
+    name, err = _session_marketplace_or_error(marketplace)
+    if err:
+        return err
+    return JSONResponse(content={"ok": True, **_delete(name)})
+
+
+@app.get("/api/mri/managed-browser/{marketplace}")
+async def managed_browser_status(marketplace: str):
+    from app.mri_dashboard.managed_browser import status
+    name, err = _session_marketplace_or_error(marketplace)
+    if err:
+        return err
+    return JSONResponse(content=status(name))
+
+
+@app.post("/api/mri/managed-browser/{marketplace}/open")
+async def managed_browser_open(marketplace: str, request: Request):
+    from app.mri_dashboard.managed_browser import open_browser
+    if not _session_csrf_ok(request):
+        return JSONResponse(status_code=403, content={"error": "CSRF_REJECTED"})
+    if orchestrator.is_running:
+        return JSONResponse(status_code=409,
+                            content={"error": "AUDIT_RUNNING",
+                                     "message": "No abrir perfiles durante una auditoría."})
+    name, err = _session_marketplace_or_error(marketplace)
+    if err:
+        return err
+    result = open_browser(name)
+    return JSONResponse(status_code=(200 if result.get("ok") else 409),
+                        content=result)
+
+
+@app.post("/api/mri/managed-browser/{marketplace}/save")
+async def managed_browser_save(marketplace: str, request: Request):
+    from app.mri_dashboard.managed_browser import save_session
+    if not _session_csrf_ok(request):
+        return JSONResponse(status_code=403, content={"error": "CSRF_REJECTED"})
+    name, err = _session_marketplace_or_error(marketplace)
+    if err:
+        return err
+    result = save_session(name)
+    return JSONResponse(status_code=(200 if result.get("ok") else 409),
+                        content=result)
+
+
+@app.post("/api/mri/managed-browser/{marketplace}/close")
+async def managed_browser_close(marketplace: str, request: Request):
+    from app.mri_dashboard.managed_browser import close_browser
+    if not _session_csrf_ok(request):
+        return JSONResponse(status_code=403, content={"error": "CSRF_REJECTED"})
+    name, err = _session_marketplace_or_error(marketplace)
+    if err:
+        return err
+    return JSONResponse(content=close_browser(name))
+
+
+@app.post("/api/mri/managed-browser/{marketplace}/verify")
+async def managed_browser_verify(marketplace: str, request: Request):
+    from app.mri_dashboard.managed_browser import verify_session
+    if not _session_csrf_ok(request):
+        return JSONResponse(status_code=403, content={"error": "CSRF_REJECTED"})
+    name, err = _session_marketplace_or_error(marketplace)
+    if err:
+        return err
+    return JSONResponse(content=verify_session(name))
 
 
 @app.get("/api/version")
@@ -605,6 +803,52 @@ async def start_audit(background_tasks: BackgroundTasks, request: Request):
             "audit_db": audit_db,
         })
     
+    # ── AUDIT_VERIFIED_ROUTES: validate BEFORE publishing RUNNING ──────────
+    # Read-only preview of the declared scope. No auto-start, no discovery
+    # fallback: an invalid selection must fail closed (400/409).
+    vr_preview = None
+    vr_scope = None
+    vr_limit = None
+    vr_selected: List[str] = []
+    vr_resume = None
+    if mode == "AUDIT_VERIFIED_ROUTES":
+        vr_scope = str(data.get("scope") or "ALL_VERIFIED")
+        if vr_scope not in ("ALL_VERIFIED", "TOP_N", "SELECTED_ROUTES"):
+            return JSONResponse(status_code=400, content={
+                "error": "INVALID_SCOPE",
+                "allowed": ["ALL_VERIFIED", "TOP_N", "SELECTED_ROUTES"]})
+        vr_limit = data.get("limit_routes", data.get("limit"))
+        if vr_scope == "TOP_N":
+            try:
+                vr_limit = int(vr_limit)
+            except (TypeError, ValueError):
+                return JSONResponse(status_code=400, content={
+                    "error": "TOP_N_REQUIRES_LIMIT", "message": "limit_routes must be a positive integer"})
+            if vr_limit <= 0:
+                return JSONResponse(status_code=400, content={"error": "TOP_N_REQUIRES_LIMIT"})
+        else:
+            vr_limit = None
+        _sel = data.get("selected_routes") or []
+        if isinstance(_sel, str):
+            _sel = [x.strip() for x in _sel.splitlines() if x.strip()]
+        vr_selected = [str(x).strip() for x in _sel if str(x).strip()]
+        vr_resume = data.get("resume_run_id")
+        try:
+            from app.mri_dashboard.verified_routes_audit import preview_verified_routes
+            vr_preview = preview_verified_routes(marketplace, vr_scope, vr_limit, vr_selected)
+        except ValueError as exc:
+            return JSONResponse(status_code=400, content={
+                "error": "INVALID_ROUTE_SELECTION", "message": str(exc)})
+        except Exception as exc:
+            return JSONResponse(status_code=409, content={
+                "error": "ROUTE_RECOVERY_FAILED",
+                "message": f"{type(exc).__name__}: {exc}"})
+        if not vr_preview.get("routes_selected"):
+            return JSONResponse(status_code=409, content={
+                "error": "NO_ELIGIBLE_ROUTES",
+                "message": "No hay rutas verificadas elegibles para el alcance solicitado",
+                "preview": vr_preview})
+
     # 202 = accepted. Publish run identity and RUNNING state NOW, before any
     # background work, so the UI never shows IDLE or inherited progress.
     from datetime import datetime as _dt
@@ -684,6 +928,29 @@ async def start_audit(background_tasks: BackgroundTasks, request: Request):
             "message": "Accepted: PARIS_PUBLIC acquisition", "mode": mode,
             "brand": brand, "max_items": items, "run_id": run_id,
             "state": "RUNNING"})
+    elif mode == "AUDIT_VERIFIED_ROUTES":
+        _mkts_vr = (["Mercado Libre", "Paris", "Ripley", "Falabella"]
+                    if marketplace == "ALL" else [marketplace])
+        orchestrator.state["marketplace_states"] = {m: "PENDIENTE" for m in _mkts_vr}
+        orchestrator.state["routes_available"] = vr_preview["routes_available"]
+        orchestrator.state["routes_eligible"] = vr_preview["routes_eligible"]
+        orchestrator.state["routes_selected"] = vr_preview["routes_selected"]
+        orchestrator.state["routes_skipped"] = vr_preview["routes_skipped"]
+        orchestrator.state["total"] = vr_preview["routes_selected"]
+        orchestrator.state["total_known"] = True
+        orchestrator.state["scope"] = vr_scope
+        background_tasks.add_task(
+            _guarded_run, orchestrator.run_verified_routes_audit,
+            run_id, run_id, marketplace, vr_scope, vr_limit, vr_selected, vr_resume)
+        return JSONResponse(status_code=200, content={
+            "message": "Accepted: Auditoría de rutas verificadas",
+            "mode": mode, "scope": vr_scope, "run_id": run_id, "state": "RUNNING",
+            "marketplace": marketplace,
+            "routes_available": vr_preview["routes_available"],
+            "routes_eligible": vr_preview["routes_eligible"],
+            "routes_selected": vr_preview["routes_selected"],
+            "routes_skipped": vr_preview["routes_skipped"],
+            "routes_by_marketplace": vr_preview["routes_by_marketplace"]})
     else:
         background_tasks.add_task(_guarded_run, orchestrator.run_audit,
                                   run_id, marketplace, limit, run_id)
@@ -692,6 +959,26 @@ async def start_audit(background_tasks: BackgroundTasks, request: Request):
             "run_id": run_id, "state": "RUNNING"})
 
 
+@app.post("/api/verified-routes/preview")
+async def preview_verified_routes_api(request: Request):
+    """Read-only preview of persisted verified routes (no writes, no audit)."""
+    data = await request.json()
+    marketplace = data.get("marketplace", "ALL")
+    scope = str(data.get("scope") or "ALL_VERIFIED")
+    limit_routes = data.get("limit_routes", data.get("limit"))
+    selected = data.get("selected_routes") or []
+    if isinstance(selected, str):
+        selected = [x.strip() for x in selected.splitlines() if x.strip()]
+    try:
+        from app.mri_dashboard.verified_routes_audit import preview_verified_routes
+        preview = preview_verified_routes(marketplace, scope, limit_routes, selected)
+    except ValueError as exc:
+        return JSONResponse(status_code=400, content={
+            "error": "INVALID_ROUTE_SELECTION", "message": str(exc)})
+    except Exception as exc:
+        return JSONResponse(status_code=500, content={
+            "error": "ROUTE_PREVIEW_FAILED", "message": f"{type(exc).__name__}: {exc}"})
+    return JSONResponse(content=preview)
 def run_falabella_ssr_acquisition(brand: str = "Nicopoly", max_items: int = 12,
                                   run_id: Optional[str] = None):
     """

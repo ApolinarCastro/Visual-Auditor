@@ -319,6 +319,26 @@
                 Alcance fijo: <strong>catálogo completo</strong> y <strong>descubrimiento autónomo de categorías</strong>.
             </p>
             
+            <!-- AUDIT_VERIFIED_ROUTES: separate from discovery, manual start only -->
+            <div style="margin-top:14px; padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:6px; background:rgba(0,0,0,0.15);">
+                <div style="font-weight:600; font-size:0.9rem; margin-bottom:8px;">Auditar rutas verificadas (experiencia persistente)</div>
+                <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+                    <select id="vrScope" title="Alcance de rutas verificadas">
+                        <option value="ALL_VERIFIED">Todas las rutas elegibles</option>
+                        <option value="TOP_N">Top-N (límite operativo)</option>
+                        <option value="SELECTED_ROUTES">Selección manual</option>
+                    </select>
+                    <input id="vrLimit" type="number" min="1" value="5" style="width:90px;" title="Límite TOP_N" />
+                    <button class="btn-primary" onclick="previewVerifiedRoutes()" id="btnVrPreview">Vista previa</button>
+                    <button class="btn-primary" onclick="startVerifiedRoutes()" id="btnVerifiedStart">Auditar rutas verificadas</button>
+                    <span id="vrPreview" style="font-size:0.8rem; color:var(--text-muted);"></span>
+                </div>
+                <textarea id="vrSelected" rows="2" placeholder="Solo Selección manual: una URL verificada por línea" style="width:100%; margin-top:8px; font-family:monospace; font-size:0.78rem;"></textarea>
+                <div style="font-size:0.72rem; color:var(--text-muted); margin-top:6px;">
+                    No descubre categorías ni inicia automáticamente. Audita solo rutas LAST_GOOD/VALIDATED; TOP_N no certifica cobertura total.
+                </div>
+            </div>
+
             <div class="status-box">
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
                     <div><strong>Estado del Corredor:</strong> <span id="lblStatus" class="badge badge-info">IDLE</span></div>
@@ -420,6 +440,47 @@
                     </div>
                 </div>
                 <div id="sessionUpdateResult" style="font-size:0.8rem; color:var(--text-muted); margin-top:8px;"></div>
+            </div>
+
+            <div id="sessionManagerPanel" style="margin-top:16px; padding:14px; border:1px solid var(--border); border-radius:8px; background:rgba(255,255,255,0.02);">
+                <h3 style="margin:0 0 6px 0; font-size:1rem; color:#fff;">Administrador de cookies y navegador</h3>
+                <div style="margin:8px 0 4px 0;">
+                    <button onclick="importChromeCookies()">IMPORTAR COOKIES DESDE CHROME</button>
+                </div>
+                <p style="color:var(--text-muted); font-size:0.8rem; margin:0 0 10px 0;">
+                    Abre el navegador visible con el perfil de MRI, inicia sesión manualmente y guarda la sesión.
+                    Los valores permanecen ocultos hasta que los reveles explícitamente.
+                </p>
+                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                    <select id="sessionManagerMarket" onchange="loadSessionManager()">
+                        <option value="Falabella">Falabella</option>
+                        <option value="Ripley">Ripley</option>
+                        <option value="Mercado Libre">Mercado Libre</option>
+                        <option value="Paris">Paris</option>
+                    </select>
+                    <button onclick="openManagedBrowser()">ABRIR NAVEGADOR</button>
+                    <button onclick="saveManagedBrowser()">GUARDAR SESIÓN</button>
+                    <button onclick="verifyManagedBrowser()">VERIFICAR SESIÓN</button>
+                    <button onclick="closeManagedBrowser()">CERRAR NAVEGADOR</button>
+                    <button onclick="loadCookieTable(false)">VER COOKIES</button>
+                    <button onclick="loadCookieTable(true)">REVELAR VALORES</button>
+                </div>
+                <div id="sessionManagerStatus" style="font-size:0.8rem; color:var(--text-muted); margin-top:8px;">—</div>
+                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px;">
+                    <button onclick="promptAddCookie()">AÑADIR COOKIE</button>
+                    <button onclick="deleteSelectedCookies()">ELIMINAR SELECCIONADAS</button>
+                    <button onclick="exportManagedCookies()">EXPORTAR JSON</button>
+                    <label style="font-size:0.8rem;">IMPORTAR JSON
+                        <input id="cookieFileInput" type="file" accept=".json,application/json"
+                               onchange="importManagedCookies(this)" style="font-size:0.72rem;">
+                    </label>
+                </div>
+                <div style="max-height:300px; overflow:auto; margin-top:10px;">
+                    <table style="width:100%; font-size:0.72rem; border-collapse:collapse;">
+                        <thead><tr><th></th><th>Nombre</th><th>Dominio</th><th>Ruta</th><th>Vence</th><th>Secure</th><th>HttpOnly</th><th>SameSite</th><th>Valor</th><th></th></tr></thead>
+                        <tbody id="cookieTableBody"><tr><td colspan="10" style="color:var(--text-muted);">Selecciona VER COOKIES</td></tr></tbody>
+                    </table>
+                </div>
             </div>
 
             <div id="catalogMetricsPanel" style="display:none; margin-top:20px; padding:16px; border:1px solid var(--border); border-radius:8px; background:rgba(255,255,255,0.02);">
@@ -795,7 +856,7 @@
                     <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:15px;">
                         Departamento: <strong>${fala.l0_department?.name} (${fala.l0_department?.id})</strong> | 
                         Subcategoría L1: <strong>${fala.l1_subcategory?.name} (${fala.l1_subcategory?.id})</strong> | 
-                        Total Publicaciones de Marca: <strong>${fala.total_brand_publications}</strong> | 
+                        Total Publicaciones de Marca (histórico): <strong>${fala.total_brand_publications}</strong> | 
                         Total Vendedor Oficial: <strong>${fala.total_seller_publications} (Seller ID: ${fala.seller_id})</strong>
                     </p>
                     <table>
@@ -860,7 +921,7 @@
                     <h3 style="color:#fff; margin-bottom:12px;">Ripley.cl — Categorías Verificadas y Facets Nicopoly</h3>
                     <div style="background:var(--panel-bg); padding:12px; border-radius:6px; border:1px solid var(--border); margin-bottom:15px; font-size:0.9rem;">
                         <div><strong>Marca:</strong> ${rip.brand} | <strong>Vendedor Oficial:</strong> ${rip.official_seller}</div>
-                        <div><strong>Total Publicaciones de Marca:</strong> <strong>${rip.total_brand_publications}</strong> | <strong>Total Categorías:</strong> ${rip.total_categories}</div>
+                        <div><strong>Total Publicaciones de Marca (histórico):</strong> <strong>${rip.total_brand_publications}</strong> | <strong>Total Categorías:</strong> ${rip.total_categories}</div>
                         <div style="margin-top:6px;"><strong>Mecanismo:</strong> ${rip.mechanism} | <strong>Estado:</strong> <span class="badge badge-success">${rip.status}</span></div>
                     </div>
                     <table>
@@ -1080,6 +1141,83 @@
             }
         }
         
+        function verifiedRoutesPayload() {
+            const selected = (document.getElementById('vrSelected').value || '');
+            return {
+                marketplace: document.getElementById('mktSelect').value,
+                scope: document.getElementById('vrScope').value,
+                limit_routes: document.getElementById('vrLimit').value,
+                selected_routes: selected
+            };
+        }
+
+        async function previewVerifiedRoutes() {
+            const out = document.getElementById('vrPreview');
+            out.innerText = 'consultando rutas...';
+            try {
+                const res = await fetch('/api/verified-routes/preview', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(verifiedRoutesPayload())
+                });
+                const payload = await res.json();
+                if (!res.ok) {
+                    out.innerText = 'Error: ' + (payload.message || payload.error || res.status);
+                    return;
+                }
+                out.innerText = 'disponibles=' + payload.routes_available +
+                    ' · elegibles=' + payload.routes_eligible +
+                    ' · seleccionadas=' + payload.routes_selected +
+                    ' · omitidas=' + payload.routes_skipped +
+                    (payload.total_scope_claim ? ' · alcance total' : ' · alcance limitado');
+            } catch (e) {
+                out.innerText = 'Error de red: ' + e.message;
+            }
+        }
+
+        async function startVerifiedRoutes() {
+            const payload = verifiedRoutesPayload();
+            payload.mode = 'AUDIT_VERIFIED_ROUTES';
+            const btn = document.getElementById('btnVerifiedStart');
+            const btnStart = document.getElementById('btnStart');
+            const btnStop = document.getElementById('btnStop');
+            btn.disabled = true;
+            if (btnStart) btnStart.disabled = true;
+            btnStop.disabled = true;
+            try {
+                const res = await fetch('/api/audit/start', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    btn.disabled = false;
+                    if (btnStart) btnStart.disabled = false;
+                    document.getElementById('lblStatus').innerText = 'NO INICIADO';
+                    document.getElementById('lblStatusMsg').innerText =
+                        'Error ' + res.status + ': ' + (data.message || data.error || 'no se pudo iniciar');
+                    return;
+                }
+                currentResults = [];
+                selectedRunId = null;
+                const _runSelStart = document.getElementById('runViewSelect');
+                if (_runSelStart) _runSelStart.value = 'LIVE';
+                document.getElementById('lblActiveRun').innerText = data.run_id || '-';
+                document.getElementById('lblStatus').innerText = 'INICIANDO...';
+                document.getElementById('lblStatusMsg').innerText =
+                    'Auditoría de rutas verificadas · alcance ' + (data.scope || payload.scope) +
+                    ' · seleccionadas ' + (data.routes_selected || 0) + '/' + (data.routes_eligible || 0);
+                btnStop.disabled = false;
+                startPolling();
+            } catch (e) {
+                btn.disabled = false;
+                if (btnStart) btnStart.disabled = false;
+                document.getElementById('lblStatus').innerText = 'NO INICIADO';
+                document.getElementById('lblStatusMsg').innerText = 'Excepción de red: ' + e.message;
+            }
+        }
+
         async function stopAudit() {
             await fetch('/api/audit/stop', { method: 'POST' });
             document.getElementById('btnStop').disabled = true;
@@ -1101,11 +1239,11 @@
                 const _badge = document.getElementById('runModeBadge');
                 if (_badge) {
                     if (data.is_running) {
-                        _badge.innerText = '● EN VIVO · ' + (st.run_id || '');
+                        _badge.innerText = '● EN VIVO · ' + (st.run_id || '') + (st.mode ? ' · ' + st.mode : '');
                         _badge.style.background = 'rgba(34,197,94,0.15)';
                         _badge.style.color = 'var(--primary)';
                     } else {
-                        _badge.innerText = 'ÚLTIMA COMPLETADA · ' + (st.run_id || 'sin corrida');
+                        _badge.innerText = 'ÚLTIMA COMPLETADA · ' + (st.run_id || 'sin corrida') + (st.mode ? ' · ' + st.mode : '');
                         _badge.style.background = 'rgba(148,163,184,0.15)';
                         _badge.style.color = 'var(--text-muted)';
                     }
@@ -1135,6 +1273,20 @@
                 const _bar = document.getElementById('progressBar');
                 _bar.style.width = _known ? Math.min(pct, 100) + '%' : '100%';
                 _bar.style.opacity = _known ? '1' : '0.35';
+
+                if (st.mode === 'AUDIT_VERIFIED_ROUTES' && st.routes_selected !== undefined) {
+                    const _acc = st.acceptance || null;
+                    document.getElementById('lblStatusMsg').innerText =
+                        'RUTAS VERIFICADAS · alcance ' + (st.scope || 'ALL_VERIFIED') +
+                        ' · seleccionadas ' + st.routes_selected + '/' + (st.routes_eligible || 0) +
+                        ' · procesadas ' + (st.routes_processed !== undefined ? st.routes_processed : (st.progress || 0)) +
+                        (st.routes_remaining !== undefined ? ' · pendientes ' + st.routes_remaining : '') +
+                        (st.routes_failed !== undefined ? ' · fallidas ' + st.routes_failed : '') +
+                        (st.routes_blocked !== undefined ? ' · bloqueadas ' + st.routes_blocked : '') +
+                        (st.current_route_state ? ' · último estado ' + st.current_route_state : '') +
+                        (st.current_category ? ' · ' + st.current_category : '') +
+                        (_acc ? ' · ' + (_acc.selected_routes_status || '') : '');
+                }
 
                 // Human-readable live status: stage ? channel/category ? counts ?
                 // marketplace states ? last activity ? concrete errors.
@@ -1322,7 +1474,7 @@
             try {
                 const parsed = JSON.parse(el.value);
                 const res = await fetch('/api/mri/sessions/' + marketplace, {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    method: 'POST', headers: {'Content-Type': 'application/json', 'X-MRI-CSRF': '1'},
                     body: JSON.stringify(parsed)
                 });
                 const data = await res.json();
@@ -1335,8 +1487,203 @@
             }
         }
 
+        const SESSION_HEADERS = {'Content-Type': 'application/json', 'X-MRI-CSRF': '1'};
+        async function importChromeCookies() {
+            const out = document.getElementById('sessionManagerStatus');
+            if (out) out.innerText = 'Importando cookies desde Chrome…';
+            try {
+                const res = await fetch('/api/mri/cookies/import', {method: 'POST'});
+                const data = await res.json();
+                if (out) out.innerText = `Sesión: ${data.status || '—'} · ${data.count || 0} cookies · ML` + (data.error ? ` · ${data.error}` : '');
+                await loadSessionManager();
+            } catch (e) {
+                if (out) out.innerText = 'Error: ' + e.message;
+            }
+        }
+
+        function sessionMarket() {
+            return encodeURIComponent(document.getElementById('sessionManagerMarket').value);
+        }
+        function sessionOut(msg) {
+            const el = document.getElementById('sessionManagerStatus');
+            if (el) el.innerText = msg;
+        }
+
+        async function loadSessionManager() {
+            sessionOut('Consultando sesión y navegador…');
+            try {
+                const mkt = sessionMarket();
+                const [stRes, brRes] = await Promise.all([
+                    fetch('/api/mri/sessions/' + mkt), fetch('/api/mri/managed-browser/' + mkt)
+                ]);
+                const st = await stRes.json(); const br = await brRes.json();
+                sessionOut(`Sesión: ${st.status || '—'} · ${st.cookie_count || 0} cookies · Navegador: ${br.state || 'CLOSED'}`);
+            } catch (e) { sessionOut('Error: ' + e.message); }
+        }
+
+        async function loadCookieTable(reveal) {
+            try {
+                const res = await fetch('/api/mri/sessions/' + sessionMarket() +
+                    '/cookies?reveal=' + (reveal ? 'true' : 'false'));
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+                const body = document.getElementById('cookieTableBody');
+                body.innerHTML = '';
+                if (!data.cookies.length) {
+                    body.innerHTML = '<tr><td colspan="10" style="color:var(--text-muted);">Sin cookies guardadas</td></tr>';
+                    sessionOut('Sesión sin cookies'); return;
+                }
+                data.cookies.forEach((c) => {
+                    const tr = document.createElement('tr');
+                    const cells = [
+                        {type: 'check'}, c.name, c.domain, c.path,
+                        c.expires ? new Date(c.expires * 1000).toLocaleDateString() : 'SESSION',
+                        c.secure ? 'Sí' : 'No', c.httpOnly ? 'Sí' : 'No',
+                        c.sameSite || '—', c.value,
+                    ];
+                    cells.forEach((v) => {
+                        const td = document.createElement('td');
+                        td.style.cssText = 'padding:3px 4px; border-bottom:1px solid var(--border);';
+                        if (v && v.type === 'check') {
+                            const cb = document.createElement('input');
+                            cb.type = 'checkbox'; cb.className = 'cookie-row-check';
+                            cb.dataset.name = c.name; cb.dataset.domain = c.domain; cb.dataset.path = c.path;
+                            td.appendChild(cb);
+                        } else {
+                            td.textContent = String(v == null ? '—' : v);
+                            td.style.wordBreak = 'break-all';
+                        }
+                        tr.appendChild(td);
+                    });
+                    const action = document.createElement('td');
+                    const edit = document.createElement('button');
+                    edit.textContent = 'Editar'; edit.style.fontSize = '0.68rem';
+                    edit.onclick = () => editManagedCookie(c);
+                    action.appendChild(edit);
+                    tr.appendChild(action);
+                    body.appendChild(tr);
+                });
+                sessionOut(`${data.cookies.length} cookies · ${reveal ? 'valores revelados' : 'valores ocultos'}`);
+            } catch (e) { sessionOut('Error: ' + e.message); }
+        }
+
+        async function openManagedBrowser() {
+            sessionOut('Abriendo navegador visible…');
+            try {
+                const res = await fetch('/api/mri/managed-browser/' + sessionMarket() + '/open',
+                    {method: 'POST', headers: SESSION_HEADERS});
+                const data = await res.json();
+                sessionOut(data.ok ? `Navegador ${data.state || 'abierto'} (PID ${data.pid || '—'})`
+                    : `Error: ${data.error || ''} ${data.message || ''}`);
+                await loadSessionManager();
+            } catch (e) { sessionOut('Error: ' + e.message); }
+        }
+
+        async function saveManagedBrowser() {
+            sessionOut('Guardando cookies del navegador…');
+            try {
+                const res = await fetch('/api/mri/managed-browser/' + sessionMarket() + '/save',
+                    {method: 'POST', headers: SESSION_HEADERS});
+                const data = await res.json();
+                sessionOut(data.ok ? `Sesión guardada: ${data.count} cookies` : `Error: ${data.error}`);
+                await loadSessionManager();
+            } catch (e) { sessionOut('Error: ' + e.message); }
+        }
+
+        async function verifyManagedBrowser() {
+            try {
+                const res = await fetch('/api/mri/managed-browser/' + sessionMarket() + '/verify',
+                    {method: 'POST', headers: SESSION_HEADERS});
+                const data = await res.json();
+                sessionOut(`Cookies: ${data.cookie_count} · Expiradas: ${data.expired} · Autenticación: ${data.auth_status}`);
+            } catch (e) { sessionOut('Error: ' + e.message); }
+        }
+
+        async function closeManagedBrowser() {
+            try {
+                const res = await fetch('/api/mri/managed-browser/' + sessionMarket() + '/close',
+                    {method: 'POST', headers: SESSION_HEADERS});
+                const data = await res.json();
+                sessionOut(data.ok ? 'Navegador cerrado' : `Error: ${data.error || ''}`);
+                await loadSessionManager();
+            } catch (e) { sessionOut('Error: ' + e.message); }
+        }
+
+        async function promptAddCookie() {
+            const name = prompt('Nombre de la cookie:'); if (!name) return;
+            const value = prompt('Valor:'); if (value == null) return;
+            const domain = prompt('Dominio:', '.' + (document.getElementById('sessionManagerMarket').value === 'Paris' ? 'paris.cl' : 'falabella.com'));
+            const path = prompt('Ruta:', '/');
+            try {
+                const res = await fetch('/api/mri/sessions/' + sessionMarket() + '/cookies',
+                    {method: 'POST', headers: SESSION_HEADERS,
+                     body: JSON.stringify({name, value, domain, path})});
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'No se pudo guardar');
+                sessionOut(`Cookie guardada (${data.operation})`); await loadCookieTable(false);
+            } catch (e) { sessionOut('Error: ' + e.message); }
+        }
+
+        async function editManagedCookie(c) {
+            const value = prompt('Nuevo valor para ' + c.name + ':'); if (value == null) return;
+            try {
+                const res = await fetch('/api/mri/sessions/' + sessionMarket() + '/cookies',
+                    {method: 'POST', headers: SESSION_HEADERS,
+                     body: JSON.stringify({name: c.name, value, domain: c.domain,
+                                           path: c.path, secure: c.secure, httpOnly: c.httpOnly,
+                                           sameSite: c.sameSite, expires: c.expires})});
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'No se pudo editar');
+                sessionOut('Cookie editada'); await loadCookieTable(false);
+            } catch (e) { sessionOut('Error: ' + e.message); }
+        }
+
+        async function deleteSelectedCookies() {
+            const checks = [...document.querySelectorAll('.cookie-row-check:checked')];
+            if (!checks.length) { sessionOut('Selecciona al menos una cookie'); return; }
+            if (!confirm(`¿Eliminar ${checks.length} cookie(s) de esta sesión?`)) return;
+            try {
+                const res = await fetch('/api/mri/sessions/' + sessionMarket() + '/cookies/delete-selected',
+                    {method: 'POST', headers: SESSION_HEADERS,
+                     body: JSON.stringify({cookies: checks.map(cb => ({name: cb.dataset.name, domain: cb.dataset.domain, path: cb.dataset.path}))})});
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'No se pudo eliminar');
+                sessionOut(`Cookie(s) eliminadas: ${data.deleted}`); await loadCookieTable(false);
+            } catch (e) { sessionOut('Error: ' + e.message); }
+        }
+
+        async function importManagedCookies(input) {
+            const file = input.files && input.files[0]; if (!file) return;
+            try {
+                const text = await file.text(); const parsed = JSON.parse(text);
+                const res = await fetch('/api/mri/sessions/' + sessionMarket() + '/import',
+                    {method: 'POST', headers: SESSION_HEADERS, body: JSON.stringify(parsed)});
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Importación rechazada');
+                sessionOut(`JSON importado: ${data.count} cookies`); await loadCookieTable(false);
+            } catch (e) { sessionOut('Error: ' + e.message); }
+            finally { input.value = ''; }
+        }
+
+        async function exportManagedCookies() {
+            if (!confirm('Las cookies son credenciales. ¿Exportar el JSON de este marketplace?')) return;
+            try {
+                const res = await fetch('/api/mri/sessions/' + sessionMarket() + '/export?confirm=true',
+                    {headers: {'X-MRI-CSRF': '1'}});
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Exportación rechazada');
+                const blob = new Blob([JSON.stringify(data.cookies, null, 2)], {type: 'application/json'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `${data.marketplace}_cookies.json`; a.click();
+                URL.revokeObjectURL(a.href);
+                sessionOut(`Exportadas ${data.count} cookies`);
+            } catch (e) { sessionOut('Error: ' + e.message); }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             loadSessionStatus();
+            loadSessionManager();
             loadRunSelector();
             const up = document.getElementById('catalogUploadPanel');
             const met = document.getElementById('catalogMetricsPanel');
