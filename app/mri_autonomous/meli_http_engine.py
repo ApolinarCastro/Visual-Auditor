@@ -19,6 +19,21 @@ UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
 class MeliHTTPEngine:
     def _cookies(self) -> Dict[str, str]:
         import os as _os
+        cookies: Dict[str, str] = {}
+        # MRI-029: reuse the cookies already persisted by the dashboard's
+        # session store (35 ML cookies) before trying Chrome/CDP.
+        if str(_os.environ.get("USE_SAVED_COOKIES", "1")).lower() not in ("0", "false", "no"):
+            try:
+                from app.mri_dashboard.session_store import load_cookies
+                for c in load_cookies("Mercado Libre") or []:
+                    name = c.get("name")
+                    value = c.get("value")
+                    if name and value is not None:
+                        cookies[str(name)] = str(value)
+            except Exception:
+                pass
+        if cookies:
+            return cookies
         if str(_os.environ.get("USE_CHROME_COOKIES", "")).lower() not in ("1", "true", "yes"):
             return {}
         try:
