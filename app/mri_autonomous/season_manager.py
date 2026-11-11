@@ -243,8 +243,17 @@ def ingest_season_file(path: str, season_name: Optional[str] = None,
 
 
 def _safe_float(v):
+    # Numeric values from SQLite/pandas must not be treated as Chilean
+    # thousands-separated text ("24.990" -> 24990, but 24990.0 -> 24990).
+    if isinstance(v, bool):
+        return None
+    if isinstance(v, (int, float)):
+        return float(v)
     try:
-        return float(str(v).replace("$", "").replace(".", "").replace(",", "."))
+        s = str(v).replace("$", "").strip()
+        if s.count(".") == 1 and len(s.rsplit(".", 1)[1]) == 3 and s.rsplit(".", 1)[0].isdigit():
+            s = s.replace(".", "")
+        return float(s.replace(".", "").replace(",", "."))
     except Exception:
         return None
 
@@ -260,6 +269,13 @@ def _top_level(position):
 
 
 def _pub_price(row):
+    # MRI-044: prefer the canonical persisted columns.
+    try:
+        for key in ("price_observed", "price_offer"):
+            if row.get(key) is not None:
+                return _safe_float(row.get(key))
+    except Exception:
+        pass
     try:
         attrs = json.loads(row.get("commercial_attributes") or "{}")
         containers = [attrs, attrs.get("observed_attributes") or {},
@@ -275,6 +291,13 @@ def _pub_price(row):
 
 
 def _pub_stock(row):
+    # MRI-044: prefer the canonical persisted column.
+    try:
+        canonical = str(row.get("stock_status") or "").upper()
+        if canonical in ("IN_STOCK", "OUT_OF_STOCK"):
+            return canonical
+    except Exception:
+        pass
     try:
         attrs = json.loads(row.get("commercial_attributes") or "{}")
         observed = attrs.get("observed_attributes") or {}
