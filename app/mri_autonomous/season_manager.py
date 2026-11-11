@@ -623,9 +623,27 @@ def visibility(db_path: Optional[str] = None) -> List[Dict[str, Any]]:
                 presence, risk = "MEDIA", "ALTO"
             else:
                 presence, risk = "CRITICA", "CRITICO"
+            # Category links are constructed from the observed category; the
+            # source stores category IDs, not public navigation URLs.
+            import urllib.parse as _up
+            cat_q = _up.quote(str(d.get("category") or ""))
+            mkt = d.get("marketplace")
+            if mkt == "Falabella":
+                general = f"https://www.falabella.com/falabella-cl/search?Ntt={cat_q}"
+                brand = general + "&f.product.brandName=nicopoly"
+            elif mkt == "Paris":
+                general = f"https://www.paris.cl/search/?q={cat_q}"
+                brand = general + "&brand=nicopoly"
+            elif mkt == "Ripley":
+                general = f"https://simple.ripley.cl/search/{cat_q}"
+                brand = general + "?brand=NICOPOLY"
+            else:
+                general = f"https://www.mercadolibre.cl/catalogo?search={cat_q}"
+                brand = general
             d.update({"total_marketplace": total, "pct_30": p30, "pct_60": p60,
                       "pct_90": p90, "pct_120": p120, "pct_240": p240,
-                      "presence_level": presence, "risk_level": risk})
+                      "presence_level": presence, "risk_level": risk,
+                      "category_url": general, "category_brand_url": brand})
             out.append(d)
         return out
     finally:
@@ -768,3 +786,37 @@ def season_health(season_id: Optional[str] = None,
                     "alerts": [{"type": a["alert_type"], "severity": a["severity"],
                                 "details": a.get("details_json") or {}} for a in price_alerts]})
     return {"products": out, "counts": counts, "total": len(out)}
+
+
+
+def visibility_history(marketplace: str, category: str,
+                       db_path: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Daily visibility history for one marketplace/category."""
+    init_season_schema(db_path)
+    conn = sqlite3.connect(_db_path(db_path), timeout=30)
+    conn.row_factory = sqlite3.Row
+    try:
+        rows = conn.execute("""
+            SELECT substr(observed_at, 1, 10) AS date,
+                   COUNT(*) AS total_nicopoly,
+                   SUM(CASE WHEN position BETWEEN 1 AND 30 THEN 1 ELSE 0 END) AS top_30,
+                   SUM(CASE WHEN position BETWEEN 1 AND 60 THEN 1 ELSE 0 END) AS top_60,
+                   SUM(CASE WHEN position BETWEEN 1 AND 240 THEN 1 ELSE 0 END) AS top_240
+            FROM mri_publications
+            WHERE marketplace=? AND COALESCE(NULLIF(category_observed,''),
+                  NULLIF(category_expected,''), 'SIN_CATEGORIA')=?
+              AND observed_at IS NOT NULL
+            GROUP BY date
+            ORDER BY date
+        """, (marketplace, category)).fetchall()
+        out = []
+        for r in rows:
+            d = dict(r)
+            total = int(d.get("total_nicopoly") or 0)
+            d["pct_30"] = round(int(d.get("top_30") or 0) / total * 100.0, 2) if total else 0.0
+            d["pct_60"] = round(int(d.get("top_60") or 0) / total * 100.0, 2) if total else 0.0
+            d["pct_240"] = round(int(d.get("top_240") or 0) / total * 100.0, 2) if total else 0.0
+            out.append(d)
+        return out
+    finally:
+        conn.close()

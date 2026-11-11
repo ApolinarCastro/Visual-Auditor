@@ -318,6 +318,14 @@ async def season_upload_api(file: UploadFile = File(...), season: str = None,
             pass
 
 
+@app.get("/api/mri/visibility/history")
+async def mri_visibility_history_api(marketplace: str = None, category: str = None):
+    from app.mri_autonomous.season_manager import visibility_history
+    if not marketplace or not category:
+        return JSONResponse(status_code=400, content={"error": "MARKETPLACE_AND_CATEGORY_REQUIRED"})
+    return JSONResponse(status_code=200, content=visibility_history(marketplace, category))
+
+
 @app.get("/api/mri/visibility")
 async def mri_visibility_api():
     from app.mri_autonomous.season_manager import visibility

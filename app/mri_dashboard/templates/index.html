@@ -774,6 +774,23 @@
                 <input id="visSearch" placeholder="Buscar categoría…" oninput="renderVisibility()" style="min-width:220px;" />
             </div>
             <div style="overflow-x:auto;"><table><thead><tr><th>Marketplace</th><th>Categoría</th><th>Total Canal</th><th>Total Nico</th><th>TOP30</th><th>TOP60</th><th>TOP90</th><th>TOP120</th><th>TOP240</th><th>%TOP30</th><th>%TOP60</th><th>%TOP90</th><th>%TOP120</th><th>%TOP240</th><th>Presencia</th><th>Riesgo</th></tr></thead><tbody id="visRows"><tr><td colspan="16">Cargando…</td></tr></tbody></table></div>
+
+            <div id="visibility-history-panel" style="display:none; margin-top:20px; padding:16px; border:1px solid rgba(255,255,255,0.1); border-radius:8px; background:rgba(0,0,0,0.16);">
+                <div style="display:flex; justify-content:space-between; align-items:start; gap:12px; flex-wrap:wrap;">
+                    <div>
+                        <h3 id="visHistoryTitle" style="margin:0 0 4px 0;">Historial de Visibilidad</h3>
+                        <div id="visHistorySub" style="color:var(--text-muted); font-size:0.85rem;"></div>
+                    </div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <a id="visGeneralLink" class="btn-primary" href="#" target="_blank" rel="noopener" style="text-decoration:none; padding:8px 12px; border-radius:5px;">Abrir Catálogo General</a>
+                        <a id="visBrandLink" class="btn-primary" href="#" target="_blank" rel="noopener" style="text-decoration:none; padding:8px 12px; border-radius:5px;">Abrir Catálogo Nicopoly</a>
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:16px; margin-top:16px;">
+                    <div><h4 style="margin:0 0 6px 0;color:var(--info);">% TOP30</h4><svg id="visChartPct" viewBox="0 0 620 190" style="width:100%;height:190px;background:rgba(255,255,255,0.02);border-radius:6px;"></svg></div>
+                    <div><h4 style="margin:0 0 6px 0;color:var(--warning);">Total Nicopoly</h4><svg id="visChartTotal" viewBox="0 0 620 190" style="width:100%;height:190px;background:rgba(255,255,255,0.02);border-radius:6px;"></svg></div>
+                </div>
+            </div>
         </div>
 
         <!-- H. Temporada — Panel de Salud -->
@@ -986,6 +1003,7 @@
                 document.getElementById('visRows').innerHTML = `<tr><td colspan="16">Error: ${e.message}</td></tr>`;
             }
         }
+        function visEsc(v) { return String(v || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
         function renderVisibility() {
             const mkt = document.getElementById('visMkt')?.value || '';
             const pres = document.getElementById('visPresence')?.value || '';
@@ -993,9 +1011,40 @@
             const rows = visibilityRows.filter(r => (!mkt || r.marketplace === mkt) && (!pres || r.presence_level === pres) && (!q || String(r.category||'').toLowerCase().includes(q)));
             document.getElementById('visRows').innerHTML = rows.map(r => {
                 const riskColor = r.risk_level === 'CRITICO' ? 'var(--danger)' : (r.risk_level === 'ALTO' ? 'var(--warning)' : 'var(--text-muted)');
-                return `<tr><td>${r.marketplace}</td><td>${r.category}</td><td>${r.total_marketplace}</td><td>${r.total_nicopoly}</td><td>${r.top_30}</td><td>${r.top_60}</td><td>${r.top_90}</td><td>${r.top_120}</td><td>${r.top_240}</td><td>${r.pct_30}%</td><td>${r.pct_60}%</td><td>${r.pct_90}%</td><td>${r.pct_120}%</td><td>${r.pct_240}%</td><td>${r.presence_level}</td><td style="color:${riskColor};font-weight:700;">${r.risk_level}</td></tr>`;
+                return `<tr style="cursor:pointer;" data-mkt="${visEsc(r.marketplace)}" data-cat="${visEsc(r.category)}" onclick="selectVisibilityRow(this)"><td>${r.marketplace}</td><td>${r.category}</td><td>${r.total_marketplace}</td><td>${r.total_nicopoly}</td><td>${r.top_30}</td><td>${r.top_60}</td><td>${r.top_90}</td><td>${r.top_120}</td><td>${r.top_240}</td><td>${r.pct_30}%</td><td>${r.pct_60}%</td><td>${r.pct_90}%</td><td>${r.pct_120}%</td><td>${r.pct_240}%</td><td>${r.presence_level}</td><td style="color:${riskColor};font-weight:700;">${r.risk_level}</td></tr>`;
             }).join('') || '<tr><td colspan="16">Sin categorías para los filtros</td></tr>';
         }
+        function visibilitySvg(rows, key, color) {
+            const w = 620, h = 190, padL = 44, padR = 18, padT = 16, padB = 30;
+            const vals = rows.map(r => Number(r[key]) || 0);
+            const max = Math.max(...vals, 1), min = Math.min(...vals, 0);
+            const x = i => rows.length <= 1 ? padL + (w-padL-padR)/2 : padL + i*(w-padL-padR)/(rows.length-1);
+            const y = v => padT + (1 - (v-min)/(max-min || 1))*(h-padT-padB);
+            const pts = vals.map((v,i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+            const dots = vals.map((v,i) => `<circle cx="${x(i)}" cy="${y(v)}" r="4" fill="${color}"/>`).join('');
+            const dates = rows.length ? `<text x="${padL}" y="${h-8}" fill="var(--text-muted)" font-size="10">${rows[0].date||''}</text><text x="${w-padR}" y="${h-8}" text-anchor="end" fill="var(--text-muted)" font-size="10">${rows[rows.length-1].date||''}</text>` : '';
+            const grid = [0,0.5,1].map(t => `<line x1="${padL}" x2="${w-padR}" y1="${padT+t*(h-padT-padB)}" y2="${padT+t*(h-padT-padB)}" stroke="rgba(255,255,255,0.08)"/>`).join('');
+            return `${grid}<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="3"/>${dots}<text x="6" y="${padT+10}" fill="${color}" font-size="10">${max.toFixed(2)}</text>${dates}`;
+        }
+        async function selectVisibilityRow(row) {
+            const mkt = row.dataset.mkt, cat = row.dataset.cat;
+            const rec = visibilityRows.find(r => r.marketplace === mkt && r.category === cat) || {};
+            document.getElementById('visibility-history-panel').style.display = 'block';
+            document.getElementById('visHistoryTitle').innerText = `Historial · ${cat}`;
+            document.getElementById('visHistorySub').innerText = `${mkt} · Total Nico ${rec.total_nicopoly || 0} · TOP30 ${rec.top_30 || 0}`;
+            document.getElementById('visGeneralLink').href = rec.category_url || '#';
+            document.getElementById('visBrandLink').href = rec.category_brand_url || '#';
+            const params = new URLSearchParams({marketplace: mkt, category: cat});
+            try {
+                const rows = await fetch('/api/mri/visibility/history?' + params.toString()).then(r => r.json());
+                document.getElementById('visChartPct').innerHTML = visibilitySvg(rows, 'pct_30', '#38bdf8');
+                document.getElementById('visChartTotal').innerHTML = visibilitySvg(rows, 'total_nicopoly', '#f59e0b');
+                document.getElementById('visHistorySub').innerText += ` · ${rows.length} punto(s) histórico(s)`;
+            } catch (e) {
+                document.getElementById('visHistorySub').innerText = 'Error de historial: ' + e.message;
+            }
+        }
+
         let seasonHealthRows = [];
         function healthLabel(h) {
             return {SALUDABLE:'🟢 Saludable', ADVERTENCIA:'🟡 Advertencia', CRITICO:'🔴 Crítico', SIN_DATOS:'⚪ Sin datos'}[h] || h;
