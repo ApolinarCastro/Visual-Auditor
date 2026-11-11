@@ -130,6 +130,9 @@ CREATE TABLE IF NOT EXISTS mri_publications (
     run_id TEXT,
     position INTEGER,
     surface TEXT,
+    price_observed REAL,
+    price_offer REAL,
+    stock_status TEXT DEFAULT 'UNKNOWN',
     FOREIGN KEY (product_id) REFERENCES mri_products(product_id)
 );
 

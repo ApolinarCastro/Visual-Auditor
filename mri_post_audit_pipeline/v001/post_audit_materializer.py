@@ -47,6 +47,14 @@ class PostAuditMaterializer:
                     last_error TEXT
                 )
             """)
+            # MRI-042: idempotent commercial fields migration.
+            cols = {r[1] for r in conn.execute("PRAGMA table_info(mri_publications)")}
+            if "price_observed" not in cols:
+                conn.execute("ALTER TABLE mri_publications ADD COLUMN price_observed REAL")
+            if "price_offer" not in cols:
+                conn.execute("ALTER TABLE mri_publications ADD COLUMN price_offer REAL")
+            if "stock_status" not in cols:
+                conn.execute("ALTER TABLE mri_publications ADD COLUMN stock_status TEXT DEFAULT 'UNKNOWN'")
             conn.commit()
 
     def get_status(self, run_id: str):
@@ -74,6 +82,33 @@ class PostAuditMaterializer:
             params = list(updates.values())
             conn.execute(sql, params)
             conn.commit()
+
+    @staticmethod
+    def _commercial_fields(snap: dict, res: dict):
+        """Derive price/offer/stock from the snapshot or materializer result."""
+        def num(v):
+            try:
+                if v is None or str(v).strip() == "":
+                    return None
+                return float(str(v).replace("$", "").replace(".", "").replace(",", "."))
+            except Exception:
+                return None
+        price = num(snap.get("price"))
+        offer = num(snap.get("price_multivende_offer"))
+        if price is None:
+            try:
+                price = num(res["price"]["effective_price"])
+            except Exception:
+                price = None
+        stock_raw = snap.get("stock_multivende")
+        stock = "UNKNOWN"
+        if stock_raw is not None and str(stock_raw).strip() != "":
+            try:
+                stock = "IN_STOCK" if float(stock_raw) > 0 else "OUT_OF_STOCK"
+            except Exception:
+                s = str(stock_raw).upper()
+                stock = "IN_STOCK" if s in ("IN_STOCK", "TRUE", "1", "YES") else "OUT_OF_STOCK"
+        return price, offer, stock
 
     def run_materialization(self, manifest: dict, snapshot_ids: list):
         run_id = manifest["post_audit_run_id"]
@@ -171,13 +206,14 @@ class PostAuditMaterializer:
                                             product_status = excluded.product_status
                                     """, (prod_id, res['normalized']['brand'] or "Nicopoly", "ACTIVE", res['normalized']['captured_at']))
                                 
-                                # Canonical Publication UPSERT
+                                # Canonical Publication UPSERT (MRI-042: price/stock)
+                                price_observed, price_offer, stock_status = self._commercial_fields(snap, res)
                                 cursor.execute("""
                                     INSERT INTO mri_publications (
                                         publication_id, product_id, marketplace, marketplace_product_id, canonical_url,
                                         status, observed_at, run_id, position, surface, position_state, category_relationship,
-                                        evidence_type, raw_source_id
-                                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                        evidence_type, raw_source_id, price_observed, price_offer, stock_status
+                                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                                     ON CONFLICT(publication_id) DO UPDATE SET
                                         observed_at = excluded.observed_at,
                                         run_id = excluded.run_id,
@@ -185,14 +221,19 @@ class PostAuditMaterializer:
                                         surface = excluded.surface,
                                         position_state = excluded.position_state,
                                         evidence_type = excluded.evidence_type,
-                                        raw_source_id = excluded.raw_source_id
+                                        raw_source_id = excluded.raw_source_id,
+                                        price_observed = COALESCE(excluded.price_observed, mri_publications.price_observed),
+                                        price_offer = COALESCE(excluded.price_offer, mri_publications.price_offer),
+                                        stock_status = CASE WHEN excluded.stock_status <> 'UNKNOWN'
+                                            THEN excluded.stock_status ELSE mri_publications.stock_status END
                                 """, (
                                     pub_id, prod_id, res['normalized']['marketplace'], 
                                     res['identity']['marketplace_product_id'], "",
                                     "OBSERVED", res['normalized']['captured_at'], run_id,
                                     res['position']['position'], res['position']['surface'],
                                     res['position']['position_state'], res['category']['relationship'],
-                                    res['evidence']['provenance_classification'], res['normalized']['source_record_id']
+                                    res['evidence']['provenance_classification'], res['normalized']['source_record_id'],
+                                    price_observed, price_offer, stock_status
                                 ))
 
                                 # Variant UPSERT

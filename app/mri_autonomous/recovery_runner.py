@@ -521,6 +521,23 @@ class AcquisitionRecoveryRunner:
                 reclass_reason = "Publicación histórica en catálogo no observada en barrido de corredores contemporáneos agotados"
                 evidence_verified = False
 
+            _attrs = public_attrs or {}
+            def _attr_num(*keys):
+                for k in keys:
+                    if _attrs.get(k) is not None:
+                        try:
+                            return float(str(_attrs.get(k)).replace("$", "").replace(".", "").replace(",", "."))
+                        except Exception:
+                            pass
+                return None
+            _stock_raw = _attrs.get("stock_status") or _attrs.get("stock") or _attrs.get("availability")
+            if isinstance(_stock_raw, bool):
+                stock_status = "IN_STOCK" if _stock_raw else "OUT_OF_STOCK"
+            elif _stock_raw is not None:
+                _s = str(_stock_raw).upper()
+                stock_status = "IN_STOCK" if _s in ("IN_STOCK", "TRUE", "1", "YES", "AVAILABLE") else "OUT_OF_STOCK"
+            else:
+                stock_status = "UNKNOWN"
             observations.append({
                 "manifest_id": manifest_id,
                 "marketplace": mkt,
@@ -530,6 +547,8 @@ class AcquisitionRecoveryRunner:
                 "sku_parent": parent_sku,
                 "sku_child": child_sku,
                 "price_observed": obs_price,
+                "price_offer": _attr_num("price_offer", "offer_price", "sale_price", "precio_oferta"),
+                "stock_status": stock_status,
                 "observed_url": obs_url,
                 "observation_timestamp": obs_time,
                 "position_observed": pos_obs,
@@ -698,13 +717,15 @@ class AcquisitionRecoveryRunner:
                         canonical_url, status, observed_at, run_id, position, surface,
                         position_state, category_relationship, evidence_type, raw_source_id,
                         acquisition_status, identity_status, category_observed,
-                        category_source, category_expected, category_decision, commercial_attributes
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        category_source, category_expected, category_decision, commercial_attributes,
+                        price_observed, price_offer, stock_status
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     pub_id, p_id, mkt, pub_id, canon_url, "OBSERVED",
                     obs_at, run_id, pos, "SEARCH_OR_STORE",
                     "EXACT", cat_dec, ev_type, raw_src_id,
-                    acq_st, ident_st, cat_obs, cat_src, cat_exp, cat_dec, comm_attr
+                    acq_st, ident_st, cat_obs, cat_src, cat_exp, cat_dec, comm_attr,
+                    obs.get("price_observed"), obs.get("price_offer"), obs.get("stock_status", "UNKNOWN")
                 ))
                 pubs_inserted += 1
 
