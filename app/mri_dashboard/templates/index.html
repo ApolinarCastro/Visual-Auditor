@@ -295,6 +295,8 @@
         <div class="nav-item" id="tab-multi" onclick="switchTab('multi')">D. Inteligencia Multimarketplace</div>
         <div class="nav-item" id="tab-mgr" onclick="switchTab('mgr')">E. Resumen Gerencial</div>
         <div class="nav-item" id="tab-commercial" onclick="switchTab('commercial')">F. Inteligencia Comercial</div>
+        <div class="nav-item" id="tab-visibility" onclick="switchTab('visibility')">G. Visibilidad (Estilo VA)</div>
+        <div class="nav-item" id="tab-season" onclick="switchTab('season')">H. Temporada (Matriz de Cruce)</div>
     </aside>
     
     <main>
@@ -759,6 +761,41 @@
             </div>
         </div>
 
+        <!-- G. Visibilidad estilo VA -->
+        <div id="visibility" class="panel">
+            <h2>G. Visibilidad (Estilo Visual Auditor)</h2>
+            <p style="color:var(--text-muted); font-size:0.92rem; margin-bottom:14px;">
+                Categorías por marketplace con TOP30/60/90/120/240 y nivel de presencia, calculado desde posiciones observadas en mri_publications.
+            </p>
+            <div class="grid-cards" id="visCards" style="margin-bottom:16px;"></div>
+            <div class="controls" style="margin-bottom:10px;">
+                <select id="visMkt" onchange="renderVisibility()"><option value="">Todos los marketplaces</option></select>
+                <select id="visPresence" onchange="renderVisibility()"><option value="">Todos los niveles</option><option>EXCELENTE</option><option>BUENA</option><option>MEDIA</option><option>CRITICA</option></select>
+                <input id="visSearch" placeholder="Buscar categoría…" oninput="renderVisibility()" style="min-width:220px;" />
+            </div>
+            <div style="overflow-x:auto;"><table><thead><tr><th>Marketplace</th><th>Categoría</th><th>Total Canal</th><th>Total Nico</th><th>TOP30</th><th>TOP60</th><th>TOP90</th><th>TOP120</th><th>TOP240</th><th>%TOP30</th><th>%TOP60</th><th>%TOP90</th><th>%TOP120</th><th>%TOP240</th><th>Presencia</th><th>Riesgo</th></tr></thead><tbody id="visRows"><tr><td colspan="16">Cargando…</td></tr></tbody></table></div>
+        </div>
+
+        <!-- H. Temporada matriz -->
+        <div id="season" class="panel">
+            <h2>H. Temporada (Matriz de Cruce)</h2>
+            <p style="color:var(--text-muted); font-size:0.92rem; margin-bottom:14px;">
+                Cruce de los 336 SKU del Excel SS_2026 con la última observación por marketplace.
+            </p>
+            <div class="grid-cards" style="margin-bottom:16px;">
+                <div class="card"><div class="card-title">Productos temporada</div><div class="card-value" style="color:var(--primary)" id="seasonProducts">—</div></div>
+                <div class="card"><div class="card-title">Publicados en ≥1 marketplace</div><div class="card-value" style="color:var(--success)" id="seasonFound">—</div></div>
+                <div class="card"><div class="card-title">No encontrados</div><div class="card-value" style="color:var(--danger)" id="seasonMissing">—</div></div>
+                <div class="card"><div class="card-title">Filas de cruce</div><div class="card-value" style="color:var(--info)" id="seasonRows">—</div></div>
+            </div>
+            <div class="controls" style="margin-bottom:10px;">
+                <select id="seasonMkt" onchange="renderSeasonMatrix()"><option value="">Todos los marketplaces</option><option>Falabella</option><option>Paris</option><option>Ripley</option><option>Mercado Libre</option></select>
+                <select id="seasonState" onchange="renderSeasonMatrix()"><option value="">Todos los estados</option><option>FOUND</option><option>NOT_FOUND</option></select>
+                <select id="seasonGroup" onchange="renderSeasonMatrix()"><option value="">Todos los grupos</option><option>GRUPO 1</option><option>GRUPO 2</option><option>GRUPO 3</option><option>GRUPO 4</option><option>GRUPO 5</option><option>GRUPO 6</option></select>
+            </div>
+            <div style="overflow-x:auto;"><table><thead><tr><th>SKU</th><th>Producto</th><th>Marketplace</th><th>Estado</th><th>Posición</th><th>Top</th><th>Precio</th><th>Stock</th><th>URL</th></tr></thead><tbody id="seasonRowsTbody"><tr><td colspan="9">Cargando…</td></tr></tbody></table></div>
+        </div>
+
 </main>
 
     <!-- Modal Detalle Verificable de Publicación -->
@@ -915,6 +952,68 @@
             }
         }
 
+        let visibilityRows = [];
+        async function loadVisibility() {
+            try {
+                const data = await fetch('/api/mri/visibility').then(r => r.json());
+                visibilityRows = Array.isArray(data) ? data : [];
+                const mkts = [...new Set(visibilityRows.map(r => r.marketplace))];
+                document.getElementById('visMkt').innerHTML = '<option value="">Todos los marketplaces</option>' + mkts.map(m => `<option>${m}</option>`).join('');
+                const totals = {};
+                visibilityRows.forEach(r => {
+                    totals[r.marketplace] = totals[r.marketplace] || {total:0, top30:0, top240:0, cats:0};
+                    totals[r.marketplace].total += Number(r.total_nicopoly||0);
+                    totals[r.marketplace].top30 += Number(r.top_30||0);
+                    totals[r.marketplace].top240 += Number(r.top_240||0);
+                    totals[r.marketplace].cats += 1;
+                });
+                document.getElementById('visCards').innerHTML = Object.entries(totals).map(([m,v]) =>
+                    `<div class="card"><div class="card-title">${m}</div><div class="card-value" style="color:var(--primary)">${v.total}</div><div style="font-size:0.78rem;color:var(--text-muted)">${v.cats} categorías · TOP30 ${v.top30} · TOP240 ${v.top240}</div></div>`
+                ).join('') || '<div class="card">Sin datos</div>';
+                renderVisibility();
+            } catch (e) {
+                document.getElementById('visRows').innerHTML = `<tr><td colspan="16">Error: ${e.message}</td></tr>`;
+            }
+        }
+        function renderVisibility() {
+            const mkt = document.getElementById('visMkt')?.value || '';
+            const pres = document.getElementById('visPresence')?.value || '';
+            const q = (document.getElementById('visSearch')?.value || '').toLowerCase();
+            const rows = visibilityRows.filter(r => (!mkt || r.marketplace === mkt) && (!pres || r.presence_level === pres) && (!q || String(r.category||'').toLowerCase().includes(q)));
+            document.getElementById('visRows').innerHTML = rows.map(r => {
+                const riskColor = r.risk_level === 'CRITICO' ? 'var(--danger)' : (r.risk_level === 'ALTO' ? 'var(--warning)' : 'var(--text-muted)');
+                return `<tr><td>${r.marketplace}</td><td>${r.category}</td><td>${r.total_marketplace}</td><td>${r.total_nicopoly}</td><td>${r.top_30}</td><td>${r.top_60}</td><td>${r.top_90}</td><td>${r.top_120}</td><td>${r.top_240}</td><td>${r.pct_30}%</td><td>${r.pct_60}%</td><td>${r.pct_90}%</td><td>${r.pct_120}%</td><td>${r.pct_240}%</td><td>${r.presence_level}</td><td style="color:${riskColor};font-weight:700;">${r.risk_level}</td></tr>`;
+            }).join('') || '<tr><td colspan="16">Sin categorías para los filtros</td></tr>';
+        }
+        let seasonMatrixRows = [];
+        async function loadSeasonMatrix() {
+            try {
+                const data = await fetch('/api/season/matrix?season_id=SS_2026').then(r => r.json());
+                seasonMatrixRows = Array.isArray(data) ? data : [];
+                const skus = [...new Set(seasonMatrixRows.map(r => r.sku_padre))];
+                const foundSkus = new Set(seasonMatrixRows.filter(r => r.estado === 'FOUND').map(r => r.sku_padre));
+                document.getElementById('seasonProducts').innerText = skus.length;
+                document.getElementById('seasonFound').innerText = foundSkus.size;
+                document.getElementById('seasonMissing').innerText = Math.max(0, skus.length - foundSkus.size);
+                document.getElementById('seasonRows').innerText = seasonMatrixRows.length;
+                renderSeasonMatrix();
+            } catch (e) {
+                document.getElementById('seasonRowsTbody').innerHTML = `<tr><td colspan="9">Error: ${e.message}</td></tr>`;
+            }
+        }
+        function renderSeasonMatrix() {
+            const mkt = document.getElementById('seasonMkt')?.value || '';
+            const state = document.getElementById('seasonState')?.value || '';
+            const group = document.getElementById('seasonGroup')?.value || '';
+            const rows = seasonMatrixRows.filter(r => (!mkt || r.marketplace === mkt) && (!state || r.estado === state) && (!group || r.group_id === group));
+            document.getElementById('seasonRowsTbody').innerHTML = rows.slice(0, 800).map(r => {
+                const found = r.estado === 'FOUND';
+                const stateColor = found ? 'var(--success)' : 'var(--danger)';
+                const url = r.url_evidencia ? `<a href="${r.url_evidencia}" target="_blank" rel="noopener" style="color:var(--info);">abrir</a>` : '—';
+                return `<tr><td>${r.sku_padre||'—'}</td><td>${r.nombre||'—'}</td><td>${r.marketplace||'—'}</td><td style="color:${stateColor};font-weight:700;">${r.estado||'—'}</td><td>${r.posicion_observada ?? '—'}</td><td>${r.top_level||'—'}</td><td>${r.precio_observado != null ? '$ '+Number(r.precio_observado).toLocaleString('es-CL') : '—'}</td><td>${r.stock_status||'—'}</td><td>${url}</td></tr>`;
+            }).join('') || '<tr><td colspan="9">Sin filas para los filtros</td></tr>';
+        }
+
         function switchTab(tabId) {
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -930,6 +1029,8 @@
             if(tabId === 'multi') loadMultiMarketplaceData();
             if(tabId === 'mgr') loadManagerView();
             if(tabId === 'commercial') loadCommercial();
+            if(tabId === 'visibility') loadVisibility();
+            if(tabId === 'season') loadSeasonMatrix();
         }
 
         let multiMarketplaceData = {

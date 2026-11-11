@@ -318,6 +318,18 @@ async def season_upload_api(file: UploadFile = File(...), season: str = None,
             pass
 
 
+@app.get("/api/mri/visibility")
+async def mri_visibility_api():
+    from app.mri_autonomous.season_manager import visibility
+    return JSONResponse(status_code=200, content=visibility())
+
+
+@app.get("/api/season/matrix")
+async def season_matrix_api(season_id: str = "SS_2026"):
+    from app.mri_autonomous.season_manager import season_matrix
+    return JSONResponse(status_code=200, content=season_matrix(season_id))
+
+
 @app.get("/api/season/alerts")
 async def season_alerts_api(type: str = None, marketplace: str = None,
                             severity: str = None, limit: int = 100):

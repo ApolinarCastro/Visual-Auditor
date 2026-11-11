@@ -582,3 +582,89 @@ def certification(marketplace: Optional[str] = None,
                 "note": "VA reported TOP is not persisted by MRI; upload/VA JSON is required."}
     finally:
         conn.close()
+
+
+
+def visibility(db_path: Optional[str] = None) -> List[Dict[str, Any]]:
+    """VA-style visibility matrix: marketplace x category with TOP buckets."""
+    init_season_schema(db_path)
+    conn = sqlite3.connect(_db_path(db_path), timeout=30)
+    conn.row_factory = sqlite3.Row
+    try:
+        rows = conn.execute("""
+            SELECT marketplace,
+                   COALESCE(NULLIF(category_observed,''), NULLIF(category_expected,''),
+                            'SIN_CATEGORIA') AS category,
+                   COUNT(*) AS total_nicopoly,
+                   SUM(CASE WHEN position BETWEEN 1 AND 30 THEN 1 ELSE 0 END) AS top_30,
+                   SUM(CASE WHEN position BETWEEN 1 AND 60 THEN 1 ELSE 0 END) AS top_60,
+                   SUM(CASE WHEN position BETWEEN 1 AND 90 THEN 1 ELSE 0 END) AS top_90,
+                   SUM(CASE WHEN position BETWEEN 1 AND 120 THEN 1 ELSE 0 END) AS top_120,
+                   SUM(CASE WHEN position BETWEEN 1 AND 240 THEN 1 ELSE 0 END) AS top_240
+            FROM mri_publications
+            WHERE position IS NOT NULL
+              AND category_observed NOT IN ('CATEGORY_UNKNOWN','COMMERCIAL_FACET')
+            GROUP BY marketplace, category
+            ORDER BY marketplace, total_nicopoly DESC
+        """).fetchall()
+        out = []
+        for r in rows:
+            d = dict(r)
+            total = int(d["total_nicopoly"] or 0)
+            def pct(n):
+                return round((int(d.get(n) or 0) / total * 100.0), 2) if total else 0.0
+            p30, p60, p90, p120, p240 = (pct("top_30"), pct("top_60"),
+                                          pct("top_90"), pct("top_120"), pct("top_240"))
+            if p30 >= 5:
+                presence, risk = "EXCELENTE", "BAJO"
+            elif p30 >= 2:
+                presence, risk = "BUENA", "MEDIO"
+            elif p30 >= 0.5:
+                presence, risk = "MEDIA", "ALTO"
+            else:
+                presence, risk = "CRITICA", "CRITICO"
+            d.update({"total_marketplace": total, "pct_30": p30, "pct_60": p60,
+                      "pct_90": p90, "pct_120": p120, "pct_240": p240,
+                      "presence_level": presence, "risk_level": risk})
+            out.append(d)
+        return out
+    finally:
+        conn.close()
+
+
+def season_matrix(season_id: Optional[str] = None,
+                  db_path: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Latest season observation per product/marketplace, ordered by SKU."""
+    init_season_schema(db_path)
+    conn = sqlite3.connect(_db_path(db_path), timeout=30)
+    conn.row_factory = sqlite3.Row
+    try:
+        sid = None
+        if season_id:
+            if str(season_id).isdigit():
+                sid = int(season_id)
+            else:
+                row = conn.execute("SELECT season_id FROM season_registry WHERE name=? ORDER BY season_id DESC LIMIT 1",
+                                   (season_id,)).fetchone()
+                sid = row[0] if row else None
+        if sid is None:
+            row = conn.execute("SELECT season_id FROM season_registry WHERE status='ACTIVE' ORDER BY season_id DESC LIMIT 1").fetchone()
+            sid = row[0] if row else None
+        if sid is None:
+            return []
+        rows = conn.execute("""
+            SELECT p.sku_padre, p.sku_hijo, p.nombre, p.group_id, p.season_id,
+                   o.marketplace, o.estado, o.posicion_observada, o.top_level,
+                   o.url_evidencia, o.precio_observado, o.stock_status,
+                   o.audit_run_id, o.fecha_observacion
+            FROM season_products p
+            JOIN season_observations o ON o.season_product_id = p.id
+                AND o.id = (
+                    SELECT MAX(x.id) FROM season_observations x
+                    WHERE x.season_product_id = p.id AND x.marketplace = o.marketplace)
+            WHERE p.season_id=?
+            ORDER BY p.sku_padre, o.marketplace
+        """, (sid,)).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
