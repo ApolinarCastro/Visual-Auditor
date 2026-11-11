@@ -262,9 +262,13 @@ def _top_level(position):
 def _pub_price(row):
     try:
         attrs = json.loads(row.get("commercial_attributes") or "{}")
-        for key in ("price", "precio", "offer_price", "precio_oferta", "price_displayed", "price_regular"):
-            if attrs.get(key) is not None:
-                return _safe_float(attrs.get(key))
+        containers = [attrs, attrs.get("observed_attributes") or {},
+                      attrs.get("commercial_attributes") or {}]
+        for cont in containers:
+            for key in ("price", "precio", "offer_price", "precio_oferta",
+                        "price_displayed", "price_regular"):
+                if cont.get(key) is not None:
+                    return _safe_float(cont.get(key))
     except Exception:
         pass
     return None
@@ -273,13 +277,20 @@ def _pub_price(row):
 def _pub_stock(row):
     try:
         attrs = json.loads(row.get("commercial_attributes") or "{}")
-        raw = str(attrs.get("stock_status") or attrs.get("stock") or "").upper()
+        observed = attrs.get("observed_attributes") or {}
+        raw = str(attrs.get("stock_status") or observed.get("stock_status")
+                  or attrs.get("stock") or observed.get("stock") or "").upper()
+        if not raw:
+            avail = attrs.get("availability") or observed.get("availability")
+            if avail:
+                raw = str(avail).upper()
         if raw in ("IN_STOCK", "OUT_OF_STOCK"):
             return raw
-        if attrs.get("in_stock") is True:
-            return "IN_STOCK"
-        if attrs.get("in_stock") is False:
-            return "OUT_OF_STOCK"
+        for cont in (attrs, observed):
+            if cont.get("in_stock") is True:
+                return "IN_STOCK"
+            if cont.get("in_stock") is False:
+                return "OUT_OF_STOCK"
     except Exception:
         pass
     return "UNKNOWN"
@@ -293,11 +304,32 @@ def _insert_alert(conn, product_id, marketplace, alert_type, severity, details):
          json.dumps(details, ensure_ascii=False), datetime.now().isoformat()))
 
 
+def _id_candidates(target: str) -> list[str]:
+    """Marketplace IDs appear with/without MPM/FALA_/MLC-/MKP prefixes."""
+    raw = str(target or "").strip()
+    vals = {raw}
+    for prefix in ("MPM", "FALA_", "FALA", "MLC-", "MLC", "MKP", "PARIS-"):
+        if raw.upper().startswith(prefix):
+            vals.add(raw[len(prefix):].lstrip("-_"))
+    digits = re.sub(r"[^0-9]", "", raw)
+    if digits:
+        vals.add(digits)
+    clean = re.sub(r"[^A-Za-z0-9]", "", raw)
+    if clean:
+        vals.add(clean)
+    return [v for v in vals if v]
+
+
 def _ids_match(expected: str, observed: str) -> bool:
-    """Compare marketplace IDs tolerantly: FALA_/MLC-/prefix variants are the same ID."""
+    """Compare marketplace IDs tolerantly: FALA_/MLC-/MPM prefix variants are the same ID."""
     def norm(v):
         return re.sub(r"[^A-Za-z0-9]", "", str(v or "")).upper()
     a, b = norm(expected), norm(observed)
+    for prefix in ("MPM", "FALA", "MLC", "MKP"):
+        if a.startswith(prefix):
+            a = a[len(prefix):]
+        if b.startswith(prefix):
+            b = b[len(prefix):]
     if a == b:
         return True
     # Falabella numeric IDs may arrive as FALA_<id>.
@@ -343,11 +375,13 @@ def cross_audit(run_id: str, season_id: Optional[int] = None,
                 target = str(product.get(id_field) or "").strip()
                 if not target:
                     continue
-                pub = conn.execute("""SELECT * FROM mri_publications
+                cands = _id_candidates(target)
+                ph = ",".join("?" * len(cands))
+                pub = conn.execute(f"""SELECT * FROM mri_publications
                     WHERE run_id LIKE ? AND marketplace=?
-                    AND (marketplace_product_id=? OR publication_id LIKE ?)
+                    AND (marketplace_product_id IN ({ph}) OR publication_id LIKE ?)
                     ORDER BY position ASC, rowid DESC LIMIT 1""",
-                    (run_id + "%", marketplace, target, "%" + target + "%")).fetchone()
+                    [run_id + "%", marketplace] + cands + ["%" + target + "%"]).fetchone()
                 estado = "FOUND" if pub else "NOT_FOUND"
                 if pub and not _ids_match(target, str(pub["marketplace_product_id"] or "")):
                     _insert_alert(conn, product["id"], marketplace, "IDENTITY_MISMATCH",
