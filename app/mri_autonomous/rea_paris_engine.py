@@ -270,6 +270,7 @@ class NormalizedPublication:
     categories: List[Dict[str, str]] = field(default_factory=list)  # [{'group_id': ..., 'name': ..., 'path': ...}]
     promotions: List[str] = field(default_factory=list)
     facets: Dict[str, Any] = field(default_factory=dict)
+    stock_status: str = "UNKNOWN"
     observed_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     evidence_type: str = "CONTROLLED_REPLAY"
     raw_source_id: Optional[str] = None

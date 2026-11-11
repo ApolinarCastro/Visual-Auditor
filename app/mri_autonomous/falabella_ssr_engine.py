@@ -317,6 +317,26 @@ class FalabellaSSREngine:
             elif cat_nodes:
                 cats.append({"group_id": cat_nodes[0].category_id, "name": cat_nodes[0].name, "path": cat_nodes[0].hierarchical_path})
 
+            # Stock from size-level availability (Falabella SSR).
+            # Sizes can be nested under variant.options[*].sizes.
+            _avail = []
+            def _collect_availability(_obj):
+                if isinstance(_obj, dict):
+                    if "available" in _obj:
+                        _avail.append(bool(_obj.get("available")))
+                    for _v in _obj.values():
+                        _collect_availability(_v)
+                elif isinstance(_obj, list):
+                    for _v in _obj:
+                        _collect_availability(_v)
+            _collect_availability(item.get("variants") or [])
+            if any(_avail):
+                stock_status = "IN_STOCK"
+            elif _avail and not any(_avail):
+                stock_status = "OUT_OF_STOCK"
+            else:
+                stock_status = "UNKNOWN"
+
             # Promotions / badges
             promos = []
             for b in item.get("multipurposeBadges", []) + item.get("badges", []):
@@ -360,7 +380,8 @@ class FalabellaSSREngine:
                     canonical_url=canonical_url,
                     categories=cats,
                     promotions=promos,
-                    facets=facets
+                    facets=facets,
+                    stock_status=stock_status
                 )
                 if prov_sha:
                     pub.evidence_type = "LIVE_OBSERVATION"
@@ -489,6 +510,7 @@ class FalabellaSSREngine:
                     "condition": pub.condition,
                     "price_regular": pub.price_regular,
                     "price_displayed": pub.price_displayed,
+                    "stock_status": getattr(pub, "stock_status", "UNKNOWN"),
                     "promotions": pub.promotions,
                     "facets": pub.facets
                 }
@@ -592,15 +614,18 @@ class FalabellaSSREngine:
                         canonical_url, status, observed_at, run_id, position, surface,
                         position_state, category_relationship, evidence_type, raw_source_id,
                         acquisition_status, identity_status, category_observed,
-                        category_source, category_expected, category_decision, commercial_attributes
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        category_source, category_expected, category_decision, commercial_attributes,
+                        price_observed, price_offer, stock_status
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     pub.publication_id, prod_id, pub.marketplace, pub.sku,
                     pub.canonical_url, "OBSERVED", pub.observed_at, run_id, idx,
                     "FALABELLA_SSR_GRID", "EXACT", "CORRECT",
                     ev_type, raw_src,
                     "OBSERVED", "TARGET_IDENTITY_VERIFIED", primary_cat,
-                    "FALABELLA_TAXONOMY", primary_cat, "CORRECT", comm_attrs
+                    "FALABELLA_TAXONOMY", primary_cat, "CORRECT", comm_attrs,
+                    pub.price_displayed, pub.price_displayed,
+                    getattr(pub, "stock_status", "UNKNOWN")
                 ))
                 pubs_inserted += 1
 
