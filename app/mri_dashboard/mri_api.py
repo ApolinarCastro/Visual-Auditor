@@ -1,5 +1,5 @@
 import uvicorn
-from fastapi import FastAPI, BackgroundTasks, Request, Depends, HTTPException, status
+from fastapi import FastAPI, BackgroundTasks, Request, Depends, HTTPException, status, UploadFile, File
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -20,6 +20,11 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 from app.mri_dashboard.mri_runner import orchestrator
 from app.mri_autonomous.experience_store import ExperienceStore
 from app.mri_autonomous.recovery_runner import AcquisitionRecoveryRunner
+try:
+    from app.mri_autonomous.season_manager import init_season_schema as _init_season
+    _init_season()
+except Exception:
+    pass
 
 # ── Authentication (B-03) ────────────────────────────────────────────────
 # The MRI API previously had NO authentication: no middleware, no dependency,
@@ -285,6 +290,45 @@ async def open_chrome_debug():
             pass
     return JSONResponse(status_code=202, content={
         "ok": True, "status": "STARTING", "pid": proc.pid, "profile": profile})
+
+
+@app.get("/api/season/status")
+async def season_status_api():
+    from app.mri_autonomous.season_manager import season_status
+    return JSONResponse(status_code=200, content=season_status())
+
+
+@app.post("/api/season/upload")
+async def season_upload_api(file: UploadFile = File(...), season: str = None, year: int = None):
+    import tempfile
+    from app.mri_autonomous.season_manager import ingest_season_file
+    suffix = pathlib.Path(file.filename or "upload.xlsx").suffix or ".xlsx"
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+    try:
+        tmp.write(await file.read())
+        tmp.close()
+        result = ingest_season_file(tmp.name, season_name=season, year=year)
+        return JSONResponse(status_code=200, content=result)
+    finally:
+        try:
+            os.unlink(tmp.name)
+        except Exception:
+            pass
+
+
+@app.post("/api/season/cross")
+async def season_cross_api(request: Request):
+    from app.mri_autonomous.season_manager import cross_audit
+    data = {}
+    try:
+        data = await request.json()
+    except Exception:
+        pass
+    run_id = data.get("run_id")
+    if not run_id:
+        return JSONResponse(status_code=400, content={"error": "RUN_ID_REQUIRED"})
+    return JSONResponse(status_code=200, content=cross_audit(
+        run_id, season_id=data.get("season_id")))
 
 
 @app.post("/api/mri/cookies/import")

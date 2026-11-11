@@ -1,0 +1,346 @@
+"""MRI Commercial Intelligence v1 — season registry, products, observations, alerts.
+
+This module never touches the acquisition engines. It only reads mri_publications
+and writes the season_* tables in the operational SQLite database.
+"""
+from __future__ import annotations
+
+import json
+import os
+import re
+import sqlite3
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, Iterable, List, Optional
+
+DEFAULT_SEASON = "GRUPOS_2026 SS"
+DEFAULT_YEAR = 2026
+
+
+def _db_path(db_path: Optional[str] = None) -> str:
+    if db_path:
+        return str(db_path)
+    root = Path(__file__).resolve().parents[3]
+    return str(root / "data" / "sqlite" / "mri_operational" / "visibility.db")
+
+
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS season_registry (
+    season_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    year INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'ACTIVE',
+    UNIQUE(name, year)
+);
+CREATE TABLE IF NOT EXISTS season_products (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    season_id INTEGER NOT NULL,
+    sku_padre TEXT NOT NULL,
+    sku_hijo TEXT,
+    nombre TEXT,
+    precio_venta REAL,
+    mpm_ripley TEXT,
+    mlc_meli TEXT,
+    mkp_paris TEXT,
+    falabella_id TEXT,
+    ultima_actualizacion TEXT,
+    FOREIGN KEY(season_id) REFERENCES season_registry(season_id),
+    UNIQUE(season_id, sku_padre)
+);
+CREATE TABLE IF NOT EXISTS season_observations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    season_product_id INTEGER NOT NULL,
+    marketplace TEXT NOT NULL,
+    audit_run_id TEXT,
+    estado TEXT NOT NULL,
+    precio_observado REAL,
+    precio_oferta REAL,
+    stock_status TEXT,
+    posicion_observada INTEGER,
+    top_level TEXT,
+    url_evidencia TEXT,
+    fecha_observacion TEXT NOT NULL,
+    FOREIGN KEY(season_product_id) REFERENCES season_products(id)
+);
+CREATE TABLE IF NOT EXISTS season_alerts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    season_product_id INTEGER NOT NULL,
+    marketplace TEXT NOT NULL,
+    alert_type TEXT NOT NULL,
+    severity TEXT NOT NULL,
+    details TEXT,
+    created_at TEXT NOT NULL,
+    is_read INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY(season_product_id) REFERENCES season_products(id)
+);
+CREATE INDEX IF NOT EXISTS idx_season_obs_product ON season_observations(season_product_id, marketplace, id);
+CREATE INDEX IF NOT EXISTS idx_season_alert_product ON season_alerts(season_product_id, marketplace, id);
+"""
+
+
+def init_season_schema(db_path: Optional[str] = None) -> Dict[str, Any]:
+    conn = sqlite3.connect(_db_path(db_path), timeout=30)
+    try:
+        conn.executescript(SCHEMA)
+        conn.commit()
+        tables = {}
+        for table in ("season_registry", "season_products", "season_observations", "season_alerts"):
+            tables[table] = [r[1] for r in conn.execute(f"PRAGMA table_info({table})")]
+        return {"ok": True, "tables": tables}
+    finally:
+        conn.close()
+
+
+def _norm(name: Any) -> str:
+    return re.sub(r"[^a-z0-9]+", "_", str(name or "").strip().lower()).strip("_")
+
+
+COLUMN_ALIASES = {
+    "sku_padre": ("sku_padre", "sku padre", "skupadre", "padre", "sku_mpm", "mpm_padre"),
+    "sku_hijo": ("sku_hijo", "sku hijo", "skuhijo", "hijo", "sku"),
+    "nombre": ("nombre", "name", "producto", "descripcion", "product_title"),
+    "precio_venta": ("precio_venta", "precio venta", "precio", "price", "precio_multivende"),
+    "mpm_ripley": ("mpm_ripley", "mpm ripley", "mpm", "ripley_id", "ripley"),
+    "mlc_meli": ("mlc_meli", "mlc meli", "mlc", "meli_id", "mercadolibre_id", "mlc_id"),
+    "mkp_paris": ("mkp_paris", "mkp paris", "mkp", "paris_id", "paris"),
+    "falabella_id": ("falabella_id", "falabella id", "falabella", "falabella_sku"),
+}
+
+
+def _map_columns(df) -> Dict[str, str]:
+    found = {}
+    normed = {_norm(c): c for c in df.columns}
+    for field, aliases in COLUMN_ALIASES.items():
+        for alias in aliases:
+            key = _norm(alias)
+            if key in normed:
+                found[field] = normed[key]
+                break
+    return found
+
+
+def ensure_season(name: Optional[str] = None, year: Optional[int] = None,
+                  db_path: Optional[str] = None) -> int:
+    init_season_schema(db_path)
+    name = name or DEFAULT_SEASON
+    year = int(year or DEFAULT_YEAR)
+    conn = sqlite3.connect(_db_path(db_path), timeout=30)
+    try:
+        conn.execute("INSERT OR IGNORE INTO season_registry(name, year, status) VALUES (?,?,?)",
+                     (name, year, "ACTIVE"))
+        row = conn.execute("SELECT season_id FROM season_registry WHERE name=? AND year=?",
+                           (name, year)).fetchone()
+        conn.commit()
+        return int(row[0])
+    finally:
+        conn.close()
+
+
+def ingest_season_file(path: str, season_name: Optional[str] = None,
+                       year: Optional[int] = None, db_path: Optional[str] = None) -> Dict[str, Any]:
+    import pandas as pd
+    p = Path(path)
+    if p.suffix.lower() in (".csv", ".txt"):
+        df = pd.read_csv(p)
+    else:
+        df = pd.read_excel(p)
+    mapping = _map_columns(df)
+    if "sku_padre" not in mapping:
+        return {"ok": False, "error": "SKU_PADRE_NOT_FOUND",
+                "columns": list(df.columns), "mapping": mapping}
+    season_id = ensure_season(season_name or p.stem, year, db_path)
+    conn = sqlite3.connect(_db_path(db_path), timeout=30)
+    inserted = updated = ignored = 0
+    now = datetime.now().isoformat()
+    try:
+        for _, row in df.iterrows():
+            def val(field):
+                col = mapping.get(field)
+                if not col:
+                    return None
+                v = row.get(col)
+                if pd.isna(v):
+                    return None
+                return v
+            sku_padre = str(val("sku_padre") or "").strip()
+            if not sku_padre:
+                ignored += 1
+                continue
+            fields = {
+                "sku_hijo": val("sku_hijo"), "nombre": val("nombre"),
+                "precio_venta": val("precio_venta"), "mpm_ripley": val("mpm_ripley"),
+                "mlc_meli": val("mlc_meli"), "mkp_paris": val("mkp_paris"),
+                "falabella_id": val("falabella_id"),
+            }
+            existing = conn.execute(
+                "SELECT id FROM season_products WHERE season_id=? AND sku_padre=?",
+                (season_id, sku_padre)).fetchone()
+            if existing:
+                conn.execute("""UPDATE season_products SET sku_hijo=?, nombre=?,
+                    precio_venta=?, mpm_ripley=?, mlc_meli=?, mkp_paris=?,
+                    falabella_id=?, ultima_actualizacion=? WHERE id=?""",
+                    (fields["sku_hijo"], fields["nombre"], fields["precio_venta"],
+                     fields["mpm_ripley"], fields["mlc_meli"], fields["mkp_paris"],
+                     fields["falabella_id"], now, existing[0]))
+                updated += 1
+            else:
+                conn.execute("""INSERT INTO season_products
+                    (season_id, sku_padre, sku_hijo, nombre, precio_venta,
+                     mpm_ripley, mlc_meli, mkp_paris, falabella_id, ultima_actualizacion)
+                    VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                    (season_id, sku_padre, fields["sku_hijo"], fields["nombre"],
+                     fields["precio_venta"], fields["mpm_ripley"], fields["mlc_meli"],
+                     fields["mkp_paris"], fields["falabella_id"], now))
+                inserted += 1
+        conn.commit()
+        return {"ok": True, "season_id": season_id, "inserted": inserted,
+                "updated": updated, "ignored": ignored, "mapping": mapping,
+                "rows": int(len(df))}
+    finally:
+        conn.close()
+
+
+def _safe_float(v):
+    try:
+        return float(str(v).replace("$", "").replace(".", "").replace(",", "."))
+    except Exception:
+        return None
+
+
+def _top_level(position):
+    if not position:
+        return None
+    p = int(position)
+    for n in (30, 60, 90, 120, 240):
+        if p <= n:
+            return f"TOP{n}"
+    return "OUTSIDE_TOP240"
+
+
+def _pub_price(row):
+    try:
+        attrs = json.loads(row.get("commercial_attributes") or "{}")
+        for key in ("price", "precio", "offer_price", "precio_oferta", "price_displayed", "price_regular"):
+            if attrs.get(key) is not None:
+                return _safe_float(attrs.get(key))
+    except Exception:
+        pass
+    return None
+
+
+def _pub_stock(row):
+    try:
+        attrs = json.loads(row.get("commercial_attributes") or "{}")
+        raw = str(attrs.get("stock_status") or attrs.get("stock") or "").upper()
+        if raw in ("IN_STOCK", "OUT_OF_STOCK"):
+            return raw
+        if attrs.get("in_stock") is True:
+            return "IN_STOCK"
+        if attrs.get("in_stock") is False:
+            return "OUT_OF_STOCK"
+    except Exception:
+        pass
+    return "UNKNOWN"
+
+
+def _insert_alert(conn, product_id, marketplace, alert_type, severity, details):
+    conn.execute("""INSERT INTO season_alerts
+        (season_product_id, marketplace, alert_type, severity, details, created_at, is_read)
+        VALUES (?,?,?,?,?,?,0)""",
+        (product_id, marketplace, alert_type, severity,
+         json.dumps(details, ensure_ascii=False), datetime.now().isoformat()))
+
+
+def cross_audit(run_id: str, season_id: Optional[int] = None,
+                db_path: Optional[str] = None) -> Dict[str, Any]:
+    init_season_schema(db_path)
+    conn = sqlite3.connect(_db_path(db_path), timeout=30)
+    conn.row_factory = sqlite3.Row
+    try:
+        if season_id is None:
+            row = conn.execute("SELECT season_id FROM season_registry WHERE status='ACTIVE' ORDER BY season_id DESC LIMIT 1").fetchone()
+            if not row:
+                return {"ok": False, "error": "NO_ACTIVE_SEASON"}
+            season_id = row[0]
+        products = [dict(r) for r in conn.execute(
+            "SELECT * FROM season_products WHERE season_id=?", (season_id,))]
+        obs_count = alert_count = 0
+        fields = [("mpm_ripley", "Ripley"), ("mlc_meli", "Mercado Libre"),
+                  ("mkp_paris", "Paris"), ("falabella_id", "Falabella")]
+        now = datetime.now().isoformat()
+        for product in products:
+            for id_field, marketplace in fields:
+                target = str(product.get(id_field) or "").strip()
+                if not target:
+                    continue
+                pub = conn.execute("""SELECT * FROM mri_publications
+                    WHERE run_id LIKE ? AND marketplace=?
+                    AND (marketplace_product_id=? OR publication_id LIKE ?)
+                    ORDER BY position ASC, rowid DESC LIMIT 1""",
+                    (run_id + "%", marketplace, target, "%" + target + "%")).fetchone()
+                estado = "FOUND" if pub else "NOT_FOUND"
+                price = _pub_price(dict(pub)) if pub else None
+                stock = _pub_stock(dict(pub)) if pub else "UNKNOWN"
+                if stock == "UNKNOWN" and price is not None:
+                    stock = "IN_STOCK"  # v1 inference: priced live publication
+                position = int(pub["position"] or 0) if pub and pub["position"] else None
+                top = _top_level(position) if position else None
+                url = pub["canonical_url"] if pub else None
+                prev = conn.execute("""SELECT * FROM season_observations
+                    WHERE season_product_id=? AND marketplace=?
+                    ORDER BY id DESC LIMIT 1""", (product["id"], marketplace)).fetchone()
+                conn.execute("""INSERT INTO season_observations
+                    (season_product_id, marketplace, audit_run_id, estado,
+                     precio_observado, precio_oferta, stock_status, posicion_observada,
+                     top_level, url_evidencia, fecha_observacion)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+                    (product["id"], marketplace, run_id, estado, price, None,
+                     stock, position, top, url, now))
+                obs_count += 1
+                if prev:
+                    prev = dict(prev)
+                    if price is not None and prev.get("precio_observado") is not None:
+                        old = float(prev["precio_observado"])
+                        if price < old:
+                            _insert_alert(conn, product["id"], marketplace, "PRICE_DROP", "WARN",
+                                          {"old": old, "new": price})
+                            alert_count += 1
+                        elif price > old:
+                            _insert_alert(conn, product["id"], marketplace, "PRICE_INCREASE", "INFO",
+                                          {"old": old, "new": price})
+                            alert_count += 1
+                    if prev.get("stock_status") == "IN_STOCK" and stock == "OUT_OF_STOCK":
+                        _insert_alert(conn, product["id"], marketplace, "STOCK_OUTAGE", "CRITICAL",
+                                      {"old": "IN_STOCK", "new": stock})
+                        alert_count += 1
+                    elif prev.get("stock_status") == "OUT_OF_STOCK" and stock == "IN_STOCK":
+                        _insert_alert(conn, product["id"], marketplace, "BACK_IN_STOCK", "INFO",
+                                      {"old": "OUT_OF_STOCK", "new": stock})
+                        alert_count += 1
+                    old_top = prev.get("top_level")
+                    if old_top and top and old_top != top:
+                        order = {"TOP30": 30, "TOP60": 60, "TOP90": 90, "TOP120": 120, "TOP240": 240}
+                        if order.get(top, 999) > order.get(old_top, 0):
+                            _insert_alert(conn, product["id"], marketplace, "TOP_CHANGE", "WARN",
+                                          {"old": old_top, "new": top})
+                            alert_count += 1
+        conn.commit()
+        return {"ok": True, "season_id": season_id, "products": len(products),
+                "observations": obs_count, "alerts": alert_count}
+    finally:
+        conn.close()
+
+
+def season_status(db_path: Optional[str] = None) -> Dict[str, Any]:
+    init_season_schema(db_path)
+    conn = sqlite3.connect(_db_path(db_path), timeout=30)
+    conn.row_factory = sqlite3.Row
+    try:
+        return {
+            "seasons": [dict(r) for r in conn.execute("SELECT * FROM season_registry")],
+            "products": conn.execute("SELECT COUNT(*) FROM season_products").fetchone()[0],
+            "observations": conn.execute("SELECT COUNT(*) FROM season_observations").fetchone()[0],
+            "alerts": conn.execute("SELECT COUNT(*) FROM season_alerts").fetchone()[0],
+        }
+    finally:
+        conn.close()
