@@ -477,3 +477,108 @@ def season_status(db_path: Optional[str] = None) -> Dict[str, Any]:
         }
     finally:
         conn.close()
+
+
+
+def list_alerts(alert_type: Optional[str] = None, marketplace: Optional[str] = None,
+                severity: Optional[str] = None, limit: int = 100,
+                db_path: Optional[str] = None) -> Dict[str, Any]:
+    init_season_schema(db_path)
+    conn = sqlite3.connect(_db_path(db_path), timeout=30)
+    conn.row_factory = sqlite3.Row
+    where, params = [], []
+    if alert_type:
+        where.append("a.alert_type = ?")
+        params.append(alert_type)
+    if marketplace:
+        where.append("a.marketplace = ?")
+        params.append(marketplace)
+    if severity:
+        where.append("a.severity = ?")
+        params.append(severity)
+    clause = ("WHERE " + " AND ".join(where)) if where else ""
+    rows = conn.execute(f"""
+        SELECT a.*, p.sku_padre, p.nombre, p.group_id
+        FROM season_alerts a JOIN season_products p ON p.id = a.season_product_id
+        {clause}
+        ORDER BY a.id DESC LIMIT ?
+    """, params + [int(limit or 100)]).fetchall()
+    conn.close()
+    out = []
+    for r in rows:
+        d = dict(r)
+        try:
+            detail = json.loads(d.get("details") or "{}")
+        except Exception:
+            detail = {}
+        d["details_json"] = detail
+        out.append(d)
+    return {"ok": True, "alerts": out, "count": len(out)}
+
+
+def alerts_summary(db_path: Optional[str] = None) -> Dict[str, Any]:
+    init_season_schema(db_path)
+    conn = sqlite3.connect(_db_path(db_path), timeout=30)
+    conn.row_factory = sqlite3.Row
+    try:
+        by_type = [dict(r) for r in conn.execute(
+            "SELECT alert_type, COUNT(*) n FROM season_alerts GROUP BY alert_type")]
+        by_sev = [dict(r) for r in conn.execute(
+            "SELECT severity, COUNT(*) n FROM season_alerts GROUP BY severity")]
+        by_mkt = [dict(r) for r in conn.execute(
+            "SELECT marketplace, COUNT(*) n FROM season_alerts GROUP BY marketplace")]
+        products = conn.execute("SELECT COUNT(*) FROM season_products").fetchone()[0]
+        return {"ok": True, "total_alerts": conn.execute(
+            "SELECT COUNT(*) FROM season_alerts").fetchone()[0],
+            "products": products, "by_type": by_type,
+            "by_severity": by_sev, "by_marketplace": by_mkt}
+    finally:
+        conn.close()
+
+
+def certification(marketplace: Optional[str] = None,
+                  limit: int = 500, db_path: Optional[str] = None) -> Dict[str, Any]:
+    """Compare a reported VA top (when supplied) with MRI's latest observation."""
+    init_season_schema(db_path)
+    conn = sqlite3.connect(_db_path(db_path), timeout=30)
+    conn.row_factory = sqlite3.Row
+    try:
+        rows = conn.execute("""
+            SELECT p.id, p.sku_padre, p.nombre, p.group_id, p.falabella_id,
+                   p.mkp_paris, p.mpm_ripley, p.mlc_meli,
+                   o.marketplace, o.top_level, o.posicion_observada, o.estado,
+                   o.fecha_observacion
+            FROM season_products p
+            LEFT JOIN season_observations o ON o.id = (
+                SELECT id FROM season_observations x
+                WHERE x.season_product_id = p.id
+                  AND (? IS NULL OR x.marketplace = ?)
+                ORDER BY x.id DESC LIMIT 1)
+            WHERE p.season_id = (SELECT season_id FROM season_registry WHERE name='SS_2026')
+            ORDER BY p.id LIMIT ?
+        """, (marketplace, marketplace, int(limit or 500))).fetchall()
+        out = []
+        matches = mismatches = missing = 0
+        for r in rows:
+            d = dict(r)
+            va = d.get("top_va")  # not persisted by MRI; explicit absence
+            mri = d.get("top_level")
+            if not mri:
+                missing += 1
+                coincide = None
+            elif va is None:
+                coincide = None
+            else:
+                coincide = str(va) == str(mri)
+                matches += 1 if coincide else 0
+                mismatches += 0 if coincide else 1
+            d["top_va"] = va
+            d["coincide"] = coincide
+            d["difference"] = (f"VA: {va}, MRI: {mri}" if va and mri and not coincide else None)
+            out.append(d)
+        return {"ok": True, "rows": out, "products": len(out),
+                "matches": matches, "mismatches": mismatches,
+                "missing": missing, "va_data": "MISSING",
+                "note": "VA reported TOP is not persisted by MRI; upload/VA JSON is required."}
+    finally:
+        conn.close()

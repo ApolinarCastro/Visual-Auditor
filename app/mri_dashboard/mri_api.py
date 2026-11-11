@@ -318,6 +318,27 @@ async def season_upload_api(file: UploadFile = File(...), season: str = None,
             pass
 
 
+@app.get("/api/season/alerts")
+async def season_alerts_api(type: str = None, marketplace: str = None,
+                            severity: str = None, limit: int = 100):
+    from app.mri_autonomous.season_manager import list_alerts
+    return JSONResponse(status_code=200, content=list_alerts(
+        alert_type=type, marketplace=marketplace, severity=severity, limit=limit))
+
+
+@app.get("/api/season/summary")
+async def season_summary_api():
+    from app.mri_autonomous.season_manager import alerts_summary
+    return JSONResponse(status_code=200, content=alerts_summary())
+
+
+@app.get("/api/season/certification")
+async def season_certification_api(marketplace: str = None, limit: int = 500):
+    from app.mri_autonomous.season_manager import certification
+    return JSONResponse(status_code=200, content=certification(
+        marketplace=marketplace, limit=limit))
+
+
 @app.post("/api/season/cross")
 async def season_cross_api(request: Request):
     from app.mri_autonomous.season_manager import cross_audit

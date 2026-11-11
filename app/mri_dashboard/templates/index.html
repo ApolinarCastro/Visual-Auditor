@@ -294,6 +294,7 @@
         <div class="nav-item" id="tab-learn" onclick="switchTab('learn')">C. Aprendizaje y Experiencia</div>
         <div class="nav-item" id="tab-multi" onclick="switchTab('multi')">D. Inteligencia Multimarketplace</div>
         <div class="nav-item" id="tab-mgr" onclick="switchTab('mgr')">E. Resumen Gerencial</div>
+        <div class="nav-item" id="tab-commercial" onclick="switchTab('commercial')">F. Inteligencia Comercial</div>
     </aside>
     
     <main>
@@ -720,7 +721,45 @@
             </p>
         </div>
 
-    </main>
+            <!-- F. Inteligencia Comercial -->
+        <div id="commercial" class="panel">
+            <h2>F. Inteligencia Comercial</h2>
+            <p style="color:var(--text-muted); font-size:0.92rem; margin-bottom:14px;">
+                Alertas de temporada SS_2026: precios, stock y certificación TOP. Vista de solo lectura.
+            </p>
+            <div class="grid-cards" style="margin-bottom:16px;">
+                <div class="card"><div class="card-title">Alertas totales</div><div class="card-value" style="color:var(--primary)" id="ciTotal">—</div></div>
+                <div class="card"><div class="card-title">Precios</div><div class="card-value" style="color:var(--info)" id="ciPrice">—</div></div>
+                <div class="card"><div class="card-title">Stock</div><div class="card-value" style="color:var(--danger)" id="ciStock">—</div></div>
+                <div class="card"><div class="card-title">Certificación TOP</div><div class="card-value" style="color:var(--warning)" id="ciTop">—</div></div>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
+                <button class="btn-primary" id="ciTabPrice" onclick="switchCommercialTab('price')">Precios</button>
+                <button class="btn-primary" id="ciTabStock" onclick="switchCommercialTab('stock')">Stock</button>
+                <button class="btn-primary" id="ciTabTop" onclick="switchCommercialTab('top')">Certificación TOP</button>
+            </div>
+            <div id="ciPricePane">
+                <div class="controls" style="margin-bottom:10px;">
+                    <select id="ciPriceMkt" onchange="loadCommercialAlerts()"><option value="">Todos los marketplaces</option></select>
+                    <select id="ciPriceSev" onchange="loadCommercialAlerts()"><option value="">Todas las severidades</option><option>WARN</option><option>CRITICAL</option></select>
+                    <select id="ciPriceType" onchange="loadCommercialAlerts()"><option value="">Todos los tipos</option><option>PRICE_DROP</option><option>PRICE_INCREASE</option></select>
+                </div>
+                <div style="overflow-x:auto;"><table><thead><tr><th>SKU</th><th>Producto</th><th>Marketplace</th><th>Precio anterior</th><th>Precio actual</th><th>Variación</th><th>Fecha</th><th>Severidad</th></tr></thead><tbody id="ciPriceRows"><tr><td colspan="8">Cargando…</td></tr></tbody></table></div>
+            </div>
+            <div id="ciStockPane" style="display:none;">
+                <div class="controls" style="margin-bottom:10px;">
+                    <select id="ciStockMkt" onchange="loadCommercialAlerts()"><option value="">Todos los marketplaces</option></select>
+                    <select id="ciStockType" onchange="loadCommercialAlerts()"><option value="">Todos los tipos</option><option>STOCK_OUTAGE</option><option>BACK_IN_STOCK</option></select>
+                </div>
+                <div style="overflow-x:auto;"><table><thead><tr><th></th><th>SKU</th><th>Producto</th><th>Marketplace</th><th>Estado anterior</th><th>Estado actual</th><th>Fecha</th><th>Severidad</th></tr></thead><tbody id="ciStockRows"><tr><td colspan="8">Cargando…</td></tr></tbody></table></div>
+            </div>
+            <div id="ciTopPane" style="display:none;">
+                <div id="ciTopSummary" style="color:var(--text-muted); font-size:0.9rem; margin-bottom:10px;">Cargando certificación…</div>
+                <div style="overflow-x:auto;"><table><thead><tr><th>SKU</th><th>Producto</th><th>Marketplace</th><th>Top VA</th><th>Top MRI</th><th>¿Coincide?</th><th>Acción</th></tr></thead><tbody id="ciTopRows"><tr><td colspan="7">Cargando…</td></tr></tbody></table></div>
+            </div>
+        </div>
+
+</main>
 
     <!-- Modal Detalle Verificable de Publicación -->
     <div id="modalDetail" class="modal-overlay" onclick="closeModal(event)">
@@ -786,6 +825,96 @@
             if (target) target.scrollIntoView({behavior: 'smooth', block: 'start'});
         }
 
+        let commercialTab = 'price';
+        function switchCommercialTab(tab) {
+            commercialTab = tab;
+            ['price','stock','top'].forEach(name => {
+                const visible = name === tab;
+                document.getElementById('ci' + name.charAt(0).toUpperCase() + name.slice(1) + 'Pane').style.display = visible ? '' : 'none';
+                const btn = document.getElementById('ciTab' + name.charAt(0).toUpperCase() + name.slice(1));
+                if (btn) btn.style.opacity = visible ? '1' : '0.65';
+            });
+            if (tab === 'top') loadCommercialCertification();
+            else loadCommercialAlerts();
+        }
+        function ciMoney(v) {
+            const n = Number(v);
+            if (!isFinite(n)) return '—';
+            return '$ ' + n.toLocaleString('es-CL');
+        }
+        function ciDate(v) { return v ? String(v).replace('T', ' ').slice(0, 16) : '—'; }
+        function ciFillMarkets(list) {
+            const opts = (list || []).map(x => `<option value="${x.marketplace}">${x.marketplace}</option>`).join('');
+            ['ciPriceMkt','ciStockMkt'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = '<option value="">Todos los marketplaces</option>' + opts;
+            });
+        }
+        async function loadCommercial() {
+            try {
+                const s = await fetch('/api/season/summary').then(r => r.json());
+                const by = Object.fromEntries((s.by_type || []).map(x => [x.alert_type, x.n]));
+                document.getElementById('ciTotal').innerText = s.total_alerts ?? 0;
+                document.getElementById('ciPrice').innerText = (by['PRICE_DROP'] || 0) + (by['PRICE_INCREASE'] || 0);
+                document.getElementById('ciStock').innerText = (by['STOCK_OUTAGE'] || 0) + (by['BACK_IN_STOCK'] || 0);
+                document.getElementById('ciTop').innerText = by['TOP_CHANGE'] || 0;
+                ciFillMarkets(s.by_marketplace);
+                switchCommercialTab(commercialTab);
+            } catch (e) {
+                document.getElementById('ciTotal').innerText = 'ERROR';
+            }
+        }
+        async function loadCommercialAlerts() {
+            if (commercialTab === 'top') return loadCommercialCertification();
+            const isPrice = commercialTab === 'price';
+            const typeEl = document.getElementById(isPrice ? 'ciPriceType' : 'ciStockType');
+            const mktEl = document.getElementById(isPrice ? 'ciPriceMkt' : 'ciStockMkt');
+            const sevEl = document.getElementById('ciPriceSev');
+            const params = new URLSearchParams();
+            if (typeEl && typeEl.value) params.set('type', typeEl.value);
+            if (mktEl && mktEl.value) params.set('marketplace', mktEl.value);
+            if (isPrice && sevEl && sevEl.value) params.set('severity', sevEl.value);
+            params.set('limit', '100');
+            try {
+                const data = await fetch('/api/season/alerts?' + params.toString()).then(r => r.json());
+                const rows = (data.alerts || []).filter(a => isPrice ? a.alert_type.startsWith('PRICE_') : a.alert_type.startsWith('STOCK_') || a.alert_type === 'BACK_IN_STOCK');
+                if (isPrice) {
+                    rows.sort((a,b) => Math.abs(Number(b.details_json?.old||0)-Number(b.details_json?.new||0)) - Math.abs(Number(a.details_json?.old||0)-Number(a.details_json?.new||0)));
+                    document.getElementById('ciPriceRows').innerHTML = rows.map(a => {
+                        const old = Number(a.details_json?.old||0), now = Number(a.details_json?.new||0);
+                        const pct = old ? ((now-old)/old*100).toFixed(1) : '—';
+                        const color = a.alert_type === 'PRICE_DROP' ? 'var(--success)' : 'var(--danger)';
+                        return `<tr><td>${a.sku_padre||'—'}</td><td>${a.nombre||'—'}</td><td>${a.marketplace}</td><td>${ciMoney(old)}</td><td>${ciMoney(now)}</td><td style="color:${color};font-weight:700;">${pct}%</td><td>${ciDate(a.created_at)}</td><td>${a.severity}</td></tr>`;
+                    }).join('') || '<tr><td colspan="8">Sin alertas de precio</td></tr>';
+                } else {
+                    rows.sort((a,b) => (a.alert_type === 'STOCK_OUTAGE' ? -1 : 1));
+                    document.getElementById('ciStockRows').innerHTML = rows.map(a => {
+                        const outage = a.alert_type === 'STOCK_OUTAGE' && a.severity === 'CRITICAL';
+                        return `<tr style="${outage?'background:rgba(239,68,68,0.10);':''}"><td style="color:var(--danger);font-weight:900;">${outage?'⚠':''}</td><td>${a.sku_padre||'—'}</td><td>${a.nombre||'—'}</td><td>${a.marketplace}</td><td>${a.details_json?.old||'—'}</td><td>${a.details_json?.new||'—'}</td><td>${ciDate(a.created_at)}</td><td>${a.severity}</td></tr>`;
+                    }).join('') || '<tr><td colspan="8">Sin alertas de stock</td></tr>';
+                }
+            } catch (e) {
+                const id = isPrice ? 'ciPriceRows' : 'ciStockRows';
+                document.getElementById(id).innerHTML = `<tr><td colspan="8">Error: ${e.message}</td></tr>`;
+            }
+        }
+        async function loadCommercialCertification() {
+            try {
+                const data = await fetch('/api/season/certification?limit=500').then(r => r.json());
+                const rows = data.rows || [];
+                document.getElementById('ciTopSummary').innerText =
+                    `De ${data.products || 0} productos, ${data.matches || 0} coinciden, ${data.mismatches || 0} con discrepancia. ` +
+                    (data.va_data === 'MISSING' ? 'VA TOP aún no persistido: se muestra TOP MRI observado.' : '');
+                document.getElementById('ciTopRows').innerHTML = rows.slice(0, 300).map(r => {
+                    const bad = r.coincide === false;
+                    const label = r.coincide === null ? 'Sin dato VA' : (r.coincide ? 'SÍ' : 'NO');
+                    return `<tr style="${bad?'background:rgba(245,158,11,0.10);':''}"><td>${r.sku_padre||'—'}</td><td>${r.nombre||'—'}</td><td>${r.marketplace||'—'}</td><td>${r.top_va||'—'}</td><td>${r.top_level||'—'}</td><td>${bad?'⚠ ':''}${label}</td><td>${r.difference||(r.top_level?'Revisar':'Sin observación')}</td></tr>`;
+                }).join('') || '<tr><td colspan="7">Sin datos de certificación</td></tr>';
+            } catch (e) {
+                document.getElementById('ciTopSummary').innerText = 'Error: ' + e.message;
+            }
+        }
+
         function switchTab(tabId) {
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -800,6 +929,7 @@
             if(tabId === 'hist') loadHistory();
             if(tabId === 'multi') loadMultiMarketplaceData();
             if(tabId === 'mgr') loadManagerView();
+            if(tabId === 'commercial') loadCommercial();
         }
 
         let multiMarketplaceData = {
