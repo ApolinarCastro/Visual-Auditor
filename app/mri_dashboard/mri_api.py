@@ -324,6 +324,12 @@ async def mri_visibility_api():
     return JSONResponse(status_code=200, content=visibility())
 
 
+@app.get("/api/season/health")
+async def season_health_api(season_id: str = "SS_2026"):
+    from app.mri_autonomous.season_manager import season_health
+    return JSONResponse(status_code=200, content=season_health(season_id))
+
+
 @app.get("/api/season/matrix")
 async def season_matrix_api(season_id: str = "SS_2026"):
     from app.mri_autonomous.season_manager import season_matrix

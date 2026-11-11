@@ -653,7 +653,8 @@ def season_matrix(season_id: Optional[str] = None,
         if sid is None:
             return []
         rows = conn.execute("""
-            SELECT p.sku_padre, p.sku_hijo, p.nombre, p.group_id, p.season_id,
+            SELECT p.id AS season_product_id, p.sku_padre, p.sku_hijo, p.nombre,
+                   p.group_id, p.season_id,
                    o.marketplace, o.estado, o.posicion_observada, o.top_level,
                    o.url_evidencia, o.precio_observado, o.stock_status,
                    o.audit_run_id, o.fecha_observacion
@@ -668,3 +669,102 @@ def season_matrix(season_id: Optional[str] = None,
         return [dict(r) for r in rows]
     finally:
         conn.close()
+
+
+
+def season_health(season_id: Optional[str] = None,
+                  db_path: Optional[str] = None) -> Dict[str, Any]:
+    """Group the season matrix by SKU into a gerencial health panel."""
+    rows = season_matrix(season_id, db_path)
+    alerts = list_alerts(limit=5000, db_path=db_path).get("alerts", [])
+    alert_by = {}
+    for a in alerts:
+        alert_by.setdefault((a["season_product_id"], a["marketplace"]), []).append(a)
+
+    conn = sqlite3.connect(_db_path(db_path), timeout=30)
+    conn.row_factory = sqlite3.Row
+    try:
+        if season_id and not str(season_id).isdigit():
+            row = conn.execute("SELECT season_id FROM season_registry WHERE name=? ORDER BY season_id DESC LIMIT 1",
+                               (season_id,)).fetchone()
+            sid = row[0] if row else None
+        elif season_id:
+            sid = int(season_id)
+        else:
+            row = conn.execute("SELECT season_id FROM season_registry WHERE status='ACTIVE' ORDER BY season_id DESC LIMIT 1").fetchone()
+            sid = row[0] if row else None
+        products = [dict(r) for r in conn.execute(
+            "SELECT id, sku_padre, sku_hijo, nombre, mpm_ripley, mlc_meli, mkp_paris, falabella_id, group_id "
+            "FROM season_products WHERE season_id=? ORDER BY sku_padre", (sid,))] if sid else []
+    finally:
+        conn.close()
+
+    by_sku = {}
+    for r in rows:
+        by_sku.setdefault(r["sku_padre"], []).append(r)
+
+    def fallback_url(marketplace, p):
+        if marketplace == "Ripley" and p.get("mpm_ripley"):
+            return f"https://simple.ripley.cl/search/{p['mpm_ripley']}"
+        if marketplace == "Paris" and p.get("mkp_paris"):
+            return f"https://www.paris.cl/search/?q={p['mkp_paris']}"
+        if marketplace == "Falabella" and p.get("falabella_id"):
+            return f"https://www.falabella.com/falabella-cl/search?Ntt={p['falabella_id']}"
+        if marketplace == "Mercado Libre" and p.get("mlc_meli"):
+            return f"https://www.mercadolibre.cl/{p['mlc_meli']}"
+        return None
+
+    labels = {"Ripley": "Ripley", "Paris": "Paris", "Falabella": "Falabella", "Mercado Libre": "ML"}
+    out = []
+    counts = {"SALUDABLE": 0, "ADVERTENCIA": 0, "CRITICO": 0, "SIN_DATOS": 0}
+    for p in products:
+        obs = by_sku.get(p["sku_padre"], [])
+        obs_by_mkt = {r["marketplace"]: r for r in obs}
+        found = [r for r in obs if r.get("estado") == "FOUND"]
+        markets = {}
+        links = []
+        for marketplace, label in labels.items():
+            r = obs_by_mkt.get(marketplace)
+            if not r:
+                markets[label] = {"symbol": "➖", "estado": "SIN_DATO", "url": fallback_url(marketplace, p),
+                                  "stock": "UNKNOWN", "price": None}
+                continue
+            al = alert_by.get((p["id"], marketplace), [])
+            url = r.get("url_evidencia") or fallback_url(marketplace, p)
+            if r.get("estado") == "FOUND":
+                sym = "⚠️" if al else "✅"
+                st = "CON_ALERTA" if al else "PUBLICADO"
+                if url and url not in links:
+                    links.append(url)
+            else:
+                sym, st = "❌", "NO_ENCONTRADO"
+            markets[label] = {"symbol": sym, "estado": st, "url": url,
+                              "stock": r.get("stock_status") or "UNKNOWN",
+                              "price": r.get("precio_observado")}
+        price = next((r.get("precio_observado") for r in found if r.get("precio_observado") is not None), None)
+        stocks = [r.get("stock_status") for r in found]
+        if "OUT_OF_STOCK" in stocks:
+            stock = "OUT_OF_STOCK"
+        elif "IN_STOCK" in stocks:
+            stock = "IN_STOCK"
+        else:
+            stock = "UNKNOWN"
+        price_alerts = [a for a in alerts if a["season_product_id"] == p["id"]
+                        and a["alert_type"] in ("PRICE_DROP", "PRICE_INCREASE", "STOCK_OUTAGE", "BACK_IN_STOCK")]
+        found_obs = bool(found)
+        if not obs:
+            health = "SIN_DATOS"
+        elif not found_obs:
+            health = "CRITICO"
+        elif price_alerts or stock == "OUT_OF_STOCK" or (found_obs and stock == "UNKNOWN"):
+            health = "ADVERTENCIA"
+        else:
+            health = "SALUDABLE"
+        counts[health] += 1
+        out.append({"sku_padre": p["sku_padre"], "sku_hijo": p.get("sku_hijo"),
+                    "nombre": p["nombre"], "group_id": p.get("group_id"),
+                    "health": health, "markets": markets, "price": price,
+                    "stock": stock, "links": links,
+                    "alerts": [{"type": a["alert_type"], "severity": a["severity"],
+                                "details": a.get("details_json") or {}} for a in price_alerts]})
+    return {"products": out, "counts": counts, "total": len(out)}

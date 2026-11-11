@@ -776,24 +776,35 @@
             <div style="overflow-x:auto;"><table><thead><tr><th>Marketplace</th><th>Categoría</th><th>Total Canal</th><th>Total Nico</th><th>TOP30</th><th>TOP60</th><th>TOP90</th><th>TOP120</th><th>TOP240</th><th>%TOP30</th><th>%TOP60</th><th>%TOP90</th><th>%TOP120</th><th>%TOP240</th><th>Presencia</th><th>Riesgo</th></tr></thead><tbody id="visRows"><tr><td colspan="16">Cargando…</td></tr></tbody></table></div>
         </div>
 
-        <!-- H. Temporada matriz -->
+        <!-- H. Temporada — Panel de Salud -->
         <div id="season" class="panel">
-            <h2>H. Temporada (Matriz de Cruce)</h2>
+            <h2>H. Temporada — Panel de Salud</h2>
             <p style="color:var(--text-muted); font-size:0.92rem; margin-bottom:14px;">
-                Cruce de los 336 SKU del Excel SS_2026 con la última observación por marketplace.
+                Salud de los 336 SKU SS_2026 agrupada por producto. Verde = publicado con stock y sin alertas;
+                amarillo = publicado con alerta; rojo = no encontrado en ningún marketplace.
             </p>
             <div class="grid-cards" style="margin-bottom:16px;">
-                <div class="card"><div class="card-title">Productos temporada</div><div class="card-value" style="color:var(--primary)" id="seasonProducts">—</div></div>
-                <div class="card"><div class="card-title">Publicados en ≥1 marketplace</div><div class="card-value" style="color:var(--success)" id="seasonFound">—</div></div>
-                <div class="card"><div class="card-title">No encontrados</div><div class="card-value" style="color:var(--danger)" id="seasonMissing">—</div></div>
-                <div class="card"><div class="card-title">Filas de cruce</div><div class="card-value" style="color:var(--info)" id="seasonRows">—</div></div>
+                <div class="card"><div class="card-title">Total SKUs</div><div class="card-value" style="color:var(--primary)" id="healthTotal">—</div></div>
+                <div class="card"><div class="card-title">🟢 Saludables</div><div class="card-value" style="color:var(--success)" id="healthOk">—</div></div>
+                <div class="card"><div class="card-title">🟡 Con advertencia</div><div class="card-value" style="color:var(--warning)" id="healthWarn">—</div></div>
+                <div class="card"><div class="card-title">🔴 Críticos</div><div class="card-value" style="color:var(--danger)" id="healthBad">—</div></div>
             </div>
             <div class="controls" style="margin-bottom:10px;">
-                <select id="seasonMkt" onchange="renderSeasonMatrix()"><option value="">Todos los marketplaces</option><option>Falabella</option><option>Paris</option><option>Ripley</option><option>Mercado Libre</option></select>
-                <select id="seasonState" onchange="renderSeasonMatrix()"><option value="">Todos los estados</option><option>FOUND</option><option>NOT_FOUND</option></select>
-                <select id="seasonGroup" onchange="renderSeasonMatrix()"><option value="">Todos los grupos</option><option>GRUPO 1</option><option>GRUPO 2</option><option>GRUPO 3</option><option>GRUPO 4</option><option>GRUPO 5</option><option>GRUPO 6</option></select>
+                <select id="healthStatus" onchange="renderHealth()"><option value="">Todas las salud</option><option>SALUDABLE</option><option>ADVERTENCIA</option><option>CRITICO</option><option>SIN_DATOS</option></select>
+                <select id="healthMarket" onchange="renderHealth()"><option value="">Todos los marketplaces</option><option>Ripley</option><option>Paris</option><option>Falabella</option><option>ML</option></select>
+                <input id="healthSearch" placeholder="Buscar SKU o producto…" oninput="renderHealth()" style="min-width:230px;" />
             </div>
-            <div style="overflow-x:auto;"><table><thead><tr><th>SKU</th><th>Producto</th><th>Marketplace</th><th>Estado</th><th>Posición</th><th>Top</th><th>Precio</th><th>Stock</th><th>URL</th></tr></thead><tbody id="seasonRowsTbody"><tr><td colspan="9">Cargando…</td></tr></tbody></table></div>
+            <div style="overflow-x:auto;"><table><thead><tr><th>Producto (SKU + Nombre)</th><th>Ripley</th><th>Paris</th><th>Falabella</th><th>ML</th><th>Precio actual</th><th>Stock</th><th>Acción</th></tr></thead><tbody id="healthRows"><tr><td colspan="8">Cargando…</td></tr></tbody></table></div>
+        </div>
+
+        <div id="healthModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.72); z-index:9999; padding:30px;">
+            <div style="max-width:760px; margin:0 auto; background:var(--panel-bg,#111827); border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:20px; max-height:85vh; overflow:auto;">
+                <div style="display:flex; justify-content:space-between; gap:12px; align-items:start;">
+                    <h3 id="healthModalTitle" style="margin:0; font-size:1.05rem;">Detalle</h3>
+                    <button onclick="closeHealthModal()" style="background:transparent;border:0;color:var(--text-muted);font-size:1.4rem;cursor:pointer;">×</button>
+                </div>
+                <div id="healthModalBody" style="margin-top:14px; font-size:0.9rem;"></div>
+            </div>
         </div>
 
 </main>
@@ -985,34 +996,72 @@
                 return `<tr><td>${r.marketplace}</td><td>${r.category}</td><td>${r.total_marketplace}</td><td>${r.total_nicopoly}</td><td>${r.top_30}</td><td>${r.top_60}</td><td>${r.top_90}</td><td>${r.top_120}</td><td>${r.top_240}</td><td>${r.pct_30}%</td><td>${r.pct_60}%</td><td>${r.pct_90}%</td><td>${r.pct_120}%</td><td>${r.pct_240}%</td><td>${r.presence_level}</td><td style="color:${riskColor};font-weight:700;">${r.risk_level}</td></tr>`;
             }).join('') || '<tr><td colspan="16">Sin categorías para los filtros</td></tr>';
         }
-        let seasonMatrixRows = [];
+        let seasonHealthRows = [];
+        function healthLabel(h) {
+            return {SALUDABLE:'🟢 Saludable', ADVERTENCIA:'🟡 Advertencia', CRITICO:'🔴 Crítico', SIN_DATOS:'⚪ Sin datos'}[h] || h;
+        }
+        function healthStockLabel(s) {
+            return {IN_STOCK:'En Stock', OUT_OF_STOCK:'Agotado', UNKNOWN:'N/A'}[s] || 'N/A';
+        }
         async function loadSeasonMatrix() {
             try {
-                const data = await fetch('/api/season/matrix?season_id=SS_2026').then(r => r.json());
-                seasonMatrixRows = Array.isArray(data) ? data : [];
-                const skus = [...new Set(seasonMatrixRows.map(r => r.sku_padre))];
-                const foundSkus = new Set(seasonMatrixRows.filter(r => r.estado === 'FOUND').map(r => r.sku_padre));
-                document.getElementById('seasonProducts').innerText = skus.length;
-                document.getElementById('seasonFound').innerText = foundSkus.size;
-                document.getElementById('seasonMissing').innerText = Math.max(0, skus.length - foundSkus.size);
-                document.getElementById('seasonRows').innerText = seasonMatrixRows.length;
-                renderSeasonMatrix();
+                const data = await fetch('/api/season/health?season_id=SS_2026').then(r => r.json());
+                seasonHealthRows = data.products || [];
+                const c = data.counts || {};
+                document.getElementById('healthTotal').innerText = data.total || seasonHealthRows.length;
+                document.getElementById('healthOk').innerText = c.SALUDABLE || 0;
+                document.getElementById('healthWarn').innerText = c.ADVERTENCIA || 0;
+                document.getElementById('healthBad').innerText = c.CRITICO || 0;
+                renderHealth();
             } catch (e) {
-                document.getElementById('seasonRowsTbody').innerHTML = `<tr><td colspan="9">Error: ${e.message}</td></tr>`;
+                document.getElementById('healthRows').innerHTML = `<tr><td colspan="8">Error: ${e.message}</td></tr>`;
             }
         }
-        function renderSeasonMatrix() {
-            const mkt = document.getElementById('seasonMkt')?.value || '';
-            const state = document.getElementById('seasonState')?.value || '';
-            const group = document.getElementById('seasonGroup')?.value || '';
-            const rows = seasonMatrixRows.filter(r => (!mkt || r.marketplace === mkt) && (!state || r.estado === state) && (!group || r.group_id === group));
-            document.getElementById('seasonRowsTbody').innerHTML = rows.slice(0, 800).map(r => {
-                const found = r.estado === 'FOUND';
-                const stateColor = found ? 'var(--success)' : 'var(--danger)';
-                const url = r.url_evidencia ? `<a href="${r.url_evidencia}" target="_blank" rel="noopener" style="color:var(--info);">abrir</a>` : '—';
-                return `<tr><td>${r.sku_padre||'—'}</td><td>${r.nombre||'—'}</td><td>${r.marketplace||'—'}</td><td style="color:${stateColor};font-weight:700;">${r.estado||'—'}</td><td>${r.posicion_observada ?? '—'}</td><td>${r.top_level||'—'}</td><td>${r.precio_observado != null ? '$ '+Number(r.precio_observado).toLocaleString('es-CL') : '—'}</td><td>${r.stock_status||'—'}</td><td>${url}</td></tr>`;
-            }).join('') || '<tr><td colspan="9">Sin filas para los filtros</td></tr>';
+        function renderHealth() {
+            const st = document.getElementById('healthStatus')?.value || '';
+            const mk = document.getElementById('healthMarket')?.value || '';
+            const q = (document.getElementById('healthSearch')?.value || '').toLowerCase();
+            const rows = seasonHealthRows.filter(r => {
+                if (st && r.health !== st) return false;
+                if (mk && (!r.markets[mk] || r.markets[mk].estado === 'SIN_DATO')) return false;
+                if (q && !(String(r.sku_padre||'').toLowerCase().includes(q) || String(r.nombre||'').toLowerCase().includes(q))) return false;
+                return true;
+            });
+            document.getElementById('healthRows').innerHTML = rows.slice(0, 500).map(r => {
+                const m = r.markets || {};
+                const cell = (x) => {
+                    if (!x || x.estado === 'SIN_DATO') return '<span title="Sin dato">➖</span>';
+                    return `<a href="${x.url || '#'}" target="_blank" rel="noopener" title="${x.estado}" style="text-decoration:none;">${x.symbol}</a>`;
+                };
+                const price = r.price != null ? '$ ' + Number(r.price).toLocaleString('es-CL') : 'N/A';
+                const stock = healthStockLabel(r.stock);
+                return `<tr><td><strong>${r.sku_padre || '—'}</strong><br><span style="color:var(--text-muted);font-size:0.78rem;">${r.nombre || ''}</span></td><td>${cell(m.Ripley)}</td><td>${cell(m.Paris)}</td><td>${cell(m.Falabella)}</td><td>${cell(m.ML)}</td><td>${price}</td><td>${stock}</td><td><button onclick="showHealthDetail('${r.sku_padre}')">Ver Links</button></td></tr>`;
+            }).join('') || '<tr><td colspan="8">Sin productos para los filtros</td></tr>';
         }
+        function showHealthDetail(sku) {
+            const r = seasonHealthRows.find(x => x.sku_padre === sku);
+            if (!r) return;
+            const links = [];
+            Object.entries(r.markets || {}).forEach(([name, m]) => {
+                if (m && m.url && m.estado !== 'SIN_DATO') links.push(`<li><strong>${name}</strong>: <a href="${m.url}" target="_blank" rel="noopener">${m.url}</a></li>`);
+            });
+            const alerts = (r.alerts || []).map(a => {
+                const d = a.details || {};
+                const old = d.old != null ? (typeof d.old === 'number' ? '$ '+Number(d.old).toLocaleString('es-CL') : d.old) : '—';
+                const now = d.new != null ? (typeof d.new === 'number' ? '$ '+Number(d.new).toLocaleString('es-CL') : d.new) : '—';
+                return `<li><span style="background:rgba(239,68,68,0.18);color:var(--danger);padding:2px 6px;border-radius:4px;font-weight:700;">${a.type}</span> ${old} → ${now}</li>`;
+            }).join('');
+            document.getElementById('healthModalTitle').innerText = `${r.sku_padre} · ${healthLabel(r.health)}`;
+            document.getElementById('healthModalBody').innerHTML =
+                `<p style="margin-top:0;color:var(--text-muted);">${r.nombre || ''}</p>` +
+                `<h4 style="margin-bottom:6px;">Links directos</h4>` +
+                (links.length ? `<ul>${links.join('')}</ul>` : '<p>Sin links publicados.</p>') +
+                `<h4 style="margin-bottom:6px;">Alertas</h4>` +
+                (alerts ? `<ul>${alerts}</ul>` : '<p>Sin alertas de precio/stock.</p>') +
+                `<p style="margin-bottom:0;color:var(--text-muted);">Precio actual: ${r.price != null ? '$ '+Number(r.price).toLocaleString('es-CL') : 'N/A'} · Stock: ${healthStockLabel(r.stock)}</p>`;
+            document.getElementById('healthModal').style.display = 'block';
+        }
+        function closeHealthModal() { document.getElementById('healthModal').style.display = 'none'; }
 
         function switchTab(tabId) {
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
