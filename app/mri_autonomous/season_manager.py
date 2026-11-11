@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS season_products (
     mlc_meli TEXT,
     mkp_paris TEXT,
     falabella_id TEXT,
+    group_id TEXT,
     ultima_actualizacion TEXT,
     FOREIGN KEY(season_id) REFERENCES season_registry(season_id),
     UNIQUE(season_id, sku_padre)
@@ -82,6 +83,9 @@ def init_season_schema(db_path: Optional[str] = None) -> Dict[str, Any]:
     conn = sqlite3.connect(_db_path(db_path), timeout=30)
     try:
         conn.executescript(SCHEMA)
+        cols = [r[1] for r in conn.execute("PRAGMA table_info(season_products)")]
+        if "group_id" not in cols:
+            conn.execute("ALTER TABLE season_products ADD COLUMN group_id TEXT")
         conn.commit()
         tables = {}
         for table in ("season_registry", "season_products", "season_observations", "season_alerts"):
@@ -98,12 +102,12 @@ def _norm(name: Any) -> str:
 COLUMN_ALIASES = {
     "sku_padre": ("sku_padre", "sku padre", "skupadre", "padre", "sku_mpm", "mpm_padre"),
     "sku_hijo": ("sku_hijo", "sku hijo", "skuhijo", "hijo", "sku"),
-    "nombre": ("nombre", "name", "producto", "descripcion", "product_title"),
-    "precio_venta": ("precio_venta", "precio venta", "precio", "price", "precio_multivende"),
+    "nombre": ("nombre", "name", "producto", "descripcion", "product_title", "nombre_producto"),
+    "precio_venta": ("precio_venta", "precio venta", "precio", "price", "precio_multivende", "precio_venta_clp"),
     "mpm_ripley": ("mpm_ripley", "mpm ripley", "mpm", "ripley_id", "ripley"),
     "mlc_meli": ("mlc_meli", "mlc meli", "mlc", "meli_id", "mercadolibre_id", "mlc_id"),
     "mkp_paris": ("mkp_paris", "mkp paris", "mkp", "paris_id", "paris"),
-    "falabella_id": ("falabella_id", "falabella id", "falabella", "falabella_sku"),
+    "falabella_id": ("falabella_id", "falabella id", "falabella", "falabella_sku", "falabella_link"),
 }
 
 
@@ -136,66 +140,104 @@ def ensure_season(name: Optional[str] = None, year: Optional[int] = None,
         conn.close()
 
 
+def _read_sheet_with_header(path, sheet=None):
+    """Read one sheet, locating the real header row (CHECKLIST has title rows)."""
+    import pandas as pd
+    probe = pd.read_excel(path, sheet_name=sheet, header=None, nrows=12)
+    header_row = None
+    for i in range(min(12, len(probe))):
+        vals = [_norm(v) for v in probe.iloc[i].tolist()]
+        if "sku_padre" in vals:
+            header_row = i
+            break
+    if header_row is None:
+        return None
+    return pd.read_excel(path, sheet_name=sheet, header=header_row)
+
+
 def ingest_season_file(path: str, season_name: Optional[str] = None,
-                       year: Optional[int] = None, db_path: Optional[str] = None) -> Dict[str, Any]:
+                       year: Optional[int] = None, db_path: Optional[str] = None,
+                       season_id: Optional[str] = None) -> Dict[str, Any]:
+    """Ingest CHECKLIST .xlsx with multiple sheets (GRUPO 1..6) or a CSV.
+
+    For each sheet, the real header row is detected by finding SKU_PADRE.
+    Rows are upserted by (season_id, sku_padre); group_id stores the sheet.
+    """
     import pandas as pd
     p = Path(path)
+    season_name = season_id or season_name or p.stem
     if p.suffix.lower() in (".csv", ".txt"):
-        df = pd.read_csv(p)
+        frames = [(p.stem, _read_sheet_with_header(p, None))]
     else:
-        df = pd.read_excel(p)
-    mapping = _map_columns(df)
-    if "sku_padre" not in mapping:
-        return {"ok": False, "error": "SKU_PADRE_NOT_FOUND",
-                "columns": list(df.columns), "mapping": mapping}
-    season_id = ensure_season(season_name or p.stem, year, db_path)
-    conn = sqlite3.connect(_db_path(db_path), timeout=30)
+        xls = pd.ExcelFile(p)
+        frames = []
+        for sheet in xls.sheet_names:
+            df = _read_sheet_with_header(p, sheet)
+            if df is not None:
+                frames.append((sheet, df))
+    season_id_int = ensure_season(season_name, year, db_path)
+    conn = sqlite3.connect(_db_path(db_path), timeout=60)
     inserted = updated = ignored = 0
+    groups: Dict[str, Dict[str, int]] = {}
     now = datetime.now().isoformat()
     try:
-        for _, row in df.iterrows():
-            def val(field):
-                col = mapping.get(field)
-                if not col:
-                    return None
-                v = row.get(col)
-                if pd.isna(v):
-                    return None
-                return v
-            sku_padre = str(val("sku_padre") or "").strip()
-            if not sku_padre:
-                ignored += 1
+        for sheet, df in frames:
+            mapping = _map_columns(df)
+            stats = {"rows": int(len(df)), "inserted": 0, "updated": 0, "ignored": 0}
+            if "sku_padre" not in mapping:
+                stats["ignored"] = int(len(df))
+                stats["error"] = "SKU_PADRE_NOT_FOUND"
+                groups[sheet] = stats
+                ignored += stats["ignored"]
                 continue
-            fields = {
-                "sku_hijo": val("sku_hijo"), "nombre": val("nombre"),
-                "precio_venta": val("precio_venta"), "mpm_ripley": val("mpm_ripley"),
-                "mlc_meli": val("mlc_meli"), "mkp_paris": val("mkp_paris"),
-                "falabella_id": val("falabella_id"),
-            }
-            existing = conn.execute(
-                "SELECT id FROM season_products WHERE season_id=? AND sku_padre=?",
-                (season_id, sku_padre)).fetchone()
-            if existing:
-                conn.execute("""UPDATE season_products SET sku_hijo=?, nombre=?,
-                    precio_venta=?, mpm_ripley=?, mlc_meli=?, mkp_paris=?,
-                    falabella_id=?, ultima_actualizacion=? WHERE id=?""",
-                    (fields["sku_hijo"], fields["nombre"], fields["precio_venta"],
-                     fields["mpm_ripley"], fields["mlc_meli"], fields["mkp_paris"],
-                     fields["falabella_id"], now, existing[0]))
-                updated += 1
-            else:
-                conn.execute("""INSERT INTO season_products
-                    (season_id, sku_padre, sku_hijo, nombre, precio_venta,
-                     mpm_ripley, mlc_meli, mkp_paris, falabella_id, ultima_actualizacion)
-                    VALUES (?,?,?,?,?,?,?,?,?,?)""",
-                    (season_id, sku_padre, fields["sku_hijo"], fields["nombre"],
-                     fields["precio_venta"], fields["mpm_ripley"], fields["mlc_meli"],
-                     fields["mkp_paris"], fields["falabella_id"], now))
-                inserted += 1
+            for _, row in df.iterrows():
+                def val(field):
+                    col = mapping.get(field)
+                    if not col:
+                        return None
+                    v = row.get(col)
+                    if pd.isna(v):
+                        return None
+                    return v
+                sku_padre = str(val("sku_padre") or "").strip()
+                if not sku_padre:
+                    stats["ignored"] += 1
+                    ignored += 1
+                    continue
+                fields = {
+                    "sku_hijo": val("sku_hijo"), "nombre": val("nombre"),
+                    "precio_venta": val("precio_venta"), "mpm_ripley": val("mpm_ripley"),
+                    "mlc_meli": val("mlc_meli"), "mkp_paris": val("mkp_paris"),
+                    "falabella_id": val("falabella_id"),
+                }
+                existing = conn.execute(
+                    "SELECT id FROM season_products WHERE season_id=? AND sku_padre=?",
+                    (season_id_int, sku_padre)).fetchone()
+                if existing:
+                    conn.execute("""UPDATE season_products SET sku_hijo=?, nombre=?,
+                        precio_venta=?, mpm_ripley=?, mlc_meli=?, mkp_paris=?,
+                        falabella_id=?, group_id=?, ultima_actualizacion=? WHERE id=?""",
+                        (fields["sku_hijo"], fields["nombre"], fields["precio_venta"],
+                         fields["mpm_ripley"], fields["mlc_meli"], fields["mkp_paris"],
+                         fields["falabella_id"], sheet, now, existing[0]))
+                    stats["updated"] += 1
+                    updated += 1
+                else:
+                    conn.execute("""INSERT INTO season_products
+                        (season_id, sku_padre, sku_hijo, nombre, precio_venta,
+                         mpm_ripley, mlc_meli, mkp_paris, falabella_id, group_id,
+                         ultima_actualizacion)
+                        VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+                        (season_id_int, sku_padre, fields["sku_hijo"], fields["nombre"],
+                         fields["precio_venta"], fields["mpm_ripley"], fields["mlc_meli"],
+                         fields["mkp_paris"], fields["falabella_id"], sheet, now))
+                    stats["inserted"] += 1
+                    inserted += 1
+            groups[sheet] = stats
         conn.commit()
-        return {"ok": True, "season_id": season_id, "inserted": inserted,
-                "updated": updated, "ignored": ignored, "mapping": mapping,
-                "rows": int(len(df))}
+        return {"ok": True, "season_id": season_id_int, "season_name": season_name,
+                "inserted": inserted, "updated": updated, "ignored": ignored,
+                "groups": groups, "sheets": len(frames)}
     finally:
         conn.close()
 
@@ -251,6 +293,27 @@ def _insert_alert(conn, product_id, marketplace, alert_type, severity, details):
          json.dumps(details, ensure_ascii=False), datetime.now().isoformat()))
 
 
+def _ids_match(expected: str, observed: str) -> bool:
+    """Compare marketplace IDs tolerantly: FALA_/MLC-/prefix variants are the same ID."""
+    def norm(v):
+        return re.sub(r"[^A-Za-z0-9]", "", str(v or "")).upper()
+    a, b = norm(expected), norm(observed)
+    if a == b:
+        return True
+    # Falabella numeric IDs may arrive as FALA_<id>.
+    if a.isdigit() and b.endswith(a):
+        return True
+    if b.isdigit() and a.endswith(b):
+        return True
+    # ML/Paris IDs may differ only by separators/known prefixes.
+    if a.lstrip("FALA") == b.lstrip("FALA"):
+        return True
+    # Paris publications may embed the marketplace ID in a URL slug.
+    if len(a) >= 5 and (a in b or b in a):
+        return True
+    return False
+
+
 def cross_audit(run_id: str, season_id: Optional[int] = None,
                 db_path: Optional[str] = None) -> Dict[str, Any]:
     init_season_schema(db_path)
@@ -262,6 +325,13 @@ def cross_audit(run_id: str, season_id: Optional[int] = None,
             if not row:
                 return {"ok": False, "error": "NO_ACTIVE_SEASON"}
             season_id = row[0]
+        elif isinstance(season_id, str) and not season_id.isdigit():
+            row = conn.execute("SELECT season_id FROM season_registry WHERE name=? ORDER BY season_id DESC LIMIT 1", (season_id,)).fetchone()
+            if not row:
+                return {"ok": False, "error": "SEASON_NOT_FOUND", "season": season_id}
+            season_id = row[0]
+        else:
+            season_id = int(season_id)
         products = [dict(r) for r in conn.execute(
             "SELECT * FROM season_products WHERE season_id=?", (season_id,))]
         obs_count = alert_count = 0
@@ -279,6 +349,12 @@ def cross_audit(run_id: str, season_id: Optional[int] = None,
                     ORDER BY position ASC, rowid DESC LIMIT 1""",
                     (run_id + "%", marketplace, target, "%" + target + "%")).fetchone()
                 estado = "FOUND" if pub else "NOT_FOUND"
+                if pub and not _ids_match(target, str(pub["marketplace_product_id"] or "")):
+                    _insert_alert(conn, product["id"], marketplace, "IDENTITY_MISMATCH",
+                                  "CRITICAL", {"expected": target,
+                                               "observed": str(pub["marketplace_product_id"] or ""),
+                                               "url": pub["canonical_url"]})
+                    alert_count += 1
                 price = _pub_price(dict(pub)) if pub else None
                 stock = _pub_stock(dict(pub)) if pub else "UNKNOWN"
                 if stock == "UNKNOWN" and price is not None:

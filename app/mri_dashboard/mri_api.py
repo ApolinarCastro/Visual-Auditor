@@ -299,7 +299,8 @@ async def season_status_api():
 
 
 @app.post("/api/season/upload")
-async def season_upload_api(file: UploadFile = File(...), season: str = None, year: int = None):
+async def season_upload_api(file: UploadFile = File(...), season: str = None,
+                            season_id: str = None, year: int = None):
     import tempfile
     from app.mri_autonomous.season_manager import ingest_season_file
     suffix = pathlib.Path(file.filename or "upload.xlsx").suffix or ".xlsx"
@@ -307,7 +308,8 @@ async def season_upload_api(file: UploadFile = File(...), season: str = None, ye
     try:
         tmp.write(await file.read())
         tmp.close()
-        result = ingest_season_file(tmp.name, season_name=season, year=year)
+        result = ingest_season_file(tmp.name, season_name=season, year=year,
+                                    season_id=season_id)
         return JSONResponse(status_code=200, content=result)
     finally:
         try:
@@ -324,7 +326,7 @@ async def season_cross_api(request: Request):
         data = await request.json()
     except Exception:
         pass
-    run_id = data.get("run_id")
+    run_id = data.get("run_id") or data.get("audit_run_id")
     if not run_id:
         return JSONResponse(status_code=400, content={"error": "RUN_ID_REQUIRED"})
     return JSONResponse(status_code=200, content=cross_audit(
