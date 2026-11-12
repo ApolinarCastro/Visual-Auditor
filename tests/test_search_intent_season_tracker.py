@@ -6,6 +6,7 @@ Task: VA-SEARCH-INTENT-SEASON-MINIMAL-IMPLEMENTATION-001
 import pytest
 import sqlite3
 import os
+from pathlib import Path
 from typing import Dict, Any
 
 from app.storage.mri_foundation import (
@@ -22,8 +23,15 @@ from app.storage.mri_foundation import (
 )
 from app.mri_autonomous.category_alignment import resolve_product_type
 
-CSV_INTENTS_PATH = r"C:\Users\ASUS Zenbook\Documents\Visibility Auditor\Busquedas_Concretas_Visual_Auditor.csv"
-PILOT_CSV_PATH = r"evidence\va_search_intent_season_fit_probe_002\pilot_20_products.csv"
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+CSV_INTENTS_PATH = os.environ.get(
+    "MRI_VA_INTENTS_CSV",
+    str(_REPO_ROOT / "evidence" / "va_search_intent_season_fit_probe_002" / "Busquedas_Concretas_Visual_Auditor.csv"))
+PILOT_CSV_PATH = str(_REPO_ROOT / "evidence" / "va_search_intent_season_fit_probe_002" / "pilot_20_products.csv")
+
+pytestmark = pytest.mark.skipif(
+    not Path(CSV_INTENTS_PATH).is_file(),
+    reason="VA intent fixture is not part of the MRI repository; set MRI_VA_INTENTS_CSV to run this VA-only suite")
 
 
 def setup_db():
