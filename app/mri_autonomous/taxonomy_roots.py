@@ -209,6 +209,67 @@ def _falabella_links_from_payload(payload: Any) -> list[dict[str, str]]:
     return list(found.values())
 
 
+def classify_falabella_candidate(url: str, name: str = "") -> str:
+    """Classify a persisted Falabella link using URL structure, not slug text."""
+    from urllib.parse import urlparse
+    path = urlparse(url or "").path.lower()
+    query = urlparse(url or "").query.lower()
+    if "/category/" in path:
+        return "CATEGORY_CANDIDATE"
+    if "/brand/" in path:
+        return "BRAND"
+    if "/search" in path:
+        return "SEARCH"
+    if "/collection/" in path:
+        return "NAVIGATION"
+    if query or "f." in path:
+        return "FILTER"
+    if "/page/" in path:
+        return "NAVIGATION"
+    return "UNKNOWN"
+
+
+def parse_falabella_hierarchy(payload: Any) -> list[dict[str, Any]]:
+    """Extract verified parent-child edges from SSR breadcrumb evidence.
+
+    Only the marketplace-provided `breadCrumbData` / `categoryParentDetails`
+    chain is accepted. No parent is inferred from a slug or URL similarity.
+    """
+    if not isinstance(payload, dict):
+        return []
+    props = payload.get("props") if isinstance(payload.get("props"), dict) else payload
+    pp = props.get("pageProps") if isinstance(props.get("pageProps"), dict) else props
+    chain = pp.get("breadCrumbData") or pp.get("categoryParentDetails") or []
+    if not isinstance(chain, list):
+        return []
+    entries = []
+    for item in chain:
+        if not isinstance(item, dict) or not item.get("id"):
+            continue
+        link = str(item.get("link") or "")
+        entries.append({
+            "category_id": str(item["id"]),
+            "name": str(item.get("label") or item.get("name") or item["id"]),
+            "url": ("https://www.falabella.com" + link
+                    if link.startswith("/") else link),
+            "is_root": bool(item.get("isRoot")),
+        })
+    if len(entries) < 2:
+        return []
+    edges = []
+    # Current -> parent -> grandparent is the SSR breadcrumb order.
+    for child, parent in zip(entries, entries[1:]):
+        if child["category_id"] == parent["category_id"]:
+            continue
+        edges.append({
+            "child_id": child["category_id"], "child_name": child["name"],
+            "parent_id": parent["category_id"], "parent_name": parent["name"],
+            "child_url": child["url"], "parent_url": parent["url"],
+            "source_evidence": "FALABELLA_SSR_BREADCRUMB",
+        })
+    return edges
+
+
 def discover_ripley_roots_from_urls(urls: Iterable[str]) -> RootTaxonomyResult:
     cats = _url_nodes("Ripley", urls, "RIPLEY_ROOT_NAVIGATION")
     return RootTaxonomyResult("Ripley", "PASS" if cats else "FAIL",
@@ -279,5 +340,6 @@ __all__ = [
     "RootTaxonomyResult", "discover_meli_roots", "discover_falabella_roots",
     "discover_ripley_roots_from_urls", "discover_paris_roots_from_urls",
     "discover_ripley_roots_async", "discover_paris_roots_async",
-    "persist_falabella_root_snapshot",
+    "persist_falabella_root_snapshot", "classify_falabella_candidate",
+    "parse_falabella_hierarchy",
 ]

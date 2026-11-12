@@ -271,10 +271,22 @@ def persist_taxonomy_snapshot(
                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
                 ON CONFLICT(marketplace, category_id) DO UPDATE SET
                     category_name=excluded.category_name,
-                    parent_category_id=excluded.parent_category_id,
-                    hierarchical_path=excluded.hierarchical_path,
+                    parent_category_id=CASE
+                        WHEN excluded.parent_category_id IS NULL
+                             AND mri_taxonomy_nodes.parent_category_id IS NOT NULL
+                        THEN mri_taxonomy_nodes.parent_category_id
+                        ELSE excluded.parent_category_id END,
+                    hierarchical_path=CASE
+                        WHEN excluded.parent_category_id IS NULL
+                             AND mri_taxonomy_nodes.parent_category_id IS NOT NULL
+                        THEN mri_taxonomy_nodes.hierarchical_path
+                        ELSE excluded.hierarchical_path END,
                     canonical_url=excluded.canonical_url,
-                    taxonomy_source=excluded.taxonomy_source,
+                    taxonomy_source=CASE
+                        WHEN excluded.parent_category_id IS NULL
+                             AND mri_taxonomy_nodes.parent_category_id IS NOT NULL
+                        THEN mri_taxonomy_nodes.taxonomy_source
+                        ELSE excluded.taxonomy_source END,
                     source_evidence=excluded.source_evidence,
                     last_verified_at=excluded.last_verified_at,
                     discovery_status=excluded.discovery_status,
@@ -289,15 +301,19 @@ def persist_taxonomy_snapshot(
                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 vals + (now,),
             )
-        # Frontier summary derived only from the submitted snapshot.
-        ids = {(n.marketplace, n.category_id) for n in nodes}
-        parents = {n.parent_category_id for n in nodes if n.parent_category_id}
-        roots = sum(1 for n in nodes if not n.parent_category_id)
-        edges = sum(1 for n in nodes if n.parent_category_id)
-        leaves = sum(1 for n in nodes if n.category_id not in parents)
+        # Frontier summary reflects the complete marketplace knowledge, not
+        # only the latest snapshot (a root-only snapshot must not hide known
+        # verified edges).
+        db_nodes = conn.execute(
+            f"SELECT category_id, parent_category_id, discovery_status "
+            f"FROM {NODES_TABLE} WHERE marketplace=?", (marketplace,)).fetchall()
+        parents = {r[1] for r in db_nodes if r[1]}
+        roots = sum(1 for r in db_nodes if not r[1])
+        edges = sum(1 for r in db_nodes if r[1])
+        leaves = sum(1 for r in db_nodes if r[0] not in parents)
         status_counts = {"COMPLETE": 0, "BLOCKED": 0, "PENDING": 0, "NOT_VERIFIED": 0}
-        for n in nodes:
-            s = str(n.discovery_status).upper()
+        for _cid, _parent, _status in db_nodes:
+            s = str(_status or "NOT_VERIFIED").upper()
             if s in status_counts:
                 status_counts[s] += 1
         conn.execute(
@@ -316,7 +332,7 @@ def persist_taxonomy_snapshot(
                 frontier_exhausted=excluded.frontier_exhausted,
                 source_completeness=excluded.source_completeness,
                 updated_at=excluded.updated_at""",
-            (marketplace, run_id, roots, len(nodes), edges, leaves,
+            (marketplace, run_id, roots, len(db_nodes), edges, leaves,
              status_counts["PENDING"] + status_counts["NOT_VERIFIED"],
              status_counts["BLOCKED"], status_counts["COMPLETE"],
              "NOT_VERIFIED", now),
@@ -387,6 +403,69 @@ def persist_taxonomy_result(
             source_evidence=str(result.get("source") or ""),
             statuses=statuses,
         )
+    finally:
+        conn.close()
+
+
+def load_taxonomy_result(db_path: str | Path, marketplace: str,
+                         *, max_age_days: int = 30) -> dict[str, Any] | None:
+    """Recover a non-stale persisted taxonomy for route reuse.
+
+    Returns None when there is no verified hierarchy or the newest verification
+    is older than max_age_days; the caller must then use live discovery.
+    """
+    path = Path(db_path)
+    if not path.exists():
+        return None
+    conn = sqlite3.connect(str(path))
+    conn.row_factory = sqlite3.Row
+    try:
+        table = conn.execute(
+            "select name from sqlite_master where type='table' and name=?",
+            ("mri_taxonomy_nodes",)).fetchone()
+        if not table:
+            return None
+        rows = [dict(r) for r in conn.execute(
+            "select category_id,category_name,parent_category_id,hierarchical_path,"
+            "canonical_url,taxonomy_source,source_evidence,last_verified_at,"
+            "discovery_status from mri_taxonomy_nodes where marketplace=?",
+            (marketplace,))]
+        if not rows:
+            return None
+        verified = [r for r in rows if r.get("last_verified_at")]
+        if not verified:
+            return None
+        newest = max(str(r["last_verified_at"]) for r in verified)
+        try:
+            from datetime import datetime, timedelta
+            cutoff = (datetime.now() - timedelta(days=max_age_days)).isoformat()
+            if newest < cutoff:
+                return None
+        except Exception:
+            pass
+        cats = []
+        for r in rows:
+            if not r.get("canonical_url"):
+                continue
+            cats.append({
+                "category_id": r["category_id"], "name": r["category_name"],
+                "url": r["canonical_url"],
+                "parent_id": r.get("parent_category_id"),
+                "hierarchical_path": r.get("hierarchical_path"),
+                "acquisition": True,
+            })
+        if not cats:
+            return None
+        return {
+            "marketplace": marketplace,
+            "status": "TAXONOMY_RECOVERED",
+            "source": "PERSISTED_TAXONOMY",
+            "categories": cats,
+            "taxonomy_complete": False,
+            "last_verified_at": newest,
+            "source_evidence": "mri_taxonomy_nodes",
+            "notes": ["reused persisted taxonomy; coverage remains partial"],
+        }
     finally:
         conn.close()
 

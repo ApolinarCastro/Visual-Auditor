@@ -100,6 +100,33 @@ class TaxonomyFoundationTests(unittest.TestCase):
             "WHERE marketplace='Falabella' AND category_id='child'").fetchone()
         self.assertEqual(parent[0], "root")
 
+    def test_root_snapshot_does_not_erase_verified_parent(self):
+        apply_taxonomy_migration(self.conn)
+        persist_taxonomy_snapshot(
+            self.conn, "Falabella", "run_hierarchy",
+            [
+                {"category_id": "root", "name": "Root"},
+                {"category_id": "child", "name": "Child", "parent_id": "root"},
+            ],
+            taxonomy_source="SSR_BREADCRUMB",
+        )
+        persist_taxonomy_snapshot(
+            self.conn, "Falabella", "run_root_only",
+            [
+                {"category_id": "root", "name": "Root"},
+                {"category_id": "child", "name": "Child"},
+            ],
+            taxonomy_source="SSR_ROOT_CATEGORY_LINKS",
+        )
+        parent = self.conn.execute(
+            f"SELECT parent_category_id, taxonomy_source FROM {NODES_TABLE} "
+            "WHERE marketplace='Falabella' AND category_id='child'").fetchone()
+        self.assertEqual(parent[0], "root")
+        frontier = self.conn.execute(
+            f"SELECT edges_verified FROM {FRONTIER_TABLE} "
+            "WHERE run_id='run_root_only'").fetchone()
+        self.assertEqual(frontier[0], 1)
+
     def test_cross_marketplace_parent_is_rejected(self):
         apply_taxonomy_migration(self.conn)
         with self.assertRaises(TaxonomyHierarchyError):

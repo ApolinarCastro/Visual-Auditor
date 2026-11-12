@@ -10,10 +10,12 @@ from types import SimpleNamespace
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.mri_autonomous.taxonomy_roots import (
+    classify_falabella_candidate,
     discover_falabella_roots,
     discover_meli_roots,
     discover_paris_roots_from_urls,
     discover_ripley_roots_from_urls,
+    parse_falabella_hierarchy,
     persist_falabella_root_snapshot,
 )
 from app.mri_autonomous.taxonomy_store import (
@@ -118,6 +120,33 @@ class RootTaxonomyTests(unittest.TestCase):
             self.assertEqual(frontier, (2, 1))
         finally:
             db.close()
+
+    def test_falabella_candidate_classification_uses_url_structure(self):
+        self.assertEqual(classify_falabella_candidate(
+            "https://www.falabella.com/falabella-cl/category/cat1/X"), "CATEGORY_CANDIDATE")
+        self.assertEqual(classify_falabella_candidate(
+            "https://www.falabella.com/falabella-cl/brand/NICOPOLY"), "BRAND")
+        self.assertEqual(classify_falabella_candidate(
+            "https://www.falabella.com/falabella-cl/search?Ntt=x"), "SEARCH")
+        self.assertEqual(classify_falabella_candidate(
+            "https://www.falabella.com/falabella-cl/page/foo"), "NAVIGATION")
+
+    def test_falabella_breadcrumb_edges_are_evidenced(self):
+        payload = {"props": {"pageProps": {"breadCrumbData": [
+            {"id": "CATG36075", "label": "Vestidos de Fiesta",
+             "link": "/category/CATG36075/Vestidos-de-Fiesta", "isRoot": True},
+            {"id": "CATG36072", "label": "Ropa de Fiesta",
+             "link": "/category/CATG36072/Ropa-de-Fiesta", "isRoot": False},
+            {"id": "cat20002", "label": "Mujer - Moda Mujer",
+             "link": "/category/cat20002/Moda-Mujer", "isRoot": False},
+        ]}}}
+        edges = parse_falabella_hierarchy(payload)
+        self.assertEqual(len(edges), 2)
+        self.assertEqual(edges[0]["child_id"], "CATG36075")
+        self.assertEqual(edges[0]["parent_id"], "CATG36072")
+        self.assertEqual(edges[1]["child_id"], "CATG36072")
+        self.assertEqual(edges[1]["parent_id"], "cat20002")
+        self.assertEqual(edges[0]["source_evidence"], "FALABELLA_SSR_BREADCRUMB")
 
     def test_falabella_special_route_executes_and_persists(self):
         db = sqlite3.connect(":memory:")
