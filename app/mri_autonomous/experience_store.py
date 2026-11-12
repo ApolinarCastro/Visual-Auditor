@@ -161,7 +161,7 @@ class ExperienceStore:
                 # Simple score rule
                 if c_failures >= 3:
                     new_status = "FAILED"
-                elif is_success and status in ["VALIDATED", "LAST_GOOD"]:
+                elif is_success and status in ["OBSERVED", "VALIDATED", "LAST_GOOD"]:
                     new_status = status
                 elif is_success:
                     new_status = "VALIDATED"
@@ -192,7 +192,7 @@ class ExperienceStore:
                 ))
             else:
                 initial_status = "VALIDATED" if is_success else "CANDIDATE"
-                if status in ["LAST_GOOD", "VALIDATED", "FAILED", "STALE", "RETIRED"]:
+                if status in ["OBSERVED", "LAST_GOOD", "VALIDATED", "FAILED", "STALE", "RETIRED"]:
                     initial_status = status
 
                 cursor.execute("""
@@ -223,6 +223,29 @@ class ExperienceStore:
             )
             row = cursor.fetchone()
             return dict(row) if row else None
+
+    def set_knowledge_status(self, marketplace: str, brand: str,
+                             knowledge_type: str, value: str, status: str,
+                             evidence: Optional[str] = None) -> Dict[str, Any]:
+        """Governed status transition: OBSERVED -> VALIDATED/APPROVED/REJECTED."""
+        normalized = str(status or "").upper()
+        if normalized not in ("OBSERVED", "CANDIDATE", "VALIDATED", "APPROVED",
+                              "REJECTED", "LAST_GOOD", "FAILED", "STALE"):
+            raise ValueError(f"Unsupported knowledge status: {status}")
+        now = datetime.utcnow().isoformat()
+        with self._get_connection() as conn:
+            cur = conn.execute("""
+                UPDATE experience
+                SET status = ?, evidence_reference = COALESCE(?, evidence_reference),
+                    last_seen_at = ?
+                WHERE marketplace = ? AND brand = ? AND knowledge_type = ? AND value = ?
+            """, (normalized, evidence, now, marketplace, brand, knowledge_type, value))
+            conn.commit()
+            updated = cur.rowcount > 0
+        item = self.get_experience_item(marketplace, brand, knowledge_type, value)
+        if item is not None:
+            item["updated"] = updated
+        return item or {"updated": False, "status": normalized}
 
     def get_all_experiences(self, marketplace: Optional[str] = None, brand: Optional[str] = None) -> List[Dict[str, Any]]:
         with self._get_connection() as conn:
