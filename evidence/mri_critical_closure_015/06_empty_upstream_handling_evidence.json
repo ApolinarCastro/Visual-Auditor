@@ -1,0 +1,13 @@
+{
+  "defect_6_status": "RESOLVED",
+  "response_status_code": 200,
+  "response_data": {
+    "marketplace": "Paris",
+    "brand": "Nicopoly",
+    "total_brand": 0,
+    "total_official_seller": 0,
+    "other_sellers_total": 0,
+    "status": "NO_EVIDENCE_RECORDED",
+    "reason": "Sin datos persistidos en almacenamiento ni respuesta de red v\u00e1lida"
+  }
+}

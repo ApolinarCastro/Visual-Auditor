@@ -1,0 +1,9 @@
+marketplace,area,gap,severity,evidence,status
+ALL,EXPECTED_PUBLICATION_IDS,El catálogo maestro contiene SKU/variantes pero no IDs de publicación por marketplace.,P0,Actualización masiva de productos.xlsx no tiene columnas de publication_id por marketplace.,OPEN
+ALL,EXPECTED_CATALOG,"El maestro permite un denominador por variante SKU, no por publicación publicada.",P0,"Conteo esperado por precio/stock: 2316 variantes ML/Paris/Ripley, 1640 Falabella.",OPEN
+ALL,GLOBAL_TAXONOMY,No existe una fuente independiente de taxonomía pública exhaustiva actual.,P0,Solo taxonomías observadas y SVMP histórico.,OPEN
+ALL,SVMP_REFERENCE,SVMP contiene categorías y totales históricos; sus fechas no son actuales.,P1,SVMP.xlsx: fechas hasta 2026-09-25; campaña actual 2026-11-02.,OPEN
+Mercado Libre,COVERAGE,9 categorías del alcance observado quedaron SOURCE_BLOCKED.,P0,"run_mri_discovery_1793624983__mercado_libre, checkpoint 4 COMPLETE / 9 BLOCKED.",OPEN
+Ripley,COVERAGE,"40/40 categorías observadas completas, pero el denominador global es desconocido.",P1,"run_mri_discovery_1793630598, taxonomy_complete=false.",OPEN
+Falabella,COVERAGE,"14/14 categorías observadas completas, pero el denominador global es desconocido.",P1,"run_mri_discovery_1793624983__falabella, taxonomy_complete=false.",OPEN
+Paris,COVERAGE,Una sola superficie legacy de búsqueda; no acredita taxonomía comercial completa.,P1,"run_mri_discovery_1793624983__paris, 1 categoría observada.",OPEN

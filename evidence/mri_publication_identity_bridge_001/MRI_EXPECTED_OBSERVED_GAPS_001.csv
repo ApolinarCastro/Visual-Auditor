@@ -1,0 +1,5 @@
+marketplace,expected_sku_channel_relations,expected_publication_ids,observed_publication_ids,confirmed_matches,unlinked_expectations,unmatched_observations,expected_publications_total,status
+Falabella,1640,0,619,0,1640,619,UNKNOWN,REFERENCE_GAP_PUBLICATION_IDS_MISSING
+Mercado Libre,2315,0,573,0,2315,573,UNKNOWN,REFERENCE_GAP_PUBLICATION_IDS_MISSING
+Ripley,2315,0,766,0,2315,766,UNKNOWN,REFERENCE_GAP_PUBLICATION_IDS_MISSING
+Paris,2315,0,598,0,2315,598,UNKNOWN,REFERENCE_GAP_PUBLICATION_IDS_MISSING

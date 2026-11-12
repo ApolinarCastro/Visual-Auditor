@@ -1,0 +1,23 @@
+{
+  "input_skus": [
+    "DUP-SKU-999",
+    "DUP-SKU-999"
+  ],
+  "output_publications_count": 1,
+  "deduplicated_sku": "DUP-SKU-999",
+  "clean_canonical_url": "https://www.paris.cl/vestido-dup.html",
+  "merged_categories": [
+    "mujModVestidosFaldas",
+    "EventoEspecialCyber"
+  ],
+  "merged_promotions": [
+    "coleccion-verano",
+    "cyber-sale",
+    "Especial Cyber Day"
+  ],
+  "merged_sellers": [
+    "NICOPOLY",
+    "Vopero"
+  ],
+  "deduplication_status": "PASS"
+}

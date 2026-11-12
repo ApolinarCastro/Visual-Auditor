@@ -536,6 +536,7 @@ def test_BF_27_ripley_production_js_requires_explicit_brand(method, vendor, expe
     fixture = "const observed = " + json.dumps(vendor) + ";" + """
     const item = {innerText:'Compatible con Nicopoly $10.000', outerHTML:'', tagName:'DIV',
       getAttribute:(name)=>name==='data-part-number'?'12345678':null,
+      closest:(selector)=>null,
       querySelector:(selector)=>selector.startsWith('.brand-name')?
         (observed?{innerText:observed}:null):
         selector.startsWith('.catalog-product-details__name')?{innerText:'Compatible con Nicopoly'}:

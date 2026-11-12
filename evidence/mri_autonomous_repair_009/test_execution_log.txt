@@ -1,0 +1,20 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.0, pytest-9.0.3, pluggy-1.6.0 -- C:\Users\ASUS Zenbook\AppData\Local\Python\pythoncore-3.14-64\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\ASUS Zenbook\Documents\Visibility Auditor
+plugins: anyio-4.13.0, asyncio-1.4.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 10 items
+
+tests/test_mri_autonomous_repair_009.py::test_production_write_barrier_rejection PASSED [ 10%]
+tests/test_mri_autonomous_repair_009.py::test_historical_preservation_2533_records PASSED [ 20%]
+tests/test_mri_autonomous_repair_009.py::test_position_accuracy_distinct_positions PASSED [ 30%]
+tests/test_mri_autonomous_repair_009.py::test_coverage_preserves_page_budget_exceeded PASSED [ 40%]
+tests/test_mri_autonomous_repair_009.py::test_parent_variant_resolution PASSED [ 50%]
+tests/test_mri_autonomous_repair_009.py::test_rejection_of_fraction_collisions_3_4_vs_1_2 PASSED [ 60%]
+tests/test_mri_autonomous_repair_009.py::test_brand_corridor_separation_ripley PASSED [ 70%]
+tests/test_mri_autonomous_repair_009.py::test_primary_evidence_integrity PASSED [ 80%]
+tests/test_mri_autonomous_repair_009.py::test_clean_checkout_modules_presence PASSED [ 90%]
+tests/test_mri_autonomous_repair_009.py::test_zero_va_modifications PASSED [100%]
+
+============================= 10 passed in 22.76s =============================

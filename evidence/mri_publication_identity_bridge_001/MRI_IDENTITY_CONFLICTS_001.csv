@@ -1,0 +1,9 @@
+marketplace,run_id,conflict_type,detail,count,severity,status
+Falabella,,NO_CHANNEL_PUBLICATION_ID,Master catalog has SKU/variant but no marketplace publication_id.,1640,P0,OPEN
+Mercado Libre,,NO_CHANNEL_PUBLICATION_ID,Master catalog has SKU/variant but no marketplace publication_id.,2315,P0,OPEN
+Ripley,,NO_CHANNEL_PUBLICATION_ID,Master catalog has SKU/variant but no marketplace publication_id.,2315,P0,OPEN
+Paris,,NO_CHANNEL_PUBLICATION_ID,Master catalog has SKU/variant but no marketplace publication_id.,2315,P0,OPEN
+ALL,,NO_SELLER_SKU_BRIDGE,mri_variants is empty; no seller_sku field is available in SQLite.,0,P0,OPEN
+Mercado Libre,run_mri_discovery_1793623173,DUPLICATE_OCCURRENCES,Observed occurrences exceed unique publication identities.,14,P1,EXPLAINED_DUPLICATE_IDENTITY
+Ripley,run_mri_discovery_1793630598,DUPLICATE_OCCURRENCES,Observed occurrences exceed unique publication identities.,5,P1,EXPLAINED_DUPLICATE_IDENTITY
+ALL,,EXACT_SKU_TEXT_MATCH_NO_ID,Exact SKU tokens found in observed text but no structured publication link.,0,P1,UNRESOLVED

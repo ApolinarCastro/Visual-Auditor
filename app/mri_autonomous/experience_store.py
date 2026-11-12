@@ -4,16 +4,46 @@ import sqlite3
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "mri_experience.db")
+try:
+    from app.mri_autonomous.storage_guard import StorageConfig
+    DEFAULT_EXP_DB = StorageConfig.get_experience_db_path()
+except Exception:
+    DEFAULT_EXP_DB = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "mri_experience.db")
 
 class ExperienceStore:
-    def __init__(self, db_path: str = DB_PATH):
-        self.db_path = db_path
+    def __init__(self, db_path: Optional[Any] = None):
+        # An explicit caller-supplied path is a declared non-production target
+        # (tests, isolated tools). It can never be the production database.
+        self._explicit_db = db_path is not None
+        if db_path is not None:
+            self.db_path = str(db_path)
+        else:
+            try:
+                from app.mri_autonomous.storage_guard import StorageConfig
+                self.db_path = str(StorageConfig.get_experience_db_path())
+            except Exception:
+                self.db_path = str(DEFAULT_EXP_DB)
+        
+        # Enforce storage barrier on write/init
+        from app.mri_autonomous.storage_guard import StorageConfig
+        StorageConfig.ensure_writable(self.db_path, reason="ExperienceStore persistence",
+                                      explicit=self._explicit_db)
+            
         os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
         self._init_db()
 
     def _get_connection(self):
-        conn = sqlite3.connect(self.db_path)
+        from app.mri_autonomous.storage_guard import StorageConfig
+        StorageConfig.ensure_writable(self.db_path, reason="ExperienceStore persistence",
+                                      explicit=self._explicit_db)
+        # MRI-013: multi-market parallel writers require WAL + busy_timeout.
+        conn = sqlite3.connect(self.db_path, timeout=30)
+        try:
+            conn.execute("PRAGMA journal_mode=WAL")
+            conn.execute("PRAGMA busy_timeout=30000")
+            conn.execute("PRAGMA synchronous=NORMAL")
+        except sqlite3.Error:
+            pass
         conn.row_factory = sqlite3.Row
         return conn
 
@@ -131,7 +161,7 @@ class ExperienceStore:
                 # Simple score rule
                 if c_failures >= 3:
                     new_status = "FAILED"
-                elif is_success and status in ["VALIDATED", "LAST_GOOD"]:
+                elif is_success and status in ["OBSERVED", "VALIDATED", "LAST_GOOD"]:
                     new_status = status
                 elif is_success:
                     new_status = "VALIDATED"
@@ -162,7 +192,7 @@ class ExperienceStore:
                 ))
             else:
                 initial_status = "VALIDATED" if is_success else "CANDIDATE"
-                if status in ["LAST_GOOD", "VALIDATED", "FAILED", "STALE", "RETIRED"]:
+                if status in ["OBSERVED", "LAST_GOOD", "VALIDATED", "FAILED", "STALE", "RETIRED"]:
                     initial_status = status
 
                 cursor.execute("""
@@ -193,6 +223,29 @@ class ExperienceStore:
             )
             row = cursor.fetchone()
             return dict(row) if row else None
+
+    def set_knowledge_status(self, marketplace: str, brand: str,
+                             knowledge_type: str, value: str, status: str,
+                             evidence: Optional[str] = None) -> Dict[str, Any]:
+        """Governed status transition: OBSERVED -> VALIDATED/APPROVED/REJECTED."""
+        normalized = str(status or "").upper()
+        if normalized not in ("OBSERVED", "CANDIDATE", "VALIDATED", "APPROVED",
+                              "REJECTED", "LAST_GOOD", "FAILED", "STALE"):
+            raise ValueError(f"Unsupported knowledge status: {status}")
+        now = datetime.utcnow().isoformat()
+        with self._get_connection() as conn:
+            cur = conn.execute("""
+                UPDATE experience
+                SET status = ?, evidence_reference = COALESCE(?, evidence_reference),
+                    last_seen_at = ?
+                WHERE marketplace = ? AND brand = ? AND knowledge_type = ? AND value = ?
+            """, (normalized, evidence, now, marketplace, brand, knowledge_type, value))
+            conn.commit()
+            updated = cur.rowcount > 0
+        item = self.get_experience_item(marketplace, brand, knowledge_type, value)
+        if item is not None:
+            item["updated"] = updated
+        return item or {"updated": False, "status": normalized}
 
     def get_all_experiences(self, marketplace: Optional[str] = None, brand: Optional[str] = None) -> List[Dict[str, Any]]:
         with self._get_connection() as conn:

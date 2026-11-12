@@ -198,4 +198,17 @@ Across any marketplace (Mercado Libre, Paris, Ripley, Falabella), presence must 
 3. **VISIBLE**: Product achieves a verified ranking position (e.g. position <= 30) within the evaluated category corridor.
 Category misalignment is critical commercial intelligence, not technical noise.
 
+## D-030 — Pre-connect Write Barrier Enforcement and Provenance Fidelity (MRI-022 Closure)
+Formal decision for closing MRI-022 truth validation defects:
+1. **Pre-connect SQLite barrier**: In `autonomous_multimarketplace_runner.py`, `StorageConfig.assert_write_allowed(self.db_path)` must be invoked immediately before any `sqlite3.connect(self.db_path)` call, completely preventing production redirection attempts at runtime.
+2. **Real acquisition provenance**: In `meli_taxonomy_engine.py`, headless scraper execution must record `execution_mode="MELI_HEADLESS_CATALOG_SCRAPER"` and `source_method="MELI_HEADLESS_CATALOG_SCRAPER"`, with `evidence_type="LIVE_OBSERVATION"` instead of misrepresenting public scrapers as `OFFICIAL_MELI_API`.
+3. **Absence of synthetic counts on failure**: In `autonomous_multimarketplace_runner.py` (Ripley investigation), failed scrapers must never assert static catalog publication counts (772/772) or fabricate categories/sellers. Failure reason must be classified (e.g. `SOURCE_BLOCKED` vs `PARTIAL`) and publications count set to 0.
+4. **Scoped API projections**: In `mri_api.py`, category and publication counts returned by `/api/multimarketplace/summary` must be strictly scoped to `target_run_id` instead of reading global dump tables.
+
+## D-031 — Autonomous Capability Registry and Multi-Adapter Architecture (MRI-023)
+Formal decision for capability management and selection:
+1. Registry must maintain explicit capability matrix across all 4 marketplaces.
+2. Strategy selection must be deterministic, governed by verified experience and availability.
+3. Adapters (including Stealth Browser MCP) must operate with strict audit trails, request/response hashing, and permission controls.
+
 

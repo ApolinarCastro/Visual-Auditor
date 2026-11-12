@@ -10,6 +10,9 @@ class MultivendeLoader:
     def __init__(self, excel_path=MULTIVENDE_EXCEL_PATH):
         self.excel_path = Path(excel_path)
         self._loaded = False
+        self._missing_checked = False
+        self._missing_reported = False
+        self._reference_available = None
         self._marketplace_indexes = {
             "mercado libre": {},
             "paris": {},
@@ -17,13 +20,39 @@ class MultivendeLoader:
             "ripley": {}
         }
         self._sku_master_map = {}
+        self._master_items = []
+
+    @property
+    def reference_available(self) -> bool:
+        """True only when the reference catalog was actually loaded."""
+        return bool(self._loaded and self._reference_available)
+
+    def reset_reference_check(self) -> None:
+        """Re-check the reference once per new run (not per product)."""
+        self._missing_checked = False
+        self._missing_reported = False
+        if not self._loaded:
+            self._reference_available = None
 
     def load_catalog(self) -> bool:
         if self._loaded:
             return True
 
+        # One filesystem check per run: a missing reference file must not be
+        # re-probed (nor re-warned) for every product of the run.
+        if self._missing_checked:
+            return False
+        self._missing_checked = True
+
         if not self.excel_path.exists():
-            logger.warning(f"[MultivendeLoader] File not found: {self.excel_path}")
+            if not self._missing_reported:
+                self._missing_reported = True
+                logger.warning(f"[MultivendeLoader] File not found: {self.excel_path}")
+                logger.warning(
+                    "[MultivendeLoader] CATALOG_REFERENCE_MISSING: identity, "
+                    "price and stock cannot be validated against the master catalog "
+                    "for this run.")
+            self._reference_available = False
             return False
 
         try:
@@ -68,6 +97,7 @@ class MultivendeLoader:
                     },
                     "stock": int(row.get("CANTIDAD_BODEGA_ONLINE", -1)) if pd.notna(row.get("CANTIDAD_BODEGA_ONLINE")) else -1
                 }
+                self._master_items.append(dict(item_info))
                 
                 def update_index(index_dict, key, new_item, allow_sku=False):
                     if not key:
@@ -124,9 +154,11 @@ class MultivendeLoader:
                             self._marketplace_indexes[mkt][norm_sku] = item_info
 
             self._loaded = True
+            self._reference_available = True
             logger.info(f"[MultivendeLoader] Successfully indexed {len(self._sku_master_map)} master SKUs.")
             return True
         except Exception as e:
+            self._reference_available = False
             logger.error(f"[MultivendeLoader] Failed to load catalog matrix: {e}")
             return False
 
@@ -187,6 +219,45 @@ class MultivendeLoader:
                 return item
 
         return None
+
+    def reload(self) -> bool:
+        """Force re-read after an operator uploads a new master file."""
+        self._loaded = False
+        self._missing_checked = False
+        self._missing_reported = False
+        self._reference_available = None
+        self._marketplace_indexes = {"mercado libre": {}, "paris": {},
+                                     "falabella": {}, "ripley": {}}
+        self._sku_master_map = {}
+        self._master_items = []
+        return self.load_catalog()
+
+    def expected_for_channel(self, marketplace: str) -> dict:
+        """Expected universe for a channel with the stock rule.
+
+        stock == 0  -> DESCARTADO_SIN_STOCK (immediate discard candidate)
+        stock <  0  -> stock unknown (unverified, not expected)
+        price <= 0  -> not expected for that channel
+        """
+        self.load_catalog()
+        key = marketplace.lower()
+        expected, zero, unknown, no_price = [], [], [], []
+        for item in self._master_items:
+            stock = item.get("stock", -1)
+            price = float((item.get("prices") or {}).get(key) or 0)
+            if stock == 0:
+                zero.append(item)
+            elif stock < 0:
+                unknown.append(item)
+            elif price <= 0:
+                no_price.append(item)
+            else:
+                expected.append(item)
+        return {"marketplace": marketplace, "expected": len(expected),
+                "discarded_no_stock": len(zero),
+                "unverified_stock": len(unknown),
+                "not_expected": len(no_price),
+                "expected_items": expected, "discarded_items": zero}
 
     def _clean_brand(self, text: str) -> str:
         if not text:

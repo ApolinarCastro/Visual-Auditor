@@ -1,0 +1,742 @@
+{
+  "task_id": "MRI-AUTONOMY-TRUTH-REPAIR-021",
+  "run_id": "mri_021_real_run_1792178465",
+  "instruction": "Investiga las publicaciones y categorías de Nicopoly en Paris, Ripley, Falabella y Mercado Libre. Descubre las fuentes, selecciona los métodos disponibles, recopila las publicaciones, identifica categorías y vendedores, contrasta resultados, conserva evidencias y presenta un informe comercial verificable.",
+  "target_brand": "Nicopoly",
+  "started_at": "2026-10-16T19:21:05.305459+00:00",
+  "finished_at": "2026-10-16T19:22:34.803069+00:00",
+  "duration_seconds": 89.5,
+  "truth_model_version": "2.0",
+  "synthetic_publications_count": 0,
+  "summary": {
+    "total_marketplaces_audited": 4,
+    "successful_marketplaces": [
+      "Paris",
+      "Falabella",
+      "Mercado Libre"
+    ],
+    "total_publications_persisted": 60,
+    "cross_marketplace_status": "PARTIAL",
+    "truth_model_version": "2.0"
+  },
+  "marketplaces": {
+    "Paris": {
+      "status": "COMPLETED",
+      "active_strategy": "REA_CONSTRUCTOR_PUBLIC_API",
+      "total_brand_publications": 4904,
+      "total_official_seller_publications": 4904,
+      "sellers_found": [
+        "NICOPOLY"
+      ],
+      "categories_count": 19,
+      "publications_count": 20,
+      "blocker_reason": null,
+      "evidence": {
+        "source": "Constructor.io AI Search",
+        "total_brand": 4904,
+        "total_official_seller": 4904,
+        "facets_count": 18
+      },
+      "strategies_attempted": [
+        {
+          "strategy": 1,
+          "name": "REA_CONSTRUCTOR_PUBLIC_API",
+          "action": "Query public Constructor.io search endpoint with key_6PvQHDnR0zdWgEPh"
+        }
+      ]
+    },
+    "Ripley": {
+      "status": "PARTIAL",
+      "active_strategy": "RIPLEY_FACET_AND_COUNTER_VERIFICATION",
+      "total_brand_publications": 772,
+      "total_official_seller_publications": 772,
+      "sellers_found": [
+        "Nicopoly"
+      ],
+      "categories_count": 3,
+      "publications_count": 0,
+      "blocker_reason": "Ripley catalog protected by WAF/Turnstile; extracted facet metadata only (0 real publications acquired)",
+      "evidence": {
+        "mechanism": "Ripley Facets + Counter Verification",
+        "total_categories": 3,
+        "status": "PARTIAL_COVERAGE"
+      },
+      "strategies_attempted": [
+        {
+          "strategy": 1,
+          "name": "RIPLEY_HEADLESS_SCRAPER",
+          "action": "Extract genuine publications from Ripley catalog (https://simple.ripley.cl/search/nicopoly)"
+        },
+        {
+          "strategy": 2,
+          "name": "RIPLEY_FACET_AND_COUNTER_VERIFICATION",
+          "action": "Extract verified facets and catalog counter without synthetic items"
+        }
+      ]
+    },
+    "Falabella": {
+      "status": "COMPLETED",
+      "active_strategy": "FALABELLA_SSR_BRAND_EXTRACTION",
+      "total_brand_publications": 368,
+      "total_official_seller_publications": 368,
+      "sellers_found": [
+        "Nicopoly"
+      ],
+      "categories_count": 1,
+      "publications_count": 20,
+      "blocker_reason": null,
+      "evidence": {
+        "mechanism": "NEXT_JS_SSR_EXTRACTION",
+        "total_count": 368,
+        "categories_count": 1,
+        "source_url": "https://www.falabella.com/falabella-cl/brand/NICOPOLY?page=1",
+        "source_sha256": "01bcdb5364e052f864eabc9e80ec2f2577ca72b7406b684d0b375452643f18aa",
+        "observed_at": "2026-10-16T19:21:22.336775+00:00"
+      },
+      "strategies_attempted": [
+        {
+          "strategy": 1,
+          "name": "FALABELLA_SSR_BRAND_EXTRACTION",
+          "action": "Fetch SSR __NEXT_DATA__ from /falabella-cl/brand/NICOPOLY"
+        }
+      ]
+    },
+    "Mercado Libre": {
+      "status": "COMPLETED",
+      "active_strategy": "MELI_HEADLESS_CATALOG_SCRAPER",
+      "total_brand_publications": 537,
+      "total_official_seller_publications": 537,
+      "sellers_found": [
+        "Nicopoly"
+      ],
+      "categories_count": 1,
+      "publications_count": 20,
+      "blocker_reason": null,
+      "evidence": {
+        "mechanism": "MELI_HEADLESS_CATALOG_SCRAPER",
+        "total_count": 537,
+        "source_url": "https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly"
+      },
+      "strategies_attempted": [
+        {
+          "strategy": 1,
+          "name": "MELI_HEADLESS_CATALOG_SCRAPER",
+          "action": "Extract genuine publications from official store public corridor (https://listado.mercadolibre.cl/nicopoly_Tienda_nicopoly)"
+        }
+      ]
+    }
+  },
+  "decisions_log": [
+    {
+      "step": 1,
+      "marketplace": "Paris",
+      "decision": "Inspect Paris.cl using Constructor.io REA discovery and HAR provenance",
+      "timestamp": "2026-10-16T19:21:05.314948+00:00"
+    },
+    {
+      "step": 2,
+      "marketplace": "Ripley",
+      "decision": "Inspect Ripley.cl using verified facets, empty-state detection and catalog counter",
+      "timestamp": "2026-10-16T19:21:21.426351+00:00"
+    },
+    {
+      "step": 3,
+      "marketplace": "Falabella",
+      "decision": "Inspect Falabella.cl via Next.js SSR __NEXT_DATA__ brand & seller corridors",
+      "timestamp": "2026-10-16T19:21:21.446496+00:00"
+    },
+    {
+      "step": 4,
+      "marketplace": "Mercado Libre",
+      "decision": "Inspect Mercado Libre Chile via Official Store 56574 taxonomy & domain discovery",
+      "timestamp": "2026-10-16T19:21:22.359867+00:00"
+    }
+  ],
+  "persisted_sample": [
+    {
+      "publication_id": "FALA_152147936",
+      "marketplace": "Falabella",
+      "sku": "152147936",
+      "canonical_url": "https://www.falabella.com/falabella-cl/product/152147934/blazer-sastrero-dos-botones-burdeo-nicopoly",
+      "evidence_type": "LIVE_OBSERVATION",
+      "commercial_attributes": {
+        "sellers": [
+          "Nicopoly"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": 64990.0,
+        "price_displayed": 41990.0,
+        "promotions": [],
+        "facets": {
+          "topSpecifications": [],
+          "sellerId": "SC75ABC"
+        },
+        "source_file_path": "https://www.falabella.com/falabella-cl/brand/NICOPOLY?page=1",
+        "source_file_sha256": "01bcdb5364e052f864eabc9e80ec2f2577ca72b7406b684d0b375452643f18aa",
+        "source_captured_at": "2026-10-16T19:21:22.336775+00:00"
+      }
+    },
+    {
+      "publication_id": "FALA_152209094",
+      "marketplace": "Falabella",
+      "sku": "152209094",
+      "canonical_url": "https://www.falabella.com/falabella-cl/product/152209093/blazer-oversize-tipo-gamuza-cafe-nicopoly",
+      "evidence_type": "LIVE_OBSERVATION",
+      "commercial_attributes": {
+        "sellers": [
+          "Nicopoly"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": 69990.0,
+        "price_displayed": 39990.0,
+        "promotions": [],
+        "facets": {
+          "topSpecifications": [],
+          "sellerId": "SC75ABC"
+        },
+        "source_file_path": "https://www.falabella.com/falabella-cl/brand/NICOPOLY?page=1",
+        "source_file_sha256": "01bcdb5364e052f864eabc9e80ec2f2577ca72b7406b684d0b375452643f18aa",
+        "source_captured_at": "2026-10-16T19:21:22.336775+00:00"
+      }
+    },
+    {
+      "publication_id": "FALA_156837736",
+      "marketplace": "Falabella",
+      "sku": "156837736",
+      "canonical_url": "https://www.falabella.com/falabella-cl/product/156837735/pantalon-recto-con-pinza-oliva-nicopoly",
+      "evidence_type": "LIVE_OBSERVATION",
+      "commercial_attributes": {
+        "sellers": [
+          "Nicopoly"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": null,
+        "price_displayed": 39990.0,
+        "promotions": [],
+        "facets": {
+          "topSpecifications": [],
+          "sellerId": "SC75ABC"
+        },
+        "source_file_path": "https://www.falabella.com/falabella-cl/brand/NICOPOLY?page=1",
+        "source_file_sha256": "01bcdb5364e052f864eabc9e80ec2f2577ca72b7406b684d0b375452643f18aa",
+        "source_captured_at": "2026-10-16T19:21:22.336775+00:00"
+      }
+    },
+    {
+      "publication_id": "FALA_152147898",
+      "marketplace": "Falabella",
+      "sku": "152147898",
+      "canonical_url": "https://www.falabella.com/falabella-cl/product/152147895/cardigan-manga-globo-negro-nicopoly",
+      "evidence_type": "LIVE_OBSERVATION",
+      "commercial_attributes": {
+        "sellers": [
+          "Nicopoly"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": 42990.0,
+        "price_displayed": 23990.0,
+        "promotions": [],
+        "facets": {
+          "topSpecifications": [],
+          "sellerId": "SC75ABC"
+        },
+        "source_file_path": "https://www.falabella.com/falabella-cl/brand/NICOPOLY?page=1",
+        "source_file_sha256": "01bcdb5364e052f864eabc9e80ec2f2577ca72b7406b684d0b375452643f18aa",
+        "source_captured_at": "2026-10-16T19:21:22.336775+00:00"
+      }
+    },
+    {
+      "publication_id": "FALA_157591666",
+      "marketplace": "Falabella",
+      "sku": "157591666",
+      "canonical_url": "https://www.falabella.com/falabella-cl/product/157591665/vestido-largo-halter-detalle-encaje-burdeo-nicopoly",
+      "evidence_type": "LIVE_OBSERVATION",
+      "commercial_attributes": {
+        "sellers": [
+          "Nicopoly"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": null,
+        "price_displayed": 66990.0,
+        "promotions": [],
+        "facets": {
+          "topSpecifications": [],
+          "sellerId": "SC75ABC"
+        },
+        "source_file_path": "https://www.falabella.com/falabella-cl/brand/NICOPOLY?page=1",
+        "source_file_sha256": "01bcdb5364e052f864eabc9e80ec2f2577ca72b7406b684d0b375452643f18aa",
+        "source_captured_at": "2026-10-16T19:21:22.336775+00:00"
+      }
+    },
+    {
+      "publication_id": "FALA_157587406",
+      "marketplace": "Falabella",
+      "sku": "157587406",
+      "canonical_url": "https://www.falabella.com/falabella-cl/product/157587405/top-halter-abertura-burdeo-nicopoly",
+      "evidence_type": "LIVE_OBSERVATION",
+      "commercial_attributes": {
+        "sellers": [
+          "Nicopoly"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": null,
+        "price_displayed": 25990.0,
+        "promotions": [],
+        "facets": {
+          "topSpecifications": [],
+          "sellerId": "SC75ABC"
+        },
+        "source_file_path": "https://www.falabella.com/falabella-cl/brand/NICOPOLY?page=1",
+        "source_file_sha256": "01bcdb5364e052f864eabc9e80ec2f2577ca72b7406b684d0b375452643f18aa",
+        "source_captured_at": "2026-10-16T19:21:22.336775+00:00"
+      }
+    },
+    {
+      "publication_id": "FALA_157356202",
+      "marketplace": "Falabella",
+      "sku": "157356202",
+      "canonical_url": "https://www.falabella.com/falabella-cl/product/157356200/pantalon-corte-barrel-blanco-nicopoly",
+      "evidence_type": "LIVE_OBSERVATION",
+      "commercial_attributes": {
+        "sellers": [
+          "Nicopoly"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": null,
+        "price_displayed": 41990.0,
+        "promotions": [],
+        "facets": {
+          "topSpecifications": [],
+          "sellerId": "SC75ABC"
+        },
+        "source_file_path": "https://www.falabella.com/falabella-cl/brand/NICOPOLY?page=1",
+        "source_file_sha256": "01bcdb5364e052f864eabc9e80ec2f2577ca72b7406b684d0b375452643f18aa",
+        "source_captured_at": "2026-10-16T19:21:22.336775+00:00"
+      }
+    },
+    {
+      "publication_id": "FALA_157915028",
+      "marketplace": "Falabella",
+      "sku": "157915028",
+      "canonical_url": "https://www.falabella.com/falabella-cl/product/157915026/pantalon-de-pierna-recta-raya-diplomatica-burdeo-nicopoly",
+      "evidence_type": "LIVE_OBSERVATION",
+      "commercial_attributes": {
+        "sellers": [
+          "Nicopoly"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": null,
+        "price_displayed": 39990.0,
+        "promotions": [],
+        "facets": {
+          "topSpecifications": [],
+          "sellerId": "SC75ABC"
+        },
+        "source_file_path": "https://www.falabella.com/falabella-cl/brand/NICOPOLY?page=1",
+        "source_file_sha256": "01bcdb5364e052f864eabc9e80ec2f2577ca72b7406b684d0b375452643f18aa",
+        "source_captured_at": "2026-10-16T19:21:22.336775+00:00"
+      }
+    },
+    {
+      "publication_id": "FALA_157297409",
+      "marketplace": "Falabella",
+      "sku": "157297409",
+      "canonical_url": "https://www.falabella.com/falabella-cl/product/157297405/pantalon-recto-raya-diplomatica-cafe-nicopoly",
+      "evidence_type": "LIVE_OBSERVATION",
+      "commercial_attributes": {
+        "sellers": [
+          "Nicopoly"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": null,
+        "price_displayed": 37990.0,
+        "promotions": [],
+        "facets": {
+          "topSpecifications": [],
+          "sellerId": "SC75ABC"
+        },
+        "source_file_path": "https://www.falabella.com/falabella-cl/brand/NICOPOLY?page=1",
+        "source_file_sha256": "01bcdb5364e052f864eabc9e80ec2f2577ca72b7406b684d0b375452643f18aa",
+        "source_captured_at": "2026-10-16T19:21:22.336775+00:00"
+      }
+    },
+    {
+      "publication_id": "FALA_156906062",
+      "marketplace": "Falabella",
+      "sku": "156906062",
+      "canonical_url": "https://www.falabella.com/falabella-cl/product/156906059/polera-manga-corta-cuello-alto-negro-nicopoly",
+      "evidence_type": "LIVE_OBSERVATION",
+      "commercial_attributes": {
+        "sellers": [
+          "Nicopoly"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": null,
+        "price_displayed": 11990.0,
+        "promotions": [],
+        "facets": {
+          "topSpecifications": [],
+          "sellerId": "SC75ABC"
+        },
+        "source_file_path": "https://www.falabella.com/falabella-cl/brand/NICOPOLY?page=1",
+        "source_file_sha256": "01bcdb5364e052f864eabc9e80ec2f2577ca72b7406b684d0b375452643f18aa",
+        "source_captured_at": "2026-10-16T19:21:22.336775+00:00"
+      }
+    },
+    {
+      "publication_id": "FALA_156905714",
+      "marketplace": "Falabella",
+      "sku": "156905714",
+      "canonical_url": "https://www.falabella.com/falabella-cl/product/156905709/polera-manga-larga-cuello-bote-blanco-nicopoly",
+      "evidence_type": "LIVE_OBSERVATION",
+      "commercial_attributes": {
+        "sellers": [
+          "Nicopoly"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": null,
+        "price_displayed": 12990.0,
+        "promotions": [],
+        "facets": {
+          "topSpecifications": [],
+          "sellerId": "SC75ABC"
+        },
+        "source_file_path": "https://www.falabella.com/falabella-cl/brand/NICOPOLY?page=1",
+        "source_file_sha256": "01bcdb5364e052f864eabc9e80ec2f2577ca72b7406b684d0b375452643f18aa",
+        "source_captured_at": "2026-10-16T19:21:22.336775+00:00"
+      }
+    },
+    {
+      "publication_id": "FALA_157380431",
+      "marketplace": "Falabella",
+      "sku": "157380431",
+      "canonical_url": "https://www.falabella.com/falabella-cl/product/157380429/top-corto-tipo-satin-verde-nicopoly",
+      "evidence_type": "LIVE_OBSERVATION",
+      "commercial_attributes": {
+        "sellers": [
+          "Nicopoly"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": null,
+        "price_displayed": 27990.0,
+        "promotions": [],
+        "facets": {
+          "topSpecifications": [],
+          "sellerId": "SC75ABC"
+        },
+        "source_file_path": "https://www.falabella.com/falabella-cl/brand/NICOPOLY?page=1",
+        "source_file_sha256": "01bcdb5364e052f864eabc9e80ec2f2577ca72b7406b684d0b375452643f18aa",
+        "source_captured_at": "2026-10-16T19:21:22.336775+00:00"
+      }
+    },
+    {
+      "publication_id": "FALA_152222260",
+      "marketplace": "Falabella",
+      "sku": "152222260",
+      "canonical_url": "https://www.falabella.com/falabella-cl/product/152222259/chaqueta-corta-tipo-gamuza-cafe-nicopoly",
+      "evidence_type": "LIVE_OBSERVATION",
+      "commercial_attributes": {
+        "sellers": [
+          "Nicopoly"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": 64990.0,
+        "price_displayed": 32990.0,
+        "promotions": [],
+        "facets": {
+          "topSpecifications": [],
+          "sellerId": "SC75ABC"
+        },
+        "source_file_path": "https://www.falabella.com/falabella-cl/brand/NICOPOLY?page=1",
+        "source_file_sha256": "01bcdb5364e052f864eabc9e80ec2f2577ca72b7406b684d0b375452643f18aa",
+        "source_captured_at": "2026-10-16T19:21:22.336775+00:00"
+      }
+    },
+    {
+      "publication_id": "FALA_157588831",
+      "marketplace": "Falabella",
+      "sku": "157588831",
+      "canonical_url": "https://www.falabella.com/falabella-cl/product/157588828/polera-manga-corta-cuello-bote-cafe-nicopoly",
+      "evidence_type": "LIVE_OBSERVATION",
+      "commercial_attributes": {
+        "sellers": [
+          "Nicopoly"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": null,
+        "price_displayed": 11990.0,
+        "promotions": [],
+        "facets": {
+          "topSpecifications": [],
+          "sellerId": "SC75ABC"
+        },
+        "source_file_path": "https://www.falabella.com/falabella-cl/brand/NICOPOLY?page=1",
+        "source_file_sha256": "01bcdb5364e052f864eabc9e80ec2f2577ca72b7406b684d0b375452643f18aa",
+        "source_captured_at": "2026-10-16T19:21:22.336775+00:00"
+      }
+    },
+    {
+      "publication_id": "FALA_157588428",
+      "marketplace": "Falabella",
+      "sku": "157588428",
+      "canonical_url": "https://www.falabella.com/falabella-cl/product/157588423/polera-manga-corta-cuello-bote-azul-marino-nicopoly",
+      "evidence_type": "LIVE_OBSERVATION",
+      "commercial_attributes": {
+        "sellers": [
+          "Nicopoly"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": null,
+        "price_displayed": 11990.0,
+        "promotions": [],
+        "facets": {
+          "topSpecifications": [],
+          "sellerId": "SC75ABC"
+        },
+        "source_file_path": "https://www.falabella.com/falabella-cl/brand/NICOPOLY?page=1",
+        "source_file_sha256": "01bcdb5364e052f864eabc9e80ec2f2577ca72b7406b684d0b375452643f18aa",
+        "source_captured_at": "2026-10-16T19:21:22.336775+00:00"
+      }
+    },
+    {
+      "publication_id": "FALA_157592176",
+      "marketplace": "Falabella",
+      "sku": "157592176",
+      "canonical_url": "https://www.falabella.com/falabella-cl/product/157592174/polera-cuello-redondo-manga-corta-celeste-nicopoly",
+      "evidence_type": "LIVE_OBSERVATION",
+      "commercial_attributes": {
+        "sellers": [
+          "Nicopoly"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": null,
+        "price_displayed": 12990.0,
+        "promotions": [],
+        "facets": {
+          "topSpecifications": [],
+          "sellerId": "SC75ABC"
+        },
+        "source_file_path": "https://www.falabella.com/falabella-cl/brand/NICOPOLY?page=1",
+        "source_file_sha256": "01bcdb5364e052f864eabc9e80ec2f2577ca72b7406b684d0b375452643f18aa",
+        "source_captured_at": "2026-10-16T19:21:22.336775+00:00"
+      }
+    },
+    {
+      "publication_id": "FALA_157779840",
+      "marketplace": "Falabella",
+      "sku": "157779840",
+      "canonical_url": "https://www.falabella.com/falabella-cl/product/157779838/top-blusa-patron-floral-blanco-nicopoly",
+      "evidence_type": "LIVE_OBSERVATION",
+      "commercial_attributes": {
+        "sellers": [
+          "Nicopoly"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": null,
+        "price_displayed": 19990.0,
+        "promotions": [],
+        "facets": {
+          "topSpecifications": [],
+          "sellerId": "SC75ABC"
+        },
+        "source_file_path": "https://www.falabella.com/falabella-cl/brand/NICOPOLY?page=1",
+        "source_file_sha256": "01bcdb5364e052f864eabc9e80ec2f2577ca72b7406b684d0b375452643f18aa",
+        "source_captured_at": "2026-10-16T19:21:22.336775+00:00"
+      }
+    },
+    {
+      "publication_id": "FALA_156905962",
+      "marketplace": "Falabella",
+      "sku": "156905962",
+      "canonical_url": "https://www.falabella.com/falabella-cl/product/156905959/polera-manga-larga-cuello-bote-burdeo-nicopoly",
+      "evidence_type": "LIVE_OBSERVATION",
+      "commercial_attributes": {
+        "sellers": [
+          "Nicopoly"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": null,
+        "price_displayed": 12990.0,
+        "promotions": [],
+        "facets": {
+          "topSpecifications": [],
+          "sellerId": "SC75ABC"
+        },
+        "source_file_path": "https://www.falabella.com/falabella-cl/brand/NICOPOLY?page=1",
+        "source_file_sha256": "01bcdb5364e052f864eabc9e80ec2f2577ca72b7406b684d0b375452643f18aa",
+        "source_captured_at": "2026-10-16T19:21:22.336775+00:00"
+      }
+    },
+    {
+      "publication_id": "FALA_152153500",
+      "marketplace": "Falabella",
+      "sku": "152153500",
+      "canonical_url": "https://www.falabella.com/falabella-cl/product/152153499/camisa-rayas-bicolor-cafe-nicopoly",
+      "evidence_type": "LIVE_OBSERVATION",
+      "commercial_attributes": {
+        "sellers": [
+          "Nicopoly"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": 33990.0,
+        "price_displayed": 26990.0,
+        "promotions": [],
+        "facets": {
+          "topSpecifications": [],
+          "sellerId": "SC75ABC"
+        },
+        "source_file_path": "https://www.falabella.com/falabella-cl/brand/NICOPOLY?page=1",
+        "source_file_sha256": "01bcdb5364e052f864eabc9e80ec2f2577ca72b7406b684d0b375452643f18aa",
+        "source_captured_at": "2026-10-16T19:21:22.336775+00:00"
+      }
+    },
+    {
+      "publication_id": "FALA_152246894",
+      "marketplace": "Falabella",
+      "sku": "152246894",
+      "canonical_url": "https://www.falabella.com/falabella-cl/product/152246893/chaqueta-barn-jacket-oliva-nicopoly",
+      "evidence_type": "LIVE_OBSERVATION",
+      "commercial_attributes": {
+        "sellers": [
+          "Nicopoly"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": 64990.0,
+        "price_displayed": 32990.0,
+        "promotions": [],
+        "facets": {
+          "topSpecifications": [],
+          "sellerId": "SC75ABC"
+        },
+        "source_file_path": "https://www.falabella.com/falabella-cl/brand/NICOPOLY?page=1",
+        "source_file_sha256": "01bcdb5364e052f864eabc9e80ec2f2577ca72b7406b684d0b375452643f18aa",
+        "source_captured_at": "2026-10-16T19:21:22.336775+00:00"
+      }
+    },
+    {
+      "publication_id": "MELI_MLC1573366415",
+      "marketplace": "Mercado Libre",
+      "sku": "MLC1573366415",
+      "canonical_url": "https://articulo.mercadolibre.cl/MLC-1573366415-sweater-basico-cuello-redondo-celeste-nicopoly-_JM?searchVariation=182835654618&pdp_filters=official_store%3A56574#polycard_client=search-desktop&searchVariation=182835654618&be_origin=backend&overlay_label=not_apply&search_layout=grid&position=1&type=item&tracking_id=dd1a01b7-39f5-4c7f-a05a-6db503e98e61&overlay_label_capability=not_apply&sid=search",
+      "evidence_type": "OFFICIAL_API_RECORD",
+      "commercial_attributes": {
+        "sellers": [
+          "NICOPOLY"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": 26990.0,
+        "price_displayed": 26990.0,
+        "promotions": [],
+        "facets": {
+          "official_store_id": "56574",
+          "seller_id": "386329223"
+        }
+      }
+    },
+    {
+      "publication_id": "MELI_MLC1689205493",
+      "marketplace": "Mercado Libre",
+      "sku": "MLC1689205493",
+      "canonical_url": "https://www.mercadolibre.cl/polera-escote-en-v-basica-azul-marino-nicopoly/up/MLCU3406774272?pdp_filters=official_store%3A56574#polycard_client=search-desktop&be_origin=backend&overlay_label=not_apply&search_layout=grid&position=2&type=product&tracking_id=dd1a01b7-39f5-4c7f-a05a-6db503e98e61&overlay_label_capability=not_apply&wid=MLC1689205493&sid=search",
+      "evidence_type": "OFFICIAL_API_RECORD",
+      "commercial_attributes": {
+        "sellers": [
+          "NICOPOLY"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": 9990.0,
+        "price_displayed": 9990.0,
+        "promotions": [],
+        "facets": {
+          "official_store_id": "56574",
+          "seller_id": "386329223"
+        }
+      }
+    },
+    {
+      "publication_id": "MELI_MLC1720786627",
+      "marketplace": "Mercado Libre",
+      "sku": "MLC1720786627",
+      "canonical_url": "https://www.mercadolibre.cl/blusa-encaje-detalle-lentejuelas-blanco-nicopoly/up/MLCU3486108425?pdp_filters=official_store%3A56574#polycard_client=search-desktop&be_origin=backend&overlay_label=not_apply&search_layout=grid&position=3&type=product&tracking_id=dd1a01b7-39f5-4c7f-a05a-6db503e98e61&overlay_label_capability=not_apply&wid=MLC1720786627&sid=search",
+      "evidence_type": "OFFICIAL_API_RECORD",
+      "commercial_attributes": {
+        "sellers": [
+          "NICOPOLY"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": 24990.0,
+        "price_displayed": 24990.0,
+        "promotions": [],
+        "facets": {
+          "official_store_id": "56574",
+          "seller_id": "386329223"
+        }
+      }
+    },
+    {
+      "publication_id": "MELI_MLC2221158281",
+      "marketplace": "Mercado Libre",
+      "sku": "MLC2221158281",
+      "canonical_url": "https://www.mercadolibre.cl/pantalon-corte-barrel-blanco-nicopoly/up/MLCU5088970657?pdp_filters=official_store%3A56574#polycard_client=search-desktop&be_origin=backend&overlay_label=not_apply&search_layout=grid&position=4&type=product&tracking_id=dd1a01b7-39f5-4c7f-a05a-6db503e98e61&overlay_label_capability=not_apply&wid=MLC2221158281&sid=search",
+      "evidence_type": "OFFICIAL_API_RECORD",
+      "commercial_attributes": {
+        "sellers": [
+          "NICOPOLY"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": 41990.0,
+        "price_displayed": 41990.0,
+        "promotions": [],
+        "facets": {
+          "official_store_id": "56574",
+          "seller_id": "386329223"
+        }
+      }
+    },
+    {
+      "publication_id": "MELI_MLC1511621245",
+      "marketplace": "Mercado Libre",
+      "sku": "MLC1511621245",
+      "canonical_url": "https://articulo.mercadolibre.cl/MLC-1511621245-pantalon-con-pinzas-recto-negro-nicopoly-_JM?searchVariation=184099873521&pdp_filters=official_store%3A56574#polycard_client=search-desktop&searchVariation=184099873521&be_origin=backend&overlay_label=not_apply&search_layout=grid&position=5&type=item&tracking_id=dd1a01b7-39f5-4c7f-a05a-6db503e98e61&overlay_label_capability=not_apply&sid=search",
+      "evidence_type": "OFFICIAL_API_RECORD",
+      "commercial_attributes": {
+        "sellers": [
+          "NICOPOLY"
+        ],
+        "is_official_seller": true,
+        "condition": "NEW",
+        "price_regular": 39990.0,
+        "price_displayed": 39990.0,
+        "promotions": [],
+        "facets": {
+          "official_store_id": "56574",
+          "seller_id": "386329223"
+        }
+      }
+    }
+  ]
+}

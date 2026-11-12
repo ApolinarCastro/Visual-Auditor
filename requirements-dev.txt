@@ -1,0 +1,19 @@
+# Visual Auditor / MRI — test & optional dependencies
+#
+# Not required to START the product. Required to run the regression suite.
+# Optional items degrade gracefully (guarded by try/except ImportError) and are
+# listed so environments stay reproducible instead of "works on my machine".
+
+# --- Test tooling ---
+pytest==9.1.1
+pytest-asyncio==1.4.0
+requests==2.32.5               # tests/test_dashboard_frontend.py:5 only
+
+# --- Optional runtime enhancement ---
+# Adaptive-parser rescue layer used by paris/falabella/mercadolibre/ripley
+# scrapers behind try/except ImportError. Import name is `anansi`;
+# PyPI distribution is `anansi-scraper`.
+anansi-scraper==0.1.0
+
+# Debug snapshot only (app/scrapers/base_scraper.py:648, inside an except branch)
+Pillow==11.0.0

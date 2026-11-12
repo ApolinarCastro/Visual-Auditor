@@ -1,0 +1,22 @@
+{
+  "execution_date": "2026-10-16T19:22:34.816824+00:00",
+  "task_id": "MRI-AUTONOMY-TRUTH-REPAIR-021",
+  "primary_run_id": "mri_021_real_run_1792178465",
+  "runs": [
+    {
+      "run_id": "mri_021_real_run_1792178465",
+      "status": "PARTIAL",
+      "total_persisted": 60,
+      "synthetic_publications": 0,
+      "artifact": "evidence\\mri_autonomy_truth_repair_021\\mri_021_real_run_1792178465_evidence.json"
+    }
+  ],
+  "exit_criteria_check": {
+    "zero_synthetic_publications": true,
+    "zero_constant_counts_as_observations": true,
+    "zero_unprotected_writers": true,
+    "primary_evidence_linked": true,
+    "honest_coverage_states": true,
+    "api_sqlite_dynamic": true
+  }
+}

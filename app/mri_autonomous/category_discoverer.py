@@ -381,8 +381,13 @@ def choose_navigation_strategy(prior_failed, prior_success):
     return "raw_dom_anchors", None
 
 
-def choose_facet_strategy_decision(exp_store, marketplace: str, brand: str, surface: str):
-    """Decision event for facet application (reuse-with-revalidation policy)."""
+def choose_facet_strategy_decision(exp_store, marketplace: str, brand: str, surface: str, mechanism=None):
+    """Decision event for facet application (reuse-with-revalidation policy).
+
+    Selects the facet method from persisted evidence AND the methods actually
+    available on this surface. The caller records which method really executed;
+    this function never claims execution.
+    """
     rows = []
     try:
         rows = exp_store.get_strategies(marketplace, brand) or []
@@ -390,21 +395,62 @@ def choose_facet_strategy_decision(exp_store, marketplace: str, brand: str, surf
         rows = []
     prior_ok = [r for r in rows
                 if r.get("strategy_type") == "facet_apply" and r.get("result") == "SUCCESS"]
-    if prior_ok:
+    prior_failed = [r for r in rows
+                    if r.get("strategy_type") == "facet_apply" and r.get("result") == "FAILED"]
+
+    def _method_of(row):
+        sid = str(row.get("strategy_id") or "")
+        if sid.startswith("facet::ui"):
+            return "ui_keyboard"
+        if sid.startswith("facet::url"):
+            return "url_query"
+        return None
+
+    success_methods = [m for m in (_method_of(r) for r in prior_ok) if m]
+    failed_methods = [m for m in (_method_of(r) for r in prior_failed) if m]
+    info = mechanism or {}
+    available = []
+    if info.get("url_query_available"):
+        available.append("url_query")
+    if info.get("ui_available"):
+        available.append("ui_keyboard")
+    if not info:
+        # Legacy callers without availability information.
+        available = ["url_query", "ui_keyboard"]
+
+    viable = [m for m in available if m not in failed_methods] or available
+    selected = next((m for m in success_methods if m in viable), None)
+    if selected is None and viable:
+        selected = "url_query" if "url_query" in viable else viable[0]
+    if selected is None:
         return {
-            "decision": "REUSE_REVALIDATED",
+            "decision": "NO_SAFE_METHOD",
             "capability": "facet_apply",
-            "selected": "ui_keyboard",
-            "because": (f"facet strategy has {len(prior_ok)} prior SUCCESS record(s); "
-                        f"explicit revalidation on this surface"),
-            "evidence": f"prior strategy_id={prior_ok[0].get('strategy_id')} updated={prior_ok[0].get('updated_at')}",
+            "selected": "unavailable",
+            "because": "no facet method available on this surface",
+            "prior_success_methods": success_methods,
+            "prior_failed_methods": failed_methods,
+            "available_methods": available,
+            "evidence": f"available={available}",
         }
+    if selected in success_methods:
+        decision = "REUSE_REVALIDATED"
+        because = f"persisted SUCCESS for {selected}; explicit revalidation on this surface"
+    elif selected in failed_methods:
+        decision = "REVALIDATE_AFTER_FAILURE"
+        because = f"all viable methods had prior failures; revalidating {selected}"
+    else:
+        decision = "TRIAL_FIRST_TIME"
+        because = "no prior facet strategy records for this marketplace+brand"
     return {
-        "decision": "TRIAL_FIRST_TIME",
+        "decision": decision,
         "capability": "facet_apply",
-        "selected": "ui_keyboard",
-        "because": "no prior facet strategy records for this marketplace+brand",
-        "evidence": f"fresh attempt on {surface}",
+        "selected": selected,
+        "because": because,
+        "prior_success_methods": success_methods,
+        "prior_failed_methods": failed_methods,
+        "available_methods": available,
+        "evidence": f"prior_ok={len(prior_ok)} prior_failed={len(prior_failed)} available={available}",
     }
 
 

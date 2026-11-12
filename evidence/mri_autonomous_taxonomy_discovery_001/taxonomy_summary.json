@@ -1,0 +1,13 @@
+{
+  "capability_rows": 4,
+  "hierarchy_rows": 181,
+  "frontier_rows": 181,
+  "category_publication_rows": 1805,
+  "learning_rows": 68,
+  "acceptance_rows": 4,
+  "categories_db": 113,
+  "categories_observed": 68,
+  "mri_historical_categories": 0,
+  "recovery_experiences": 0,
+  "db_integrity": "ok"
+}

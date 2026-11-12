@@ -7,7 +7,21 @@ Enhanced Base Scraper v3
 - Process Zombie protection
 """
 # pyrefly: ignore [missing-import]
-from playwright.async_api import async_playwright
+from playwright.async_api import async_playwright as _pw_async
+
+
+def _async_playwright_factory():
+    """MRI-032: Patchright stealth engine for Mercado Libre fallback."""
+    import os as _os
+    if (_os.environ.get("MRI_USE_PATCHRIGHT", "").lower() in ("1", "true", "yes")
+            and _os.environ.get("MRI_MARKETPLACE_PATCHRIGHT", "mercado libre").lower()
+            in ("mercado libre", "meli", "all")):
+        try:
+            from patchright.async_api import async_playwright as _pr_async
+            return _pr_async
+        except Exception:
+            pass
+    return _pw_async
 import asyncio
 import logging
 import random
@@ -53,6 +67,9 @@ atexit.register(_cleanup_global_playwright)
 
 class BaseScraper:
     def __init__(self, headless: bool = True, browser_type: str = "chromium", marketplace: str = "unknown", mobile: bool = False) -> None:
+        # Automatic MRI runs must never open a visible browser window.
+        if str(marketplace).strip().lower() in ("mercado libre", "mercadolibre", "meli"):
+            headless = True
         self.headless: bool = headless
         self.browser_type: str = browser_type
         self.marketplace: str = marketplace
@@ -153,7 +170,7 @@ class BaseScraper:
 
         async with _playwright_lock:
             if _global_playwright is None:
-                _global_playwright = await async_playwright().start()
+                _global_playwright = await _async_playwright_factory()().start()
         self._playwright = _global_playwright
 
         if self.is_using_obscura:
@@ -177,9 +194,13 @@ class BaseScraper:
 
         # FIX ML-2 (14-Ago): forzar headless=False para ML y Ripley.
         # Sin ventana real, ML redirige a account-verification (deteccion de bot).
-        if self.marketplace.lower() in ("ripley", "mercado libre"):
+        _force_headless = str(__import__("os").environ.get("MRI_FORCE_HEADLESS", "")).lower() in ("1", "true", "yes")
+        if self.marketplace.lower() in ("ripley", "mercado libre") and not _force_headless:
             self.headless = False
             logger.info(f"[{self.marketplace}] Forcing headless=False to bypass Akamai/WAF bot shield natively.")
+        if _force_headless:
+            self.headless = True
+            logger.info(f"[{self.marketplace}] MRI_FORCE_HEADLESS=1: headless=True")
 
         chromium_args = [
             "--no-sandbox",
@@ -193,6 +214,17 @@ class BaseScraper:
             "--disable-extensions",
             "--disable-plugins",
         ]
+        # MRI-018: low-memory browser profile.
+        if str(__import__("os").environ.get("MRI_LIGHT_BROWSER", "1")).lower() not in ("0", "false", "no"):
+            chromium_args += [
+                "--disable-background-networking",
+                "--disable-background-timer-throttling",
+                "--disable-renderer-backgrounding",
+                "--blink-settings=imagesEnabled=false",
+                "--js-flags=--max-old-space-size=512",
+            ]
+            if str(__import__("os").environ.get("MRI_SINGLE_PROCESS", "")).lower() in ("1", "true", "yes"):
+                chromium_args.append("--single-process")
 
         if self.marketplace.lower() in ["ripley", "mercado libre"]:
             chrome_paths = [

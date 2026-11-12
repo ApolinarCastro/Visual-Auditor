@@ -1,0 +1,9 @@
+run_id,marketplace,observed_occurrences,unique_identities,active_records,historical_records,category_memberships,duplicates,source_blocked,scope_differences,persistence_differences
+run_mri_discovery_1793622915,Falabella,404,404,213,191,595,0,0,complete_symmetric_diff=0; this=14; latest=14; latest_run=run_mri_discovery_1793624983__falabella,occurrences 404 vs unique 404; active 213; historical 191
+run_mri_discovery_1793623173,Mercado Libre,585,571,176,395,966,14,0,complete_symmetric_diff=8; this=13; latest=5; latest_run=run_mri_discovery_1793641074,occurrences 585 vs unique 571; active 176; historical 395
+run_mri_discovery_1793624983__mercado_libre,Mercado Libre,357,357,357,0,357,0,9,complete_symmetric_diff=9; this=4; latest=5; latest_run=run_mri_discovery_1793641074,occurrences 357 vs unique 357; active 357; historical 0
+run_mri_discovery_1793624983__paris,Paris,598,598,598,0,598,0,0,complete_symmetric_diff=0; this=1; latest=1; latest_run=run_mri_discovery_1793624983__paris,occurrences 598 vs unique 598; active 598; historical 0
+run_mri_discovery_1793624983__ripley,Ripley,766,766,5,761,1527,0,0,complete_symmetric_diff=0; this=40; latest=40; latest_run=run_mri_discovery_1793630598,occurrences 766 vs unique 766; active 5; historical 761
+run_mri_discovery_1793624983__falabella,Falabella,406,406,406,0,406,0,0,complete_symmetric_diff=0; this=14; latest=14; latest_run=run_mri_discovery_1793624983__falabella,occurrences 406 vs unique 406; active 406; historical 0
+run_mri_discovery_1793630598,Ripley,766,761,761,0,761,5,0,complete_symmetric_diff=0; this=40; latest=40; latest_run=run_mri_discovery_1793630598,occurrences 766 vs unique 761; active 761; historical 0
+run_mri_discovery_1793641074,Mercado Libre,40,40,40,0,40,0,8,complete_symmetric_diff=0; this=5; latest=5; latest_run=run_mri_discovery_1793641074,occurrences 40 vs unique 40; active 40; historical 0
