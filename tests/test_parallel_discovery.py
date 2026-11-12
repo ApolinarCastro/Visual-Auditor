@@ -1,4 +1,4 @@
-"""ALL_PARALLEL coordinates isolated children; sequential path remains intact."""
+"""ALL_PARALLEL_HTTP_FIRST coordinates isolated children; sequential path remains intact."""
 import asyncio
 import app.mri_dashboard.mri_runner as MR
 
@@ -23,4 +23,6 @@ def test_parallel_discovery_isolates_run_ids_and_aggregates(monkeypatch):
     assert len(set(parent.state["child_run_ids"].values())) == 2
     assert parent.state["marketplace_states"] == {
         "Mercado Libre": "FOUND", "Paris": "FOUND"}
-    assert parent.state["execution_strategy"] == "ALL_PARALLEL"
+    # The operational contract is HTTP-first parallel orchestration; the old
+    # ALL_PARALLEL label predates the HTTP-first strategy.
+    assert parent.state["execution_strategy"] == "ALL_PARALLEL_HTTP_FIRST"
