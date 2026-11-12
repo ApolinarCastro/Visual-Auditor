@@ -75,6 +75,17 @@ class MeliHTTPEngine:
             title = (anchor.get("title") or anchor.get_text(" ", strip=True)
                      or (anchor.find("img").get("alt") if anchor.find("img") else "")
                      or pid)
+            card = anchor.find_parent(
+                class_=re.compile(r"poly-card|ui-search-layout__item", re.I))
+            price = None
+            if card is not None:
+                price_node = card.select_one(
+                    ".andes-money-amount__fraction, .poly-price__current, "
+                    "[data-testid='price-part']")
+                if price_node is not None:
+                    digits = re.sub(r"[^0-9]", "", price_node.get_text(" ", strip=True))
+                    if digits:
+                        price = float(digits)
             products.append({
                 "marketplace_sku": pid,
                 "title": title[:200],
@@ -82,7 +93,9 @@ class MeliHTTPEngine:
                 "url": href,
                 "brand": "Nicopoly",
                 "vendor": "Nicopoly",
-                "price": 0.0,
+                "price": price or 0.0,
+                "price_observed": price,
+                "stock_status": "UNKNOWN",
                 "position_absolute": len(products) + 1,
             })
         return products

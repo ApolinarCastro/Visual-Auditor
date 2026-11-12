@@ -67,6 +67,9 @@ atexit.register(_cleanup_global_playwright)
 
 class BaseScraper:
     def __init__(self, headless: bool = True, browser_type: str = "chromium", marketplace: str = "unknown", mobile: bool = False) -> None:
+        # Automatic MRI runs must never open a visible browser window.
+        if str(marketplace).strip().lower() in ("mercado libre", "mercadolibre", "meli"):
+            headless = True
         self.headless: bool = headless
         self.browser_type: str = browser_type
         self.marketplace: str = marketplace

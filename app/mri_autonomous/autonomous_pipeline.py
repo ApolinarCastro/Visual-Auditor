@@ -399,7 +399,13 @@ async def _http_first_discovery(marketplace: str, brand: str, max_categories: in
                         "url": str(value.get("url") or value.get("canonical_url") or ""),
                         "brand": str(value.get("brand") or "Nicopoly"),
                         "vendor": "Nicopoly",
-                        "price": float(value.get("price") or 0),
+                        "price": float(value.get("displayedPrice") or value.get("price") or 0),
+                        "price_observed": (float(value.get("displayedPrice"))
+                                           if value.get("displayedPrice") else None),
+                        "price_offer": (float(value.get("displayedPrice"))
+                                        if value.get("discountPercentage") else None),
+                        "stock_status": str(value.get("stock_status")
+                                            or value.get("availability") or "UNKNOWN"),
                         "position_absolute": len(products) + 1,
                     })
                     new += 1

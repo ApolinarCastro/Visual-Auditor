@@ -55,6 +55,78 @@ import re
 import csv
 import os
 
+
+def _coerce_price(value):
+    """Return a positive numeric price or None; never fabricate a value."""
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        number = float(str(value).replace(".", "").replace(",", ".").replace("$", "").strip())
+    except (TypeError, ValueError):
+        return None
+    return number if number > 0 else None
+
+
+def _normalize_stock(value):
+    """Map source stock/availability values to the canonical status."""
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return "IN_STOCK" if value else "OUT_OF_STOCK"
+    text = str(value).strip().upper()
+    if text in ("IN_STOCK", "INSTOCK", "AVAILABLE", "DISPONIBLE", "TRUE", "1", "YES"):
+        return "IN_STOCK"
+    if text in ("OUT_OF_STOCK", "OUTOFSTOCK", "UNAVAILABLE", "AGOTADO", "FALSE", "0", "NO"):
+        return "OUT_OF_STOCK"
+    return None
+
+
+def _commercial_snapshot(result):
+    """Extract persisted price/stock from the already-observed result.
+
+    This is a projection only; it does not perform acquisition or invent
+    values. Missing source values remain None/UNKNOWN.
+    """
+    item = result if isinstance(result, dict) else {}
+    attrs = item.get("commercial_attributes") or {}
+    if isinstance(attrs, str):
+        try:
+            attrs = json.loads(attrs)
+        except Exception:
+            attrs = {}
+    observed = attrs.get("observed_attributes") if isinstance(attrs, dict) else {}
+    observed = observed if isinstance(observed, dict) else {}
+    merged = {**observed, **attrs} if isinstance(attrs, dict) else observed
+    acquisition = item.get("acquisition") or {}
+    acquisition = acquisition if isinstance(acquisition, dict) else {}
+
+    price = (_coerce_price(item.get("price_observed"))
+             or _coerce_price(item.get("price"))
+             or _coerce_price(item.get("price_displayed"))
+             or _coerce_price(item.get("regular_price"))
+             or _coerce_price(merged.get("price_observed"))
+             or _coerce_price(merged.get("price"))
+             or _coerce_price(merged.get("price_displayed"))
+             or _coerce_price(merged.get("regular_price"))
+             or _coerce_price(merged.get("sale_price")))
+    offer = (_coerce_price(item.get("price_offer"))
+             or _coerce_price(item.get("offer_price"))
+             or _coerce_price(item.get("sale_price"))
+             or _coerce_price(merged.get("price_offer"))
+             or _coerce_price(merged.get("offer_price"))
+             or _coerce_price(merged.get("sale_price"))
+             or _coerce_price(acquisition.get("price_offer")))
+    stock = (_normalize_stock(item.get("stock_status"))
+             or _normalize_stock(item.get("stock"))
+             or _normalize_stock(item.get("availability"))
+             or _normalize_stock(merged.get("stock_status"))
+             or _normalize_stock(merged.get("stock"))
+             or _normalize_stock(merged.get("availability"))
+             or _normalize_stock(acquisition.get("stock_status"))
+             or _normalize_stock(acquisition.get("availability")))
+    return {"price_observed": price, "price_offer": offer,
+            "stock_status": stock or ("IN_STOCK" if price else "UNKNOWN")}
+
 def load_universe(marketplace="ALL", limit=5):
     filepath = os.path.join("outputs", "MRI_PRODUCTION_AUDIT_001.csv")
     products = []
@@ -406,6 +478,16 @@ class MRIOrchestrator:
         if marketplace in ("Ripley", "Mercado Libre"):
             full_audit = True
 
+        # TOP_N is an operational route/item cap even for full audits. Before
+        # this guard, full_audit=True ignored the UI limit and walked the full
+        # taxonomy, starving Ripley and opening unnecessary browser work.
+        _route_limit = None
+        if limit not in (None, "ALL", ""):
+            try:
+                _route_limit = max(1, int(limit))
+            except (TypeError, ValueError):
+                _route_limit = None
+
         self.is_running = True
         self.results = []
         
@@ -439,6 +521,7 @@ class MRIOrchestrator:
             "build_id": _build.get("build_id"),
             "full_audit": bool(full_audit),
             "marketplace": marketplace,
+            "route_limit": _route_limit,
         }
         store = _safe_experience_store()
         
@@ -498,6 +581,8 @@ class MRIOrchestrator:
                         from app.mri_autonomous.autonomous_pipeline import _http_first_discovery
                         _http_paris = await _http_first_discovery(mkt, "Nicopoly")
                         _prods = list(_http_paris.get("products") or [])
+                        if full_audit and _route_limit:
+                            _prods = _prods[:_route_limit]
                         for _p in _prods:
                             _p.setdefault("marketplace", mkt)
                             _p.setdefault("brand", "Nicopoly")
@@ -505,6 +590,12 @@ class MRIOrchestrator:
                             # Evidence contract: publication_id must never be null.
                             _p.setdefault("observed_sku", _p.get("marketplace_sku") or "")
                             _p.setdefault("producto_id", _p.get("marketplace_sku") or "")
+                            # Preserve the observed commercial value before the
+                            # recovery runner projects it into mri_publications.
+                            _snap = _commercial_snapshot(_p)
+                            _p.setdefault("price_observed", _snap["price_observed"])
+                            _p.setdefault("price_offer", _snap["price_offer"])
+                            _p.setdefault("stock_status", _snap["stock_status"])
                         self.results.extend(_prods)
                         self.state["products_processed"] = len(self.results)
                         self.state["confirmed"] = len(self.results)
@@ -553,7 +644,8 @@ class MRIOrchestrator:
                             "MRI_PLAYWRIGHT_FALLBACK", "1")).lower() not in ("0", "false", "no")
                         _needs_browser = (
                             mkt in ("Ripley", "Mercado Libre")
-                            and len(_prods) < _min_http and _fallback_on)
+                            and len(_prods) < _min_http and _fallback_on
+                            and not _route_limit)
                         if _needs_browser:
                             self.state.setdefault("playwright_fallback", []).append({
                                 "marketplace": mkt,
@@ -588,7 +680,11 @@ class MRIOrchestrator:
                         import asyncio as _aio_fba
                         _audit = await _aio_fba.to_thread(
                             _fba.run_full_audit, FalabellaSSREngine(),
-                            brand="NICOPOLY", run_id=run_id, aux_dir=_fba_aux)
+                            brand="NICOPOLY", run_id=run_id, aux_dir=_fba_aux,
+                            max_pages=(1 if _route_limit else 100),
+                            include_search=(not bool(_route_limit)),
+                            max_categories=(max(1, _route_limit - 1)
+                                            if _route_limit else None))
                     except Exception as _fba_exc:
                         _audit = {
                             "marketplace": "Falabella", "complete": False,
@@ -1061,7 +1157,12 @@ class MRIOrchestrator:
                     url_allowed = lambda _m, _u: True
                 try:
                     _seen_run_ids = set()
-                    for cat_id, cat_data in list(cats.items()):
+                    _cat_items = list(cats.items())
+                    if full_audit and _route_limit:
+                        _cat_items = _cat_items[:_route_limit]
+                    self.state["route_limit_applied"] = (
+                        _route_limit if full_audit and _route_limit else None)
+                    for cat_id, cat_data in _cat_items:
                         if not self.is_running: break
                         _cat_started = time.monotonic()
                         if cat_data.get("acquisition") is False:
@@ -2254,6 +2355,7 @@ class MRIOrchestrator:
                             "reason": "DUPLICATE_PUBLICATION_ID"})
                         continue
                     _seen_pid.add(_pid)
+                    _commercial = _commercial_snapshot(res)
                     obs_to_persist.append({
                         "publication_id": _pid,
                         "marketplace": res.get("marketplace"),
@@ -2261,6 +2363,9 @@ class MRIOrchestrator:
                         "position_observed": res.get("position_observed") or 1,
                         "title": res.get("producto_nombre"),
                         "observation_timestamp": res.get("timestamp"),
+                        "price_observed": _commercial["price_observed"],
+                        "price_offer": _commercial["price_offer"],
+                        "stock_status": _commercial["stock_status"],
                         "status": "OBSERVED",
                         "acquisition_status": "OBSERVED",
                         "identity_status": (res.get("commercial_identity") or {}).get("state")

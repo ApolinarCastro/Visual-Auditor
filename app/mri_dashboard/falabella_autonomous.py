@@ -91,6 +91,38 @@ def _group_id(url, fallback):
     return str(fallback) if fallback is not None else None
 
 
+def _card_stock(card):
+    """Observed stock from Falabella size-level availability, when present."""
+    values = []
+
+    def collect(obj):
+        if isinstance(obj, dict):
+            if "available" in obj:
+                values.append(bool(obj.get("available")))
+            for value in obj.values():
+                collect(value)
+        elif isinstance(obj, list):
+            for value in obj:
+                collect(value)
+
+    collect(card.get("variants") or card.get("sizes") or [])
+    if not values:
+        raw = card.get("availability") if card.get("availability") is not None else card.get("stock")
+        if isinstance(raw, bool):
+            values.append(raw)
+        elif raw is not None:
+            text = str(raw).strip().upper()
+            if text in ("IN_STOCK", "INSTOCK", "AVAILABLE", "DISPONIBLE", "TRUE", "1", "YES"):
+                values.append(True)
+            elif text in ("OUT_OF_STOCK", "OUTOFSTOCK", "UNAVAILABLE", "AGOTADO", "FALSE", "0", "NO"):
+                values.append(False)
+    if any(values):
+        return "IN_STOCK"
+    if values:
+        return "OUT_OF_STOCK"
+    return "UNKNOWN"
+
+
 def _normalise_card(card, surface, category_name, page, build_id):
     pid = card.get("productId") or card.get("product_id")
     if pid is None:
@@ -109,6 +141,7 @@ def _normalise_card(card, surface, category_name, page, build_id):
         "category_name": category_name,
         "url": card.get("url"),
         "price": _price(card),
+        "stock_status": _card_stock(card),
         "surface": surface,
         "page": page,
         "build_id": build_id,
@@ -546,7 +579,8 @@ def enrich_missing_categories(observations, *, aux_dir=None, max_items=20,
 
 
 def run_full_audit(engine, *, brand="NICOPOLY", run_id=None, aux_dir=None,
-                   max_pages=100, delay=0.8, include_search=True, pdp_fetcher=None):
+                   max_pages=100, delay=0.8, include_search=True, pdp_fetcher=None,
+                   max_categories=None):
     """Autonomous Falabella audit: brand + brand-filtered categories + search."""
     started = datetime.now().isoformat()
     surfaces = []
@@ -559,6 +593,8 @@ def run_full_audit(engine, *, brand="NICOPOLY", run_id=None, aux_dir=None,
     discovery = discover_categories(
         engine, brand, brand_res.get("first_payload") or {}, delay=delay)
     categories = discovery["leaves"]
+    if max_categories is not None:
+        categories = categories[:max(0, int(max_categories))]
     for cat in categories[:30]:
         cid, cname = cat["category_id"], cat.get("name")
         params = {"f.product.brandName": brand.lower(), "facetSelected": "true"}
@@ -901,6 +937,7 @@ def to_runner_results(observations, *, catalog_status=None):
                 "seller_name": obs.get("seller_name"),
                 "category_gsc": obs.get("category_gsc"),
                 "price": obs.get("price"),
+                "stock_status": obs.get("stock_status"),
                 "surfaces": obs.get("surfaces"),
                 "build_id": obs.get("build_id"),
                 "category_observation_status": ("L2_EXPOSED" if obs.get("category_name")
@@ -920,6 +957,8 @@ def to_runner_results(observations, *, catalog_status=None):
             },
             "status": "OBSERVED",
             "acquisition_status": "OBSERVED",
+            "price_observed": obs.get("price"),
+            "stock_status": obs.get("stock_status"),
             "position_observed": obs.get("position"),
             "classification": "NICOPOLY_BRAND_SURFACE",
             "observed_sku": obs.get("sku_id") or obs.get("product_id"),
