@@ -284,19 +284,45 @@
             word-break: break-all;
             color: var(--text);
         }
+        .nav-icon { display:inline-block; width:1.4em; }
+        .control-accordion { border:1px solid rgba(255,255,255,0.1); border-radius:8px; margin-bottom:12px; background:var(--panel-bg); }
+        .control-accordion summary { cursor:pointer; padding:14px 16px; font-weight:700; color:#fff; list-style:none; }
+        .control-accordion summary::-webkit-details-marker { display:none; }
+        .control-accordion summary:before { content:"▸ "; color:var(--primary); }
+        .control-accordion[open] summary:before { content:"▾ "; }
+        .control-body { padding:0 16px 16px 16px; display:flex; flex-wrap:wrap; gap:10px; }
+        .legacy-back { position:fixed; right:18px; bottom:18px; z-index:10000; }
+        @media (max-width: 820px) {
+            body { display:block; height:auto; min-height:100vh; }
+            aside { width:100%; height:auto; flex-direction:row; align-items:center; gap:6px; padding:10px; overflow-x:auto; }
+            aside h1 { display:none; }
+            .nav-item { margin:0; padding:10px 12px; white-space:nowrap; }
+            .nav-item .nav-text { display:none; }
+            .nav-item .nav-icon { width:auto; font-size:1.2rem; }
+            main { padding:16px; overflow:visible; }
+            h2 { font-size:1.15rem; }
+            .grid-cards { grid-template-columns:1fr 1fr !important; }
+            table { min-width:720px; }
+        }
+        @media (max-width: 480px) { .grid-cards { grid-template-columns:1fr !important; } }
     </style>
 </head>
 <body>
     <aside>
         <h1>MRI Auditor</h1>
-        <div class="nav-item active" id="tab-ops" onclick="switchTab('ops')">A. Operaciones y Resultados</div>
-        <div class="nav-item" id="tab-hist" onclick="switchTab('hist')">B. Historial de Ejecuciones</div>
-        <div class="nav-item" id="tab-learn" onclick="switchTab('learn')">C. Aprendizaje y Experiencia</div>
-        <div class="nav-item" id="tab-multi" onclick="switchTab('multi')">D. Inteligencia Multimarketplace</div>
-        <div class="nav-item" id="tab-mgr" onclick="switchTab('mgr')">E. Resumen Gerencial</div>
-        <div class="nav-item" id="tab-commercial" onclick="switchTab('commercial')">F. Inteligencia Comercial</div>
-        <div class="nav-item" id="tab-visibility" onclick="switchTab('visibility')">G. Visibilidad (Estilo VA)</div>
-        <div class="nav-item" id="tab-season" onclick="switchTab('season')">H. Temporada (Matriz de Cruce)</div>
+        <div class="nav-item active" id="tab-health" onclick="switchPrimary('health')"><span class="nav-icon">📋</span><span class="nav-text">Salud de Temporada</span></div>
+        <div class="nav-item" id="tab-visibility-main" onclick="switchPrimary('visibility')"><span class="nav-icon">📊</span><span class="nav-text">Visibilidad y Competencia</span></div>
+        <div class="nav-item" id="tab-control" onclick="switchPrimary('control')"><span class="nav-icon">⚙️</span><span class="nav-text">Centro de Control</span></div>
+        <div id="legacyNav" style="display:none;">
+            <div class="nav-item" id="tab-ops" onclick="switchTab('ops')">A. Operaciones y Resultados</div>
+            <div class="nav-item" id="tab-hist" onclick="switchTab('hist')">B. Historial de Ejecuciones</div>
+            <div class="nav-item" id="tab-learn" onclick="switchTab('learn')">C. Aprendizaje y Experiencia</div>
+            <div class="nav-item" id="tab-multi" onclick="switchTab('multi')">D. Inteligencia Multimarketplace</div>
+            <div class="nav-item" id="tab-mgr" onclick="switchTab('mgr')">E. Resumen Gerencial</div>
+            <div class="nav-item" id="tab-commercial" onclick="switchTab('commercial')">F. Inteligencia Comercial</div>
+            <div class="nav-item" id="tab-visibility" onclick="switchTab('visibility')">G. Visibilidad (Estilo VA)</div>
+            <div class="nav-item" id="tab-season" onclick="switchTab('season')">H. Temporada (Matriz de Cruce)</div>
+        </div>
     </aside>
     
     <main>
@@ -304,7 +330,7 @@
             <strong>Nota Operativa:</strong> La incorporación futura de <strong>OpenSEO</strong> (optimización semántica de catálogo) se encuentra formalmente desacoplada del registro de experiencias de adquisición y no representa funcionalidad ejecutada en las auditorías actuales.
         </div>
         <!-- A. Operaciones y Resultados -->
-        <div id="ops" class="panel active">
+        <div id="ops" class="panel">
             <h2>A. Operaciones y Resultados Verificables</h2>
             <div id="runModeBadge" style="display:inline-block; padding:4px 10px; border-radius:4px; font-size:0.75rem; font-weight:600; letter-spacing:0.04em; background:rgba(148,163,184,0.15); color:var(--text-muted);">SIN CORRIDA</div>
             <div class="controls">
@@ -794,7 +820,7 @@
         </div>
 
         <!-- H. Temporada — Panel de Salud -->
-        <div id="season" class="panel">
+        <div id="season" class="panel active">
             <h2>H. Temporada — Panel de Salud</h2>
             <p style="color:var(--text-muted); font-size:0.92rem; margin-bottom:14px;">
                 Salud de los 336 SKU SS_2026 agrupada por producto. Verde = publicado con stock y sin alertas;
@@ -823,6 +849,51 @@
                 <div id="healthModalBody" style="margin-top:14px; font-size:0.9rem;"></div>
             </div>
         </div>
+
+        <div id="control" class="panel">
+            <h2>Centro de Control</h2>
+            <p style="color:var(--text-muted); font-size:0.92rem; margin-bottom:16px;">
+                Acceso a toda la funcionalidad existente de MRI, organizada por área.
+            </p>
+            <details class="control-accordion" open>
+                <summary>Ejecución</summary>
+                <div class="control-body">
+                    <button onclick="openLegacy('ops')">Operaciones y Auditoría</button>
+                    <button onclick="openLegacy('hist')">Historial de Ejecuciones</button>
+                </div>
+            </details>
+            <details class="control-accordion">
+                <summary>Inteligencia Comercial</summary>
+                <div class="control-body">
+                    <button onclick="openLegacy('commercial')">Alertas de Precio, Stock y TOP</button>
+                </div>
+            </details>
+            <details class="control-accordion">
+                <summary>Aprendizaje</summary>
+                <div class="control-body">
+                    <button onclick="openLegacy('learn')">ExperienceStore y Capacidades</button>
+                    <button onclick="openLegacy('multi')">Inteligencia Multimarketplace</button>
+                </div>
+            </details>
+            <details class="control-accordion">
+                <summary>Resumen Gerencial</summary>
+                <div class="control-body">
+                    <button onclick="openLegacy('mgr')">Resumen, Evolución y Cobertura</button>
+                </div>
+            </details>
+            <details class="control-accordion">
+                <summary>Configuración IA</summary>
+                <div class="control-body" style="display:block;">
+                    <label style="display:block;color:var(--text-muted);font-size:0.85rem;margin-bottom:6px;">Ruta local del modelo IBM Granite 4.2 (GGUF)</label>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <input id="aiModelPath" value="models/granite-4.2-8b.gguf" style="min-width:320px;flex:1;" />
+                        <button onclick="validateAIModel()">Validar existencia</button>
+                    </div>
+                    <div id="aiModelResult" style="margin-top:8px;color:var(--text-muted);font-size:0.85rem;"></div>
+                </div>
+            </details>
+        </div>
+        <button id="legacyBack" class="btn-primary legacy-back" style="display:none;" onclick="switchPrimary('control')">← Volver al Centro de Control</button>
 
 </main>
 
@@ -1111,6 +1182,41 @@
             document.getElementById('healthModal').style.display = 'block';
         }
         function closeHealthModal() { document.getElementById('healthModal').style.display = 'none'; }
+
+        let primaryLocked = false;
+        function setPrimaryActive(id) {
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            ['tab-health','tab-visibility-main','tab-control'].forEach(x => {
+                const el = document.getElementById(x);
+                if (el) el.classList.toggle('active', x === id);
+            });
+        }
+        function switchPrimary(view) {
+            primaryLocked = true;
+            document.getElementById('legacyBack').style.display = 'none';
+            if (view === 'health') { switchTab('season'); setPrimaryActive('tab-health'); }
+            else if (view === 'visibility') { switchTab('visibility'); setPrimaryActive('tab-visibility-main'); }
+            else { switchTab('control'); setPrimaryActive('tab-control'); }
+        }
+        function openLegacy(tabId) {
+            switchTab(tabId);
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            const c = document.getElementById('tab-control');
+            if (c) c.classList.add('active');
+            document.getElementById('legacyBack').style.display = 'block';
+        }
+        async function validateAIModel() {
+            const path = document.getElementById('aiModelPath').value.trim() || 'models/granite-4.2-8b.gguf';
+            const out = document.getElementById('aiModelResult');
+            out.innerText = 'Validando…';
+            try {
+                const r = await fetch('/api/mri/local-ai/check?path=' + encodeURIComponent(path)).then(x => x.json());
+                out.style.color = r.exists ? 'var(--success)' : 'var(--warning)';
+                out.innerText = r.exists
+                    ? `Modelo encontrado: ${r.resolved_path} (${r.contract.license})`
+                    : `Modelo no encontrado: ${path}. No se descarga automáticamente. Licencia aprobada: ${r.contract.license}`;
+            } catch (e) { out.style.color = 'var(--danger)'; out.innerText = 'Error: ' + e.message; }
+        }
 
         function switchTab(tabId) {
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -2681,7 +2787,7 @@
             }
         }
 
-        initialSetup();
-    </script>
+        initialSetup().then(() => { if (!primaryLocked) switchPrimary('health'); });
+</script>
 </body>
 </html>

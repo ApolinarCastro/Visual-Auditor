@@ -344,6 +344,25 @@ async def season_matrix_api(season_id: str = "SS_2026"):
     return JSONResponse(status_code=200, content=season_matrix(season_id))
 
 
+@app.get("/api/mri/local-ai/check")
+async def mri_local_ai_check(path: str = "models/granite-4.2-8b.gguf"):
+    """Validate a local Granite file without downloading or loading a model."""
+    from pathlib import Path
+    from app.mri_autonomous.local_ai import model_contract
+    candidates = [Path(path)]
+    root = Path(__file__).resolve().parents[2]
+    candidates.append(root / path)
+    found = next((x for x in candidates if x.is_file()), None)
+    return JSONResponse(status_code=200, content={
+        "model": "granite-4.2-8b",
+        "contract": model_contract("granite-4.2-8b"),
+        "requested_path": path,
+        "resolved_path": str(found) if found else None,
+        "exists": found is not None,
+        "download_automatic": False,
+    })
+
+
 @app.get("/api/season/alerts")
 async def season_alerts_api(type: str = None, marketplace: str = None,
                             severity: str = None, limit: int = 100):
