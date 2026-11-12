@@ -1590,7 +1590,10 @@ function categoryBucket(row) {
 
 function mapVisibility(rows) {
   return (rows || []).map(function (r, i) {
-    var total = Number(r.total_marketplace || r.total_nicopoly || 0);
+    // Contrato del endpoint: total_marketplace = tamaño de la categoría en el
+    // marketplace; total_nicopoly = publicaciones de Nicopoly. Nunca usar el
+    // segundo como denominador del primero.
+    var total = r.total_marketplace == null ? null : Number(r.total_marketplace);
     var nico = Number(r.total_nicopoly || 0);
     return {
       id: (r.marketplace || 'NA') + '-' + i,
@@ -2575,7 +2578,11 @@ function catRows() {
     return true;
   }).sort(function (a, b) { return b.share - a.share; });
 }
+function categoryTotal(c) {
+  return c.total == null ? '—' : fmtNum(c.total);
+}
 function shareCell(c) {
+  if (c.total == null) return '<span class="rank-badge">—</span>';
   const pct = Math.min(100, c.share / 10 * 100);
   return '<div style="display:flex;align-items:center;gap:8px;min-width:120px">' +
     '<span class="issue-bar" style="flex:1;min-width:54px" role="img" aria-label="Participación ' + fmtPct(c.share) + ' sobre una escala de 0 a 10 por ciento"><i style="width:' + Math.max(2, pct) + '%;background:' + CHANNEL_BY_ID[c.ch].color + '"></i></span>' +
@@ -2590,7 +2597,7 @@ function renderCatTable() {
       '<td><button type="button" class="prod-link" data-act="expand-cat" data-id="' + c.id + '" aria-expanded="' + open + '" aria-controls="' + detailId + '" style="flex-direction:row;align-items:center;gap:7px">' +
         '<span class="cat-chev' + (open ? ' is-open' : '') + '">' + icon('chevron-right', 'i--xs') + '</span><span class="prod-name">' + esc(c.cat) + '</span></button></td>' +
       '<td><span class="cat-label" style="display:inline-flex;align-items:center;gap:6px"><span class="channel-dot" style="background:' + CHANNEL_BY_ID[c.ch].color + '"></span>' + channelName(c.ch) + '</span></td>' +
-      '<td class="num">' + fmtNum(c.total) + '</td>' +
+      '<td class="num">' + categoryTotal(c) + '</td>' +
       '<td class="num"><b style="font-weight:600">' + fmtNum(c.nico) + '</b></td>' +
       '<td>' + shareCell(c) + '</td>' +
       '<td><span class="rank-badge ' + (c.best <= 30 ? 'is-top' : c.best > 240 ? 'is-out' : '') + '">TOP ' + c.best + '</span></td>' +
@@ -2600,7 +2607,7 @@ function renderCatTable() {
       '<div class="chart-box">' + catChart(c, i) + '</div>' +
       '<div class="cat-detail-side">' +
         '<div class="mini-stat"><span>Publicaciones</span><b>' + fmtNum(c.nico) + '</b></div>' +
-        '<div class="mini-stat"><span>Total del canal</span><b>' + fmtNum(c.total) + '</b></div>' +
+        '<div class="mini-stat"><span>Total del canal</span><b>' + categoryTotal(c) + '</b></div>' +
         '<div class="mini-stat"><span>Participación</span><b>' + fmtPct(c.share) + '</b></div>' +
         '<div class="mini-stat"><span>Mejor posición</span><b>TOP ' + c.best + '</b></div>' +
         '<a class="btn btn-sm" href="' + c.url + '" target="_blank" rel="noopener noreferrer">' + icon('external', 'i--xs') + ' Abrir catálogo</a>' +
@@ -2609,7 +2616,7 @@ function renderCatTable() {
 
   $('#catCards').innerHTML = rows.length ? rows.map(function (c) {
     return '<article class="pcard"><div class="pcard-top"><div style="min-width:0"><div class="pcard-name">' + esc(c.cat) + '</div>' +
-      '<div class="pcard-sku"><span style="color:' + CHANNEL_BY_ID[c.ch].color + '">●</span> ' + channelName(c.ch) + ' · total ' + fmtNum(c.total) + '</div></div>' +
+      '<div class="pcard-sku"><span style="color:' + CHANNEL_BY_ID[c.ch].color + '">●</span> ' + channelName(c.ch) + ' · total ' + categoryTotal(c) + '</div></div>' +
       '<span class="rank-badge ' + (c.best <= 30 ? 'is-top' : c.best > 240 ? 'is-out' : '') + '">TOP ' + c.best + '</span></div>' +
       '<div style="display:flex;align-items:center;gap:8px;margin-top:10px">' + shareCell(c) + '<b style="font-size:12px">' + fmtNum(c.nico) + '</b></div>' +
       '<a class="btn btn-sm" style="margin-top:10px" href="' + c.url + '" target="_blank" rel="noopener noreferrer">Abrir catálogo ' + icon('external', 'i--xs') + '</a></article>';

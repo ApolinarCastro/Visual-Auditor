@@ -614,10 +614,55 @@ def visibility(db_path: Optional[str] = None) -> List[Dict[str, Any]]:
             GROUP BY marketplace, category
             ORDER BY marketplace, total_nicopoly DESC
         """).fetchall()
+        # The marketplace-wide denominator is stored by the audit read model,
+        # not by mri_publications (which contains Nicopoly-only observations).
+        # Use the latest real audit row for the matching category; never
+        # substitute the Nicopoly count for the marketplace total.
+        audit_rows = conn.execute("""
+            SELECT marketplace, category, total_marketplace, audit_date
+            FROM audits
+            WHERE total_marketplace IS NOT NULL AND total_marketplace > 0
+            ORDER BY audit_date ASC, id ASC
+        """).fetchall()
+
+        def _cat_key(value):
+            text = str(value or "").replace("→", " ").replace("/", " ")
+            text = re.sub(r"\((?:[^()]*)\)", " ", text)
+            text = re.sub(r"[^a-z0-9]+", " ", text.lower()).strip()
+            return " ".join(text.split())
+
+        audit_lookup = {}
+        for a in audit_rows:
+            mkt = str(a["marketplace"] or "").strip().lower()
+            if mkt in ("ml", "meli"):
+                mkt = "mercado libre"
+            key = _cat_key(a["category"])
+            if key:
+                audit_lookup[(mkt, key)] = int(a["total_marketplace"])
         out = []
         for r in rows:
             d = dict(r)
-            total = int(d["total_nicopoly"] or 0)
+            total_nicopoly = int(d["total_nicopoly"] or 0)
+            current_key = _cat_key(d.get("category"))
+            mkt_key = str(d.get("marketplace") or "").strip().lower()
+            if mkt_key == "ml":
+                mkt_key = "mercado libre"
+            total_marketplace = None
+            # Exact normalized match first, then the most specific audit
+            # category contained in the current hierarchical category.
+            if current_key:
+                total_marketplace = audit_lookup.get((mkt_key, current_key))
+                if total_marketplace is None:
+                    candidates = [(key, val) for (m, key), val in audit_lookup.items()
+                                  if m == mkt_key and key in current_key]
+                    if candidates:
+                        candidates.sort(key=lambda kv: len(kv[0]), reverse=True)
+                        total_marketplace = candidates[0][1]
+            # A historical total below the current observed count is not a
+            # valid denominator for this observation (different scope/date).
+            if total_marketplace is not None and total_marketplace < total_nicopoly:
+                total_marketplace = None
+            total = int(total_marketplace or 0)
             def pct(n):
                 return round((int(d.get(n) or 0) / total * 100.0), 2) if total else 0.0
             p30, p60, p90, p120, p240 = (pct("top_30"), pct("top_60"),
@@ -647,7 +692,7 @@ def visibility(db_path: Optional[str] = None) -> List[Dict[str, Any]]:
             else:
                 general = f"https://www.mercadolibre.cl/catalogo?search={cat_q}"
                 brand = general
-            d.update({"total_marketplace": total, "pct_30": p30, "pct_60": p60,
+            d.update({"total_marketplace": total_marketplace, "pct_30": p30, "pct_60": p60,
                       "pct_90": p90, "pct_120": p120, "pct_240": p240,
                       "presence_level": presence, "risk_level": risk,
                       "category_url": general, "category_brand_url": brand})
