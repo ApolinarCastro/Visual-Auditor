@@ -80,7 +80,14 @@ CREATE INDEX IF NOT EXISTS idx_season_alert_product ON season_alerts(season_prod
 
 
 def init_season_schema(db_path: Optional[str] = None) -> Dict[str, Any]:
-    conn = sqlite3.connect(_db_path(db_path), timeout=30)
+    path = _db_path(db_path)
+    # Never create an empty operational DB silently. A missing/empty file is
+    # an operational blocker, not a valid zero-data season.
+    if not os.path.isfile(path) or os.path.getsize(path) == 0:
+        raise RuntimeError(
+            "Base de datos operativa no encontrada. "
+            "Ejecute una auditoría DISCOVERY primero.")
+    conn = sqlite3.connect(path, timeout=30)
     try:
         conn.executescript(SCHEMA)
         cols = [r[1] for r in conn.execute("PRAGMA table_info(season_products)")]

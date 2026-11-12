@@ -335,7 +335,10 @@ async def mri_visibility_api():
 @app.get("/api/season/health")
 async def season_health_api(season_id: str = "SS_2026"):
     from app.mri_autonomous.season_manager import season_health
-    return JSONResponse(status_code=200, content=season_health(season_id))
+    try:
+        return JSONResponse(status_code=200, content=season_health(season_id))
+    except RuntimeError as exc:
+        return JSONResponse(status_code=500, content={"detail": str(exc)})
 
 
 @app.get("/api/season/matrix")
