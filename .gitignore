@@ -6,3 +6,31 @@ __pycache__/
 *.pyo
 *.pyd
 
+# MRI consolidation security (2026-11-12)
+.env.*
+!.env.example
+data/
+_integration/data/
+data/*_profile/
+data/sessions/
+data/runtime_tmp/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.gguf
+models/*.gguf
+logs/
+tmp*/
+.pytest_cache/
+*.log
+*.tmp
+*.bak
+*.old
+backup_*/
+repo_backup_*/
+reports/
+
+
+# temporary consolidation artifacts
+_tmp_dashboard.js
