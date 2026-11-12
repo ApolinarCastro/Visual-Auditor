@@ -18,8 +18,17 @@ MARKET_DOMAINS = {
     # Cookie-Editor can export auth cookies for .mercadolibre.com while the
     # Chilean storefront is .cl; accept both and let the browser apply scope.
     "Mercado Libre": ("mercadolibre.cl", "mercadolibre.com"),
+    "Falabella": ("falabella.com",),
+    "Paris": ("paris.cl",),
 }
-MARKET_SLUG = {"Ripley": "ripley", "Mercado Libre": "mercado_libre"}
+MARKET_SLUG = {"Ripley": "ripley", "Mercado Libre": "mercado_libre",
+               "Falabella": "falabella", "Paris": "paris"}
+HOME_URLS = {
+    "Ripley": "https://simple.ripley.cl",
+    "Mercado Libre": "https://www.mercadolibre.cl",
+    "Falabella": "https://www.falabella.com/falabella-cl",
+    "Paris": "https://www.paris.cl",
+}
 
 
 def canonical_marketplace(value: str) -> str:
@@ -140,7 +149,13 @@ def save_session(marketplace: str, raw) -> dict:
         "updated_at": datetime.now().isoformat(),
         "cookies": cookies,
     }
-    path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    try:
+        os.chmod(tmp, 0o600)
+    except Exception:
+        pass
+    os.replace(tmp, path)
     try:
         os.chmod(path, 0o600)
     except Exception:
@@ -149,8 +164,17 @@ def save_session(marketplace: str, raw) -> dict:
             "updated_at": payload["updated_at"]}
 
 
+def browser_profile_path(marketplace: str) -> Path:
+    marketplace = canonical_marketplace(marketplace)
+    slug = MARKET_SLUG.get(marketplace, re.sub(r"[^a-z0-9]+", "_", marketplace.lower()))
+    root = Path(__file__).resolve().parents[2] / "data" / "browser_profiles"
+    path = root / slug
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
 def load_cookies(marketplace: str) -> list[dict]:
-    path = session_path(marketplace)
+    path = session_path(canonical_marketplace(marketplace))
     if not path.exists():
         return []
     try:
@@ -159,6 +183,103 @@ def load_cookies(marketplace: str) -> list[dict]:
         return cookies if isinstance(cookies, list) else []
     except Exception:
         return []
+
+
+def list_cookies(marketplace: str, reveal: bool = False) -> list[dict]:
+    """Cookie metadata for the admin UI; values masked unless explicitly revealed."""
+    marketplace = canonical_marketplace(marketplace)
+    out = []
+    now = datetime.now().timestamp()
+    for c in load_cookies(marketplace):
+        exp = c.get("expires")
+        item = {
+            "name": c.get("name"), "domain": c.get("domain"),
+            "path": c.get("path", "/"), "secure": bool(c.get("secure")),
+            "httpOnly": bool(c.get("httpOnly")), "sameSite": c.get("sameSite"),
+            "expires": exp,
+            "expired": bool(exp and float(exp) <= now),
+            "has_value": bool(c.get("value")),
+            "value": (c.get("value") if reveal else "••••••••"),
+        }
+        out.append(item)
+    return out
+
+
+def upsert_cookie(marketplace: str, cookie: dict) -> dict:
+    """Add or edit one cookie after strict marketplace/domain validation."""
+    marketplace = canonical_marketplace(marketplace)
+    cookies = normalize_cookies(cookie, marketplace)
+    new = cookies[0]
+    existing = load_cookies(marketplace)
+    key = (str(new.get("domain")), str(new.get("name")), str(new.get("path") or "/"))
+    replaced = False
+    merged = []
+    for c in existing:
+        ck = (str(c.get("domain")), str(c.get("name")), str(c.get("path") or "/"))
+        if ck == key:
+            merged.append(new)
+            replaced = True
+        else:
+            merged.append(c)
+    if not replaced:
+        merged.append(new)
+    result = save_session(marketplace, merged)
+    return {**result, "operation": "updated" if replaced else "created"}
+
+
+def delete_cookie(marketplace: str, name: str, domain: str = "",
+                  path: str = "/") -> dict:
+    marketplace = canonical_marketplace(marketplace)
+    existing = load_cookies(marketplace)
+    merged = [c for c in existing
+              if not (str(c.get("name")) == str(name)
+                      and (not domain or str(c.get("domain")) == str(domain))
+                      and (not path or str(c.get("path") or "/") == str(path)))]
+    removed = len(existing) - len(merged)
+    if not merged:
+        path_obj = session_path(marketplace)
+        if path_obj.exists():
+            path_obj.unlink()
+        return {"marketplace": marketplace, "deleted": removed, "count": 0}
+    result = save_session(marketplace, merged)
+    return {**result, "deleted": removed}
+
+
+def delete_selected(marketplace: str, keys: list[dict]) -> dict:
+    marketplace = canonical_marketplace(marketplace)
+    wanted = {(str(k.get("name")), str(k.get("domain") or ""),
+               str(k.get("path") or "/")) for k in (keys or [])}
+    existing = load_cookies(marketplace)
+    merged = [c for c in existing
+              if (str(c.get("name")), str(c.get("domain")),
+                  str(c.get("path") or "/")) not in wanted]
+    result = save_session(marketplace, merged) if merged else {"count": 0}
+    return {**result, "deleted": len(existing) - len(merged)}
+
+
+def export_cookies(marketplace: str) -> dict:
+    """Cookie-Editor-compatible export. Caller must require explicit confirmation."""
+    marketplace = canonical_marketplace(marketplace)
+    out = []
+    for c in load_cookies(marketplace):
+        item = {
+            "name": c.get("name"), "value": c.get("value"),
+            "domain": c.get("domain"), "path": c.get("path", "/"),
+            "secure": bool(c.get("secure")), "httpOnly": bool(c.get("httpOnly")),
+            "sameSite": c.get("sameSite"),
+        }
+        if c.get("expires") is not None:
+            item["expirationDate"] = c.get("expires")
+        out.append(item)
+    return {"marketplace": marketplace, "cookies": out, "count": len(out)}
+
+
+def delete_session(marketplace: str) -> dict:
+    marketplace = canonical_marketplace(marketplace)
+    path = session_path(marketplace)
+    if path.exists():
+        path.unlink()
+    return {"marketplace": marketplace, "deleted": True}
 
 
 def session_status(marketplace: str) -> dict:

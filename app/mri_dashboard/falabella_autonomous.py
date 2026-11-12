@@ -143,8 +143,14 @@ def _brand_card(card, brand):
 def _paginate(fetch_page, *, surface, category_name=None, category_parent=None,
               max_pages=100, delay=0.35, on_page=None, allow_empty=False,
               filter_brand=None):
-    """Paginate one surface until the source's own terminal condition."""
+    """Paginate one surface until the source's own terminal condition.
+
+    `card_observations` preserves every normalized card in its original raw
+    order, before any publication deduplication. `cards_data` remains the
+    existing consumer structure.
+    """
     cards, pages, seen_ids = [], [], set()
+    card_observations = []
     terminal, cause = PAGE_BOUND_REACHED, f"page safety bound {max_pages} reached"
     expected, build_id = None, None
     prev_page_ids, prev_raw_ids, stall = None, None, 0
@@ -187,10 +193,17 @@ def _paginate(fetch_page, *, surface, category_name=None, category_parent=None,
         raw_ids = {str(card.get("productId") or card.get("product_id") or "")
                    for card in raw}
         raw_ids.discard("")
-        for card in raw:
+        for raw_position, card in enumerate(raw, start=1):
             norm = _normalise_card(card, surface, category_name, page, build_id)
             if norm is not None:
                 norm["parent_category"] = category_parent
+                norm["position_on_page"] = raw_position
+                norm["absolute_position"] = len(card_observations) + 1
+                norm["placement_type"] = "UNKNOWN"
+                norm["placement_evidence"] = "NO_EXPLICIT_SPONSORED_MARKER"
+                norm["is_nicopoly"] = bool(
+                    filter_brand and _brand_card(card, filter_brand))
+                card_observations.append(dict(norm))
             if norm is None:
                 continue
             if filter_brand and not _brand_card(card, filter_brand):
@@ -227,6 +240,7 @@ def _paginate(fetch_page, *, surface, category_name=None, category_parent=None,
         "build_id": build_id,
         "complete": terminal in TERMINAL_OK,
         "cards_data": cards,
+        "card_observations": card_observations,
         "first_payload": first_payload,
         "pages": pages,
     }
@@ -727,6 +741,9 @@ def run_full_audit(engine, *, brand="NICOPOLY", run_id=None, aux_dir=None,
         complete = False
         pending.append("categories:L2_NOT_DISCOVERED")
     cards_total = sum(s["cards"] for s in surfaces)
+    all_card_observations = []
+    for _s in surfaces:
+        all_card_observations.extend(_s.get("card_observations") or [])
     result = {
         "marketplace": "Falabella",
         "brand": brand,
@@ -735,7 +752,9 @@ def run_full_audit(engine, *, brand="NICOPOLY", run_id=None, aux_dir=None,
         "finished_at": datetime.now().isoformat(),
         "build_id": brand_res.get("build_id"),
         "surfaces": [{k: v for k, v in s.items()
-                      if k not in ("cards_data", "first_payload")} for s in surfaces],
+                      if k not in ("cards_data", "card_observations",
+                                   "first_payload")} for s in surfaces],
+        "card_observations": all_card_observations,
         "categories_discovered": len(categories),
         "categories_used": [c["category_id"] for c in categories],
         "category_tree": discovery["tree"],
@@ -771,6 +790,66 @@ def run_full_audit(engine, *, brand="NICOPOLY", run_id=None, aux_dir=None,
         finally:
             result.pop("_aux_dir", None)
     return result
+
+
+def persist_card_observations(db_path, run_id, observations):
+    """Persist pre-dedup card observations in the existing evidence ledger.
+
+    One row per card occurrence; publication identity is not touched. The raw
+    reference keeps page/position/placement/evidence for reproducibility.
+    """
+    import hashlib
+    import sqlite3
+    from app.mri_autonomous.storage_guard import StorageConfig
+
+    StorageConfig.ensure_writable(db_path, reason="Falabella card observations")
+    con = sqlite3.connect(str(db_path))
+    c = con.cursor()
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS mri_evidence_ledger (
+            evidence_id TEXT PRIMARY KEY, run_id TEXT NOT NULL,
+            marketplace TEXT NOT NULL, brand TEXT, claim_type TEXT NOT NULL,
+            claim_value TEXT, source_surface TEXT, method TEXT,
+            observed_at TEXT NOT NULL, confidence REAL DEFAULT 1.0,
+            status TEXT, raw_reference TEXT, content_hash TEXT,
+            truth_model_version TEXT
+        )
+    """)
+    inserted = 0
+    for o in observations or []:
+        pid = o.get("publication_id") or o.get("product_id")
+        if not pid:
+            continue
+        surface = str(o.get("surface") or "")
+        cid = surface.split("category:", 1)[1] if surface.startswith("category:") else None
+        raw = {
+            "category_id": cid, "category_url": surface,
+            "publication_id": pid, "publication_url": o.get("url"),
+            "page_number": o.get("page"), "position_on_page": o.get("position_on_page"),
+            "absolute_position": o.get("absolute_position"),
+            "sort_mode": "SOURCE_DEFAULT", "placement_type": o.get("placement_type", "UNKNOWN"),
+            "placement_evidence": o.get("placement_evidence"),
+            "is_nicopoly": o.get("is_nicopoly"), "title": o.get("title"),
+            "seller": o.get("seller_name"), "observed_at": o.get("observed_at"),
+            "source_reference": f"{surface}|page={o.get('page')}|pos={o.get('position_on_page')}",
+        }
+        payload = json.dumps(raw, ensure_ascii=False, sort_keys=True)
+        eid = "POS_" + hashlib.sha256(
+            f"{run_id}|{surface}|{o.get('page')}|{o.get('absolute_position')}|{pid}".encode()
+        ).hexdigest()[:32]
+        c.execute("""
+            INSERT OR REPLACE INTO mri_evidence_ledger
+            (evidence_id, run_id, marketplace, brand, claim_type, claim_value,
+             source_surface, method, observed_at, confidence, status, raw_reference,
+             content_hash, truth_model_version)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (eid, run_id, "Falabella", "Nicopoly", "POSITION_OBSERVATION", str(pid),
+              surface, "SSR_CARD_ORDER", o.get("observed_at") or datetime.now().isoformat(),
+              1.0, "OBSERVED", payload, hashlib.sha256(payload.encode()).hexdigest(), "2.0"))
+        inserted += c.rowcount
+    con.commit()
+    con.close()
+    return inserted
 
 
 def to_runner_results(observations, *, catalog_status=None):
